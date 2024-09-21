@@ -376,6 +376,18 @@ internal sealed class MainWindow : Form
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not Guid guid) return;
+
+        if ((this.decays?.Count ?? 0) > 0 && this.selectedModel != Guid.Empty)
+        {
+            var dr = MessageBox.Show(
+                "Changing the model will clear the current fitting parameters. Do you want to continue?",
+                "Warning",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+            if (dr != DialogResult.Yes) return;
+        }
+
         foreach (var child in this.menu_model.DropDownItems)
         {
             if (child is not ToolStripMenuItem menuItem) continue;
