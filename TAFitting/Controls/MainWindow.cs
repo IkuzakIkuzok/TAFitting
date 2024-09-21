@@ -275,9 +275,15 @@ internal sealed class MainWindow : Form
 
         try
         {
-            this.decays = Decays.FromFolder(ofd.FolderName);
-            this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
-            MakeTable();
+            Task.Run(() =>
+            {
+                this.decays = Decays.FromFolder(ofd.FolderName);
+                Invoke(() =>
+                {
+                    this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
+                    MakeTable();
+                });
+            });
         }
         catch (Exception e)
         {
