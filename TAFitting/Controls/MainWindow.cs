@@ -252,7 +252,8 @@ internal sealed class MainWindow : Form
         this.mainContainer.SplitterDistance = 750;
         this.mainContainer.Panel2MinSize = 420;
 
-        this.paramsContainer.SplitterDistance = 400;
+        this.paramsContainer.SplitterDistance = 600;
+        this.paramsContainer.Panel2MinSize = 120;
     } // ctor ()
 
     override protected void OnShown(EventArgs e)
