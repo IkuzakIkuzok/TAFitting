@@ -141,6 +141,11 @@ internal sealed class SpectraPreviewWindow : Form
         this.mainContainter.Panel2MinSize = 150;
     } // ctor ()
 
+    internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
+    {
+        SetParameters(parameters);
+    } // ctor (IReadOnlyDictionary<double, double[]>)
+
     override protected void OnClosing(CancelEventArgs e)
     {
         base.OnClosing(e);
@@ -148,11 +153,6 @@ internal sealed class SpectraPreviewWindow : Form
         Program.AxisTitleFontChanged -= SetAxisTitleFont;
         Program.AxisLabelFontChanged -= SetAxisLabelFont;
     } // override protected void OnClosing (CancelEventArgs)
-
-    internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
-    {
-        SetParameters(parameters);
-    } // ctor (IDictionary<double, double[], IReadOnlyDictionary<double>>)
 
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
