@@ -5,6 +5,9 @@ namespace TAFitting.Controls;
 
 internal sealed class ParametersTableRow : DataGridViewRow
 {
+    private bool inverted = false;
+    private int[] magnitudeColumns = [];
+
     private double GetCellValue(int index, double defaultValue) =>
         this.Cells[index].Value is double value ? value : defaultValue;
 
@@ -46,4 +49,26 @@ internal sealed class ParametersTableRow : DataGridViewRow
                 this[i] = value[i];
         }
     }
+
+    internal bool Inverted
+    {
+        get => this.inverted;
+        set
+        {
+            if (this.inverted == value) return;
+            this.inverted = value;
+            foreach (var index in this.magnitudeColumns)
+            {
+                this[index] = -this[index];
+                var cell = (DataGridViewNumericBoxCell)this.Cells[index + 1];
+                cell.Invert = this.inverted;
+            }
+        }
+    }
+
+    internal void SetMagnitudeColumns(IEnumerable<int> indices)
+        => this.magnitudeColumns = indices.ToArray();
+
+    internal void InvertMagnitude()
+        => this.Inverted = !this.Inverted;
 } // internal sealed class ParametersTableRow : DataGridViewRow

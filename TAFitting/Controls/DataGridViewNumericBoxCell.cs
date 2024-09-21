@@ -25,6 +25,11 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
 
     internal int Digit { get; set; } = 6;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the increment and decrement are inverted.
+    /// </summary>
+    internal bool Invert { get; set; } = false;
+
     protected double defaultValue = 0.0;
 
     /// <summary>
@@ -82,7 +87,7 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         {
             var additionalBias = e.Shift ? 10 : 1;
 
-            if (e.KeyCode == Keys.Up)
+            if ((!this.Invert && e.KeyCode == Keys.Up) || (this.Invert && e.KeyCode == Keys.Down))
             {
                 var value = GetDoubleValue(rowIndex);
                 var increment = CalcIncrement() * additionalBias;
@@ -90,7 +95,7 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
                 SetValue(rowIndex, Math.Floor(Math.Round(value / increment, this.Digit)) * increment + increment);
                 e.Handled = true;
             }
-            else if (e.KeyCode == Keys.Down)
+            else if ((!this.Invert && e.KeyCode == Keys.Down) || (this.Invert && e.KeyCode == Keys.Up))
             {
                 var value = GetDoubleValue(rowIndex);
                 var decrement = CalcDecrement() * additionalBias;

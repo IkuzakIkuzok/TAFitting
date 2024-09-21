@@ -19,6 +19,7 @@ internal sealed class MainWindow : Form
     private readonly Axis axisX, axisY;
     private readonly DisplayRangeSelector rangeSelector;
     private readonly CheckBox cb_invert;
+    private bool suppressAutoInvert = false;
 
     private readonly ParametersTable parametersTable;
 
@@ -39,6 +40,7 @@ internal sealed class MainWindow : Form
     {
         this.Text = "TA Fitting";
         this.Size = new Size(1200, 800);
+        this.KeyPreview = true;
 
         this.mainContainer = new SplitContainer
         {
@@ -154,6 +156,7 @@ internal sealed class MainWindow : Form
             Location = new(10, 80),
             Parent = this.paramsContainer.Panel2,
         };
+        this.cb_invert.CheckedChanged += InvertMagnitude;
         this.cb_invert.CheckedChanged += ShowObserved;
         this.cb_invert.CheckedChanged += ShowFit;
 
@@ -261,6 +264,14 @@ internal sealed class MainWindow : Form
         base.OnShown(e);
         ShowSpectraPreview();
     } // override protected void OnShown (EventArgs)
+
+    override protected void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (e.Control && e.KeyCode == Keys.R)
+            this.cb_invert.Checked = !this.cb_invert.Checked;
+    } // override protected void OnKeyDown (KeyEventArgs)
 
     private void LoadDecays(object? sender, EventArgs e)
         => LoadDecays();
@@ -395,10 +406,28 @@ internal sealed class MainWindow : Form
 
     private void ChangeRow(object? sender, ParametersTableSelectionChangedEventArgs e)
     {
+        var movedToNewRow = (this.row?.Index ?? -1) != e.Row.Index;
         this.row = e.Row;
+
+        if (movedToNewRow)
+        {
+            this.suppressAutoInvert = true;
+            this.cb_invert.Checked = e.Row.Inverted;
+            this.suppressAutoInvert = false;
+        }
+
         ShowObserved();
         ShowFit();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
+
+    private void InvertMagnitude(object? sender, EventArgs e)
+    {
+        if (this.suppressAutoInvert) return;
+        InvertMagnitude();
+    } // private void InvertMagnitude (object?, EventArgs)
+
+    private void InvertMagnitude()
+        => this.row?.InvertMagnitude();
 
     private void ShowObserved(object? sender, EventArgs e)
         => ShowObserved();

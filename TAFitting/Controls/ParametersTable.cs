@@ -10,6 +10,7 @@ internal sealed class ParametersTable : DataGridView
 {
     private ParameterConstraints[] constraints = [];
     private double[] initialValues = [];
+    private int[] magnitudeColumns = [];
 
     internal event ParametersTableSelectionChangedEventHandler? SelectedRowChanged;
 
@@ -54,6 +55,12 @@ internal sealed class ParametersTable : DataGridView
             this.constraints[i] = parameter.Constraints;
             this.initialValues[i] = parameter.InitialValue;
         } // foreach
+
+        this.magnitudeColumns = parameters
+            .Select((p, i) => (Parameter: p, Index: i))
+            .Where(item => item.Parameter.IsMagnitude)
+            .Select(item => item.Index)
+            .ToArray();
     } // internal void SetColumns (IFittingModel)
 
     internal void Add(double wavelength)
@@ -63,6 +70,7 @@ internal sealed class ParametersTable : DataGridView
         var row = new ParametersTableRow();
         row.CreateCells(this);
         row.Wavelength = wavelength;
+        row.SetMagnitudeColumns(this.magnitudeColumns);
         for (var i = 0; i < this.initialValues.Length; i++)
             row[i] = this.initialValues[i];
         this.Rows.Add(row);
