@@ -6,10 +6,20 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="WinForms.DataVisualization" Version="1.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.ComponentModel" />
+  <Using Include="System.IO" />
   </ItemGroup>
 
 </Project>
