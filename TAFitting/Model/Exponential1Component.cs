@@ -9,8 +9,8 @@ namespace TAFitting.Model;
 internal sealed class Exponential1Component : IFittingModel
 {
     private static readonly Parameter[] parameters = [
-        new() { Name = "A0", },
-        new() { Name = "A1", InitialValue = 1e3 },
+        new() { Name = "A0", IsMagnitude = true },
+        new() { Name = "A1", InitialValue = 1e3, IsMagnitude = true },
         new() { Name = "T1", Constraints = ParameterConstraints.Positive, InitialValue = 5.0 },
     ];
 

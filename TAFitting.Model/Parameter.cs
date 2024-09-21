@@ -23,5 +23,13 @@ public readonly struct Parameter
     /// </summary>
     public double InitialValue { get; init; } = 0.0;
 
+    /// <summary>
+    /// Gets a value indicating whether the parameter represents a magnitude.
+    /// </summary>
+    /// <remarks>
+    /// The parameter will be inverted automatically with inverted mode if this property is set to <see langword="true"/>.
+    /// </remarks>
+    public bool IsMagnitude { get; init; } = false;
+
     public Parameter() { }
 } // public struct Parameter

@@ -9,7 +9,7 @@ namespace TAFitting.Model;
 internal sealed class EmpiricalPowerLaw : IFittingModel
 {
     private static readonly Parameter[] parameters = [
-        new Parameter { Name = "A0", InitialValue = 1e3 },
+        new Parameter { Name = "A0", InitialValue = 1e3, IsMagnitude = true },
         new Parameter {Name = "a", Constraints = ParameterConstraints.Positive, InitialValue = 1.0 },
         new Parameter {Name = "Alpha", Constraints = ParameterConstraints.Positive, InitialValue = 0.4 },
     ];
