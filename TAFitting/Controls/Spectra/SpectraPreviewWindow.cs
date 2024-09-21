@@ -249,7 +249,7 @@ internal sealed class SpectraPreviewWindow : Form
         using var sfd = new SaveFileDialog
         {
             Title = "Save Spectra",
-            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+            Filter = "Excel Workbook|*.xlsx|CSV files|*.csv|All files|*.*",
         };
         if (sfd.ShowDialog() != DialogResult.OK) return;
 
@@ -281,12 +281,18 @@ internal sealed class SpectraPreviewWindow : Form
                 MessageBoxIcon.Error
             );
         }
+        finally
+        {
+            if (writer is IDisposable disposable)
+                disposable.Dispose();
+        }
     } // private void SaveToFile ()
 
     private ISpreadSheetWriter GetSpreadSheetWriter(string extension)
         => extension.ToUpper() switch
         {
             ".CSV" => new CsvWriter(this.Model),
+            ".XLSX" => new ExcelWriter(this.Model),
             _ => throw new NotSupportedException($"The extension '{extension}' is not supported."),
         }; // private static ISpreadSheetWriter GetSpreadSheetWriter (string
 
