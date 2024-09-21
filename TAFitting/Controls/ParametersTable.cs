@@ -20,7 +20,8 @@ internal sealed class ParametersTable : DataGridView
     {
         this.AllowUserToAddRows = false;
         this.MultiSelect = false;
-        this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        this.DefaultCellStyle.SelectionBackColor = Color.Gray;
+        this.DefaultCellStyle.SelectionForeColor = Color.White;
     } // ctor ()
 
     internal void SetColumns(IFittingModel model)
@@ -71,8 +72,14 @@ internal sealed class ParametersTable : DataGridView
     {
         base.OnSelectionChanged(e);
 
-        var row = this.SelectedRows.Cast<ParametersTableRow>().FirstOrDefault();
-        if (row is null) return;
-        SelectedRowChanged?.Invoke(this, new ParametersTableSelectionChangedEventArgs(row));
+        var cell = this.SelectedCells.Cast<DataGridViewCell>().FirstOrDefault();
+        if (cell is null) return;
+        var rowIndex = cell.RowIndex;
+        var colIndex = cell.ColumnIndex;
+
+        foreach (var col in this.Columns.Cast<DataGridViewColumn>())
+            col.DefaultCellStyle.BackColor = col.Index == colIndex ? Color.LightGray : Color.White;
+
+        SelectedRowChanged?.Invoke(this, new ParametersTableSelectionChangedEventArgs(this.ParameterRows.ElementAt(rowIndex)));
     } // override protected void OnSelectionChanged (EventArgs)
 } // internal sealed class ParametersTable : DataGridView
