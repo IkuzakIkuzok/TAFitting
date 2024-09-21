@@ -19,6 +19,20 @@ public interface IFittingModel
     public string Description { get; }
 
     /// <summary>
+    /// Gets the formula of the model for Excel.
+    /// </summary>
+    /// <remarks>
+    /// - Parameter names must be enclosed in square brackets. e.g., "[A0]"
+    /// - Time is notated as "$X"
+    /// - An equal sign is not required.
+    /// </remarks>
+    /// <example>
+    /// "[A0] + [A1] * EXP(-$X / [T1])"
+    /// for single-component exponential model.
+    /// </example>
+    public string ExcelFormula { get; }
+
+    /// <summary>
     /// Gets the parameter list of the model.
     /// </summary>
     public IReadOnlyList<Parameter> Parameters { get; }
