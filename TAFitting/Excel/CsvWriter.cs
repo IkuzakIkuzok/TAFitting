@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Text;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -34,8 +35,8 @@ internal sealed class CsvWriter : ISpreadSheetWriter
 
     public void Write(string path)
     {
-        using var writer = new StreamWriter(path);
-        writer.WriteLine("Wavelength," + string.Join(",", this.Times));
+        using var writer = new StreamWriter(path, false, Encoding.UTF8);
+        writer.WriteLine("Wavelength (nm)," + string.Join(" µs,", this.Times) + " µs");
         foreach (var row in this.rows)
             writer.WriteLine(row.ToString());
     } // public void Write (string)
