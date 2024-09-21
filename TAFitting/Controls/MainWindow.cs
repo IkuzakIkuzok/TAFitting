@@ -352,7 +352,7 @@ internal sealed class MainWindow : Form
     {
         using var dialog = new System.Windows.Forms.OpenFileDialog
         {
-            Filter = "Assembly files (*.dll)|*.dll|All files (*.*)|*.*",
+            Filter = "Assembly files|*.dll|All files|*.*",
             Title = "Select an assembly file",
         };
         if (dialog.ShowDialog() != DialogResult.OK) return;
@@ -370,7 +370,7 @@ internal sealed class MainWindow : Form
                 MessageBoxIcon.Error
             );
         }
-    } // private void AddModel (object?, EventArgs
+    } // private void AddModel (object?, EventArgs)
 
     private void SelectModel(object? sender, EventArgs e)
     {
