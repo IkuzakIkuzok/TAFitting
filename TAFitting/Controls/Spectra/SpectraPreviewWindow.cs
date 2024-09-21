@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki Kohzuki
 
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Excel;
 using TAFitting.Model;
 
 namespace TAFitting.Controls.Spectra;
@@ -21,7 +22,7 @@ internal sealed class SpectraPreviewWindow : Form
 
     private int markerSize = Program.SpectraMarkerSize;
 
-    internal Guid Model
+    internal Guid ModelId
     {
         get => this.modelId;
         set
@@ -31,6 +32,8 @@ internal sealed class SpectraPreviewWindow : Form
             DrawSpectra();
         }
     }
+
+    private IFittingModel Model => ModelManager.Models[this.modelId];
 
     internal SpectraPreviewWindow()
     {
@@ -104,6 +107,15 @@ internal sealed class SpectraPreviewWindow : Form
         var menu_file = new ToolStripMenuItem("&File");
         this.MainMenuStrip.Items.Add(menu_file);
 
+        var menu_fileSave = new ToolStripMenuItem("&Save")
+        {
+            ShortcutKeys = Keys.Control | Keys.S,
+        };
+        menu_fileSave.Click += SaveToFile;
+        menu_file.DropDownItems.Add(menu_fileSave);
+
+        menu_file.DropDownItems.Add(new ToolStripSeparator());
+
         var menu_fileClose = new ToolStripMenuItem("&Close");
         menu_fileClose.Click += (sender, e) => Close();
         menu_file.DropDownItems.Add(menu_fileClose);
@@ -160,7 +172,7 @@ internal sealed class SpectraPreviewWindow : Form
     private void DrawSpectra()
     {
         if (this.modelId == Guid.Empty) return;
-        var model = ModelManager.Models[this.modelId];
+        var model = this.Model;
 
         this.chart.Series.Clear();
 
@@ -224,6 +236,59 @@ internal sealed class SpectraPreviewWindow : Form
         this.chart.Series.Add(series);
         return (min, max);
     } // private (double, double) DrawSpectrum (double, IFittingModel, Color)
+
+    private void SaveToFile(object? sender, EventArgs e)
+        => SaveToFile();
+
+    private void SaveToFile()
+    {
+        if (this.modelId == Guid.Empty) return;
+        if (this.parameters.Count == 0) return;
+        if (this.timeTable.Rows.Count == 0) return;
+
+        using var sfd = new SaveFileDialog
+        {
+            Title = "Save Spectra",
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+        };
+        if (sfd.ShowDialog() != DialogResult.OK) return;
+
+        var filename = sfd.FileName;
+        var extension = Path.GetExtension(filename);
+        var writer = GetSpreadSheetWriter(extension);
+
+        try
+        {
+            writer.Parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
+            writer.Times = this.timeTable.Times.ToArray();
+
+            foreach ((var wavelength, var parameters) in this.parameters)
+                writer.AddRow(wavelength, parameters);
+
+            writer.Write(filename);
+
+            FadingMessageBox.Show(
+                "Spectra saved successfully.",
+                0.8, 1000, 75, 0.1, this
+            );
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(
+                e.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    } // private void SaveToFile ()
+
+    private ISpreadSheetWriter GetSpreadSheetWriter(string extension)
+        => extension.ToUpper() switch
+        {
+            ".CSV" => new CsvWriter(this.Model),
+            _ => throw new NotSupportedException($"The extension '{extension}' is not supported."),
+        }; // private static ISpreadSheetWriter GetSpreadSheetWriter (string
 
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {

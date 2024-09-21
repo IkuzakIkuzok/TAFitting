@@ -370,7 +370,7 @@ internal sealed class MainWindow : Form
         this.parametersTable.SetColumns(ModelManager.Models[guid]);
         MakeTable();
         foreach (var preview in this.previewWindows)
-            preview.Model = guid;
+            preview.ModelId = guid;
     } // private void SelectModel (object?, EventArgs)
 
     private void MakeTable()
@@ -440,7 +440,7 @@ internal sealed class MainWindow : Form
     {
         var preview = new SpectraPreviewWindow(this.ParametersList)
         {
-            Model = this.selectedModel,
+            ModelId = this.selectedModel,
         };
         this.previewWindows.Add(preview);
         preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
