@@ -36,6 +36,12 @@ public sealed class AppearanceConfig
     public int FitWidth { get; set; } = 3;
 
     /// <summary>
+    /// Gets or sets the size of the spectra marker.
+    /// </summary>
+    [XmlElement("spectra-marker-size")]
+    public int SpectraMarkerSize { get; set; } = 7;
+
+    /// <summary>
     /// Gets or sets the font of the axis labels.
     /// </summary>
     [XmlElement("axis-label")]

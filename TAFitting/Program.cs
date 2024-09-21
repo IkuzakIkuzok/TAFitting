@@ -77,6 +77,16 @@ internal static class Program
         }
     }
 
+    internal static int SpectraMarkerSize
+    {
+        get => Config.AppearanceConfig.SpectraMarkerSize;
+        set
+        {
+            Config.AppearanceConfig.SpectraMarkerSize = value;
+            SaveConfig();
+        }
+    }
+
     /// <summary>
     /// Get or set the font of the axis labels.
     /// </summary>

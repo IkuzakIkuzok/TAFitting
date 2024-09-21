@@ -19,7 +19,7 @@ internal sealed class SpectraPreviewWindow : Form
     private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
 
-    private int markerSize = 7;
+    private int markerSize = Program.SpectraMarkerSize;
 
     internal Guid Model
     {
@@ -246,7 +246,7 @@ internal sealed class SpectraPreviewWindow : Form
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not int size) return;
-        this.markerSize = size;
+        this.markerSize = Program.SpectraMarkerSize = size;
         DrawSpectra();
     } // private void ChangeMarkerSize (object?, EventArgs)
 
