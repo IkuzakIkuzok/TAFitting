@@ -63,7 +63,7 @@ internal sealed class ParametersTable : DataGridView
             .ToArray();
     } // internal void SetColumns (IFittingModel)
 
-    internal void Add(double wavelength)
+    internal ParametersTableRow Add(double wavelength)
     {
         if (this.Columns.Count == 0) throw new Exception("Columns are not set.");
 
@@ -74,7 +74,8 @@ internal sealed class ParametersTable : DataGridView
         for (var i = 0; i < this.initialValues.Length; i++)
             row[i] = this.initialValues[i];
         this.Rows.Add(row);
-    } // internal void Add (double)
+        return row;
+    } // internal ParametersTableRow Add (double)
 
     override protected void OnSelectionChanged(EventArgs e)
     {

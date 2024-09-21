@@ -397,7 +397,15 @@ internal sealed class MainWindow : Form
 
         this.parametersTable.Rows.Clear();
         foreach (var wl in this.decays.Keys)
-            this.parametersTable.Add(wl);
+        {
+            var row = this.parametersTable.Add(wl);
+
+            var decay = this.decays[wl];
+            var signals = decay.Signals;
+            var positives = signals.Where(s => s > 0).Count();
+            var negatives = signals.Where(s => s < 0).Count();
+            row.Inverted = negatives > positives;
+        }
         UpdatePreviews();
 
         this.s_observed.Points.Clear();
