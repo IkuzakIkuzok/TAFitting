@@ -78,7 +78,7 @@ internal sealed class MainWindow : Form
             Maximum = 1000,
             LogarithmBase = 10,
             //Interval = 1,
-            LabelStyle = new() { Format = "e1" },
+            LabelStyle = new() { Format = "#.0e+0" },
         };
         this.axisY = new Axis()
         {
@@ -87,7 +87,7 @@ internal sealed class MainWindow : Form
             Maximum = 10000,
             LogarithmBase = 10,
             //Interval = 1,
-            LabelStyle = new() { Format = "e1" },
+            LabelStyle = new() { Format = "#.0e+0" },
         };
 
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
