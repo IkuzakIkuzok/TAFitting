@@ -9,6 +9,7 @@ internal sealed class TimeTable : DataGridView
     internal IEnumerable<double> Times
         => this.Rows
                .Cast<DataGridViewRow>()
+               .Where(row => !row.IsNewRow)
                .Select(row => (double)row.Cells["Time"].Value)
                .Order();
 
@@ -38,7 +39,7 @@ internal sealed class TimeTable : DataGridView
     internal void SetColors()
     {
         Sort(this.Columns["Time"], ListSortDirection.Ascending);
-        var count = this.Rows.Count;
+        var count = this.Rows.Count - 1;
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, count);
         for (var i = 0; i < count; i++)
         {
