@@ -112,6 +112,14 @@ internal static partial class UIUtils
     private static readonly int[] axisSplitCount = [1, 2, 4, 5, 10, 20, 40, 50, 100];
     private static readonly int[] axisIntervalSteps = [1, 2, 5, 10];
 
+    internal static void AdjustAxisInterval(this Axis axis, double pixcelWidthInterval = 30)
+    {
+        if (axis.IsLogarithmic)
+            axis.AdjustAxisIntervalLogarithmic(pixcelWidthInterval);
+        else
+            axis.AdjustAxisIntervalLinear(pixcelWidthInterval);
+    } // internal static void AdjustAxisInterval (this Axis, [double])
+
     internal static void AdjustAxisIntervalLinear(this Axis axis, double pixcelWidthInterval = 50)
     {
         var min = axis.Minimum;
@@ -136,4 +144,26 @@ internal static partial class UIUtils
         axis.IntervalOffset = offset;
         axis.MinorGrid.IntervalOffset = offset;
     } // internal static void AdjustAxisIntervalLinear (this Axis, [double])
+
+    internal static void AdjustAxisIntervalLogarithmic(this Axis axis, double pixcelWidthInterval = 50)
+    {
+        var min = Math.Log10(axis.ScaleView.ViewMaximum);
+        var max = Math.Log10(axis.ScaleView.ViewMaximum);
+
+        var maxPx = axis.ValueToPixelPosition(axis.Maximum);
+        var minPx = axis.ValueToPixelPosition(axis.Minimum);
+        var pixelWidth = Math.Abs(maxPx - minPx);
+        var splitCount = (int)Math.Floor(pixelWidth / pixcelWidthInterval);
+        var index = Array.FindIndex(axisSplitCount, sc => sc >= splitCount);
+        if (index < 0) index = axisSplitCount.Length - 1;
+        splitCount = axisSplitCount[index];
+
+        var interval = Math.Ceiling((max / min) / splitCount);
+        axis.Interval = interval;
+        axis.MinorGrid.Interval = 1;
+
+        var offset = Math.Floor(Math.Log10(axis.Minimum) / axis.Interval) * axis.Interval - Math.Log10(axis.Minimum);
+        axis.IntervalOffset = offset;
+        axis.MinorGrid.IntervalOffset = offset;
+    } // internal static void AdjustAxisIntervalLogarithmic (this Axis, [double])
 } // internal static partial class UIUtils

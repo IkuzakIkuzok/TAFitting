@@ -156,9 +156,6 @@ internal sealed class MainWindow : Form
         this.chart.AxisYMaximum = (double)this.rangeSelector.Signal.FromMinimum;
         this.chart.AxisYMinimum = (double)this.rangeSelector.Signal.ToMaximum;
 
-        this.rangeSelector.Time.Logarithmic = true;
-        this.rangeSelector.Signal.Logarithmic = true;
-
         this.cb_invert = new()
         {
             Text = "Invert vertical axis",
@@ -279,6 +276,21 @@ internal sealed class MainWindow : Form
         this.paramsContainer.SplitterDistance = 600;
         this.paramsContainer.Panel2MinSize = 120;
     } // ctor ()
+
+    override protected void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+
+        this.rangeSelector.Time.FromChanged += AdjustXAxisInterval;
+        this.rangeSelector.Time.ToChanged += AdjustXAxisInterval;
+        this.rangeSelector.Time.LogarithmicChanged += AdjustXAxisInterval;
+        this.rangeSelector.Signal.FromChanged += AdjustYAxisInterval;
+        this.rangeSelector.Signal.ToChanged += AdjustYAxisInterval;
+        this.rangeSelector.Signal.LogarithmicChanged += AdjustYAxisInterval;
+
+        this.rangeSelector.Time.Logarithmic = true;
+        this.rangeSelector.Signal.Logarithmic = true;
+    } // override protected void OnShown (EventArgs)
 
     override protected void OnKeyDown(KeyEventArgs e)
     {
@@ -539,6 +551,20 @@ internal sealed class MainWindow : Form
         this.s_fit.Points.Clear();
         this.s_fit.Points.AddDecay(times, signals);
     } // private void ShowFit ()
+
+    private void AdjustXAxisInterval(object? sender, EventArgs e)
+    {
+        this.chart.ChartAreas[0].RecalculateAxesScale();
+        var pixelInterval = this.axisX.IsLogarithmic ? 30 : 100;
+        this.axisX.AdjustAxisInterval(pixelInterval);
+    } // private void AdjustXAxisInterval (object?, EventArgs)
+
+    private void AdjustYAxisInterval(object? sender, EventArgs e)
+    {
+        this.chart.ChartAreas[0].RecalculateAxesScale();
+        var pixelInterval = this.axisY.IsLogarithmic ? 30 : 100;
+        this.axisY.AdjustAxisInterval(pixelInterval);
+    } // private void AdjustYAxisInterval (object?, EventArgs)
 
     private void ShowSpectraPreview(object? sender, EventArgs e)
         => ShowSpectraPreview();
