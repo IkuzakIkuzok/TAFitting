@@ -25,6 +25,12 @@ internal sealed class EmpiricalPowerLaw : IFittingModel
     /// <inheritdoc/>
     public IReadOnlyList<Parameter> Parameters => parameters;
 
+    /// <inheritdoc/>
+    public bool XLogScale => true;
+
+    /// <inheritdoc/>
+    public bool YLogScale => true;
+
     public Func<double, double> GetFunction(IList<double> parameters)
     {
         var a0 = parameters[0];

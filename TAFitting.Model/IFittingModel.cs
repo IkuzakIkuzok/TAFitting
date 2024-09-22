@@ -38,6 +38,16 @@ public interface IFittingModel
     public IReadOnlyList<Parameter> Parameters { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the X-axis should be shown in logarithmic scale.
+    /// </summary>
+    public bool XLogScale { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the Y-axis should be shown in logarithmic scale.
+    /// </summary>
+    public bool YLogScale { get; }
+
+    /// <summary>
     /// Gets a function based on the current model with the specified parameters.
     /// </summary>
     /// <param name="parameters">The parameters of the model.</param>

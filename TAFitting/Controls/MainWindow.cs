@@ -396,7 +396,10 @@ internal sealed class MainWindow : Form
 
         item.Checked = true;
         this.selectedModel = guid;
-        this.parametersTable.SetColumns(ModelManager.Models[guid]);
+        var model = ModelManager.Models[guid];
+        this.rangeSelector.Time.Logarithmic = model.XLogScale;
+        this.rangeSelector.Signal.Logarithmic = model.YLogScale;
+        this.parametersTable.SetColumns(model);
         MakeTable();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;

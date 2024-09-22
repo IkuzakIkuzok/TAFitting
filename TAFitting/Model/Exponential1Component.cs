@@ -26,6 +26,12 @@ internal sealed class Exponential1Component : IFittingModel
     /// <inheritdoc/>
     public IReadOnlyList<Parameter> Parameters => parameters;
 
+    /// <inheritdoc/>
+    public bool XLogScale => false;
+
+    /// <inheritdoc/>
+    public bool YLogScale => true;
+
     public Func<double, double> GetFunction(IList<double> parameters)
     {
         var a0 = parameters[0];
