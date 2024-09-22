@@ -231,7 +231,10 @@ internal sealed class MainWindow : Form
         var menu_data = new ToolStripMenuItem("&Data");
         this.MainMenuStrip.Items.Add(menu_data);
 
-        var menu_dataPrevireSpec = new ToolStripMenuItem("Preview &spectra");
+        var menu_dataPrevireSpec = new ToolStripMenuItem("Preview &spectra")
+        {
+            ShortcutKeys = Keys.Control | Keys.Shift | Keys.S,
+        };
         menu_dataPrevireSpec.Click += ShowSpectraPreview;
         menu_data.DropDownItems.Add(menu_dataPrevireSpec);
 
@@ -274,12 +277,6 @@ internal sealed class MainWindow : Form
         this.paramsContainer.SplitterDistance = 600;
         this.paramsContainer.Panel2MinSize = 120;
     } // ctor ()
-
-    override protected void OnShown(EventArgs e)
-    {
-        base.OnShown(e);
-        ShowSpectraPreview();
-    } // override protected void OnShown (EventArgs)
 
     override protected void OnKeyDown(KeyEventArgs e)
     {
