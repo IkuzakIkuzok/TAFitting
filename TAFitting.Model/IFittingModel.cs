@@ -52,5 +52,5 @@ public interface IFittingModel
     /// </summary>
     /// <param name="parameters">The parameters of the model.</param>
     /// <returns>A function based on the current model with the specified <paramref name="parameters"/>.</returns>
-    public Func<double, double> GetFunction(IList<double> parameters);
+    public Func<double, double> GetFunction(IReadOnlyList<double> parameters);
 } // public interface IFittingModel

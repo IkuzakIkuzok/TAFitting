@@ -31,11 +31,11 @@ internal sealed class EmpiricalPowerLaw : IFittingModel
     /// <inheritdoc/>
     public bool YLogScale => true;
 
-    public Func<double, double> GetFunction(IList<double> parameters)
+    public Func<double, double> GetFunction(IReadOnlyList<double> parameters)
     {
         var a0 = parameters[0];
         var a = parameters[1];
         var alpha = parameters[2];
         return x => a0 / Math.Pow(1 + a * x, alpha);
-    } // public Func<double, double> GetFunction (IList<double> parameters)
+    } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
 } // internal sealed class EmpiricalPowerLaw : IFittingModel

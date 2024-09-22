@@ -32,11 +32,11 @@ internal sealed class Exponential1Component : IFittingModel
     /// <inheritdoc/>
     public bool YLogScale => true;
 
-    public Func<double, double> GetFunction(IList<double> parameters)
+    public Func<double, double> GetFunction(IReadOnlyList<double> parameters)
     {
         var a0 = parameters[0];
         var a1 = parameters[1];
         var t1 = parameters[2];
         return x => a0 + a1 * Math.Exp(-x / t1);
-    } // public Func<double, double> GetFunction (IList<double> parameters)
+    } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
 } // internal sealed class Exponential1Component
