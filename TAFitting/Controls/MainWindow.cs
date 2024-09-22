@@ -319,6 +319,10 @@ internal sealed class MainWindow : Form
             this.sampleName = Path.GetFileName(folderName);
             Task.Run(() =>
             {
+                // Temporary change the negative sign to U+002D
+                // because double.Parse throws an exception with U+2212.
+                using var _ = new NegativeSignHandler("-");
+
                 this.decays = Decays.FromFolder(folderName);
                 Invoke(() =>
                 {

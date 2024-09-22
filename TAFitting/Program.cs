@@ -1,6 +1,8 @@
 
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Globalization;
+using System.Reflection;
 using TAFitting.Config;
 using TAFitting.Controls;
 
@@ -199,6 +201,7 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        NegativeSignHandler.ChangeNegativeSign("\u2212");
         Application.Run(MainWindow);
     } // private static void Main ()
 
