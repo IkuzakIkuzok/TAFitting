@@ -57,7 +57,7 @@ internal sealed class SpectraPreviewWindow : Form
         this.axisX = new Axis()
         {
             Title = "Wavelength (nm)",
-            Minimum = 0.05,
+            Minimum = 500,
             Maximum = 1000,
             LogarithmBase = 10,
             Interval = 100,
@@ -67,7 +67,7 @@ internal sealed class SpectraPreviewWindow : Form
             Title = "ΔµOD",
             Minimum = -1000,
             Maximum = 1000,
-            Interval = 100,
+            Interval = 200,
         };
 
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
@@ -167,6 +167,13 @@ internal sealed class SpectraPreviewWindow : Form
         Program.AxisLabelFontChanged -= SetAxisLabelFont;
     } // override protected void OnClosing (CancelEventArgs)
 
+    override protected void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+
+        DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
+    } // override protected void OnShown (EventArgs)
+
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
 
@@ -182,15 +189,7 @@ internal sealed class SpectraPreviewWindow : Form
         var wlMin = this.parameters.Keys.Min();
         var wlMax = this.parameters.Keys.Max();
 
-        var horizontal = new Series()
-        {
-            ChartType = SeriesChartType.Line,
-            Color = Color.Black,
-            BorderWidth = 1,
-        };
-        horizontal.Points.AddXY(wlMin, 0);
-        horizontal.Points.AddXY(wlMax, 0);
-        this.chart.Series.Add(horizontal);
+        DrawHorizontalLine(wlMin, wlMax);
 
         this.timeTable.SetColors();
 
@@ -237,6 +236,19 @@ internal sealed class SpectraPreviewWindow : Form
         this.chart.Series.Add(series);
         return (min, max);
     } // private (double, double) DrawSpectrum (double, IFittingModel, Color)
+
+    private void DrawHorizontalLine(double wlMin, double wlMax)
+    {
+        var horizontal = new Series()
+        {
+            ChartType = SeriesChartType.Line,
+            Color = Color.Black,
+            BorderWidth = 2,
+        };
+        horizontal.Points.AddXY(wlMin, 0);
+        horizontal.Points.AddXY(wlMax, 0);
+        this.chart.Series.Add(horizontal);
+    } // private void DrawHorizontalLine ()
 
     private void SaveToFile(object? sender, EventArgs e)
         => SaveToFile();
