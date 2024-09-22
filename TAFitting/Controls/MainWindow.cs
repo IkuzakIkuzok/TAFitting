@@ -14,6 +14,8 @@ namespace TAFitting.Controls;
 [DesignerCategory("Code")]
 internal sealed class MainWindow : Form
 {
+    private const string TextBase = "TA Fitting";
+
     private readonly SplitContainer mainContainer, paramsContainer;
 
     private readonly CustomChart chart;
@@ -30,6 +32,7 @@ internal sealed class MainWindow : Form
     private Decays? decays;
     private readonly Series s_observed, s_fit;
     private ParametersTableRow? row;
+    private string sampleName = string.Empty;
 
     private IReadOnlyDictionary<double, double[]> ParametersList
         => this.parametersTable.ParameterRows
@@ -39,7 +42,7 @@ internal sealed class MainWindow : Form
 
     internal MainWindow()
     {
-        this.Text = "TA Fitting";
+        this.Text = TextBase;
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
 
@@ -299,11 +302,16 @@ internal sealed class MainWindow : Form
 
         try
         {
+            this.row = null;
+
+            var folderName = ofd.FolderName;
+            this.sampleName = Path.GetFileName(folderName);
             Task.Run(() =>
             {
-                this.decays = Decays.FromFolder(ofd.FolderName);
+                this.decays = Decays.FromFolder(folderName);
                 Invoke(() =>
                 {
+                    this.Text = $"{TextBase} - {this.sampleName}";
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     MakeTable();
                 });
@@ -471,6 +479,8 @@ internal sealed class MainWindow : Form
             this.cb_invert.Checked = e.Row.Inverted;
             this.suppressAutoInvert = false;
         }
+
+        this.Text = $"{TextBase} - {this.sampleName} ({e.Row.Wavelength} nm)";
 
         ShowObserved();
         ShowFit();
