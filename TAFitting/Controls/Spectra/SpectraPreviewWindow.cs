@@ -83,6 +83,8 @@ internal sealed class SpectraPreviewWindow : Form
             AxisY = this.axisY,
         });
 
+        this.chart.Paint += AdjustAxisIntervalsOnFirstPaint;
+
         this.timeTable = new()
         {
             Dock = DockStyle.Fill,
@@ -176,9 +178,16 @@ internal sealed class SpectraPreviewWindow : Form
 
     private void AdjustAxisIntervals()
     {
+        this.chart.ChartAreas[0].RecalculateAxesScale();
         this.axisX.AdjustAxisIntervalLinear(75);
         this.axisY.AdjustAxisIntervalLinear(50);
     } // private void AdjustAxisIntervals ()
+
+    private void AdjustAxisIntervalsOnFirstPaint(object? sender, EventArgs e)
+    {
+        this.chart.Paint -= AdjustAxisIntervalsOnFirstPaint;
+        AdjustAxisIntervals();
+    } // private void AdjustAxisIntervalsOnFirstPaint (object?, EventArgs)
 
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
