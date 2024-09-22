@@ -33,6 +33,12 @@ public sealed class AppConfig
     public AppearanceConfig AppearanceConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the model configuration.
+    /// </summary>
+    [XmlElement("model")]
+    public ModelConfig ModelConfig { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the decay loading configuration.
     /// </summary>
     [XmlElement("decay-loading")]

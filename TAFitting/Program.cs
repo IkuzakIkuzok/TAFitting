@@ -128,6 +128,16 @@ internal static class Program
         }
     }
 
+    internal static Guid DefaultModel
+    {
+        get => Config.ModelConfig.DefaultModel;
+        set
+        {
+            Config.ModelConfig.DefaultModel = value;
+            SaveConfig();
+        }
+    }
+
     /// <summary>
     /// Gets or sets the filename format of the A-B signal.
     /// </summary>

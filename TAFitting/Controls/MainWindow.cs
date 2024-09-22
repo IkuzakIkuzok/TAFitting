@@ -43,6 +43,10 @@ internal sealed class MainWindow : Form
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
 
+        var defaultModel = Program.DefaultModel;
+        if (ModelManager.Models.ContainsKey(defaultModel))
+            this.selectedModel = defaultModel;
+
         this.mainContainer = new SplitContainer
         {
             Dock = DockStyle.Fill,
@@ -133,6 +137,8 @@ internal sealed class MainWindow : Form
         this.parametersTable.SelectedRowChanged += ChangeRow;
         this.parametersTable.CellValueChanged += ShowFit;
         this.parametersTable.CellValueChanged += UpdatePreviews;
+        if (this.selectedModel != Guid.Empty)
+            this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel]);
 
         #endregion params
 
@@ -405,7 +411,7 @@ internal sealed class MainWindow : Form
         }
 
         item.Checked = true;
-        this.selectedModel = guid;
+        this.selectedModel = Program.DefaultModel = guid;
         var model = ModelManager.Models[guid];
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
