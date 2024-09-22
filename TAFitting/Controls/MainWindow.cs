@@ -3,6 +3,7 @@
 
 using Microsoft.Win32;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Clipboard;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.Spectra;
 using TAFitting.Data;
@@ -232,6 +233,15 @@ internal sealed class MainWindow : Form
         menu_dataFileNameFormat.Click += EditFilenameFormat;
         menu_data.DropDownItems.Add(menu_dataFileNameFormat);
 
+        menu_data.DropDownItems.Add(new ToolStripSeparator());
+
+        var menu_dataPaste = new ToolStripMenuItem("&Paste table")
+        {
+            ShortcutKeys = Keys.Control | Keys.V,
+        };
+        menu_dataPaste.Click += PasteTable;
+        menu_data.DropDownItems.Add(menu_dataPaste);
+
         #endregion menu.data
 
         #region menu.model
@@ -426,6 +436,26 @@ internal sealed class MainWindow : Form
         this.s_observed.Points.Clear();
         this.s_fit.Points.Clear();
     } // private void MakeTable ()
+    
+    private void PasteTable(object? sender, EventArgs e)
+        => PasteTable();
+
+    private void PasteTable()
+    {
+        if (this.selectedModel == Guid.Empty) return;
+        if (this.decays is null) return;
+
+        var model = ModelManager.Models[this.selectedModel];
+        var parameters = model.Parameters.Select(p => p.Name);
+        var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
+        foreach (var r in rows)
+        {
+            var wavelength = r.Wavelength;
+            var row = this.parametersTable[wavelength];
+            if (row is null) continue;
+            row.Parameters = r.Parameters;
+        }
+    } // private void PasteTable ()
 
     private void ChangeRow(object? sender, ParametersTableSelectionChangedEventArgs e)
     {

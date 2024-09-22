@@ -17,6 +17,9 @@ internal sealed class ParametersTable : DataGridView
     internal IEnumerable<ParametersTableRow> ParameterRows
         => this.Rows.OfType<ParametersTableRow>();
 
+    internal ParametersTableRow? this[double wavelength]
+        => this.ParameterRows.FirstOrDefault(row => row.Wavelength == wavelength);
+
     internal ParametersTable()
     {
         this.AllowUserToAddRows = false;
