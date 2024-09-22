@@ -167,8 +167,7 @@ internal sealed class MainWindow : Form
             Parent = this.paramsContainer.Panel2,
         };
         this.cb_invert.CheckedChanged += InvertMagnitude;
-        this.cb_invert.CheckedChanged += ShowObserved;
-        this.cb_invert.CheckedChanged += ShowFit;
+        this.cb_invert.CheckedChanged += ShowPlots;
 
         #region menu
 
@@ -446,6 +445,8 @@ internal sealed class MainWindow : Form
 
         this.s_observed.Points.Clear();
         this.s_fit.Points.Clear();
+
+        ShowPlots();
     } // private void MakeTable ()
     
     private void PasteTable(object? sender, EventArgs e)
@@ -482,8 +483,7 @@ internal sealed class MainWindow : Form
 
         this.Text = $"{TextBase} - {this.sampleName} ({e.Row.Wavelength} nm)";
 
-        ShowObserved();
-        ShowFit();
+        ShowPlots();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
 
     private void InvertMagnitude(object? sender, EventArgs e)
@@ -495,8 +495,14 @@ internal sealed class MainWindow : Form
     private void InvertMagnitude()
         => this.row?.InvertMagnitude();
 
-    private void ShowObserved(object? sender, EventArgs e)
-        => ShowObserved();
+    private void ShowPlots(object? sender, EventArgs e)
+        => ShowPlots();
+
+    private void ShowPlots()
+    {
+        ShowObserved();
+        ShowFit();
+    } // private void ShowPlots ()
 
     private void ShowObserved()
     {
