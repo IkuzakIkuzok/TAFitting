@@ -89,6 +89,7 @@ internal sealed class SpectraPreviewWindow : Form
             Parent = this.mainContainter.Panel2,
         };
         this.timeTable.CellValueChanged += DrawSpectra;
+        this.timeTable.RowsRemoved += DrawSpectra;
         this.timeTable.Rows.Add(0.5);
         this.timeTable.Rows.Add(1.0);
         this.timeTable.Rows.Add(2.0);
