@@ -67,12 +67,12 @@ internal sealed class SpectraPreviewWindow : Form
             Title = "ΔµOD",
             Minimum = -1000,
             Maximum = 1000,
-            Interval = 200,
+            Interval = 500,
         };
 
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
-        this.axisX.MinorGrid.Interval = 50;
-        this.axisY.MinorGrid.Interval = 50;
+        this.axisX.MinorGrid.Interval = 20;
+        this.axisY.MinorGrid.Interval = 100;
         this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
         Program.AxisTitleFontChanged += SetAxisTitleFont;
         Program.AxisLabelFontChanged += SetAxisLabelFont;
@@ -174,6 +174,12 @@ internal sealed class SpectraPreviewWindow : Form
         DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
     } // override protected void OnShown (EventArgs)
 
+    private void AdjustAxisIntervals()
+    {
+        this.axisX.AdjustAxisIntervalLinear(75);
+        this.axisY.AdjustAxisIntervalLinear(50);
+    } // private void AdjustAxisIntervals ()
+
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
 
@@ -207,8 +213,10 @@ internal sealed class SpectraPreviewWindow : Form
 
         this.axisX.Minimum = wlMin;
         this.axisX.Maximum = wlMax;
-        this.axisY.Minimum = Math.Min(sigMin * 1.2, 0.0);
-        this.axisY.Maximum = Math.Max(sigMax * 1.2, 0.0);
+        this.axisY.Minimum = Math.Min(sigMin * 1.1, 0.0);
+        this.axisY.Maximum = Math.Max(sigMax * 1.1, 0.0);
+
+        AdjustAxisIntervals();
     } // private void DrawSpectra ()
 
     private (double Min, double Max) DrawSpectrum(double time, IFittingModel model, Color color)

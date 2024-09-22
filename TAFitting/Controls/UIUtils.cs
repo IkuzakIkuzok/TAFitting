@@ -108,4 +108,32 @@ internal static partial class UIUtils
         var m = 255;
         return Color.FromArgb(color.A, m - r, m - g, m - b);
     } // internal static Color CalcInvertColor (Color)
+
+    private static readonly int[] axisSplitCount = [1, 2, 4, 5, 10, 20, 40, 50, 100];
+    private static readonly int[] axisIntervalSteps = [1, 2, 5, 10];
+
+    internal static void AdjustAxisIntervalLinear(this Axis axis, double pixcelWidthInterval = 50)
+    {
+        var min = axis.Minimum;
+        var max = axis.Maximum;
+
+        var pixelWidth = Math.Abs(axis.ValueToPixelPosition(max) - axis.ValueToPixelPosition(min));
+        var splitCount = (int)Math.Floor(pixelWidth / pixcelWidthInterval);
+        var index = Array.FindIndex(axisSplitCount, sc => sc >= splitCount);
+        if (index < 0) index = axisSplitCount.Length - 1;
+        splitCount = axisSplitCount[index];
+
+        var interval = (max - min) / splitCount;
+        var exponent = Math.Floor(Math.Log10(interval));
+        var mantissa = interval / Math.Pow(10, exponent);
+
+        index = Array.FindIndex(axisIntervalSteps, m => m >= mantissa);
+        if (index < 0) index = axisIntervalSteps.Length - 1;
+        axis.Interval = axisIntervalSteps[index] * Math.Pow(10, exponent);
+        axis.MinorGrid.Interval = axis.Interval / 5;
+
+        var offset = Math.Floor(min / axis.Interval) * axis.Interval - min;
+        axis.IntervalOffset = offset;
+        axis.MinorGrid.IntervalOffset = offset;
+    } // internal static void AdjustAxisIntervalLinear (this Axis, [double])
 } // internal static partial class UIUtils
