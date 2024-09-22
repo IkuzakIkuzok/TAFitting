@@ -21,6 +21,7 @@ internal static class ModelManager
         Load(Assembly.GetExecutingAssembly());
 
         var modelsDirectory = Path.Combine(Program.AppLocation, "models");
+        if (!Directory.Exists(modelsDirectory)) return;
         foreach (var file in Directory.EnumerateFiles(modelsDirectory, "*.dll"))
         {
             try
