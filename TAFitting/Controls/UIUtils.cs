@@ -41,7 +41,7 @@ internal static partial class UIUtils
 
         var sb = new StringBuilder(mantissa);
         sb.Append("×10");
-        if (exponent.StartsWith('-'))
+        if (exponent.StartsWith(NegativeSignHandler.NegativeSign))
             sb.Append('⁻');  // U+207B
 
         var e = exponent[1..].TrimStart('0');

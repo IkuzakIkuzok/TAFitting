@@ -13,6 +13,8 @@ internal sealed class NegativeSignHandler : IDisposable
 
     private readonly string originalSign;
 
+    internal static string NegativeSign => NumberFormatInfo.CurrentInfo.NegativeSign;
+
     internal NegativeSignHandler(string sign)
     {
         this.originalSign = NumberFormatInfo.CurrentInfo.NegativeSign;
