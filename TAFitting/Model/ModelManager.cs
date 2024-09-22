@@ -19,6 +19,19 @@ internal static class ModelManager
     static ModelManager()
     {
         Load(Assembly.GetExecutingAssembly());
+
+        var modelsDirectory = Path.Combine(Program.AppLocation, "models");
+        foreach (var file in Directory.EnumerateFiles(modelsDirectory, "*.dll"))
+        {
+            try
+            {
+                Load(file);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
     } // cctor ()
 
     internal static void Load(string assemblyPath)
