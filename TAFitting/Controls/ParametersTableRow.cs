@@ -33,7 +33,7 @@ internal sealed class ParametersTableRow : DataGridViewRow
         set => this.Cells[index + 1].Value = value;
     }
 
-    internal IList<double> Parameters
+    internal IReadOnlyList<double> Parameters
     {
         get
         {
