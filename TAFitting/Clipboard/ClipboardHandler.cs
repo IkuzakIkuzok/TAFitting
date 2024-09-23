@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using System.Text;
+using TAFitting.Controls;
 using WinClipboard = System.Windows.Forms.Clipboard;
 
 namespace TAFitting.Clipboard;
@@ -13,7 +13,7 @@ internal static class ClipboardHandler
         if (!WinClipboard.ContainsData(DataFormats.CommaSeparatedValue)) yield break;
         if (WinClipboard.GetData(DataFormats.CommaSeparatedValue) is not MemoryStream stream) yield break;
 
-        var csv = stream.ToArray().ToText();
+        var csv = stream.ToArray().GetText();
         var rows = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
         var header = rows.First().Split(',');
@@ -21,6 +21,8 @@ internal static class ClipboardHandler
         
         var parameterIndices = parameters.Select(p => Array.IndexOf(header, p)).ToArray();
         if (parameterIndices.Any(i => i < 0)) yield break;
+
+        using var _ = new NegativeSignHandler("-");
 
         foreach (var content in contents)
         {
@@ -30,20 +32,4 @@ internal static class ClipboardHandler
             yield return new ClipboardRow(wavelength, values);
         }
     } // internal static IEnumerable<ClipboardRow> GetRowsFromClipboard (IEnumerable<string>)
-
-    /// <summary>
-    /// Converts the specified text to a byte array.
-    /// </summary>
-    /// <param name="text">The text.</param>
-    /// <returns>UTF-8 encoded byte array.</returns>
-    private static byte[] ToBytes(this string text)
-        => Encoding.UTF8.GetBytes(text);
-
-    /// <summary>
-    /// Converts the specified byte array to a text.
-    /// </summary>
-    /// <param name="bytes">The byte array.</param>
-    /// <returns>UTF-8 decoded text.</returns>
-    private static string ToText(this byte[] bytes)
-        => Encoding.UTF8.GetString(bytes);
 } // internal static class ClipboardHandler
