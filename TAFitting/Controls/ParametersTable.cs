@@ -28,6 +28,13 @@ internal sealed class ParametersTable : DataGridView
         this.DefaultCellStyle.SelectionForeColor = Color.White;
     } // ctor ()
 
+    override protected void OnKeyDown(KeyEventArgs e)
+    {
+        // Suppress moving to the next row when pressing Enter key
+        if (e.KeyCode == Keys.Enter) e.SuppressKeyPress = true;
+        base.OnKeyDown(e);
+    } // override protected void OnKeyDown (KeyEventArgs)
+
     internal void SetColumns(IFittingModel model)
     {
         this.Rows.Clear();
