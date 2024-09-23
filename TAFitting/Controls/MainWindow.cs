@@ -395,7 +395,7 @@ internal sealed class MainWindow : Form
         var models = ModelManager.Models;
         foreach ((var guid, var model) in models)
         {
-            var modelItem = new ToolStripMenuItem(Text = model.Name)
+            var modelItem = new ToolStripMenuItem(model.Name)
             {
                 Tag = guid,
                 Checked = guid == this.selectedModel,
