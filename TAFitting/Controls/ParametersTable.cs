@@ -54,6 +54,7 @@ internal sealed class ParametersTable : DataGridView
                 DataPropertyName = name,
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             };
+            col.HeaderCell.ContextMenuStrip = GetColumnContextMenu(col);
             this.Columns.Add(col);
             this.constraints[i] = parameter.Constraints;
             this.initialValues[i] = parameter.InitialValue;
@@ -65,6 +66,42 @@ internal sealed class ParametersTable : DataGridView
             .Select(item => item.Index)
             .ToArray();
     } // internal void SetColumns (IFittingModel)
+
+    private ContextMenuStrip GetColumnContextMenu(DataGridViewColumn column)
+    {
+        var menu = new ContextMenuStrip();
+
+        var batchInput = new ToolStripMenuItem("Batch input")
+        {
+            Tag = column,
+        };
+        batchInput.Click += BatchInput;
+        menu.Items.Add(batchInput);
+
+        return menu;
+    } // private ContextMenuStrip GetColumnContextMenu (DataGridViewColumn)
+
+    private void BatchInput(object? sender, EventArgs e)
+    {
+        if (this.Rows.Count == 0) return;
+        if (sender is not ToolStripMenuItem menuItem) return;
+        if (menuItem.Tag is not DataGridViewNumericBoxColumn column) return;
+
+        var nib = new NumericInputBox()
+        {
+            Text = column.HeaderText,
+            Minimum = (decimal)Math.Max(column.Minimum, -1e28),
+            Maximum = (decimal)Math.Min(column.Maximum, 1e28),
+            DecimalPlaces = column.DecimalPlaces,
+            Value = (decimal)(double)this.Rows[0].Cells[column.Index].Value,
+        };
+        using var _ = new NegativeSignHandler("-");
+        if (nib.ShowDialog() != DialogResult.OK) return;
+
+        var value = (double)nib.Value;
+        foreach (var row in this.ParameterRows)
+            row.Cells[column.Index].Value = value;
+    } // private void BatchInput (object?, EventArgs)
 
     internal ParametersTableRow Add(double wavelength)
     {

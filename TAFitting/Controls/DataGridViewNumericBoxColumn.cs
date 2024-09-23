@@ -72,6 +72,24 @@ internal class DataGridViewNumericBoxColumn : DataGridViewColumn
         }
     }
 
+    internal int DecimalPlaces
+    {
+        get => ((DataGridViewNumericBoxCell)this.CellTemplate).DecimalPlaces;
+        set
+        {
+            ((DataGridViewNumericBoxCell)this.CellTemplate).DecimalPlaces = value;
+            var dgw = this.DataGridView;
+            if (dgw is not null)
+            {
+                for (var i = 0; i < dgw.RowCount; i++)
+                {
+                    var cell = (DataGridViewNumericBoxCell)dgw[this.Index, i];
+                    cell.DecimalPlaces = value;
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DataGridViewNumericBoxColumn"/> class.
     /// </summary>

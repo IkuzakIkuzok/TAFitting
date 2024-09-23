@@ -23,6 +23,12 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal double Minimum { get; set; } = double.MinValue;
 
+    internal int DecimalPlaces
+    {
+        get => int.Parse(this.Style.Format[1..]);
+        set => this.Style.Format = $"N{value}";
+    }
+
     internal int Digit { get; set; } = 6;
 
     /// <summary>
