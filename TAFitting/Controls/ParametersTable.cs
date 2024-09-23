@@ -57,6 +57,58 @@ internal sealed class ParametersTable : DataGridView
         base.OnCellEndEdit(e);
     } // override protected void OnCellEndEdit (DataGridViewCellEventArgs)
 
+    override protected void OnCellValidating(DataGridViewCellValidatingEventArgs e)
+    {
+        base.OnCellValidating(e);
+
+        this.Rows[e.RowIndex].ErrorText = string.Empty;
+
+        if (e.ColumnIndex < 1) return;
+
+        if (!double.TryParse(e.FormattedValue?.ToString(), out var value))
+        {
+            e.Cancel = true;
+            this.Rows[e.RowIndex].ErrorText = "Invalid value.";
+            BeginEdit(true);
+            return;
+        }
+
+        var constraint = this.constraints[e.ColumnIndex - 1];
+
+        if (constraint.HasFlag(ParameterConstraints.Integer))
+        {
+            if (value % 1 != 0)
+            {
+                e.Cancel = true;
+                this.Rows[e.RowIndex].ErrorText = "Integer value is required.";
+                BeginEdit(true);
+                return;
+            }
+        }
+
+        if (constraint.HasFlag(ParameterConstraints.Positive))
+        {
+            if (value <= 0)
+            {
+                e.Cancel = true;
+                this.Rows[e.RowIndex].ErrorText = "Positive value is required.";
+                BeginEdit(true);
+                return;
+            }
+        }
+
+        if (constraint.HasFlag(ParameterConstraints.NonNegative))
+        {
+            if (value < 0)
+            {
+                e.Cancel = true;
+                this.Rows[e.RowIndex].ErrorText = "Non-negative value is required.";
+                BeginEdit(true);
+                return;
+            }
+        }
+    } // override protected void OnCellValidating (DataGridViewCellValidatingEventArgs)
+
     internal void SetColumns(IFittingModel model)
     {
         this.Rows.Clear();
