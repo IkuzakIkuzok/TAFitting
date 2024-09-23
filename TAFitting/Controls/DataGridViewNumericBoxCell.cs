@@ -36,6 +36,10 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal bool Invert { get; set; } = false;
 
+    internal bool Edited { get; private set; } = false;
+
+    internal bool FreezeEditedState { get; set; } = false;
+
     protected double defaultValue = 0.0;
 
     /// <summary>
@@ -76,6 +80,7 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
 
     override protected bool SetValue(int rowIndex, object value)
     {
+        if (!this.FreezeEditedState) this.Edited = true;
         if (value is string s && double.TryParse(s, out var d))
         {
             d = Math.Max(this.Minimum, Math.Min(this.Maximum, d));

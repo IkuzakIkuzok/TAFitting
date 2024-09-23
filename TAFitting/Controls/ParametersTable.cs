@@ -20,6 +20,16 @@ internal sealed class ParametersTable : DataGridView
     internal ParametersTableRow? this[double wavelength]
         => this.ParameterRows.FirstOrDefault(row => row.Wavelength == wavelength);
 
+    private bool FreezeEditedState
+    {
+        get => this.Rows.Cast<ParametersTableRow>().Any(row => row.Edited);
+        set
+        {
+            foreach (var row in this.ParameterRows)
+                row.FreezeEditedState = value;
+        }
+    }
+
     internal ParametersTable()
     {
         this.AllowUserToAddRows = false;
@@ -152,22 +162,44 @@ internal sealed class ParametersTable : DataGridView
     {
         var menu = new ContextMenuStrip();
 
-        var batchInput = new ToolStripMenuItem("Batch input")
+        var batchInput = new ToolStripMenuItem("Batch input");
+        menu.Items.Add(batchInput);
+
+        var batchInputAll = new ToolStripMenuItem("All rows")
         {
             Tag = column,
         };
-        batchInput.Click += BatchInput;
-        menu.Items.Add(batchInput);
+        batchInputAll.Click += BatchInputAllRows;
+        batchInput.DropDownItems.Add(batchInputAll);
+
+        var batchInputNotEdited = new ToolStripMenuItem("Not edited rows only")
+        {
+            Tag = column,
+        };
+        batchInputNotEdited.Click += BatchInputNotEditedRowsOnly;
+        batchInput.DropDownItems.Add(batchInputNotEdited);
 
         return menu;
     } // private ContextMenuStrip GetColumnContextMenu (DataGridViewColumn)
 
-    private void BatchInput(object? sender, EventArgs e)
+    private void BatchInputAllRows(object? sender, EventArgs e)
     {
         if (this.Rows.Count == 0) return;
         if (sender is not ToolStripMenuItem menuItem) return;
         if (menuItem.Tag is not DataGridViewNumericBoxColumn column) return;
+        BatchInput(column, this.ParameterRows);
+    } // private void BatchInputAllRows (object?, EventArgs)
 
+    private void BatchInputNotEditedRowsOnly(object? sender, EventArgs e)
+    {
+        if (this.Rows.Count == 0) return;
+        if (sender is not ToolStripMenuItem menuItem) return;
+        if (menuItem.Tag is not DataGridViewNumericBoxColumn column) return;
+        BatchInput(column, this.ParameterRows.Where(row => !row.Edited));
+    } // private void BatchInputNotEditedRowsOnly (object?, EventArgs
+
+    private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
+    {
         var nib = new NumericInputBox()
         {
             Text = column.HeaderText,
@@ -180,9 +212,12 @@ internal sealed class ParametersTable : DataGridView
         if (nib.ShowDialog() != DialogResult.OK) return;
 
         var value = (double)nib.Value;
-        foreach (var row in this.ParameterRows)
-            row.Cells[column.Index].Value = value;
-    } // private void BatchInput (object?, EventArgs)
+        var index = column.Index;
+        this.FreezeEditedState = true;
+        foreach (var row in rows)
+            row.Cells[index].Value = value;
+        this.FreezeEditedState = false;
+    } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, IEnumerable<ParametersTableRow>)
 
     internal ParametersTableRow Add(double wavelength)
     {
@@ -191,9 +226,11 @@ internal sealed class ParametersTable : DataGridView
         var row = new ParametersTableRow();
         row.CreateCells(this);
         row.Wavelength = wavelength;
+        row.FreezeEditedState = true;
         row.SetMagnitudeColumns(this.magnitudeColumns);
         for (var i = 0; i < this.initialValues.Length; i++)
             row[i] = this.initialValues[i];
+        row.FreezeEditedState = false;
         this.Rows.Add(row);
         return row;
     } // internal ParametersTableRow Add (double)

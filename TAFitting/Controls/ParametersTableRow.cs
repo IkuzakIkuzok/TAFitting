@@ -57,12 +57,42 @@ internal sealed class ParametersTableRow : DataGridViewRow
         {
             if (this.inverted == value) return;
             this.inverted = value;
+            this.FreezeEditedState = true;
             foreach (var index in this.magnitudeColumns)
             {
                 this[index] = -this[index];
                 var cell = (DataGridViewNumericBoxCell)this.Cells[index + 1];
                 cell.Invert = this.inverted;
             }
+            this.FreezeEditedState = false;
+        }
+    }
+
+    internal bool Edited
+    {
+        get
+        {
+            foreach (var cell in this.Cells)
+                if (cell is DataGridViewNumericBoxCell numericBoxCell && numericBoxCell.Edited)
+                    return true;
+            return false;
+        }
+    }
+
+    internal bool FreezeEditedState
+    {
+        get
+        {
+            foreach (var cell in this.Cells)
+                if (cell is DataGridViewNumericBoxCell numericBoxCell && numericBoxCell.FreezeEditedState)
+                    return true;
+            return false;
+        }
+        set
+        {
+            foreach (var cell in this.Cells)
+                if (cell is DataGridViewNumericBoxCell numericBoxCell)
+                    numericBoxCell.FreezeEditedState = value;
         }
     }
 
