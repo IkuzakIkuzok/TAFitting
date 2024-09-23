@@ -159,6 +159,7 @@ internal static partial class UIUtils
         splitCount = axisSplitCount[index];
 
         var interval = Math.Ceiling((max / min) / splitCount);
+        if (double.IsNaN(interval) || interval == 0) interval = 1;
         axis.Interval = interval;
         axis.MinorGrid.Interval = 1;
 
