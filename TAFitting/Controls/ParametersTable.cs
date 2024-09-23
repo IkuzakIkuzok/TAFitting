@@ -23,16 +23,6 @@ internal sealed class ParametersTable : DataGridView
     internal ParametersTableRow? this[double wavelength]
         => this.ParameterRows.FirstOrDefault(row => row.Wavelength == wavelength);
 
-    private bool FreezeEditedState
-    {
-        get => this.Rows.Cast<ParametersTableRow>().Any(row => row.Edited);
-        set
-        {
-            foreach (var row in this.ParameterRows)
-                row.FreezeEditedState = value;
-        }
-    }
-
     internal ParametersTable()
     {
         this.AllowUserToAddRows = false;
@@ -198,7 +188,7 @@ internal sealed class ParametersTable : DataGridView
         if (this.Rows.Count == 0) return;
         if (sender is not ToolStripMenuItem menuItem) return;
         if (menuItem.Tag is not DataGridViewNumericBoxColumn column) return;
-        BatchInput(column, this.ParameterRows.Where(row => !row.Edited));
+        BatchInput(column, this.NotEditedRows);
     } // private void BatchInputNotEditedRowsOnly (object?, EventArgs
 
     private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
@@ -216,11 +206,17 @@ internal sealed class ParametersTable : DataGridView
 
         var value = (double)nib.Value;
         var index = column.Index;
-        this.FreezeEditedState = true;
+        SetFreezeEditedState(true);
         foreach (var row in rows)
             row.Cells[index].Value = value;
-        this.FreezeEditedState = false;
+        SetFreezeEditedState(false);
     } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, IEnumerable<ParametersTableRow>)
+
+    private void SetFreezeEditedState(bool value)
+    {
+        foreach (var row in this.ParameterRows)
+            row.FreezeEditedState = value;
+    } // private void SetFreezeEditedState (bool)
 
     internal ParametersTableRow Add(double wavelength)
     {
