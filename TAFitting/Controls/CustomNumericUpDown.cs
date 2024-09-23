@@ -88,4 +88,18 @@ internal sealed class CustomNumericUpDown : NumericUpDown
             this.Value = up ? this.Maximum : this.Minimum;
         }
     } // override protected void OnMouseWheel (MouseEventArgs)
+
+    override protected void OnGotFocus(EventArgs e)
+    {
+        NegativeSignHandler.ChangeNegativeSign("-");
+        this.Text = this.Text.Replace("\u2212", "-");
+        base.OnGotFocus(e);
+    } // override protected void OnGotFocus (EventArgs)
+
+    override protected void OnLostFocus(EventArgs e)
+    {
+        NegativeSignHandler.ChangeNegativeSign("\u2212");
+        this.Text = this.Text.Replace("-", "\u2212");
+        base.OnLostFocus(e);
+    } // override protected void OnLostFocus (EventArgs)
 } // internal sealed class CustomNumericUpDown : NumericUpDown
