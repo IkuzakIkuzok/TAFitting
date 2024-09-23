@@ -14,6 +14,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 {
     private static readonly Regex re_wavelength = RegexWavelength();
 
+    private double time0 = 0.0;
     private readonly Dictionary<double, Decay> decays = [];
 
     public Decay this[double key] => ((IReadOnlyDictionary<double, Decay>)this.decays)[key];
@@ -41,6 +42,16 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
     internal double MaxTime
         => this.Values.Max(d => d.TimeMax);
+
+    internal double Time0
+    {
+        get => this.time0;
+        set
+        {
+            if (value == this.time0) return;
+            ChangeTime0(value);
+        }
+    }
 
     internal static Decays FromFolder(string path)
     {
@@ -81,11 +92,18 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         if (l_t0.Count == 0) throw new IOException($"No data found in {path}");
 
         var t0 = l_t0.SmirnovGrubbs().Average();
-        foreach ((var _wl, var decay) in decays)
-            decays.decays[_wl] = decay.AddTime(-t0);
+        decays.Time0 = t0;
 
         return decays;
     } // internal static Decays FromFolder (string)
+
+    private void ChangeTime0(double time0)
+    {
+        var diff = time0 - this.time0;
+        this.time0 = time0;
+        foreach ((var wavelength, var decay) in this)
+            this.decays[wavelength] = decay.AddTime(-diff);
+    } // private void ChangeTime0 (double)
 
     [GeneratedRegex(@"(\d+).*", RegexOptions.Compiled)]
     private static partial Regex RegexWavelength();
