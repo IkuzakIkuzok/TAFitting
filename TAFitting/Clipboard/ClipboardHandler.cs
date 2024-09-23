@@ -22,7 +22,7 @@ internal static class ClipboardHandler
         var parameterIndices = parameters.Select(p => Array.IndexOf(header, p)).ToArray();
         if (parameterIndices.Any(i => i < 0)) yield break;
 
-        using var _ = new NegativeSignHandler("-");
+        using var _ = new NegativeSignHandler();
 
         foreach (var content in contents)
         {

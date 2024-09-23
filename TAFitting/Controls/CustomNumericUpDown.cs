@@ -91,15 +91,15 @@ internal sealed class CustomNumericUpDown : NumericUpDown
 
     override protected void OnGotFocus(EventArgs e)
     {
-        NegativeSignHandler.ChangeNegativeSign("-");
-        this.Text = this.Text.Replace("\u2212", "-");
+        NegativeSignHandler.SetHyphenMinus();
+        this.Text = NegativeSignHandler.ToHyphenMinus(this.Text);
         base.OnGotFocus(e);
     } // override protected void OnGotFocus (EventArgs)
 
     override protected void OnLostFocus(EventArgs e)
     {
-        NegativeSignHandler.ChangeNegativeSign("\u2212");
-        this.Text = this.Text.Replace("-", "\u2212");
+        NegativeSignHandler.SetMinusSign();
+        this.Text = NegativeSignHandler.ToMinusSign(this.Text);
         base.OnLostFocus(e);
     } // override protected void OnLostFocus (EventArgs)
 } // internal sealed class CustomNumericUpDown : NumericUpDown

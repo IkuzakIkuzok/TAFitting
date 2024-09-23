@@ -349,7 +349,7 @@ internal sealed class MainWindow : Form
         {
             // Temporary change the negative sign to U+002D
             // because double.Parse throws an exception with U+2212.
-            using var _ = new NegativeSignHandler("-");
+            using var _ = new NegativeSignHandler();
 
             try
             {

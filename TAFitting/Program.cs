@@ -201,7 +201,7 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
-        NegativeSignHandler.ChangeNegativeSign("\u2212");
+        NegativeSignHandler.SetMinusSign();
         Application.Run(MainWindow);
     } // private static void Main ()
 

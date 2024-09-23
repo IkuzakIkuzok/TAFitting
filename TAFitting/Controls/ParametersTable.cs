@@ -47,13 +47,13 @@ internal sealed class ParametersTable : DataGridView
 
     override protected void OnCellBeginEdit(DataGridViewCellCancelEventArgs e)
     {
-        NegativeSignHandler.ChangeNegativeSign("-");
+        NegativeSignHandler.SetHyphenMinus();
         base.OnCellBeginEdit(e);
     } // override protected void OnCellBeginEdit (DataGridViewCellCancelEventArgs)
 
     override protected void OnCellEndEdit(DataGridViewCellEventArgs e)
     {
-        NegativeSignHandler.ChangeNegativeSign("\u2212");
+        NegativeSignHandler.SetMinusSign();
         base.OnCellEndEdit(e);
     } // override protected void OnCellEndEdit (DataGridViewCellEventArgs)
 
@@ -176,7 +176,7 @@ internal sealed class ParametersTable : DataGridView
             DecimalPlaces = column.DecimalPlaces,
             Value = (decimal)(double)this.Rows[0].Cells[column.Index].Value,
         };
-        using var _ = new NegativeSignHandler("-");
+        using var _ = new NegativeSignHandler();
         if (nib.ShowDialog() != DialogResult.OK) return;
 
         var value = (double)nib.Value;
