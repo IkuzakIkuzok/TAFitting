@@ -75,7 +75,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var decay_b = Decay.FromFile(file_b, 1e6, 1e6);
             decays.decays.Add(wavelength, decay_ab);
 
-            l_t0.Add(decay_b.GetMinTime());
+            l_t0.Add(decay_b.FilndT0());
         }
 
         if (l_t0.Count == 0) throw new IOException($"No data found in {path}");

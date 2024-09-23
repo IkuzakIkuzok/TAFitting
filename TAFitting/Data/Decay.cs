@@ -142,4 +142,12 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
         var index = Array.IndexOf(this.signals, min);
         return this.times[index];
     } // internal double GetMinTime ()
+
+    internal double FilndT0()
+    {
+        var len = this.times.Length >> 1;
+        var min = this.signals.Take(len).Min();
+        var index = Array.IndexOf(this.signals, min);
+        return this.times[index];
+    } // internal double FilndT0 ()
 } // internal sealed class Decay : IEnumerable<(double Time, double Signal)>
