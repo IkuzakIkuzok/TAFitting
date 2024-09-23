@@ -209,13 +209,17 @@ internal sealed class SpectraPreviewWindow : Form
         this.timeTable.SetColors();
 
         var times = this.timeTable.Times.ToArray();
+        var funcs = this.parameters.ToDictionary(
+            kv => kv.Key,
+            kv => model.GetFunction(kv.Value)
+        );
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
         var index = 0;
         var sigMin = double.MaxValue;
         var sigMax = double.MinValue;
         foreach (var time in times)
         {
-            (var min, var max) = DrawSpectrum(time, model, gradient[index++]);
+            (var min, var max) = DrawSpectrum(time, funcs, gradient[index++]);
             sigMin = Math.Min(sigMin, min);
             sigMax = Math.Max(sigMax, max);
         }
@@ -228,7 +232,7 @@ internal sealed class SpectraPreviewWindow : Form
         AdjustAxisIntervals();
     } // private void DrawSpectra ()
 
-    private (double Min, double Max) DrawSpectrum(double time, IFittingModel model, Color color)
+    private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color)
     {
         var series = new Series
         {
@@ -242,9 +246,9 @@ internal sealed class SpectraPreviewWindow : Form
 
         var min = double.MaxValue;
         var max = double.MinValue;
-        foreach ((var wavelength, var parameters) in this.parameters.OrderBy(kv => kv.Key))
+        foreach (var wavelength in this.parameters.Keys.Order())
         {
-            var func = model.GetFunction(parameters);
+            var func = funcs[wavelength];
             var signal = func(time);
             min = Math.Min(min, signal);
             max = Math.Max(max, signal);
@@ -252,7 +256,7 @@ internal sealed class SpectraPreviewWindow : Form
         }
         this.chart.Series.Add(series);
         return (min, max);
-    } // private (double, double) DrawSpectrum (double, IFittingModel, Color)
+    } // private (double, double) DrawSpectrum (double, Dictionary<double, Func<double, double>>, Color)
 
     private void DrawHorizontalLine(double wlMin, double wlMax)
     {
