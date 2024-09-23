@@ -35,6 +35,16 @@ internal sealed class ParametersTable : DataGridView
         base.OnKeyDown(e);
     } // override protected void OnKeyDown (KeyEventArgs)
 
+    override protected bool ProcessDialogKey(Keys keyData)
+    {
+        if (keyData == Keys.Enter && this.IsCurrentCellInEditMode)
+        {
+            EndEdit();
+            return true;  // Suppress moving to the next row after committing the edit
+        }
+        return base.ProcessDialogKey(keyData);
+    } // override protected bool ProcessDialogKey (Keys)
+
     internal void SetColumns(IFittingModel model)
     {
         this.Rows.Clear();
