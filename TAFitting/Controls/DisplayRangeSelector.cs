@@ -117,7 +117,7 @@ internal class DisplayRangeSelector
             FromMinimum = 0.0001M,
             FromMaximum = 1_000M,
             FromDecimalPlaces = 2,
-            ToMinimum = 5M,
+            ToMinimum = 0.01M,
             ToMaximum = 1_000_000M,
             ToDecimalPlaces = 0,
         };
@@ -132,7 +132,7 @@ internal class DisplayRangeSelector
             FromMinimum = 0.001M,
             FromMaximum = 1_000M,
             FromDecimalPlaces = 2,
-            ToMinimum = 50M,
+            ToMinimum = 1M,
             ToMaximum = 1_000_000M,
             ToDecimalPlaces = 0,
         };
