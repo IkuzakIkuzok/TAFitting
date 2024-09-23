@@ -464,6 +464,8 @@ internal sealed class MainWindow : Form
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not Guid guid) return;
 
+        if (guid == this.selectedModel) return;
+
         if ((this.decays?.Count ?? 0) > 0 && this.selectedModel != Guid.Empty)
         {
             var dr = MessageBox.Show(
