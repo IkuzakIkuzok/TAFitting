@@ -57,7 +57,7 @@ internal class LogarithmicNumericUpDown : NumericUpDown
 
     protected virtual decimal CalcIncrement(double value)
     {
-        var log = Math.Log10(value);
+        var log = Math.Log10(Math.Abs(value));
         var order = Math.Floor(log) + this.IncrementOrderBias;
         return (decimal)Math.Pow(10, order);
     } // protected virtual double CalcIncrement (double)
