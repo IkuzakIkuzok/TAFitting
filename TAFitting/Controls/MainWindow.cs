@@ -395,14 +395,34 @@ internal sealed class MainWindow : Form
         var models = ModelManager.Models;
         foreach ((var guid, var model) in models)
         {
-            var item = new ToolStripMenuItem()
+            var modelItem = new ToolStripMenuItem(Text = model.Name)
             {
-                Text = model.Name,
                 Tag = guid,
                 Checked = guid == this.selectedModel,
             };
-            item.Click += SelectModel;
-            this.menu_model.DropDownItems.Add(item);
+            modelItem.Click += SelectModel;
+            this.menu_model.DropDownItems.Add(modelItem);
+
+            if (!ModelManager.EstimateProviders.TryGetValue(guid, out var providers)) continue;
+            foreach (var provider in providers)
+            {
+                var estimateItem = new ToolStripMenuItem(provider.Name);
+                modelItem.DropDownItems.Add(estimateItem);
+
+                var estimateAll = new ToolStripMenuItem("All rows")
+                {
+                    Tag = provider,
+                };
+                estimateAll.Click += EstimateParametersAllRows;
+                estimateItem.DropDownItems.Add(estimateAll);
+
+                var estimateNotEdited = new ToolStripMenuItem("Not edited rows only")
+                {
+                    Tag = provider,
+                };
+                estimateNotEdited.Click += EstimateParametersNotEditedRows;
+                estimateItem.DropDownItems.Add(estimateNotEdited);
+            }
         }
         
         this.menu_model.DropDownItems.Add(new ToolStripSeparator());
@@ -611,6 +631,35 @@ internal sealed class MainWindow : Form
         var pixelInterval = this.axisY.IsLogarithmic ? 30 : 100;
         this.axisY.AdjustAxisInterval(pixelInterval);
     } // private void AdjustYAxisInterval (object?, EventArgs)
+
+    private void EstimateParametersAllRows(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not IEstimateProvider estimateProvider) return;
+        if (!estimateProvider.SupportedModels.Contains(this.selectedModel)) return;
+        EstimateParameters(estimateProvider, this.parametersTable.ParameterRows);
+    } // private void EstimateParametersAllRows (object?, EventArgs)
+
+    private void EstimateParametersNotEditedRows(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not IEstimateProvider estimateProvider) return;
+        if (!estimateProvider.SupportedModels.Contains(this.selectedModel)) return;
+        EstimateParameters(estimateProvider, this.parametersTable.NotEditedRows);
+    } // private void EstimateParametersNotEditedRows (object?, EventArgs)
+
+    private void EstimateParameters(IEstimateProvider estimateProvider, IEnumerable<ParametersTableRow> rows)
+    {
+        foreach (var row in rows)
+        {
+            var wavelength = row.Wavelength;
+            var decay = this.decays?[wavelength];
+            if (decay is null) continue;
+
+            var parameters = estimateProvider.EstimateParameters(decay.Times.ToList(), decay.Signals.ToList(), this.selectedModel);
+            row.Parameters = parameters;
+        }
+    } // private void EstimateParametersAllRows (IEstimateProvider)
 
     private void ShowSpectraPreview(object? sender, EventArgs e)
         => ShowSpectraPreview();
