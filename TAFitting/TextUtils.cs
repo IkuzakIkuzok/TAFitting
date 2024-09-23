@@ -44,7 +44,7 @@ internal static class TextUtils
         for (var i = 0; i < len; i++)
         {
             b1 = bytes[i];
-            if (b1 <= 0x06 || b1 == 0x7F || b1 == 0xFF)
+            if (b1 is <= 0x06 or 0x7F or 0xFF)
             {
                 //'binary'
                 isBinary = true;
@@ -55,26 +55,20 @@ internal static class TextUtils
                 }
             }
         }
-        if (isBinary)
-        {
-            return null;
-        }
+        if (isBinary) return null;
 
         //not Japanese
         var notJapanese = true;
         for (var i = 0; i < len; i++)
         {
             b1 = bytes[i];
-            if (b1 == bEscape || 0x80 <= b1)
+            if (b1 is bEscape or >= 0x80)
             {
                 notJapanese = false;
                 break;
             }
         }
-        if (notJapanese)
-        {
-            return Encoding.ASCII;
-        }
+        if (notJapanese) return Encoding.ASCII;
 
         for (var i = 0; i < len - 2; i++)
         {
