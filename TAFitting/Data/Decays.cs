@@ -78,6 +78,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             l_t0.Add(decay_b.GetMinTime());
         }
 
+        if (l_t0.Count == 0) throw new IOException($"No data found in {path}");
+
         var t0 = l_t0.SmirnovGrubbs().Average();
         foreach ((var _wl, var decay) in decays)
             decays.decays[_wl] = decay.AddTime(-t0);

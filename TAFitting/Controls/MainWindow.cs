@@ -311,18 +311,18 @@ internal sealed class MainWindow : Form
         };
         if (!(ofd.ShowDialog() ?? false)) return;
 
-        try
+        this.row = null;
+
+        var folderName = ofd.FolderName;
+        this.sampleName = Path.GetFileName(folderName);
+        Task.Run(() =>
         {
-            this.row = null;
+            // Temporary change the negative sign to U+002D
+            // because double.Parse throws an exception with U+2212.
+            using var _ = new NegativeSignHandler("-");
 
-            var folderName = ofd.FolderName;
-            this.sampleName = Path.GetFileName(folderName);
-            Task.Run(() =>
+            try
             {
-                // Temporary change the negative sign to U+002D
-                // because double.Parse throws an exception with U+2212.
-                using var _ = new NegativeSignHandler("-");
-
                 this.decays = Decays.FromFolder(folderName);
                 Invoke(() =>
                 {
@@ -330,17 +330,17 @@ internal sealed class MainWindow : Form
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     MakeTable();
                 });
-            });
-        }
-        catch (Exception e)
-        {
-            MessageBox.Show(
-                e.Message,
-                "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error
-            );
-        }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(
+                    e.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        });
     } // private void LoadDecays ()
 
     private void AddDummySeries()
