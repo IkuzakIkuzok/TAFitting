@@ -121,8 +121,9 @@ internal sealed class FileNameFormatDialog : Form
             DialogResult = DialogResult.OK,
             Parent = this,
         };
+        this.AcceptButton = this.ok;
 
-        _ = new Button()
+        this.CancelButton = new Button()
         {
             Text = "Cancel",
             Location = new Point(100, 200),
