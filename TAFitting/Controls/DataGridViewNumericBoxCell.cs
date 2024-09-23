@@ -91,30 +91,50 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     {
         if (e.Alt && this.DataGridView is not null)
         {
-            var additionalBias = e.Shift ? 10 : 1;
-
-            if ((!this.Invert && e.KeyCode == Keys.Up) || (this.Invert && e.KeyCode == Keys.Down))
+            if (e.KeyCode is Keys.Up or Keys.Down)
             {
-                var value = GetDoubleValue(rowIndex);
-                var increment = CalcIncrement() * additionalBias;
-                if (increment == 0) increment = 1;
-                SetValue(rowIndex, Math.Floor(Math.Round(value / increment, this.Digit)) * increment + increment);
+                HandleUpDown(e, rowIndex);
                 e.Handled = true;
-            }
-            else if ((!this.Invert && e.KeyCode == Keys.Down) || (this.Invert && e.KeyCode == Keys.Up))
-            {
-                var value = GetDoubleValue(rowIndex);
-                var decrement = CalcDecrement() * additionalBias;
-                if (decrement == 0) decrement = 1;
-                var newValue = Math.Ceiling(Math.Round(value / decrement, this.Digit)) * decrement - decrement;
-                SetValue(rowIndex, newValue);
-                e.Handled = true;
+                return;
             }
         }
 
-        if (!e.Handled)
-            base.OnKeyDown(e, rowIndex);
+        base.OnKeyDown(e, rowIndex);
     } // override protected void OnKeyDown (KeyEventArgs, int)
+
+    private void HandleUpDown(KeyEventArgs e, int rowIndex)
+    {
+        /*
+         *        | Invert
+         *    up  | T   F
+         * -------+-------- ==> up = upKey ^ Invert
+         * upKey T| F   T
+         *       F| T   F
+         */
+        var upKey = e.KeyCode == Keys.Up;
+        var up = upKey ^ this.Invert;
+        var step = upKey ? CalcIncrement() : CalcDecrement();
+
+        var additionalBias = e.Shift ? 10 : 1;
+
+        if (up)
+        {
+            var value = GetDoubleValue(rowIndex);
+            var increment = step * additionalBias;
+            if (increment == 0) increment = 1;
+            SetValue(rowIndex, Math.Floor(Math.Round(value / increment, this.Digit)) * increment + increment);
+            e.Handled = true;
+        }
+        else
+        {
+            var value = GetDoubleValue(rowIndex);
+            var decrement = step * additionalBias;
+            if (decrement == 0) decrement = 1;
+            var newValue = Math.Ceiling(Math.Round(value / decrement, this.Digit)) * decrement - decrement;
+            SetValue(rowIndex, newValue);
+            e.Handled = true;
+        }
+    } // private void HandleUpDown (KeyEventArgs, int)
 
     /// <summary>
     /// Gets the logarithmic value of the cell.
@@ -122,9 +142,8 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// <returns>The logarithmic value.</returns>
     protected virtual double GetLogValue()
     {
-        var val = (double)GetValue(this.RowIndex);
-        if (val <= 0)
-            val = this.DefaultValue;
+        var val = Math.Abs((double)GetValue(this.RowIndex));
+        if (val == 0) return 0;
         return Math.Log10(val);
     } // protected virtual double GetLogValue ()
 
