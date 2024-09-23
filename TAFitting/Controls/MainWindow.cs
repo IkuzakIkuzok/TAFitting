@@ -33,6 +33,7 @@ internal sealed class MainWindow : Form
     private readonly Series s_observed, s_fit;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
+    private readonly CustomNumericUpDown nud_time0;
 
     private IReadOnlyDictionary<double, double[]> ParametersList
         => this.parametersTable.ParameterRows
@@ -159,12 +160,41 @@ internal sealed class MainWindow : Form
         this.cb_invert = new()
         {
             Text = "Invert vertical axis",
-            Size = new(200, 20),
+            Size = new(160, 20),
             Location = new(10, 80),
             Parent = this.paramsContainer.Panel2,
         };
         this.cb_invert.CheckedChanged += InvertMagnitude;
         this.cb_invert.CheckedChanged += ShowPlots;
+
+        _ = new Label()
+        {
+            Text = "Time 0",
+            Size = new(50, 20),
+            Location = new(170, 82),
+            Parent = this.paramsContainer.Panel2,
+        };
+
+        this.nud_time0 = new()
+        {
+            Size = new(80, 20),
+            Location = new(220, 80),
+            DecimalPlaces = 3,
+            Increment = 0.1M,
+            ScrollIncrement = 0.01M,
+            Minimum = -1000,
+            Maximum = 1000,
+            Parent = this.paramsContainer.Panel2,
+        };
+        this.nud_time0.ValueChanged += ChangeTime0;
+
+        _ = new Label()
+        {
+            Text = "µs",
+            Size = new(20, 20),
+            Location = new(305, 82),
+            Parent = this.paramsContainer.Panel2,
+        };
 
         #region menu
 
@@ -328,6 +358,7 @@ internal sealed class MainWindow : Form
                 {
                     this.Text = $"{TextBase} - {this.sampleName}";
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
+                    this.nud_time0.Value = (decimal)this.decays.Time0;
                     MakeTable();
                 });
             }
@@ -510,6 +541,17 @@ internal sealed class MainWindow : Form
 
     private void InvertMagnitude()
         => this.row?.InvertMagnitude();
+
+    private void ChangeTime0(object? sender, EventArgs e)
+        => ChangeTime0();
+
+    private void ChangeTime0()
+    {
+        if (this.decays is null) return;
+        var t0 = (double)this.nud_time0.Value;
+        this.decays.Time0 = t0;
+        ShowPlots();
+    } // private void ChangeTime0 ()
 
     private void ShowPlots(object? sender, EventArgs e)
         => ShowPlots();
