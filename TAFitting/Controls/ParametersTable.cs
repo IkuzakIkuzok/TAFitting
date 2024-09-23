@@ -38,7 +38,7 @@ internal sealed class ParametersTable : DataGridView
             HeaderText = "Wavelength",
             DataPropertyName = "Wavelength",
             ReadOnly = true,
-            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
         };
         this.Columns.Add(col_wavelength);
 
