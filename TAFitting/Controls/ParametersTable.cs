@@ -45,6 +45,18 @@ internal sealed class ParametersTable : DataGridView
         return base.ProcessDialogKey(keyData);
     } // override protected bool ProcessDialogKey (Keys)
 
+    override protected void OnCellBeginEdit(DataGridViewCellCancelEventArgs e)
+    {
+        NegativeSignHandler.ChangeNegativeSign("-");
+        base.OnCellBeginEdit(e);
+    } // override protected void OnCellBeginEdit (DataGridViewCellCancelEventArgs)
+
+    override protected void OnCellEndEdit(DataGridViewCellEventArgs e)
+    {
+        NegativeSignHandler.ChangeNegativeSign("\u2212");
+        base.OnCellEndEdit(e);
+    } // override protected void OnCellEndEdit (DataGridViewCellEventArgs)
+
     internal void SetColumns(IFittingModel model)
     {
         this.Rows.Clear();
