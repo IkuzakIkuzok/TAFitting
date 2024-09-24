@@ -4,7 +4,6 @@
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Excel;
 using TAFitting.Model;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace TAFitting.Controls.Spectra;
 

@@ -1,8 +1,6 @@
 
 // (c) 2024 Kazuki KOHZUKI
 
-using System.Globalization;
-using System.Reflection;
 using TAFitting.Config;
 using TAFitting.Controls;
 
