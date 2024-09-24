@@ -22,6 +22,7 @@ internal sealed class SpectraPreviewWindow : Form
     private Dictionary<double, double[]> parameters = [];
     private double selectedWavelength = double.NaN;
 
+    private int lineWidth = Program.SpectraLineWidth;
     private int markerSize = Program.SpectraMarkerSize;
 
     internal Guid ModelId
@@ -147,6 +148,26 @@ internal sealed class SpectraPreviewWindow : Form
         menu_viewColorGradient.Click += SelectColorGradient;
         menu_view.DropDownItems.Add(menu_viewColorGradient);
 
+        #region line width
+
+        var menu_viewLineWidth = new ToolStripMenuItem("&Line Width");
+        menu_view.DropDownItems.Add(menu_viewLineWidth);
+
+        for (var i = 0; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString())
+            {
+                Tag = i,
+            };
+            item.Click += ChangeLineWidth;
+            menu_viewLineWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == this.lineWidth;
+            menu_viewLineWidth.DropDownItems.Add(item);
+        }
+
+        #endregion line width
+
+        #region marker size
+
         var menu_viewMarkerSize = new ToolStripMenuItem("&Marker Size");
         menu_view.DropDownItems.Add(menu_viewMarkerSize);
 
@@ -160,6 +181,8 @@ internal sealed class SpectraPreviewWindow : Form
             menu_viewMarkerSize.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == this.markerSize;
             menu_viewMarkerSize.DropDownItems.Add(item);
         }
+
+        #endregion marker size
 
         #endregion menu.view
 
@@ -253,7 +276,7 @@ internal sealed class SpectraPreviewWindow : Form
             MarkerStyle = MarkerStyle.Circle,
             MarkerSize = this.markerSize,
             Color = color,
-            BorderWidth = 2,
+            BorderWidth = this.lineWidth,
             LegendText = time.ToString("F2"),
         };
 
@@ -376,6 +399,14 @@ internal sealed class SpectraPreviewWindow : Form
 
         DrawSpectra();
     } // private void SelectColorGradient (object?, EventArgs)
+
+    private void ChangeLineWidth(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int width) return;
+        this.lineWidth = Program.SpectraLineWidth = width;
+        DrawSpectra();
+    } // private void ChangeLineWidth (object?, EventArgs)
 
     private void ChangeMarkerSize(object? sender, EventArgs e)
     {
