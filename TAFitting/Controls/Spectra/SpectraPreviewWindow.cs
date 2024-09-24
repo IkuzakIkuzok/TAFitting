@@ -4,6 +4,7 @@
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Excel;
 using TAFitting.Model;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace TAFitting.Controls.Spectra;
 
@@ -19,6 +20,7 @@ internal sealed class SpectraPreviewWindow : Form
 
     private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
+    private double selectedWavelength = double.NaN;
 
     private int markerSize = Program.SpectraMarkerSize;
 
@@ -29,6 +31,17 @@ internal sealed class SpectraPreviewWindow : Form
         {
             if (this.modelId == value) return;
             this.modelId = value;
+            DrawSpectra();
+        }
+    }
+
+    internal double SelectedWavelength
+    {
+        get => this.selectedWavelength;
+        set
+        {
+            if (this.selectedWavelength == value) return;
+            this.selectedWavelength = value;
             DrawSpectra();
         }
     }
@@ -253,6 +266,9 @@ internal sealed class SpectraPreviewWindow : Form
             min = Math.Min(min, signal);
             max = Math.Max(max, signal);
             series.Points.AddXY(wavelength, signal);
+
+            if (wavelength == this.selectedWavelength)
+                HighlightWavelength(wavelength, signal, color);
         }
         this.chart.Series.Add(series);
         return (min, max);
@@ -270,6 +286,20 @@ internal sealed class SpectraPreviewWindow : Form
         horizontal.Points.AddXY(wlMax, 0);
         this.chart.Series.Add(horizontal);
     } // private void DrawHorizontalLine ()
+
+    private void HighlightWavelength(double wavelength, double signal, Color color)
+    {
+        var series = new Series()
+        {
+            ChartType = SeriesChartType.Line,
+            MarkerStyle = MarkerStyle.Cross,
+            MarkerSize = this.markerSize + 10,
+            Color = color,
+            BorderWidth = 2,
+        };
+        series.Points.AddXY(wavelength, signal);
+        this.chart.Series.Add(series);
+    } // private void HighlightWavelength (double)
 
     private void SaveToFile(object? sender, EventArgs e)
         => SaveToFile();

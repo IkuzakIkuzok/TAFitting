@@ -140,7 +140,7 @@ internal sealed class MainWindow : Form
         };
         this.parametersTable.SelectedRowChanged += ChangeRow;
         this.parametersTable.CellValueChanged += ShowFit;
-        this.parametersTable.CellValueChanged += UpdatePreviews;
+        this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
         if (this.selectedModel != Guid.Empty)
             this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel]);
 
@@ -510,7 +510,7 @@ internal sealed class MainWindow : Form
             var negatives = signals.Where(s => s < 0).Count();
             row.Inverted = negatives > positives;
         }
-        UpdatePreviews();
+        UpdatePreviewsParameters();
 
         this.s_observed.Points.Clear();
         this.s_fit.Points.Clear();
@@ -553,6 +553,7 @@ internal sealed class MainWindow : Form
         this.Text = $"{TextBase} - {this.sampleName} ({e.Row.Wavelength} nm)";
 
         ShowPlots();
+        UpdatePreviewsSelectedWavelength();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
 
     private void InvertMagnitude(object? sender, EventArgs e)
@@ -677,14 +678,21 @@ internal sealed class MainWindow : Form
         preview.Show();
     } // private void ShowSpectraPreview ()
 
-    private void UpdatePreviews(object? sender, EventArgs e)
-        => UpdatePreviews();
+    private void UpdatePreviewsParameters(object? sender, EventArgs e)
+        => UpdatePreviewsParameters();
 
-    private void UpdatePreviews()
+    private void UpdatePreviewsParameters()
     {
         foreach (var preview in this.previewWindows)
             preview.SetParameters(this.ParametersList);
-    } // private void UpdatePreviews ()
+    } // private void UpdatePreviewsParameters ()
+
+    private void UpdatePreviewsSelectedWavelength()
+    {
+        var wavelength = this.row?.Wavelength ?? double.NaN;
+        foreach (var preview in this.previewWindows)
+            preview.SelectedWavelength = wavelength;
+    } // private void UpdatePreviewsSelectedWavelength ()
 
     private static void EditFilenameFormat(object? sender, EventArgs e)
     {
