@@ -141,6 +141,7 @@ internal sealed class MainWindow : Form
         this.parametersTable.SelectedRowChanged += ChangeRow;
         this.parametersTable.CellValueChanged += ShowFit;
         this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
+        this.parametersTable.UserDeletedRow += RemoveDecay;
         if (this.selectedModel != Guid.Empty)
             this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel]);
 
@@ -555,6 +556,16 @@ internal sealed class MainWindow : Form
         ShowPlots();
         UpdatePreviewsSelectedWavelength();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
+
+    private void RemoveDecay(object? sender, DataGridViewRowEventArgs e)
+    {
+        if (this.decays is null) return;
+        if (e.Row is not ParametersTableRow row) return;
+        var wavelength = row.Wavelength;
+        this.decays.Remove(wavelength);
+        ShowPlots();
+        UpdatePreviewsParameters();
+    } // private void RemoveDecay (object?, DataGridViewRowEventArgs)
 
     private void InvertMagnitude(object? sender, EventArgs e)
     {

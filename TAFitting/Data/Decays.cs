@@ -105,6 +105,9 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             this.decays[wavelength] = decay.AddTime(-diff);
     } // private void ChangeTime0 (double)
 
+    internal bool Remove(double wavelength)
+        => this.decays.Remove(wavelength);
+
     [GeneratedRegex(@"(\d+).*", RegexOptions.Compiled)]
     private static partial Regex RegexWavelength();
 } // internal sealed class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
