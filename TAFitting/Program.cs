@@ -17,16 +17,17 @@ internal static class Program
     /// </summary>
     internal static MainWindow MainWindow { get; }
 
+    #region config
 
     /// <summary>
     /// Gets or sets the gradient start color.
     /// </summary>
     internal static Color GradientStart
     {
-        get => Config.AppearanceConfig.ColorGradientConfig.StartColor;
+        get => Config.AppearanceConfig.Spectra.ColorGradientConfig.StartColor;
         set
         {
-            Config.AppearanceConfig.ColorGradientConfig.StartColor = value;
+            Config.AppearanceConfig.Spectra.ColorGradientConfig.StartColor = value;
             SaveConfig();
             GradientChanged?.Invoke(null, EventArgs.Empty);
         }
@@ -37,10 +38,10 @@ internal static class Program
     /// </summary>
     internal static Color GradientEnd
     {
-        get => Config.AppearanceConfig.ColorGradientConfig.EndColor;
+        get => Config.AppearanceConfig.Spectra.ColorGradientConfig.EndColor;
         set
         {
-            Config.AppearanceConfig.ColorGradientConfig.EndColor = value;
+            Config.AppearanceConfig.Spectra.ColorGradientConfig.EndColor = value;
             SaveConfig();
             GradientChanged?.Invoke(null, EventArgs.Empty);
         }
@@ -79,12 +80,22 @@ internal static class Program
         }
     }
 
-    internal static int SpectraMarkerSize
+    internal static int SpectraLineWidth
     {
-        get => Config.AppearanceConfig.SpectraMarkerSize;
+        get => Config.AppearanceConfig.Spectra.LineWidth;
         set
         {
-            Config.AppearanceConfig.SpectraMarkerSize = value;
+            Config.AppearanceConfig.Spectra.LineWidth = value;
+            SaveConfig();
+        }
+    }
+
+    internal static int SpectraMarkerSize
+    {
+        get => Config.AppearanceConfig.Spectra.MarkerSize;
+        set
+        {
+            Config.AppearanceConfig.Spectra.MarkerSize = value;
             SaveConfig();
         }
     }
@@ -114,19 +125,6 @@ internal static class Program
             Config.AppearanceConfig.AxisTitleFont.Font = value;
             SaveConfig();
             AxisTitleFontChanged?.Invoke(null, EventArgs.Empty);
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the color of a guide line.
-    /// </summary>
-    internal static Color GuideLineColor
-    {
-        get => Config.AppearanceConfig.GuideLineColor;
-        set
-        {
-            Config.AppearanceConfig.GuideLineColor = value;
-            SaveConfig();
         }
     }
 
@@ -185,6 +183,8 @@ internal static class Program
     /// Gets the application configuration.
     /// </summary>
     internal static AppConfig Config { get; }
+
+    #endregion config
 
     static Program()
     {

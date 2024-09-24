@@ -12,12 +12,6 @@ namespace TAFitting.Config;
 public sealed class AppearanceConfig
 {
     /// <summary>
-    /// Gets or sets the color gradient configuration.
-    /// </summary>
-    [XmlElement("color-gradient")]
-    public ColorGradientConfig ColorGradientConfig { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the color of the observed data.
     /// </summary>
     [XmlElement("observed-color")]
@@ -36,12 +30,6 @@ public sealed class AppearanceConfig
     public int FitWidth { get; set; } = 3;
 
     /// <summary>
-    /// Gets or sets the size of the spectra marker.
-    /// </summary>
-    [XmlElement("spectra-marker-size")]
-    public int SpectraMarkerSize { get; set; } = 7;
-
-    /// <summary>
     /// Gets or sets the font of the axis labels.
     /// </summary>
     [XmlElement("axis-label")]
@@ -54,9 +42,10 @@ public sealed class AppearanceConfig
     public FontConfig AxisTitleFont { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the color of the guide line.
+    /// Gets or sets the appearance configuration of the spectra.
     /// </summary>
-    public SerializableColor GuideLineColor { get; set; } = Color.Black;
+    [XmlElement("spectra")]
+    public SpectraAppearanceConfig Spectra { get; set; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppearanceConfig"/> class.
