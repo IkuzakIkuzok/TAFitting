@@ -10,14 +10,19 @@ namespace TAFitting;
 /// </summary>
 internal static class TextUtils
 {
+    private static readonly Encoding DefaultEncoding;
+
     static TextUtils()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        var codePage = Thread.CurrentThread.CurrentCulture.TextInfo.ANSICodePage;
+        DefaultEncoding = Encoding.GetEncoding(codePage);
     } // cctor ()
     
     internal static string GetText(this byte[] bytes)
     {
-        var encoding = bytes.GetEncoding() ?? Encoding.GetEncoding(932);
+        var encoding = bytes.GetEncoding() ?? DefaultEncoding;
         return encoding.GetString(bytes);
     } // internal static string GetText (this byte[])
 
