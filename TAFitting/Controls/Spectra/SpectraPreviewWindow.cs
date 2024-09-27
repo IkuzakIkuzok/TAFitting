@@ -10,9 +10,10 @@ namespace TAFitting.Controls.Spectra;
 [DesignerCategory("Code")]
 internal sealed class SpectraPreviewWindow : Form
 {
-    private readonly SplitContainer mainContainter;
+    private readonly SplitContainer mainContainer, optionsContainer;
 
     private readonly TimeTable timeTable;
+    private readonly MaskingRangeBox maskingRangeBox;
 
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
@@ -53,7 +54,7 @@ internal sealed class SpectraPreviewWindow : Form
         this.Text = "Spectra Preview";
         this.Size = new(900, 500);
 
-        this.mainContainter = new()
+        this.mainContainer = new()
         {
             Dock = DockStyle.Fill,
             Orientation = Orientation.Vertical,
@@ -64,7 +65,7 @@ internal sealed class SpectraPreviewWindow : Form
         this.chart = new()
         {
             Dock = DockStyle.Fill,
-            Parent = this.mainContainter.Panel1,
+            Parent = this.mainContainer.Panel1,
         };
 
         this.axisX = new Axis()
@@ -98,10 +99,18 @@ internal sealed class SpectraPreviewWindow : Form
 
         this.chart.Paint += AdjustAxisIntervalsOnFirstPaint;
 
+        this.optionsContainer = new()
+        {
+            Dock = DockStyle.Fill,
+            Orientation = Orientation.Horizontal,
+            BorderStyle = BorderStyle.FixedSingle,
+            Parent = this.mainContainer.Panel2,
+        };
+
         this.timeTable = new()
         {
             Dock = DockStyle.Fill,
-            Parent = this.mainContainter.Panel2,
+            Parent = this.optionsContainer.Panel1,
         };
         this.timeTable.CellValueChanged += DrawSpectra;
         this.timeTable.RowsRemoved += DrawSpectra;
@@ -110,6 +119,22 @@ internal sealed class SpectraPreviewWindow : Form
         this.timeTable.Rows.Add(2.0);
         this.timeTable.Rows.Add(4.0);
         this.timeTable.Rows.Add(8.0);
+
+        _ = new Label()
+        {
+            Text = "Masking",
+            Location = new(10, 10),
+            Width = 100,
+            Parent = this.optionsContainer.Panel2,
+        };
+
+        this.maskingRangeBox = new()
+        {
+            Location = new(10, 35),
+            Width = 140,
+            Parent = this.optionsContainer.Panel2,
+        };
+        this.maskingRangeBox.DelayedTextChanged += DrawSpectra;
 
         #region menu
 
@@ -187,8 +212,8 @@ internal sealed class SpectraPreviewWindow : Form
 
         #endregion menu
 
-        this.mainContainter.SplitterDistance = 700;
-        this.mainContainter.Panel2MinSize = 150;
+        this.mainContainer.SplitterDistance = 700;
+        this.mainContainer.Panel2MinSize = 150;
     } // ctor ()
 
     internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
@@ -243,6 +268,18 @@ internal sealed class SpectraPreviewWindow : Form
 
         this.timeTable.SetColors();
 
+        var maskingRanges = this.maskingRangeBox.MaskingRanges.ToArray();
+        var wavelengths = this.parameters.Keys.Order().ToArray();
+        var masked
+            = wavelengths.Where(
+                            wl => maskingRanges.Any(r => r.Includes(wl))
+                          ).ToArray();
+        var nextOfMasked
+            = maskingRanges.Select(r => r.End)
+                           .Select(wl => wavelengths.SkipWhile(w => w < wl).FirstOrDefault(double.NaN))
+                           .Where(wl => !double.IsNaN(wl))
+                           .ToArray();
+
         var times = this.timeTable.Times.ToArray();
         var funcs = this.parameters.ToDictionary(
             kv => kv.Key,
@@ -254,7 +291,7 @@ internal sealed class SpectraPreviewWindow : Form
         var sigMax = double.MinValue;
         foreach (var time in times)
         {
-            (var min, var max) = DrawSpectrum(time, funcs, gradient[index++]);
+            (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
             sigMin = Math.Min(sigMin, min);
             sigMax = Math.Max(sigMax, max);
         }
@@ -267,9 +304,9 @@ internal sealed class SpectraPreviewWindow : Form
         AdjustAxisIntervals();
     } // private void DrawSpectra ()
 
-    private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color)
+    private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
-        var series = new Series
+        Series MakeSeries() => new()
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Circle,
@@ -279,10 +316,19 @@ internal sealed class SpectraPreviewWindow : Form
             LegendText = time.ToString("F2"),
         };
 
+        var series = MakeSeries();
+
         var min = double.MaxValue;
         var max = double.MinValue;
         foreach (var wavelength in this.parameters.Keys.Order())
         {
+            if (nextOfMasked.Contains(wavelength) && series.Points.Count > 0)
+            {
+                this.chart.Series.Add(series);
+                series = MakeSeries();
+            }
+            if (masked.Contains(wavelength)) continue;
+
             var func = funcs[wavelength];
             var signal = func(time);
             min = Math.Min(min, signal);
@@ -294,7 +340,7 @@ internal sealed class SpectraPreviewWindow : Form
         }
         this.chart.Series.Add(series);
         return (min, max);
-    } // private (double, double) DrawSpectrum (double, Dictionary<double, Func<double, double>>, Color)
+    } // private (double, double) DrawSpectrum (double, Dictionary<double, Func<double, double>>, Color, IEnumerable<double>, IEnumerable<double>)
 
     private void DrawHorizontalLine(double wlMin, double wlMax)
     {
@@ -343,13 +389,18 @@ internal sealed class SpectraPreviewWindow : Form
         var extension = Path.GetExtension(filename);
         var writer = GetSpreadSheetWriter(extension);
 
+        var maskingRanges = this.maskingRangeBox.MaskingRanges.ToArray();
+
         try
         {
             writer.Parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
             writer.Times = this.timeTable.Times.ToArray();
 
             foreach ((var wavelength, var parameters) in this.parameters)
+            {
+                if (maskingRanges.Any(r => r.Includes(wavelength))) continue;
                 writer.AddRow(wavelength, parameters);
+            }
 
             writer.Write(filename);
 
