@@ -39,6 +39,8 @@ internal sealed class MainWindow : Form
         => this.parametersTable.ParameterRows
                .ToDictionary(row => row.Wavelength, row => row.Parameters.ToArray());
 
+    private double SelectedWavelength => this.row?.Wavelength ?? double.NaN;
+
     private readonly List<SpectraPreviewWindow> previewWindows = [];
 
     internal MainWindow()
@@ -697,6 +699,7 @@ internal sealed class MainWindow : Form
         var preview = new SpectraPreviewWindow(this.ParametersList)
         {
             ModelId = this.selectedModel,
+            SelectedWavelength = this.SelectedWavelength,
         };
         this.previewWindows.Add(preview);
         preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
@@ -714,7 +717,7 @@ internal sealed class MainWindow : Form
 
     private void UpdatePreviewsSelectedWavelength()
     {
-        var wavelength = this.row?.Wavelength ?? double.NaN;
+        var wavelength = this.SelectedWavelength;
         foreach (var preview in this.previewWindows)
             preview.SelectedWavelength = wavelength;
     } // private void UpdatePreviewsSelectedWavelength ()
