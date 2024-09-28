@@ -1,8 +1,11 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Diagnostics;
+
 namespace TAFitting.Controls.Spectra;
 
+[DebuggerDisplay("{Start}-{End}")]
 internal readonly record struct MaskingRange(double Start, double End)
 {
     internal static MaskingRange Empty { get; } = new MaskingRange(double.NaN, double.NaN);
@@ -24,12 +27,13 @@ internal readonly record struct MaskingRange(double Start, double End)
         if (values.Length == 1)
         {
             if (!double.TryParse(values[0], out var time)) return Empty;
-            return new MaskingRange(time, time);
+            return new(time, time);
         }
         if (values.Length != 2) return Empty;
 
         if (!double.TryParse(values[0], out var start)) return Empty;
         if (!double.TryParse(values[1], out var end)) return Empty;
-        return new MaskingRange(start, end);
+        if (start > end) return new(end, start);
+        return new(start, end);
     } // internal static MaskingRange FromString (string)
 } // internal readonly record struct MaskingRange (double, double)
