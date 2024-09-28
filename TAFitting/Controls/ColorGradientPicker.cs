@@ -13,13 +13,22 @@ namespace TAFitting.Controls;
 internal class ColorGradientPicker : Form
 {
     protected readonly ColorGradient colorGradient;
-    private (Color Start, Color End) returnColors;
 
     protected readonly ColorButton start, end;
 
     protected readonly Label lb_gradient;
 
-    private readonly Button ok, cancel;
+    /// <summary>
+    /// Gets the start color.
+    /// </summary>
+    internal Color StartColor
+        => this.colorGradient.StartColor;
+
+    /// <summary>
+    /// Gets the end color.
+    /// </summary>
+    internal Color EndColor
+        => this.colorGradient.EndColor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorGradientPicker"/> class.
@@ -33,7 +42,6 @@ internal class ColorGradientPicker : Form
         this.MaximizeBox = false;
 
         this.colorGradient = new(startColor, endColor);
-        this.returnColors = (startColor, endColor);
 
         this.start = new()
         {
@@ -65,42 +73,28 @@ internal class ColorGradientPicker : Form
             Parent = this,
         };
 
-        this.ok = new()
+        this.AcceptButton = new Button()
         {
             Text = "OK",
             Top = 60,
             Left = 120,
             Size = new(80, 30),
+            DialogResult = DialogResult.OK,
             Parent = this,
         };
-        this.ok.Click += (sender, e) =>
-        {
-            this.returnColors = (this.colorGradient.StartColor, this.colorGradient.EndColor);
-            Close();
-        };
 
-        this.cancel = new()
+        this.CancelButton = new Button()
         {
             Text = "Cancel",
             Top = 60,
             Left = 220,
             Size = new(80, 30),
+            DialogResult = DialogResult.Cancel,
             Parent = this,
         };
-        this.cancel.Click += (sender, e) => Close();
 
         SetColor();
     } // ctor (Color, Color)
-
-    /// <summary>
-    /// Shows the dialog.
-    /// </summary>
-    /// <returns>The selected start and end colors.</returns>
-    new internal (Color Start, Color End) ShowDialog()
-    {
-        base.ShowDialog();
-        return this.returnColors;
-    } // new internal (Color Start, Color End) ShowDialog ()
 
     private static Color SelectColor(Color color)
     {

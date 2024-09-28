@@ -453,7 +453,9 @@ internal sealed class SpectraPreviewWindow : Form
         {
             StartPosition = FormStartPosition.CenterParent,
         };
-        (Program.GradientStart, Program.GradientEnd) = picker.ShowDialog();
+        if (picker.ShowDialog() != DialogResult.OK) return;
+        Program.GradientStart = picker.StartColor;
+        Program.GradientEnd = picker.EndColor;
 
         DrawSpectra();
     } // private void SelectColorGradient (object?, EventArgs)
