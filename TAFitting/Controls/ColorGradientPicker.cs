@@ -92,8 +92,6 @@ internal class ColorGradientPicker : Form
         SetColor();
     } // ctor (Color, Color)
 
-    internal ColorGradientPicker() : this(Color.Red, Color.Blue) { }
-
     /// <summary>
     /// Shows the dialog.
     /// </summary>
