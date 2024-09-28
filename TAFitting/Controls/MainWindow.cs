@@ -332,7 +332,21 @@ internal sealed class MainWindow : Form
     } // override protected void OnKeyDown (KeyEventArgs)
 
     private void LoadDecays(object? sender, EventArgs e)
-        => LoadDecays();
+    {
+        if (this.parametersTable.Edited)
+        {
+            var dr = MessageBox.Show(
+                "The current data will be lost. Do you want to continue?",
+                "Warning",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2
+            );
+            if (dr != DialogResult.Yes) return;
+        }
+
+        LoadDecays();
+    } // private void LoadDecays (object?, EventArgs)
 
     private void LoadDecays()
     {

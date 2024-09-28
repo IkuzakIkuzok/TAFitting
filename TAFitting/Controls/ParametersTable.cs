@@ -33,6 +33,12 @@ internal sealed class ParametersTable : DataGridView
         => this.ParameterRows.Where(row => !row.Edited);
 
     /// <summary>
+    /// Gets a value indicating whether the parameters are edited.
+    /// </summary>
+    internal bool Edited
+        => this.ParameterRows.Any(row => row.Edited);
+
+    /// <summary>
     /// Gets the parameter row at the specified wavelength.
     /// </summary>
     /// <param name="wavelength">The wavelength.</param>
