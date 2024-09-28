@@ -15,6 +15,8 @@ internal sealed class ParametersTable : DataGridView
     private double[] initialValues = [];
     private int[] magnitudeColumns = [];
 
+    private int ParametersCount => this.constraints.Length;
+
     /// <summary>
     /// Occurs when the selected row is changed.
     /// </summary>
@@ -97,7 +99,7 @@ internal sealed class ParametersTable : DataGridView
 
         this.Rows[e.RowIndex].ErrorText = string.Empty;
 
-        if (e.ColumnIndex < 1) return;
+        if (e.ColumnIndex < 1 || e.ColumnIndex > this.ParametersCount) return;
 
         if (!double.TryParse(e.FormattedValue?.ToString(), out var value))
         {
@@ -177,13 +179,22 @@ internal sealed class ParametersTable : DataGridView
             this.Columns.Add(col);
             this.constraints[i] = parameter.Constraints;
             this.initialValues[i] = parameter.InitialValue;
-        } // foreach
+        }
 
         this.magnitudeColumns = parameters
             .Select((p, i) => (Parameter: p, Index: i))
             .Where(item => item.Parameter.IsMagnitude)
             .Select(item => item.Index)
             .ToArray();
+
+        var col_r2 = new DataGridViewTextBoxColumn
+        {
+            HeaderText = "R²",
+            DataPropertyName = "R2",
+            ReadOnly = true,
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
+        };
+        this.Columns.Add(col_r2);
     } // internal void SetColumns (IFittingModel)
 
     /// <summary>
@@ -284,6 +295,7 @@ internal sealed class ParametersTable : DataGridView
         row.SetMagnitudeColumns(this.magnitudeColumns);
         for (var i = 0; i < this.initialValues.Length; i++)
             row[i] = this.initialValues[i];
+        row.RSquared = 0.0;
         row.FreezeEditedState = false;
         this.Rows.Add(row);
         return row;

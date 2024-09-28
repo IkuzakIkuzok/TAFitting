@@ -27,7 +27,7 @@ internal sealed class ParametersTableRow : DataGridViewRow
     /// Gets the number of parameters.
     /// </summary>
     internal int ParametersCount
-        => this.Cells.Count - 1;
+        => this.Cells.Count - 2;
 
     /// <summary>
     /// Gets or sets the parameter at the specified index.
@@ -64,6 +64,22 @@ internal sealed class ParametersTableRow : DataGridViewRow
         {
             for (var i = 0; i < value.Count; i++)
                 this[i] = value[i];
+        }
+    }
+
+    internal double RSquared
+    {
+        get => GetCellValue(this.Cells.Count - 1, 0.0);
+        set
+        {
+            var cell = this.Cells[this.Cells.Count - 1];
+            cell.Value = NegativeSignHandler.ToMinusSign(value.ToString("F3"));
+            cell.Style.BackColor = value switch
+            {
+                > 0.5 => Color.LightGreen,
+                > 0.0 => Color.LightYellow,
+                _ => Color.LightPink
+            };
         }
     }
 

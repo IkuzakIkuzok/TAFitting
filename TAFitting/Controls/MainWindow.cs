@@ -143,6 +143,7 @@ internal sealed class MainWindow : Form
         this.parametersTable.SelectedRowChanged += ChangeRow;
         this.parametersTable.CellValueChanged += ShowFit;
         this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
+        this.parametersTable.CellValueChanged += CalculateRSquared;
         this.parametersTable.UserDeletedRow += RemoveDecay;
         if (this.selectedModel != Guid.Empty)
             this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel]);
@@ -526,6 +527,7 @@ internal sealed class MainWindow : Form
             var positives = signals.Where(s => s > 0).Count();
             var negatives = signals.Where(s => s < 0).Count();
             row.Inverted = negatives > positives;
+            CalculateRSquared(row);
         }
         UpdatePreviewsParameters();
 
@@ -690,6 +692,55 @@ internal sealed class MainWindow : Form
             row.Parameters = parameters;
         }
     } // private void EstimateParametersAllRows (IEstimateProvider)
+
+    private void CalculateRSquared(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0) return;
+        if (e.ColumnIndex < 1 || e.ColumnIndex > this.parametersTable.ColumnCount - 2) return;
+        if (this.parametersTable.Rows[e.RowIndex] is not ParametersTableRow row) return;
+        CalculateRSquared(row);
+    } // private void CalculateRSquared (object?, EventArgs)
+
+    private void CalculateRSquared(ParametersTableRow row)
+    {
+        var walvelength = row.Wavelength;
+        var decay = this.decays?[walvelength];
+        if (decay is null) return;
+
+        var model = ModelManager.Models[this.selectedModel];
+        var func = model.GetFunction(row.Parameters);
+        var inverse = row.Inverted ? -1 : 1;
+        var scaler = model.YLogScale ? Math.Log10 : (Func<double, double>)(x => x);
+
+        var idx_t0 = decay.Times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
+        var X = decay.Times.Skip(idx_t0).ToArray();
+        var Y = decay.Signals.Skip(idx_t0).Select(y => y * inverse).Select(scaler).ToArray();
+        var average = Y.Where(y => !double.IsNaN(y)).Average();
+        var Se = 0.0;
+        var St = 0.0;
+        var N = 0;
+        foreach ((var x, var y) in X.Zip(Y))
+        {
+            if (double.IsNaN(y))
+            {
+                continue;
+            }
+
+            var y_fit = scaler(func(x) * inverse);
+            if (double.IsNaN(y_fit))
+            {
+                continue;
+            }
+
+            var de = y - y_fit;
+            var dt = y - average;
+            Se += Math.Pow(de, 2);
+            St += Math.Pow(dt, 2);
+            ++N;
+        }
+        var p = row.Parameters.Count;
+        row.RSquared = 1 - Se / St * (N - 1) / (N - p - 1);
+    } // private void CalculateRSquared (ParametersTableRow)
 
     private void ShowSpectraPreview(object? sender, EventArgs e)
         => ShowSpectraPreview();
