@@ -5,6 +5,9 @@ using System.Collections;
 
 namespace TAFitting.Data;
 
+/// <summary>
+/// Represents a decay data.
+/// </summary>
 internal sealed class Decay : IEnumerable<(double Time, double Signal)>
 {
     private readonly double[] times, signals;
@@ -136,6 +139,10 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
     internal Decay AddTime(double time)
         => new(this.times.Select(t => t + time).ToArray(), this.signals);
 
+    /// <summary>
+    /// Gets the time at which the signal is minimum.
+    /// </summary>
+    /// <returns>The time at which the signal is minimum.</returns>
     internal double GetMinTime()
     {
         var min = this.SignalMin;
@@ -143,6 +150,14 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
         return this.times[index];
     } // internal double GetMinTime ()
 
+    /// <summary>
+    /// Finds the time origin.
+    /// </summary>
+    /// <returns>The time origin.</returns>
+    /// <remarks>
+    /// The time origin is the time at which the signal is minimum,
+    /// and it is in the first half of the decay data.
+    /// </remarks>
     internal double FilndT0()
     {
         var len = this.times.Length >> 1;
