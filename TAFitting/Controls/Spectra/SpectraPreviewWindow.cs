@@ -268,17 +268,10 @@ internal sealed class SpectraPreviewWindow : Form
 
         this.timeTable.SetColors();
 
-        var maskingRanges = this.maskingRangeBox.MaskingRanges.ToArray();
+        var maskingRanges = this.maskingRangeBox.MaskingRanges;
         var wavelengths = this.parameters.Keys.Order().ToArray();
-        var masked
-            = wavelengths.Where(
-                            wl => maskingRanges.Any(r => r.Includes(wl))
-                          ).ToArray();
-        var nextOfMasked
-            = maskingRanges.Select(r => r.End)
-                           .Select(wl => wavelengths.SkipWhile(w => w < wl).FirstOrDefault(double.NaN))
-                           .Where(wl => !double.IsNaN(wl))
-                           .ToArray();
+        var masked = maskingRanges.GetMaskedPoints(wavelengths);
+        var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
 
         var times = this.timeTable.Times.ToArray();
         var funcs = this.parameters.ToDictionary(

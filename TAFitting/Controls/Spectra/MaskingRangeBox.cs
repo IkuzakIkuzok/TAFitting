@@ -4,8 +4,6 @@
 namespace TAFitting.Controls.Spectra;
 internal class MaskingRangeBox : DelayedTextBox
 {
-    internal IEnumerable<MaskingRange> MaskingRanges
-        => this.Text.Split(',')
-                    .Select(MaskingRange.FromString)
-                    .Where(r => !r.IsEmpty);
+    internal MaskingRanges MaskingRanges
+        => new(this.Text);
 } // internal class MaskingRangeBox : DelayedTextBox
