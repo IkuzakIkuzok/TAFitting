@@ -85,6 +85,7 @@ internal static class Program
         {
             Config.AppearanceConfig.Spectra.LineWidth = value;
             SaveConfig();
+            SpectraLineWidthChanged?.Invoke(null, EventArgs.Empty);
         }
     }
 
@@ -95,6 +96,7 @@ internal static class Program
         {
             Config.AppearanceConfig.Spectra.MarkerSize = value;
             SaveConfig();
+            SpectraMarkerSizeChanged?.Invoke(null, EventArgs.Empty);
         }
     }
 
@@ -166,6 +168,16 @@ internal static class Program
     /// Occurs when the color gradient is changed.
     /// </summary>
     internal static event EventHandler? GradientChanged;
+    
+    /// <summary>
+    /// Occurs when the spectra marker size is changed.
+    /// </summary>
+    internal static event EventHandler? SpectraMarkerSizeChanged;
+
+    /// <summary>
+    /// Occurs when the spectra line width is changed.
+    /// </summary>
+    internal static event EventHandler? SpectraLineWidthChanged;
 
     /// <summary>
     /// Occurs when the axis label font is changed.

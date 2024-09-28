@@ -25,9 +25,6 @@ internal sealed class SpectraPreviewWindow : Form
     private Dictionary<double, double[]> parameters = [];
     private double selectedWavelength = double.NaN;
 
-    private int lineWidth = Program.SpectraLineWidth;
-    private int markerSize = Program.SpectraMarkerSize;
-
     /// <summary>
     /// Gets or sets the ID of the model.
     /// </summary>
@@ -199,7 +196,7 @@ internal sealed class SpectraPreviewWindow : Form
                 Tag = i,
             };
             item.Click += ChangeLineWidth;
-            menu_viewLineWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == this.lineWidth;
+            menu_viewLineWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.SpectraLineWidth;
             menu_viewLineWidth.DropDownItems.Add(item);
         }
 
@@ -217,7 +214,7 @@ internal sealed class SpectraPreviewWindow : Form
                 Tag = i,
             };
             item.Click += ChangeMarkerSize;
-            menu_viewMarkerSize.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == this.markerSize;
+            menu_viewMarkerSize.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.SpectraMarkerSize;
             menu_viewMarkerSize.DropDownItems.Add(item);
         }
 
@@ -229,6 +226,10 @@ internal sealed class SpectraPreviewWindow : Form
 
         this.mainContainer.SplitterDistance = 700;
         this.mainContainer.Panel2MinSize = 150;
+
+        Program.GradientChanged += DrawSpectra;
+        Program.SpectraLineWidthChanged += DrawSpectra;
+        Program.SpectraMarkerSizeChanged += DrawSpectra;
     } // ctor ()
 
     internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
@@ -318,9 +319,9 @@ internal sealed class SpectraPreviewWindow : Form
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Circle,
-            MarkerSize = this.markerSize,
+            MarkerSize = Program.SpectraMarkerSize,
             Color = color,
-            BorderWidth = this.lineWidth,
+            BorderWidth = Program.SpectraLineWidth,
             LegendText = time.ToString("F2"),
         };
 
@@ -369,7 +370,7 @@ internal sealed class SpectraPreviewWindow : Form
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Cross,
-            MarkerSize = this.markerSize + 10,
+            MarkerSize = Program.SpectraMarkerSize + 10,
             Color = color,
             BorderWidth = 2,
         };
@@ -456,24 +457,20 @@ internal sealed class SpectraPreviewWindow : Form
         if (picker.ShowDialog() != DialogResult.OK) return;
         Program.GradientStart = picker.StartColor;
         Program.GradientEnd = picker.EndColor;
-
-        DrawSpectra();
     } // private void SelectColorGradient (object?, EventArgs)
 
     private void ChangeLineWidth(object? sender, EventArgs e)
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not int width) return;
-        this.lineWidth = Program.SpectraLineWidth = width;
-        DrawSpectra();
+        Program.SpectraLineWidth = width;
     } // private void ChangeLineWidth (object?, EventArgs)
 
     private void ChangeMarkerSize(object? sender, EventArgs e)
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not int size) return;
-        this.markerSize = Program.SpectraMarkerSize = size;
-        DrawSpectra();
+        Program.SpectraMarkerSize = size;
     } // private void ChangeMarkerSize (object?, EventArgs)
 
     private void SetAxisTitleFont(object? sender, EventArgs e)
