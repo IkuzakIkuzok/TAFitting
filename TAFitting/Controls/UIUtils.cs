@@ -8,6 +8,9 @@ using System.Text;
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Provides utility methods for UI.
+/// </summary>
 internal static partial class UIUtils
 {
     [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
@@ -112,6 +115,11 @@ internal static partial class UIUtils
     private static readonly int[] axisSplitCount = [1, 2, 4, 5, 10, 20, 40, 50, 100];
     private static readonly int[] axisIntervalSteps = [1, 2, 5, 10];
 
+    /// <summary>
+    /// Adjusts the interval of the specified axis.
+    /// </summary>
+    /// <param name="axis">The axis.</param>
+    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
     internal static void AdjustAxisInterval(this Axis axis, double pixcelWidthInterval = 30)
     {
         if (axis.IsLogarithmic)
@@ -120,6 +128,11 @@ internal static partial class UIUtils
             axis.AdjustAxisIntervalLinear(pixcelWidthInterval);
     } // internal static void AdjustAxisInterval (this Axis, [double])
 
+    /// <summary>
+    /// Adjusts the interval of the specified axis in linear scale.
+    /// </summary>
+    /// <param name="axis">The axis.</param>
+    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
     internal static void AdjustAxisIntervalLinear(this Axis axis, double pixcelWidthInterval = 50)
     {
         var min = axis.Minimum;
@@ -145,6 +158,11 @@ internal static partial class UIUtils
         axis.MinorGrid.IntervalOffset = offset;
     } // internal static void AdjustAxisIntervalLinear (this Axis, [double])
 
+    /// <summary>
+    /// Adjusts the interval of the specified axis in logarithmic scale.
+    /// </summary>
+    /// <param name="axis">The axis.</param>
+    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
     internal static void AdjustAxisIntervalLogarithmic(this Axis axis, double pixcelWidthInterval = 50)
     {
         var min = Math.Log10(axis.ScaleView.ViewMaximum);

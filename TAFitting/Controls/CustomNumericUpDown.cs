@@ -71,6 +71,7 @@ internal sealed class CustomNumericUpDown : NumericUpDown
         }
     } // private void UpDown (bool)
 
+    /// <inheritdoc/>
     override protected void OnMouseWheel(MouseEventArgs e)
     {
         if (e is HandledMouseEventArgs hme) hme.Handled = true;
@@ -89,6 +90,7 @@ internal sealed class CustomNumericUpDown : NumericUpDown
         }
     } // override protected void OnMouseWheel (MouseEventArgs)
 
+    /// <inheritdoc/>
     override protected void OnGotFocus(EventArgs e)
     {
         NegativeSignHandler.SetHyphenMinus();
@@ -96,6 +98,7 @@ internal sealed class CustomNumericUpDown : NumericUpDown
         base.OnGotFocus(e);
     } // override protected void OnGotFocus (EventArgs)
 
+    /// <inheritdoc/>
     override protected void OnLostFocus(EventArgs e)
     {
         NegativeSignHandler.SetMinusSign();

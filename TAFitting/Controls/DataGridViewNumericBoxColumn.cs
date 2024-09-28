@@ -72,6 +72,9 @@ internal class DataGridViewNumericBoxColumn : DataGridViewColumn
         }
     }
 
+    /// <summary>
+    /// Gets or sets the decimal places of the cells in the column.
+    /// </summary>
     internal int DecimalPlaces
     {
         get => ((DataGridViewNumericBoxCell)this.CellTemplate).DecimalPlaces;

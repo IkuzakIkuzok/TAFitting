@@ -23,12 +23,18 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal double Minimum { get; set; } = double.MinValue;
 
+    /// <summary>
+    /// Gets or sets the decimal places.
+    /// </summary>
     internal int DecimalPlaces
     {
         get => int.Parse(this.Style.Format[1..]);
         set => this.Style.Format = $"N{value}";
     }
 
+    /// <summary>
+    /// Gets or sets the maximum significant digit.
+    /// </summary>
     internal int Digit { get; set; } = 6;
 
     /// <summary>
@@ -36,8 +42,14 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal bool Invert { get; set; } = false;
 
+    /// <summary>
+    /// Gets a value indicating whether the cell is edited.
+    /// </summary>
     internal bool Edited { get; private set; } = false;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the edited state is frozen.
+    /// </summary>
     internal bool FreezeEditedState { get; set; } = false;
 
     protected double defaultValue = 0.0;
@@ -66,8 +78,10 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         this.defaultValue = defaultValue;
     } // ctor (double)
 
+    /// <inheritdoc/>
     override public Type ValueType => typeof(double);
 
+    /// <inheritdoc/>
     override public object DefaultNewRowValue => this.DefaultValue;
 
     /// <inheritdoc/>
@@ -78,6 +92,7 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
     } // override protected object GetFormattedValue (object, int, ref DataGridViewCellStyle, TypeConverter, TypeConverter, DataGridViewDataErrorContexts)
 
+    /// <inheritdoc/>
     override protected bool SetValue(int rowIndex, object value)
     {
         if (!this.FreezeEditedState) this.Edited = true;
@@ -89,9 +104,11 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         return base.SetValue(rowIndex, value);
     } // override protected bool SetValue (int, object)
 
+    /// <inheritdoc/>
     protected double GetDoubleValue(int rowIndex)
         => Math.Round((double)GetValue(rowIndex), this.Digit);
 
+    /// <inheritdoc/>
     override protected void OnKeyDown(KeyEventArgs e, int rowIndex)
     {
         if (e.Alt && this.DataGridView is not null)
@@ -107,6 +124,11 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         base.OnKeyDown(e, rowIndex);
     } // override protected void OnKeyDown (KeyEventArgs, int)
 
+    /// <summary>
+    /// Handles the up and down key events.
+    /// </summary>
+    /// <param name="e">The key event arguments.</param>
+    /// <param name="rowIndex">The row index.</param>
     private void HandleUpDown(KeyEventArgs e, int rowIndex)
     {
         /*

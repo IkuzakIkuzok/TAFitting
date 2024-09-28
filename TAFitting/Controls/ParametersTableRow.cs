@@ -3,6 +3,9 @@
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Represents a row of parameters.
+/// </summary>
 internal sealed class ParametersTableRow : DataGridViewRow
 {
     private bool inverted = false;
@@ -11,15 +14,26 @@ internal sealed class ParametersTableRow : DataGridViewRow
     private double GetCellValue(int index, double defaultValue) =>
         this.Cells[index].Value is double value ? value : defaultValue;
 
+    /// <summary>
+    /// Gets or sets the wavelength.
+    /// </summary>
     internal double Wavelength
     {
         get => GetCellValue(0, 0.0);
         set => this.Cells[0].Value = value;
     }
 
+    /// <summary>
+    /// Gets the number of parameters.
+    /// </summary>
     internal int ParametersCount
         => this.Cells.Count - 1;
 
+    /// <summary>
+    /// Gets or sets the parameter at the specified index.
+    /// </summary>
+    /// <param name="index">The index of the parameter.</param>
+    /// <returns>The parameter at the specified index.</returns>
     internal double this[int index]
     {
         get
@@ -33,6 +47,9 @@ internal sealed class ParametersTableRow : DataGridViewRow
         set => this.Cells[index + 1].Value = value;
     }
 
+    /// <summary>
+    /// Gets or sets the parameters.
+    /// </summary>
     internal IReadOnlyList<double> Parameters
     {
         get
@@ -50,6 +67,9 @@ internal sealed class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the parameters are inverted.
+    /// </summary>
     internal bool Inverted
     {
         get => this.inverted;
@@ -68,6 +88,9 @@ internal sealed class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the parameters are edited.
+    /// </summary>
     internal bool Edited
     {
         get
@@ -79,6 +102,9 @@ internal sealed class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the edited state is frozen.
+    /// </summary>
     internal bool FreezeEditedState
     {
         get
@@ -96,9 +122,16 @@ internal sealed class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Sets the magnitude columns.
+    /// </summary>
+    /// <param name="indices">The indices of the magnitude columns.</param>
     internal void SetMagnitudeColumns(IEnumerable<int> indices)
         => this.magnitudeColumns = indices.ToArray();
 
+    /// <summary>
+    /// Inverts the magnitude columns.
+    /// </summary>
     internal void InvertMagnitude()
         => this.Inverted = !this.Inverted;
 } // internal sealed class ParametersTableRow : DataGridViewRow

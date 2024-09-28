@@ -5,6 +5,9 @@ using TAFitting.Data;
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Represents a dialog for setting the filename format.
+/// </summary>
 [DesignerCategory("Code")]
 internal sealed class FileNameFormatDialog : Form
 {
@@ -12,18 +15,27 @@ internal sealed class FileNameFormatDialog : Form
     private readonly Label lb_ab, lb_b;
     private readonly Button ok;
 
+    /// <summary>
+    /// Gets or sets the 'a−b' format.
+    /// </summary>
     internal string AMinusBFormat
     {
         get => this.tb_ab.Text;
         set => this.tb_ab.Text = value;
     }
 
+    /// <summary>
+    /// Gets or sets the 'b' format.
+    /// </summary>
     internal string BFormat
     {
         get => this.tb_b.Text;
         set => this.tb_b.Text = value;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FileNameFormatDialog"/> class.
+    /// </summary>
     internal FileNameFormatDialog()
     {
         this.Text = "Filename format";
@@ -135,9 +147,15 @@ internal sealed class FileNameFormatDialog : Form
         UpdateText();
     } // ctor ()
 
+    /// <summary>
+    /// Updats the test filenames.
+    /// </summary>
     private void UpdateText(object? sender, EventArgs e)
         => UpdateText();
 
+    /// <summary>
+    /// Updats the test filenames.
+    /// </summary>
     private void UpdateText()
     {
         var format_ab = this.tb_ab.Text;

@@ -5,6 +5,9 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Represents a text box with delayed text changed event.
+/// </summary>
 [DesignerCategory("Code")]
 internal class DelayedTextBox : TextBox
 {
@@ -20,8 +23,15 @@ internal class DelayedTextBox : TextBox
     /// </summary>
     internal event EventHandler? DelayedTextChanged;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DelayedTextBox"/> class.
+    /// </summary>
     internal DelayedTextBox() : base() { }
 
+    /// <summary>
+    /// Raises the <see cref="DelayedTextChanged"/> event.
+    /// </summary>
+    /// <param name="e">The event data.</param>
     protected virtual void OnDelayedTextChanged(EventArgs e)
         => DelayedTextChanged?.Invoke(this, e);
 

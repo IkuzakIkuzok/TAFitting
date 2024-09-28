@@ -5,6 +5,9 @@ using TAFitting.Model;
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Represents a table of parameters.
+/// </summary>
 [DesignerCategory("Code")]
 internal sealed class ParametersTable : DataGridView
 {
@@ -12,17 +15,34 @@ internal sealed class ParametersTable : DataGridView
     private double[] initialValues = [];
     private int[] magnitudeColumns = [];
 
+    /// <summary>
+    /// Occurs when the selected row is changed.
+    /// </summary>
     internal event ParametersTableSelectionChangedEventHandler? SelectedRowChanged;
 
+    /// <summary>
+    /// Gets the parameter rows.
+    /// </summary>
     internal IEnumerable<ParametersTableRow> ParameterRows
         => this.Rows.OfType<ParametersTableRow>();
 
+    /// <summary>
+    /// Gets the not edited rows.
+    /// </summary>
     internal IEnumerable<ParametersTableRow> NotEditedRows
         => this.ParameterRows.Where(row => !row.Edited);
 
+    /// <summary>
+    /// Gets the parameter row at the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength.</param>
+    /// <returns>The parameter row at the specified wavelength.</returns>
     internal ParametersTableRow? this[double wavelength]
         => this.ParameterRows.FirstOrDefault(row => row.Wavelength == wavelength);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ParametersTable"/> class.
+    /// </summary>
     internal ParametersTable()
     {
         this.AllowUserToAddRows = false;
@@ -31,6 +51,7 @@ internal sealed class ParametersTable : DataGridView
         this.DefaultCellStyle.SelectionForeColor = Color.White;
     } // ctor ()
 
+    /// <inheritdoc/>
     override protected void OnKeyDown(KeyEventArgs e)
     {
         // Suppress moving to the next row when pressing Enter key
@@ -38,6 +59,7 @@ internal sealed class ParametersTable : DataGridView
         base.OnKeyDown(e);
     } // override protected void OnKeyDown (KeyEventArgs)
 
+    /// <inheritdoc/>
     override protected bool ProcessDialogKey(Keys keyData)
     {
         if (keyData == Keys.Enter && this.IsCurrentCellInEditMode)
@@ -48,18 +70,21 @@ internal sealed class ParametersTable : DataGridView
         return base.ProcessDialogKey(keyData);
     } // override protected bool ProcessDialogKey (Keys)
 
+    /// <inheritdoc/>
     override protected void OnCellBeginEdit(DataGridViewCellCancelEventArgs e)
     {
         NegativeSignHandler.SetHyphenMinus();
         base.OnCellBeginEdit(e);
     } // override protected void OnCellBeginEdit (DataGridViewCellCancelEventArgs)
 
+    /// <inheritdoc/>
     override protected void OnCellEndEdit(DataGridViewCellEventArgs e)
     {
         NegativeSignHandler.SetMinusSign();
         base.OnCellEndEdit(e);
     } // override protected void OnCellEndEdit (DataGridViewCellEventArgs)
 
+    /// <inheritdoc/>
     override protected void OnCellValidating(DataGridViewCellValidatingEventArgs e)
     {
         base.OnCellValidating(e);
@@ -112,6 +137,10 @@ internal sealed class ParametersTable : DataGridView
         }
     } // override protected void OnCellValidating (DataGridViewCellValidatingEventArgs)
 
+    /// <summary>
+    /// Sets the columns with the specified model.
+    /// </summary>
+    /// <param name="model">The fitting model.</param>
     internal void SetColumns(IFittingModel model)
     {
         this.Rows.Clear();
@@ -151,6 +180,11 @@ internal sealed class ParametersTable : DataGridView
             .ToArray();
     } // internal void SetColumns (IFittingModel)
 
+    /// <summary>
+    /// Gets the context menu of the specified column.
+    /// </summary>
+    /// <param name="column">The column.</param>
+    /// <returns>The context menu of the specified column.</returns>
     private ContextMenuStrip GetColumnContextMenu(DataGridViewColumn column)
     {
         var menu = new ContextMenuStrip();
@@ -191,6 +225,11 @@ internal sealed class ParametersTable : DataGridView
         BatchInput(column, this.NotEditedRows);
     } // private void BatchInputNotEditedRowsOnly (object?, EventArgs
 
+    /// <summary>
+    /// Batch inputs the specified column to the rows.
+    /// </summary>
+    /// <param name="column">The column.</param>
+    /// <param name="rows">The rows.</param>
     private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
     {
         var nib = new NumericInputBox()
@@ -212,12 +251,22 @@ internal sealed class ParametersTable : DataGridView
         SetFreezeEditedState(false);
     } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, IEnumerable<ParametersTableRow>)
 
+    /// <summary>
+    /// Sets the freeze edited state of the rows.
+    /// </summary>
+    /// <param name="value">The freeze edited state.</param>
     private void SetFreezeEditedState(bool value)
     {
         foreach (var row in this.ParameterRows)
             row.FreezeEditedState = value;
     } // private void SetFreezeEditedState (bool)
 
+    /// <summary>
+    /// Adds a row with the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength.</param>
+    /// <returns>The added row.</returns>
+    /// <exception cref="Exception">The columns are not set to the current instance.</exception>
     internal ParametersTableRow Add(double wavelength)
     {
         if (this.Columns.Count == 0) throw new Exception("Columns are not set.");
@@ -234,6 +283,7 @@ internal sealed class ParametersTable : DataGridView
         return row;
     } // internal ParametersTableRow Add (double)
 
+    /// <inheritdoc/>
     override protected void OnSelectionChanged(EventArgs e)
     {
         base.OnSelectionChanged(e);
