@@ -3,9 +3,15 @@
 
 namespace TAFitting.Controls.Spectra;
 
+/// <summary>
+/// Represents a table of times.
+/// </summary>
 [DesignerCategory("Code")]
 internal sealed class TimeTable : DataGridView
 {
+    /// <summary>
+    /// Gets the times.
+    /// </summary>
     internal IEnumerable<double> Times
         => this.Rows
                .Cast<DataGridViewRow>()
@@ -13,6 +19,9 @@ internal sealed class TimeTable : DataGridView
                .Select(row => (double)row.Cells["Time"].Value)
                .Order();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TimeTable"/> class.
+    /// </summary>
     internal TimeTable()
     {
         this.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
@@ -28,6 +37,7 @@ internal sealed class TimeTable : DataGridView
         this.Columns.Add(col);
     } // ctor ()
 
+    /// <inheritdoc/>
     override protected void OnSortCompare(DataGridViewSortCompareEventArgs e)
     {
         e.Handled = true;
@@ -36,6 +46,9 @@ internal sealed class TimeTable : DataGridView
             : 0;
     } // override protected void OnSortCompare (DataGridViewSortCompareEventArgs)
 
+    /// <summary>
+    /// Sets the colors of the rows.
+    /// </summary>
     internal void SetColors()
     {
         Sort(this.Columns["Time"], ListSortDirection.Ascending);

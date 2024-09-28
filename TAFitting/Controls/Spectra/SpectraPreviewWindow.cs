@@ -7,6 +7,9 @@ using TAFitting.Model;
 
 namespace TAFitting.Controls.Spectra;
 
+/// <summary>
+/// Represents a window for previewing spectra.
+/// </summary>
 [DesignerCategory("Code")]
 internal sealed class SpectraPreviewWindow : Form
 {
@@ -25,6 +28,9 @@ internal sealed class SpectraPreviewWindow : Form
     private int lineWidth = Program.SpectraLineWidth;
     private int markerSize = Program.SpectraMarkerSize;
 
+    /// <summary>
+    /// Gets or sets the ID of the model.
+    /// </summary>
     internal Guid ModelId
     {
         get => this.modelId;
@@ -36,6 +42,9 @@ internal sealed class SpectraPreviewWindow : Form
         }
     }
 
+    /// <summary>
+    /// Gets or sets the selected wavelength.
+    /// </summary>
     internal double SelectedWavelength
     {
         get => this.selectedWavelength;
@@ -47,8 +56,14 @@ internal sealed class SpectraPreviewWindow : Form
         }
     }
 
+    /// <summary>
+    /// Gets the model.
+    /// </summary>
     private IFittingModel Model => ModelManager.Models[this.modelId];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class.
+    /// </summary>
     internal SpectraPreviewWindow()
     {
         this.Text = "Spectra Preview";
