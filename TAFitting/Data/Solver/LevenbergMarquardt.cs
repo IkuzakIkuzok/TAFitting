@@ -161,8 +161,8 @@ internal sealed class LevenbergMarquardt
          * Therefore, we solve the linear equation αΔ=β instead.
          * `alpha` and `beta` are overwritten, but they are not needed anymore within the iteration.
          */
-        
-        // sweeping-out method
+
+        // Gaussian elimination
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
             var pivot = this.alpha[row, row];
@@ -172,9 +172,8 @@ internal sealed class LevenbergMarquardt
             }
             else
             {
-                for (var otherRow = 0; otherRow < this.numberOfParameters; ++otherRow)
+                for (var otherRow = row + 1; otherRow < this.numberOfParameters; ++otherRow)
                 {
-                    if (row == otherRow) continue;
                     var ratio = this.alpha[otherRow, row] / pivot;
                     for (var col = 0; col < this.numberOfParameters; ++col)
                         this.alpha[otherRow, col] -= ratio * this.alpha[row, col];
@@ -184,6 +183,13 @@ internal sealed class LevenbergMarquardt
                     this.alpha[row, col] /= pivot;
                 this.beta[row] /= pivot;
             }
+        }
+
+        for (var i = this.numberOfParameters - 1; i > 0; --i)
+        {
+            var b = this.beta[i];
+            for (var j = i - 1; j >= 0; --j)
+                this.beta[j] -= this.alpha[j, i] * b;
         }
 
         for (var i = 0; i < this.numberOfParameters; ++i)
