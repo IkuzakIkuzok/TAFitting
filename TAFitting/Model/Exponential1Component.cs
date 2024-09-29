@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace TAFitting.Model;
 
 [Guid("5C8EAF4E-C682-4524-BE0B-B0A1970E461B")]
-internal sealed class Exponential1Component : IFittingModel
+internal sealed class Exponential1Component : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
         new() { Name = "A0", IsMagnitude = true },
@@ -39,4 +39,18 @@ internal sealed class Exponential1Component : IFittingModel
         var t1 = parameters[2];
         return x => a0 + a1 * Math.Exp(-x / t1);
     } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
-} // internal sealed class Exponential1Component
+
+    /// <inheritdoc/>
+    public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+    {
+        var a1 = parameters[1];
+        var t1 = parameters[2];
+
+        var exp = Math.Exp(-x / t1);
+
+        var d_a0 = 1.0;
+        var d_a1 = exp;
+        var d_t1 = a1 * x * exp / (t1 * t1);
+        return [d_a0, d_a1, d_t1];
+    } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+} // internal sealed class Exponential1Component, IAnalyticallyDifferentiable

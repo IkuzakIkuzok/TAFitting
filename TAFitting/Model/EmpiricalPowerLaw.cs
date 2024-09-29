@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace TAFitting.Model;
 
 [Guid("84FCCACE-3DDF-42F5-92BF-7C6BE37B45C7")]
-internal sealed class EmpiricalPowerLaw : IFittingModel
+internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
         new Parameter { Name = "A0", InitialValue = 1e3, IsMagnitude = true },
@@ -38,4 +38,20 @@ internal sealed class EmpiricalPowerLaw : IFittingModel
         var alpha = parameters[2];
         return x => a0 / Math.Pow(1 + a * x, alpha);
     } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
-} // internal sealed class EmpiricalPowerLaw : IFittingModel
+
+    /// <inheritdoc/>
+    public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+    {
+        var a0 = parameters[0];
+        var a = parameters[1];
+        var alpha = parameters[2];
+
+        var ax = a * x;
+        var pow = Math.Pow(1 + ax, -alpha);
+
+        var d_a0 = 1 / pow;
+        var d_a = -a0 * x * Math.Pow(1 + ax, -1 - alpha) * alpha;
+        var d_alpha = -a0 * Math.Log(1 + ax) * pow;
+        return [d_a0, d_a, d_alpha];
+    } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+} // internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable
