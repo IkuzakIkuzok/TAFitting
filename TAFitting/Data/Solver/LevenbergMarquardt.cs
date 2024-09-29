@@ -6,6 +6,44 @@ using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 
 namespace TAFitting.Data.Solver;
 
+/*
+ * Levenberg-Marquardt algorithm for nonlinear least squares fitting.
+ * 
+ * Problem:
+ *  Minimize J = (1/2) ΣΣ F(𝕩, 𝕦)²
+ *  where 𝕩 is the observed data, and 𝕦 is the model parameters.
+ *  F = f(𝕦) - 𝕩 is difference between the observed data and the model function f,
+ *  which gives F(𝕩, 𝕦) = 0 if the model is perfect.
+ *  
+ * Solution:
+ *  The Levenberg-Marquardt algorithm is written as:
+ *      𝕦ₖ₊₁ = 𝕦ₖ - (H + λD[H])⁻¹∇J(𝕦ₖ)
+ *  where 𝕦ₖ is the current parameters, λ is the damping parameter, 
+ *  H is the Hessian matrix, D[H] is the diagonal of the Hessian matrix,
+ *  and ∇J is the gradient of the cost function.
+ *  
+ *  The damping parameter is set to a large value if the estimated parameters are far from the optimal solution.
+ *  This results in a steepest descent method.
+ *  In contrast, the damping parameter is set to a small value
+ *  if the estimated parameters are close to the optimal solution, which leads to a Gauss-Newton method.
+ *  
+ *  The step size vector Δ𝕦ₖ is calculated by solving the linear equation (H + λD[H])Δ𝕦ₖ = -∇J.
+ *  There is no need to calculate the inverse of the Hessian matrix.
+ *  
+ *  Calculation of the Hessian matrix, which requires the second derivative, is computationally expensive.
+ *  Therefore, it is approximated by the first derivatives.
+ *      ∂J/∂𝕦ᵢ = ΣΣ F(𝕩, 𝕦) ∂F(𝕩, 𝕦)/∂𝕦ᵢ
+ *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ = ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ + F(𝕩, 𝕦) ∂²F(𝕩, 𝕦)/∂𝕦ᵢ∂𝕦ⱼ)
+ *  If the 𝕦 is close to the optimal solution, the second term is negligible, i.e.,
+ *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ ≃ ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ)
+ *  
+ *  The first derivatives of F is equal to the partial derivatives of the model function f,
+ *  because the observed data 𝕩 is constant.
+ *  The calculation of the partial derivatives is computationally expensive,
+ *  and the same partial derivatives are used multiple times.
+ *  Therefore, the partial derivatives are calculated once and stored in a cache.
+ */
+
 /// <summary>
 /// Represents the Levenberg-Marquardt solver.
 /// </summary>
@@ -57,10 +95,10 @@ internal sealed class LevenbergMarquardt
     private readonly ParameterConstraints[] constraints;
 
     private readonly int numberOfParameters, numberOfDataPoints;
-    private readonly double[,] alpha;
-    private readonly double[] beta;
-    private readonly double[] temp;
-    private readonly double[,] derivatives;
+    private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
+    private readonly double[] gradient;
+    private readonly double[] temp;  // Temporary array for the partial derivatives calculation
+    private readonly double[,] derivatives;  // Cache for the partial derivatives
     private Func<double, double> func = null!;
 
     /// <summary>
@@ -85,8 +123,8 @@ internal sealed class LevenbergMarquardt
         this.numberOfParameters = this.Parameters.Count;
         this.numberOfDataPoints = this.x.Count;
         this.incrementedParameters = new double[this.numberOfParameters];
-        this.alpha = new double[this.numberOfParameters, this.numberOfParameters];
-        this.beta = new double[this.numberOfParameters];
+        this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
+        this.gradient = new double[this.numberOfParameters];
         this.temp = new double[this.numberOfParameters];
         this.derivatives = new double[this.numberOfDataPoints, this.numberOfParameters];
     } // ctor (IFittingModel)
@@ -117,9 +155,9 @@ internal sealed class LevenbergMarquardt
         {
             this.func = this.Model.GetFunction(this.parameters);
             chi2 = CalcChi2();
-            CalcDerivativesCache();
-            CalcAlpha();
-            CalcBeta();
+            ComputeDerivativesCache();
+            CalcHessian();
+            CalcGradient();
 
             SolveIncrements();
 
@@ -138,7 +176,7 @@ internal sealed class LevenbergMarquardt
             }
 
             ++iterCount;
-        } while (!Stop(iterCount, chi2, incrementedChi2));
+        } while (!CheckStop(iterCount, chi2, incrementedChi2));
     } // internal void Fit ()
 
     private double CalcChi2(Numbers parameters)
@@ -159,72 +197,72 @@ internal sealed class LevenbergMarquardt
          * We need Δ=α⁻¹β for the increments.
          * However, calculating the inverse of a matrix is computationally expensive.
          * Therefore, we solve the linear equation αΔ=β instead.
-         * `alpha` and `beta` are overwritten, but they are not needed anymore within the iteration.
+         * `hessian` and `gradient` are overwritten, but they are not needed anymore within the iteration.
          */
 
         // Gaussian elimination
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
-            var pivot = this.alpha[row, row];
+            var pivot = this.hessian[row, row];
             if (pivot == 0)
             {
-                this.beta[row] = 0;
+                this.gradient[row] = 0;
             }
             else
             {
                 for (var otherRow = row + 1; otherRow < this.numberOfParameters; ++otherRow)
                 {
-                    var ratio = this.alpha[otherRow, row] / pivot;
+                    var ratio = this.hessian[otherRow, row] / pivot;
                     for (var col = 0; col < this.numberOfParameters; ++col)
-                        this.alpha[otherRow, col] -= ratio * this.alpha[row, col];
-                    this.beta[otherRow] -= ratio * this.beta[row];
+                        this.hessian[otherRow, col] -= ratio * this.hessian[row, col];
+                    this.gradient[otherRow] -= ratio * this.gradient[row];
                 }
                 for (var col = 0; col < this.numberOfParameters; ++col)
-                    this.alpha[row, col] /= pivot;
-                this.beta[row] /= pivot;
+                    this.hessian[row, col] /= pivot;
+                this.gradient[row] /= pivot;
             }
         }
 
         for (var i = this.numberOfParameters - 1; i > 0; --i)
         {
-            var b = this.beta[i];
+            var b = this.gradient[i];
             for (var j = i - 1; j >= 0; --j)
-                this.beta[j] -= this.alpha[j, i] * b;
+                this.gradient[j] -= this.hessian[j, i] * b;
         }
 
         for (var i = 0; i < this.numberOfParameters; ++i)
-            this.incrementedParameters[i] = this.parameters[i] + this.beta[i];
+            this.incrementedParameters[i] = this.parameters[i] + this.gradient[i];
     } // private void SolveIncrements ()
 
-    private void CalcAlpha()
+    private void CalcHessian()
     {
         for (var i = 0; i < this.numberOfParameters; ++i)
             for (var j = 0; j < this.numberOfParameters; ++j)
-                this.alpha[i, j] = CalcAlphaElement(i, j);
-    } // private void CalcAlpha ()
+                this.hessian[i, j] = CalcHessianElement(i, j);
+    } // private void CalcHessian ()
     
-    private double CalcAlphaElement(int row, int col)
+    private double CalcHessianElement(int row, int col)
     {
         var res = Enumerable.Range(0, this.numberOfDataPoints).Select(i => this.derivatives[i, row] * this.derivatives[i, col]).Sum();
         if (row == col) res *= 1 + this.Lambda;
         return res;
-    } // private double CalcAlphaElement (int, int)
+    } // private double CalcHessianElement (int, int)
 
-    private void CalcBeta()
+    private void CalcGradient()
     {
         for (var i = 0; i < this.numberOfParameters; ++i)
-            this.beta[i] = CalcBetaElement(i);
-    } // private void CalcBeta ()
+            this.gradient[i] = CalcGradientElement(i);
+    } // private void CalcGradient ()
 
-    private double CalcBetaElement(int row)
+    private double CalcGradientElement(int row)
         => GetDiffs().Select((diff, i) => diff * this.derivatives[i, row]).Sum();
 
-    private void CalcDerivativesCache()
+    private void ComputeDerivativesCache()
     {
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             for (var j = 0; j < this.numberOfParameters; ++j)
                 this.derivatives[i, j] = CalcPartialDerivative(this.x[i], j);
-    } // private void CalcDerivativesCache ()
+    } // private void ComputeDerivativesCache ()
 
     private double CalcPartialDerivative(double x, int row)
     {
@@ -253,16 +291,6 @@ internal sealed class LevenbergMarquardt
             eps /= step;
         }
         return last_diff;
-
-        /*var delta = this.parameters[row] * 1e-4;
-        Array.Copy(this.parameters, 0, this.temp, 0, this.numberOfParameters);
-        this.temp[row] += delta;
-        var yPlus = this.Model.GetFunction(this.temp)(x);
-
-        this.temp[row] -= 2 * delta;
-        var yMinus = this.Model.GetFunction(this.temp)(x);
-
-        return (yPlus - yMinus) / (2 * delta);*/
     } // private double CalcPartialDerivative (Func<double, double>, int)
 
     private void UpdateParameters()
@@ -281,11 +309,11 @@ internal sealed class LevenbergMarquardt
         }
     } // private void CheckConstraints ()
 
-    private bool Stop(int iterCount, double chi2, double incrementedChi2)
+    private bool CheckStop(int iterCount, double chi2, double incrementedChi2)
     {
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
-    } // private bool Stop (int, double, double)
+    } // private bool CheckStop (int, double, double)
 
     private IEnumerable<double> GetDiffs() => this.x.Zip(this.y, (xi, yi) => yi - this.func(xi));
 } // internal sealed class LevenbergMarquardt
