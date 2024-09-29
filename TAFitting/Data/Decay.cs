@@ -20,12 +20,12 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the times.
     /// </summary>
-    internal IEnumerable<double> Times => this.times;
+    internal IReadOnlyList<double> Times => this.times;
 
     /// <summary>
     /// Gets the signals.
     /// </summary>
-    internal IEnumerable<double> Signals => this.signals;
+    internal IReadOnlyList<double> Signals => this.signals;
 
     /// <summary>
     /// Gets the minimum time.

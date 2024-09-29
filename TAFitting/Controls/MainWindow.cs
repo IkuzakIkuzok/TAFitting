@@ -688,7 +688,7 @@ internal sealed class MainWindow : Form
             var decay = this.decays?[wavelength];
             if (decay is null) continue;
 
-            var parameters = estimateProvider.EstimateParameters(decay.Times.ToList(), decay.Signals.ToList(), this.selectedModel);
+            var parameters = estimateProvider.EstimateParameters(decay.Times, decay.Signals, this.selectedModel);
             row.Parameters = parameters;
         }
     } // private void EstimateParametersAllRows (IEstimateProvider)
