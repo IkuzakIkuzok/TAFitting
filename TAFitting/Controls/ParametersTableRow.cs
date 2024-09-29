@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using TAFitting.Data;
+
 namespace TAFitting.Controls;
 
 /// <summary>
@@ -22,6 +24,11 @@ internal sealed class ParametersTableRow : DataGridViewRow
         get => GetCellValue(0, 0.0);
         set => this.Cells[0].Value = value;
     }
+
+    /// <summary>
+    /// Gets or sets the decay.
+    /// </summary>
+    internal Decay Decay { get; }
 
     /// <summary>
     /// Gets the number of parameters.
@@ -137,6 +144,11 @@ internal sealed class ParametersTableRow : DataGridViewRow
                     numericBoxCell.FreezeEditedState = value;
         }
     }
+
+    internal ParametersTableRow(Decay decay)
+    {
+        this.Decay = decay;
+    } // ctor (decay)
 
     /// <summary>
     /// Sets the magnitude columns.

@@ -541,9 +541,9 @@ internal sealed class MainWindow : Form
         this.parametersTable.Rows.Clear();
         foreach (var wl in this.decays.Keys)
         {
-            var row = this.parametersTable.Add(wl);
-
             var decay = this.decays[wl];
+            var row = this.parametersTable.Add(wl, decay);
+
             var signals = decay.Signals;
             var positives = signals.Where(s => s > 0).Count();
             var negatives = signals.Where(s => s < 0).Count();
@@ -638,9 +638,7 @@ internal sealed class MainWindow : Form
     private void ShowObserved()
     {
         if (this.row is null) return;
-        var wavelength = this.row.Wavelength;
-        var decay = this.decays?[wavelength];
-        if (decay is null) return;
+        var decay = this.row.Decay;
 
         if (this.cb_invert.Checked)
             decay = decay.Inverted;
@@ -657,9 +655,7 @@ internal sealed class MainWindow : Form
         if (this.selectedModel == Guid.Empty) return;
         var model = ModelManager.Models[this.selectedModel];
         if (this.row is null) return;
-        var wavelength = this.row.Wavelength;
-        var decay = this.decays?[wavelength];
-        if (decay is null) return;
+        var decay = this.row.Decay;
 
         var parameters = this.row.Parameters;
         var func = model.GetFunction(parameters);
@@ -744,9 +740,7 @@ internal sealed class MainWindow : Form
     private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
     {
         var model = ModelManager.Models[this.selectedModel];
-        var wavelength = row.Wavelength;
-        if (!(this.decays?.TryGetValue(wavelength, out var decay) ?? false)) return row.Parameters;
-        decay = decay.OnlyAfterT0;
+        var decay = row.Decay.OnlyAfterT0;
 
         var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
         {
@@ -776,9 +770,7 @@ internal sealed class MainWindow : Form
     {
         foreach (var row in rows)
         {
-            var wavelength = row.Wavelength;
-            var decay = this.decays?[wavelength];
-            if (decay is null) continue;
+            var decay = row.Decay;
 
             var parameters = estimateProvider.EstimateParameters(decay.Times, decay.Signals, this.selectedModel);
             row.Parameters = parameters;
@@ -795,9 +787,7 @@ internal sealed class MainWindow : Form
 
     private void CalculateRSquared(ParametersTableRow row)
     {
-        var walvelength = row.Wavelength;
-        var decay = this.decays?[walvelength]?.OnlyAfterT0;
-        if (decay is null) return;
+        var decay = row.Decay.OnlyAfterT0;
 
         var model = ModelManager.Models[this.selectedModel];
         var func = model.GetFunction(row.Parameters);

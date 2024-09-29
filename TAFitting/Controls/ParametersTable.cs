@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Controls;
@@ -284,11 +285,11 @@ internal sealed class ParametersTable : DataGridView
     /// <param name="wavelength">The wavelength.</param>
     /// <returns>The added row.</returns>
     /// <exception cref="Exception">The columns are not set to the current instance.</exception>
-    internal ParametersTableRow Add(double wavelength)
+    internal ParametersTableRow Add(double wavelength, Decay decay)
     {
         if (this.Columns.Count == 0) throw new Exception("Columns are not set.");
 
-        var row = new ParametersTableRow();
+        var row = new ParametersTableRow(decay);
         row.CreateCells(this);
         row.Wavelength = wavelength;
         row.FreezeEditedState = true;
@@ -299,7 +300,7 @@ internal sealed class ParametersTable : DataGridView
         row.FreezeEditedState = false;
         this.Rows.Add(row);
         return row;
-    } // internal ParametersTableRow Add (double)
+    } // internal ParametersTableRow Add (double, Decay)
 
     /// <inheritdoc/>
     override protected void OnSelectionChanged(EventArgs e)
