@@ -46,14 +46,11 @@ internal sealed class LevenbergMarquardt
     /// </summary>
     internal double MinimumDeltaChi2 { get; init; } = 1e-30;
 
-    private IEnumerable<double> Diffs
-    {
-        get
-        {
-            var func = this.Model.GetFunction(this.parameters);
-            return this.x.Zip(this.y, (xi, yi) => yi - func(xi));
-        }
-    }
+    /// <summary>
+    /// Gets the derivative threshold.
+    /// </summary>
+    internal double DerivativeThreshold { get; init; } = 1e-4;
+
     private readonly Numbers x, y;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
@@ -64,6 +61,7 @@ internal sealed class LevenbergMarquardt
     private readonly double[] beta;
     private readonly double[] temp;
     private readonly double[,] derivatives;
+    private Func<double, double> func = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LevenbergMarquardt"/> class.
@@ -117,6 +115,7 @@ internal sealed class LevenbergMarquardt
         double chi2, incrementedChi2;
         do
         {
+            this.func = this.Model.GetFunction(this.parameters);
             chi2 = CalcChi2();
             CalcDerivativesCache();
             CalcAlpha();
@@ -200,7 +199,7 @@ internal sealed class LevenbergMarquardt
     
     private double CalcAlphaElement(int row, int col)
     {
-        var res = this.x.Select((_, i) => this.derivatives[i, row] * this.derivatives[i, col]).Sum();
+        var res = Enumerable.Range(0, this.numberOfDataPoints).Select(i => this.derivatives[i, row] * this.derivatives[i, col]).Sum();
         if (row == col) res *= 1 + this.Lambda;
         return res;
     } // private double CalcAlphaElement (int, int)
@@ -212,7 +211,7 @@ internal sealed class LevenbergMarquardt
     } // private void CalcBeta ()
 
     private double CalcBetaElement(int row)
-        => this.Diffs.Select((diff, i) => diff * this.derivatives[i, row]).Sum();
+        => GetDiffs().Select((diff, i) => diff * this.derivatives[i, row]).Sum();
 
     private void CalcDerivativesCache()
     {
@@ -223,7 +222,7 @@ internal sealed class LevenbergMarquardt
 
     private double CalcPartialDerivative(double x, int row)
     {
-        var EPS = 1e-10;
+        var EPS = this.DerivativeThreshold;
         var last_diff = 0.0;
         var diff = double.PositiveInfinity;
         var err = double.PositiveInfinity;
@@ -231,7 +230,7 @@ internal sealed class LevenbergMarquardt
         var eps = 1.0;
         var step = 1.1;
 
-        var y0 = this.Model.GetFunction(this.parameters)(x);
+        var y0 = this.func(x);
         while (Math.Abs(last_diff - diff) > EPS)
         {
             if (eps <= EPS) break;
@@ -281,4 +280,6 @@ internal sealed class LevenbergMarquardt
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool Stop (int, double, double)
+
+    private IEnumerable<double> GetDiffs() => this.x.Zip(this.y, (xi, yi) => yi - this.func(xi));
 } // internal sealed class LevenbergMarquardt
