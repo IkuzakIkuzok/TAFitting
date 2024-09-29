@@ -700,7 +700,7 @@ internal sealed class MainWindow : Form
         LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
     } // private void LevenbergMarquardtEstimationAllRows (object?, EventArgs)
 
-    private void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
+    private async void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
     {
         var text = this.Text;
         this.Text += " - Fitting...";
@@ -712,16 +712,19 @@ internal sealed class MainWindow : Form
         if (source.Length >= Program.ParallelThreshold)
         {
             var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
-            Parallel.ForEach(source, (row) =>
+            await Task.Run(() => Parallel.ForEach(source, (row) =>
             {
                 var parameters = LevenbergMarquardtEstimation(row);
                 results.TryAdd(row, parameters);
-            });
+            }));
 
             // updating parameters on the UI thread
             // Invoke() in each iteration is too slow
             foreach (var (row, parameters) in results)
+            {
+                if (row.DataGridView is null) continue;  // Removed from the table during the fitting
                 row.Parameters = parameters;
+            }
         }
         else
         {
@@ -742,8 +745,8 @@ internal sealed class MainWindow : Form
     {
         var model = ModelManager.Models[this.selectedModel];
         var wavelength = row.Wavelength;
-        var decay = this.decays?[wavelength]?.OnlyAfterT0;
-        if (decay is null) return row.Parameters;
+        if (!(this.decays?.TryGetValue(wavelength, out var decay) ?? false)) return row.Parameters;
+        decay = decay.OnlyAfterT0;
 
         var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
         {
