@@ -16,6 +16,8 @@ internal sealed class ParametersTable : DataGridView
     private double[] initialValues = [];
     private int[] magnitudeColumns = [];
 
+    internal IFittingModel? Model { get; private set; }
+
     private int ParametersCount => this.constraints.Length;
 
     /// <summary>
@@ -146,6 +148,17 @@ internal sealed class ParametersTable : DataGridView
         }
     } // override protected void OnCellValidating (DataGridViewCellValidatingEventArgs)
 
+    /// <inheritdoc/>
+    override protected void OnCellValueChanged(DataGridViewCellEventArgs e)
+    {
+        base.OnCellValueChanged(e);
+
+        if (e.RowIndex < 0) return;
+        if (e.ColumnIndex < 1 || e.ColumnIndex > this.ColumnCount - 2) return;
+        if (this.Rows[e.RowIndex] is not ParametersTableRow row) return;
+        CalculateRSquared(row);
+    } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
+
     /// <summary>
     /// Sets the columns with the specified model.
     /// </summary>
@@ -154,6 +167,8 @@ internal sealed class ParametersTable : DataGridView
     {
         this.Rows.Clear();
         this.Columns.Clear();
+
+        this.Model = model;
 
         var col_wavelength = new DataGridViewTextBoxColumn
         {
@@ -317,4 +332,52 @@ internal sealed class ParametersTable : DataGridView
 
         SelectedRowChanged?.Invoke(this, new ParametersTableSelectionChangedEventArgs(this.ParameterRows.ElementAt(rowIndex)));
     } // override protected void OnSelectionChanged (EventArgs)
+
+    /// <summary>
+    /// Recalculates the R-squared values.
+    /// </summary>
+    internal void RecalculateRSquared()
+    {
+        foreach (var row in this.ParameterRows)
+            CalculateRSquared(row);
+    } // internal void RecalculateRSquared ()
+
+    private void CalculateRSquared(ParametersTableRow row)
+    {
+        if (this.Model is null) return;
+
+        var decay = row.Decay.OnlyAfterT0;
+
+        var func = this.Model.GetFunction(row.Parameters);
+        var inverse = row.Inverted ? -1 : 1;
+        var scaler = this.Model.YLogScale ? Math.Log10 : (Func<double, double>)(x => x);
+
+        var X = decay.Times.ToArray();
+        var Y = decay.Signals.Select(y => y * inverse).Select(scaler).ToArray();
+        var average = Y.Where(y => !double.IsNaN(y)).Average();
+        var Se = 0.0;
+        var St = 0.0;
+        var N = 0;
+        foreach ((var x, var y) in X.Zip(Y))
+        {
+            if (double.IsNaN(y))
+            {
+                continue;
+            }
+
+            var y_fit = scaler(func(x) * inverse);
+            if (double.IsNaN(y_fit))
+            {
+                continue;
+            }
+
+            var de = y - y_fit;
+            var dt = y - average;
+            Se += Math.Pow(de, 2);
+            St += Math.Pow(dt, 2);
+            ++N;
+        }
+        var p = row.Parameters.Count;
+        row.RSquared = 1 - Se / St * (N - 1) / (N - p - 1);
+    } // private void CalculateRSquared (ParametersTableRow)
 } // internal sealed class ParametersTable : DataGridView
