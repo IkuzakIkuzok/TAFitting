@@ -39,6 +39,12 @@ public sealed class AppConfig
     public ModelConfig ModelConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the solver configuration.
+    /// </summary>
+    [XmlElement("solver")]
+    public SolverConfig SolverConfig { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the decay loading configuration.
     /// </summary>
     [XmlElement("decay-loading")]

@@ -138,6 +138,16 @@ internal static class Program
         }
     }
 
+    internal static int ParallelThreshold
+    {
+        get => Config.SolverConfig.ParallelThreshold;
+        set
+        {
+            Config.SolverConfig.ParallelThreshold = value;
+            SaveConfig();
+        }
+    }
+
     /// <summary>
     /// Gets or sets the filename format of the A-B signal.
     /// </summary>

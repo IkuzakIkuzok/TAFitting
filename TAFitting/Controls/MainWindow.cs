@@ -2,11 +2,13 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using Microsoft.Win32;
+using System.Collections.Concurrent;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.Spectra;
 using TAFitting.Data;
+using TAFitting.Data.Solver;
 using TAFitting.Model;
 
 namespace TAFitting.Controls;
@@ -274,6 +276,25 @@ internal sealed class MainWindow : Form
         var menu_dataFileNameFormat = new ToolStripMenuItem("&Filename format");
         menu_dataFileNameFormat.Click += EditFilenameFormat;
         menu_data.DropDownItems.Add(menu_dataFileNameFormat);
+
+        menu_data.DropDownItems.Add(new ToolStripSeparator());
+
+        var menu_dataLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt");
+        menu_data.DropDownItems.Add(menu_dataLma);
+
+        var menu_dataLmaSelected = new ToolStripMenuItem("Selected row")
+        {
+            ShortcutKeys = Keys.Control | Keys.L,
+        };
+        menu_dataLmaSelected.Click += LevenbergMarquardtEstimationSelectedRow;
+        menu_dataLma.DropDownItems.Add(menu_dataLmaSelected);
+
+        var menu_dataLmaAll = new ToolStripMenuItem("All rows")
+        {
+            ShortcutKeys = Keys.Control | Keys.Shift | Keys.L,
+        };
+        menu_dataLmaAll.Click += LevenbergMarquardtEstimationAllRows;
+        menu_dataLma.DropDownItems.Add(menu_dataLmaAll);
 
         menu_data.DropDownItems.Add(new ToolStripSeparator());
 
@@ -663,6 +684,63 @@ internal sealed class MainWindow : Form
         var pixelInterval = this.axisY.IsLogarithmic ? 30 : 100;
         this.axisY.AdjustAxisInterval(pixelInterval);
     } // private void AdjustYAxisInterval (object?, EventArgs)
+
+    private void LevenbergMarquardtEstimationSelectedRow(object? sender, EventArgs e)
+    {
+        if (this.selectedModel == Guid.Empty) return;
+        if (this.decays is null) return;
+        if (this.row is null) return;
+        LevenbergMarquardtEstimation([this.row]);
+    } // private void LevenbergMarquardtEstimationSelectedRow (object?, EventArgs)
+
+    private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
+    {
+        if (this.selectedModel == Guid.Empty) return;
+        if (this.decays is null) return;
+        LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
+    } // private void LevenbergMarquardtEstimationAllRows (object?, EventArgs)
+
+    private void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
+    {
+        var text = this.Text;
+        this.Text += " - Fitting...";
+        var model = ModelManager.Models[this.selectedModel];
+        var source = rows.ToArray();
+
+        if (source.Length >= Program.ParallelThreshold)
+        {
+            var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
+            Parallel.ForEach(source, (row) =>
+            {
+                var parameters = LevenbergMarquardtEstimation(row);
+                results.TryAdd(row, parameters);
+            });
+
+            // updating parameters on the UI thread
+            // Invoke() in each iteration is too slow
+            foreach (var (row, parameters) in results)
+                row.Parameters = parameters;
+        }
+        else
+        {
+            foreach (var row in rows)
+                row.Parameters = LevenbergMarquardtEstimation(row);
+        }
+
+        this.Text = text;
+    } // private void LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
+
+    private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
+    {
+        var model = ModelManager.Models[this.selectedModel];
+        var wavelength = row.Wavelength;
+        var decay = this.decays?[wavelength]?.OnlyAfterT0;
+        if (decay is null) return row.Parameters;
+
+        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters);
+        lma.Fit();
+        return lma.Parameters;
+    } // private void LevenbergMarquardtEstimation (ParametersTableRow)
 
     private void EstimateParametersAllRows(object? sender, EventArgs e)
     {
