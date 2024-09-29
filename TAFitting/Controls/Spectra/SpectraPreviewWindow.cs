@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Excel;
 using TAFitting.Model;
@@ -277,40 +278,47 @@ internal sealed class SpectraPreviewWindow : Form
 
         if (this.parameters.Count == 0) return;
 
-        var wlMin = this.parameters.Keys.Min();
-        var wlMax = this.parameters.Keys.Max();
-
-        DrawHorizontalLine(wlMin, wlMax);
-
-        this.timeTable.SetColors();
-
-        var maskingRanges = this.maskingRangeBox.MaskingRanges;
-        var wavelengths = this.parameters.Keys.Order().ToArray();
-        var masked = maskingRanges.GetMaskedPoints(wavelengths);
-        var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
-
-        var times = this.timeTable.Times.ToArray();
-        var funcs = this.parameters.ToDictionary(
-            kv => kv.Key,
-            kv => model.GetFunction(kv.Value)
-        );
-        var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
-        var index = 0;
-        var sigMin = double.MaxValue;
-        var sigMax = double.MinValue;
-        foreach (var time in times)
+        try
         {
-            (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
-            sigMin = Math.Min(sigMin, min);
-            sigMax = Math.Max(sigMax, max);
+            var wlMin = this.parameters.Keys.Min();
+            var wlMax = this.parameters.Keys.Max();
+
+            DrawHorizontalLine(wlMin, wlMax);
+
+            this.timeTable.SetColors();
+
+            var maskingRanges = this.maskingRangeBox.MaskingRanges;
+            var wavelengths = this.parameters.Keys.Order().ToArray();
+            var masked = maskingRanges.GetMaskedPoints(wavelengths);
+            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
+
+            var times = this.timeTable.Times.ToArray();
+            var funcs = this.parameters.ToDictionary(
+                kv => kv.Key,
+                kv => model.GetFunction(kv.Value)
+            );
+            var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
+            var index = 0;
+            var sigMin = double.MaxValue;
+            var sigMax = double.MinValue;
+            foreach (var time in times)
+            {
+                (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
+                sigMin = Math.Min(sigMin, min);
+                sigMax = Math.Max(sigMax, max);
+            }
+
+            this.axisX.Minimum = wlMin;
+            this.axisX.Maximum = wlMax;
+            this.axisY.Minimum = Math.Min(sigMin * 1.1, 0.0);
+            this.axisY.Maximum = Math.Max(sigMax * 1.1, 0.0);
+
+            AdjustAxisIntervals();
         }
-
-        this.axisX.Minimum = wlMin;
-        this.axisX.Maximum = wlMax;
-        this.axisY.Minimum = Math.Min(sigMin * 1.1, 0.0);
-        this.axisY.Maximum = Math.Max(sigMax * 1.1, 0.0);
-
-        AdjustAxisIntervals();
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
+        }
     } // private void DrawSpectra ()
 
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
