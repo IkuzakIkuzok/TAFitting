@@ -98,8 +98,10 @@ internal sealed class LevenbergMarquardt
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
     private readonly double[] temp;  // Temporary array for the partial derivatives calculation
-    private readonly double[,] derivatives;  // Cache for the partial derivatives
+    private readonly double[][] derivatives;  // Cache for the partial derivatives
     private Func<double, double> func = null!;
+    private readonly IAnalyticallyDifferentiable? differentiable;
+    private readonly Action ComputeDerivativesCache;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LevenbergMarquardt"/> class.
@@ -117,6 +119,16 @@ internal sealed class LevenbergMarquardt
         this.x = x;
         this.y = y;
 
+        if (this.Model is IAnalyticallyDifferentiable diff)
+        {
+            this.differentiable = diff;
+            this.ComputeDerivativesCache = ComputeDerivativesAnalytically;
+        }
+        else
+        {
+            this.ComputeDerivativesCache = ComputeDerivativesCacheNumerically;
+        }
+
         this.parameters = model.Parameters.Select(p => p.InitialValue).ToArray();
         this.constraints = model.Parameters.Select(p => p.Constraints).ToArray();
         
@@ -126,7 +138,9 @@ internal sealed class LevenbergMarquardt
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
         this.temp = new double[this.numberOfParameters];
-        this.derivatives = new double[this.numberOfDataPoints, this.numberOfParameters];
+        this.derivatives = new double[this.numberOfDataPoints][];
+        for (var i = 0; i < this.numberOfDataPoints; ++i)
+            this.derivatives[i] = new double[this.numberOfParameters];
     } // ctor (IFittingModel)
 
     /// <summary>
@@ -155,7 +169,7 @@ internal sealed class LevenbergMarquardt
         {
             this.func = this.Model.GetFunction(this.parameters);
             chi2 = CalcChi2();
-            ComputeDerivativesCache();
+            this.ComputeDerivativesCache();
             CalcHessian();
             CalcGradient();
 
@@ -243,7 +257,7 @@ internal sealed class LevenbergMarquardt
     
     private double CalcHessianElement(int row, int col)
     {
-        var res = Enumerable.Range(0, this.numberOfDataPoints).Select(i => this.derivatives[i, row] * this.derivatives[i, col]).Sum();
+        var res = Enumerable.Range(0, this.numberOfDataPoints).Select(i => this.derivatives[i][row] * this.derivatives[i][col]).Sum();
         if (row == col) res *= 1 + this.Lambda;
         return res;
     } // private double CalcHessianElement (int, int)
@@ -255,14 +269,27 @@ internal sealed class LevenbergMarquardt
     } // private void CalcGradient ()
 
     private double CalcGradientElement(int row)
-        => GetDiffs().Select((diff, i) => diff * this.derivatives[i, row]).Sum();
+        => GetDiffs().Select((diff, i) => diff * this.derivatives[i][row]).Sum();
 
-    private void ComputeDerivativesCache()
+    private void ComputeDerivativesAnalytically()
+    {
+        if (this.differentiable is null) return;
+        for (var i = 0; i < this.numberOfDataPoints; ++i)
+            Array.Copy(
+                this.differentiable.ComputeDifferentials(this.parameters, this.x[i]),
+                0,
+                this.derivatives[i],
+                0,
+                this.numberOfParameters
+            );
+    } // private void ComputeDerivativesCacheAnalytically ()
+
+    private void ComputeDerivativesCacheNumerically()
     {
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             for (var j = 0; j < this.numberOfParameters; ++j)
-                this.derivatives[i, j] = CalcPartialDerivative(this.x[i], j);
-    } // private void ComputeDerivativesCache ()
+                this.derivatives[i][j] = CalcPartialDerivative(this.x[i], j);
+    } // private void ComputeDerivativesCacheNumerically ()
 
     private double CalcPartialDerivative(double x, int row)
     {
