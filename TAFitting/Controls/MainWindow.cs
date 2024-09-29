@@ -504,7 +504,7 @@ internal sealed class MainWindow : Form
 
         if (guid == this.selectedModel) return;
 
-        if ((this.decays?.Count ?? 0) > 0 && this.selectedModel != Guid.Empty)
+        if (this.parametersTable.Edited)
         {
             var dr = MessageBox.Show(
                 "Changing the model will clear the current fitting parameters. Do you want to continue?",
