@@ -745,7 +745,10 @@ internal sealed class MainWindow : Form
         var decay = this.decays?[wavelength]?.OnlyAfterT0;
         if (decay is null) return row.Parameters;
 
-        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters);
+        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
+        {
+            MaxIteration = Program.MaxIterations,
+        };
         lma.Fit();
         return lma.Parameters;
     } // private void LevenbergMarquardtEstimation (ParametersTableRow)

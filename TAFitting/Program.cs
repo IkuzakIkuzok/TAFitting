@@ -138,12 +138,28 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the threshold data count for parallel processing.
+    /// </summary>
     internal static int ParallelThreshold
     {
         get => Config.SolverConfig.ParallelThreshold;
         set
         {
             Config.SolverConfig.ParallelThreshold = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum number of iterations.
+    /// </summary>
+    internal static int MaxIterations
+    {
+        get => Config.SolverConfig.MaxIterations;
+        set
+        {
+            Config.SolverConfig.MaxIterations = value;
             SaveConfig();
         }
     }

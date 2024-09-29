@@ -18,6 +18,12 @@ public sealed class SolverConfig
     public int ParallelThreshold { get; set; } = 4;
 
     /// <summary>
+    /// Gets or sets the maximum number of iterations.
+    /// </summary>
+    [XmlElement("max-iterations")]
+    public int MaxIterations { get; set; } = 100;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="SolverConfig"/> class.
     /// </summary>
     public SolverConfig() { }
