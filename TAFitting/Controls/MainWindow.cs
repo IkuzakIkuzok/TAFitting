@@ -793,7 +793,7 @@ internal sealed class MainWindow : Form
     private void CalculateRSquared(ParametersTableRow row)
     {
         var walvelength = row.Wavelength;
-        var decay = this.decays?[walvelength];
+        var decay = this.decays?[walvelength]?.OnlyAfterT0;
         if (decay is null) return;
 
         var model = ModelManager.Models[this.selectedModel];
@@ -801,9 +801,8 @@ internal sealed class MainWindow : Form
         var inverse = row.Inverted ? -1 : 1;
         var scaler = model.YLogScale ? Math.Log10 : (Func<double, double>)(x => x);
 
-        var idx_t0 = decay.Times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
-        var X = decay.Times.Skip(idx_t0).ToArray();
-        var Y = decay.Signals.Skip(idx_t0).Select(y => y * inverse).Select(scaler).ToArray();
+        var X = decay.Times.ToArray();
+        var Y = decay.Signals.Select(y => y * inverse).Select(scaler).ToArray();
         var average = Y.Where(y => !double.IsNaN(y)).Average();
         var Se = 0.0;
         var St = 0.0;
