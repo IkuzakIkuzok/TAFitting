@@ -62,6 +62,15 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal Decay Inverted => new(this.times, this.signals.Select(s => -s).ToArray());
 
+    internal Decay OnlyAfterT0
+    {
+        get
+        {
+            var index_t0 = this.times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
+            return new(this.times[index_t0..], this.signals[index_t0..]);
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Decay"/> class.
     /// </summary>
