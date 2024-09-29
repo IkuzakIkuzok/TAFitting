@@ -707,6 +707,8 @@ internal sealed class MainWindow : Form
         var model = ModelManager.Models[this.selectedModel];
         var source = rows.ToArray();
 
+        var start = DateTime.Now;
+
         if (source.Length >= Program.ParallelThreshold)
         {
             var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
@@ -727,7 +729,13 @@ internal sealed class MainWindow : Form
                 row.Parameters = LevenbergMarquardtEstimation(row);
         }
 
+        var elapsed = DateTime.Now - start;
+
         this.Text = text;
+        FadingMessageBox.Show(
+            $"Fitting completed in {elapsed.TotalSeconds:F1} seconds.",
+            0.8, 1000, 75, 0.1
+        );
     } // private void LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
 
     private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
