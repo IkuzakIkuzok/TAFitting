@@ -13,7 +13,7 @@ namespace TAFitting;
 
 internal static class Program
 {
-    internal static readonly string AppLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+    internal static readonly string AppLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
     /// <summary>
     /// Gets the main window.
@@ -50,6 +50,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the line color of the observed data.
+    /// </summary>
     internal static Color ObservedColor
     {
         get => Config.AppearanceConfig.ObservedColor;
@@ -60,6 +63,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the line color of the fit lines.
+    /// </summary>
     internal static Color FitColor
     {
         get => Config.AppearanceConfig.FitColor;
@@ -83,6 +89,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the marker size of the spectra lines.
+    /// </summary>
     internal static int SpectraLineWidth
     {
         get => Config.AppearanceConfig.Spectra.LineWidth;
@@ -94,6 +103,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the marker size of the spectra.
+    /// </summary>
     internal static int SpectraMarkerSize
     {
         get => Config.AppearanceConfig.Spectra.MarkerSize;
@@ -133,6 +145,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets the default model.
+    /// </summary>
     internal static Guid DefaultModel
     {
         get => Config.ModelConfig.DefaultModel;
@@ -143,6 +158,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to use the default model.
+    /// </summary>
     internal static bool AutoFit
     {
         get => Config.SolverConfig.AutoFit;
