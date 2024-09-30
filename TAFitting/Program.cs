@@ -1,8 +1,13 @@
 
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Reflection;
+using System.Resources;
 using TAFitting.Config;
 using TAFitting.Controls;
+using TAFitting.Properties;
+
+[assembly: NeutralResourcesLanguage("en-US")]
 
 namespace TAFitting;
 
@@ -247,6 +252,7 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        typeof(Form).GetField("defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
         Application.Run(MainWindow);
     } // private static void Main ()
