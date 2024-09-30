@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace TAFitting.Model;
+namespace TAFitting.Model.Exponential;
 
 [Guid("5C8EAF4E-C682-4524-BE0B-B0A1970E461B")]
 internal sealed class Exponential1Component : IFittingModel, IAnalyticallyDifferentiable

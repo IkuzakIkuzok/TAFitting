@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace TAFitting.Model;
+namespace TAFitting.Model.Polynomial;
 
 /// <summary>
 /// Represents a 3rd-order polynomial model.

@@ -57,7 +57,7 @@ internal sealed class SpectraPreviewWindow : Form
     /// <summary>
     /// Gets the model.
     /// </summary>
-    private IFittingModel Model => ModelManager.Models[this.modelId];
+    private IFittingModel Model => ModelManager.Models[this.modelId].Model;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class.

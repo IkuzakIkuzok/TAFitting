@@ -147,7 +147,7 @@ internal sealed class MainWindow : Form
         this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
         this.parametersTable.UserDeletedRow += RemoveDecay;
         if (this.selectedModel != Guid.Empty)
-            this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel]);
+            this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel].Model);
 
         #endregion params
 
@@ -430,36 +430,45 @@ internal sealed class MainWindow : Form
     private void UpdateModelList()
     {
         this.menu_model.DropDownItems.Clear();
-        var models = ModelManager.Models;
-        foreach ((var guid, var model) in models)
+        var models = ModelManager.Models.GroupBy(m => m.Value.Category);
+        foreach (var category in models)
         {
-            var modelItem = new ToolStripMenuItem(model.Name)
+            var categoryName = category.Key;
+            if (string.IsNullOrEmpty(categoryName))
+                categoryName = "Other";
+            var categoryItem = new ToolStripMenuItem(categoryName);
+            this.menu_model.DropDownItems.Add(categoryItem);
+
+            foreach ((var guid, var model) in category)
             {
-                Tag = guid,
-                Checked = guid == this.selectedModel,
-            };
-            modelItem.Click += SelectModel;
-            this.menu_model.DropDownItems.Add(modelItem);
-
-            if (!ModelManager.EstimateProviders.TryGetValue(guid, out var providers)) continue;
-            foreach (var provider in providers)
-            {
-                var estimateItem = new ToolStripMenuItem(provider.Name);
-                modelItem.DropDownItems.Add(estimateItem);
-
-                var estimateAll = new ToolStripMenuItem("All rows")
+                var modelItem = new ToolStripMenuItem(model.Model.Name)
                 {
-                    Tag = provider,
+                    Tag = guid,
+                    Checked = guid == this.selectedModel,
                 };
-                estimateAll.Click += EstimateParametersAllRows;
-                estimateItem.DropDownItems.Add(estimateAll);
+                modelItem.Click += SelectModel;
+                categoryItem.DropDownItems.Add(modelItem);
 
-                var estimateNotEdited = new ToolStripMenuItem("Not edited rows only")
+                if (!ModelManager.EstimateProviders.TryGetValue(guid, out var providers)) continue;
+                foreach (var provider in providers)
                 {
-                    Tag = provider,
-                };
-                estimateNotEdited.Click += EstimateParametersNotEditedRows;
-                estimateItem.DropDownItems.Add(estimateNotEdited);
+                    var estimateItem = new ToolStripMenuItem(provider.Name);
+                    modelItem.DropDownItems.Add(estimateItem);
+
+                    var estimateAll = new ToolStripMenuItem("All rows")
+                    {
+                        Tag = provider,
+                    };
+                    estimateAll.Click += EstimateParametersAllRows;
+                    estimateItem.DropDownItems.Add(estimateAll);
+
+                    var estimateNotEdited = new ToolStripMenuItem("Not edited rows only")
+                    {
+                        Tag = provider,
+                    };
+                    estimateNotEdited.Click += EstimateParametersNotEditedRows;
+                    estimateItem.DropDownItems.Add(estimateNotEdited);
+                }
             }
         }
         
@@ -517,13 +526,17 @@ internal sealed class MainWindow : Form
 
         foreach (var child in this.menu_model.DropDownItems)
         {
-            if (child is not ToolStripMenuItem menuItem) continue;
-            menuItem.Checked = false;
+            if (child is not ToolStripMenuItem categoryItem) continue;
+            foreach (var i in categoryItem.DropDownItems)
+            {
+                if (i is not ToolStripMenuItem modelItem) continue;
+                modelItem.Checked = false;
+            }
         }
 
         item.Checked = true;
         this.selectedModel = Program.DefaultModel = guid;
-        var model = ModelManager.Models[guid];
+        var model = ModelManager.Models[guid].Model;
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
         this.parametersTable.SetColumns(model);
@@ -574,7 +587,7 @@ internal sealed class MainWindow : Form
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
 
-        var model = ModelManager.Models[this.selectedModel];
+        var model = ModelManager.Models[this.selectedModel].Model;
         var parameters = model.Parameters.Select(p => p.Name);
         var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
         foreach (var r in rows)
@@ -661,7 +674,7 @@ internal sealed class MainWindow : Form
     private void ShowFit()
     {
         if (this.selectedModel == Guid.Empty) return;
-        var model = ModelManager.Models[this.selectedModel];
+        var model = ModelManager.Models[this.selectedModel].Model;
         if (this.row is null) return;
         var decay = this.row.Decay;
 
@@ -755,7 +768,7 @@ internal sealed class MainWindow : Form
 
     private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
     {
-        var model = ModelManager.Models[this.selectedModel];
+        var model = ModelManager.Models[this.selectedModel].Model;
         var decay = row.Decay.OnlyAfterT0;
 
         var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)

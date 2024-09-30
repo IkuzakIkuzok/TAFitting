@@ -3,13 +3,13 @@
 
 using System.Runtime.InteropServices;
 
-namespace TAFitting.Model;
+namespace TAFitting.Model.Polynomial;
 
 /// <summary>
-/// Represents a 9th-order polynomial model.
+/// Represents an 8th-order polynomial model.
 /// </summary>
-[Guid("913359D9-FA8A-43FF-AEFD-4C2E48DD5A28")]
-internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
+[Guid("F68E43C2-6417-480C-BEB4-898B7F335757")]
+internal sealed class Polynomial8 : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
         new() { Name = "A0", InitialValue = +1e+03, IsMagnitude = true },
@@ -21,17 +21,16 @@ internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
         new() { Name = "A6", InitialValue = +1e-06, IsMagnitude = true },
         new() { Name = "A7", InitialValue = -1e-08, IsMagnitude = true },
         new() { Name = "A8", InitialValue = +1e-10, IsMagnitude = true },
-        new() { Name = "A9", InitialValue = -1e-12, IsMagnitude = true },
     ];
 
     /// <inheritdoc/>
-    public string Name => "Poly9";
+    public string Name => "Poly8";
 
     /// <inheritdoc/>
-    public string Description => "9th-order polynomial model";
+    public string Description => "8th-order polynomial model";
 
     /// <inheritdoc/>
-    public string ExcelFormula => "[A0] + [A1] * $X + [A2] * $X^2 + [A3] * $X^3 + [A4] * $X^4 + [A5] * $X^5 + [A6] * $X^6 + [A7] * $X^7 + [A8] * $X^8 + [A9] * $X^9";
+    public string ExcelFormula => "[A0] + [A1] * $X + [A2] * $X^2 + [A3] * $X^3 + [A4] * $X^4 + [A5] * $X^5 + [A6] * $X^6 + [A7] * $X^7 + [A8] * $X^8";
 
     /// <inheritdoc/>
     public IReadOnlyList<Parameter> Parameters => parameters;
@@ -54,7 +53,6 @@ internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
         var a6 = parameters[6];
         var a7 = parameters[7];
         var a8 = parameters[8];
-        var a9 = parameters[9];
 
         return (x) =>
         {
@@ -65,8 +63,7 @@ internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
             var x6 = x5 * x;
             var x7 = x6 * x;
             var x8 = x7 * x;
-            var x9 = x8 * x;
-            return a0 + a1 * x + a2 * x2 + a3 * x3 + a4 * x4 + a5 * x5 + a6 * x6 + a7 * x7 + a8 * x8 + a9 * x9;
+            return a0 + a1 * x + a2 * x2 + a3 * x3 + a4 * x4 + a5 * x5 + a6 * x6 + a7 * x7 + a8 * x8;
         };
     } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
 
@@ -82,7 +79,6 @@ internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
         var d_a6 = d_a5 * x;
         var d_a7 = d_a6 * x;
         var d_a8 = d_a7 * x;
-        var d_a9 = d_a8 * x;
-        return [d_a0, d_a1, d_a2, d_a3, d_a4, d_a5, d_a6, d_a7, d_a8, d_a9];
+        return [d_a0, d_a1, d_a2, d_a3, d_a4, d_a5, d_a6, d_a7, d_a8];
     } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
-} // internal sealed class Polynomial9 : IFittingModel, IAnalyticallyDifferentiable
+} // internal sealed class Polynomial8 : IFittingModel, IAnalyticallyDifferentiable

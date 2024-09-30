@@ -10,12 +10,12 @@ namespace TAFitting.Model;
 
 internal static class ModelManager
 {
-    private static readonly Dictionary<Guid, IFittingModel> models = [];
+    private static readonly Dictionary<Guid, ModelItem> models = [];
     private static readonly Dictionary<Guid, List<IEstimateProvider>> estimateProviders = [];
 
     internal static event EventHandler? ModelsChanged;
 
-    internal static IReadOnlyDictionary<Guid, IFittingModel> Models => models;
+    internal static IReadOnlyDictionary<Guid, ModelItem> Models => models;
 
     internal static IReadOnlyDictionary<Guid, List<IEstimateProvider>> EstimateProviders => estimateProviders;
 
@@ -111,7 +111,8 @@ internal static class ModelManager
 
     private static void AddModel(Guid guid, IFittingModel model)
     {
-        models.Add(guid, model);
+        var item = new ModelItem(model);
+        models.Add(guid, item);
     } // private static void AddModel (Guid, IFittingModel)
 
     private static void AddEstimateProvider(IEstimateProvider provider)

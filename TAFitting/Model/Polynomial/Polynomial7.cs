@@ -3,32 +3,33 @@
 
 using System.Runtime.InteropServices;
 
-namespace TAFitting.Model;
+namespace TAFitting.Model.Polynomial;
 
 /// <summary>
-/// Represents a 6th-order polynomial model.
+/// Represents a 7th-order polynomial model.
 /// </summary>
-[Guid("82F9F05F-91FE-46B4-9CC2-3F792DF5DB83")]
-internal sealed class Polynomial6 : IFittingModel, IAnalyticallyDifferentiable
+[Guid("6E27A0B6-51BF-4D65-918F-CC4B0FDADF60")]
+internal sealed class Polynomial7 : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
         new() { Name = "A0", InitialValue = +1e+3, IsMagnitude = true },
-        new() { Name = "A1", InitialValue = -1e-2, IsMagnitude = true },
+        new() { Name = "A1", InitialValue = -1e+2, IsMagnitude = true },
         new() { Name = "A2", InitialValue = +1e+1, IsMagnitude = true },
-        new() { Name = "A3", InitialValue = -1e+0, IsMagnitude = true },
-        new() { Name = "A4", InitialValue = +1e-2, IsMagnitude = true },
-        new() { Name = "A5", InitialValue = -1e-4, IsMagnitude = true },
-        new() { Name = "A6", InitialValue = +1e-6, IsMagnitude = true },
+        new() { Name = "A3", InitialValue = -1e-1, IsMagnitude = true },
+        new() { Name = "A4", InitialValue = +1e-3, IsMagnitude = true },
+        new() { Name = "A5", InitialValue = -1e-5, IsMagnitude = true },
+        new() { Name = "A6", InitialValue = +1e-7, IsMagnitude = true },
+        new() { Name = "A7", InitialValue = -1e-9, IsMagnitude = true },
     ];
 
     /// <inheritdoc/>
-    public string Name => "Poly6";
+    public string Name => "Poly7";
 
     /// <inheritdoc/>
-    public string Description => "6th-order polynomial model";
+    public string Description => "7th-order polynomial model";
 
     /// <inheritdoc/>
-    public string ExcelFormula => "[A0] + [A1] * $X + [A2] * $X^2 + [A3] * $X^3 + [A4] * $X^4 + [A5] * $X^5 + [A6] * $X^6";
+    public string ExcelFormula => "[A0] + [A1] * $X + [A2] * $X^2 + [A3] * $X^3 + [A4] * $X^4 + [A5] * $X^5 + [A6] * $X^6 + [A7] * $X^7";
 
     /// <inheritdoc/>
     public IReadOnlyList<Parameter> Parameters => parameters;
@@ -49,6 +50,7 @@ internal sealed class Polynomial6 : IFittingModel, IAnalyticallyDifferentiable
         var a4 = parameters[4];
         var a5 = parameters[5];
         var a6 = parameters[6];
+        var a7 = parameters[7];
 
         return (x) =>
         {
@@ -57,7 +59,8 @@ internal sealed class Polynomial6 : IFittingModel, IAnalyticallyDifferentiable
             var x4 = x3 * x;
             var x5 = x4 * x;
             var x6 = x5 * x;
-            return a0 + a1 * x + a2 * x2 + a3 * x3 + a4 * x4 + a5 * x5 + a6 * x6;
+            var x7 = x6 * x;
+            return a0 + a1 * x + a2 * x2 + a3 * x3 + a4 * x4 + a5 * x5 + a6 * x6 + a7 * x7;
         };
     } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
 
@@ -71,6 +74,7 @@ internal sealed class Polynomial6 : IFittingModel, IAnalyticallyDifferentiable
         var d_a4 = d_a3 * x;
         var d_a5 = d_a4 * x;
         var d_a6 = d_a5 * x;
-        return [d_a0, d_a1, d_a2, d_a3, d_a4, d_a5, d_a6];
+        var d_a7 = d_a6 * x;
+        return [d_a0, d_a1, d_a2, d_a3, d_a4, d_a5, d_a6, d_a7];
     } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
-} // internal sealed class Polynomial6 : IFittingModel, IAnalyticallyDifferentiable
+} // internal sealed class Polynomial7 : IFittingModel, IAnalyticallyDifferentiable
