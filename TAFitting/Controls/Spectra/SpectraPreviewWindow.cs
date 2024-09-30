@@ -256,17 +256,21 @@ internal sealed class SpectraPreviewWindow : Form
         DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
     } // override protected void OnShown (EventArgs)
 
-    private void AdjustAxisIntervals()
+    private void AdjustAxesIntervals(object? sender, EventArgs e)
+        => AdjustAxesIntervals();
+
+    private void AdjustAxesIntervals()
     {
         this.chart.ChartAreas[0].RecalculateAxesScale();
         this.axisX.AdjustAxisIntervalLinear(75);
         this.axisY.AdjustAxisIntervalLinear(50);
-    } // private void AdjustAxisIntervals ()
+    } // private void AdjustAxesIntervals ()
 
     private void AdjustAxisIntervalsOnFirstPaint(object? sender, EventArgs e)
     {
         this.chart.Paint -= AdjustAxisIntervalsOnFirstPaint;
-        AdjustAxisIntervals();
+        this.chart.SizeChanged += AdjustAxesIntervals;
+        AdjustAxesIntervals();
     } // private void AdjustAxisIntervalsOnFirstPaint (object?, EventArgs)
 
     private void DrawSpectra(object? sender, EventArgs e)
@@ -316,7 +320,7 @@ internal sealed class SpectraPreviewWindow : Form
             this.axisY.Minimum = Math.Min(sigMin * 1.1, 0.0);
             this.axisY.Maximum = Math.Max(sigMax * 1.1, 0.0);
 
-            AdjustAxisIntervals();
+            AdjustAxesIntervals();
         }
         catch (Exception e)
         {

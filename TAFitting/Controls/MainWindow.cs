@@ -356,6 +356,8 @@ internal sealed class MainWindow : Form
 
         this.rangeSelector.Time.Logarithmic = true;
         this.rangeSelector.Signal.Logarithmic = true;
+
+        this.chart.SizeChanged += AdjustAxesIntervals;
     } // override protected void OnShown (EventArgs)
 
     override protected void OnKeyDown(KeyEventArgs e)
@@ -726,18 +728,32 @@ internal sealed class MainWindow : Form
     } // private void ShowFit ()
 
     private void AdjustXAxisInterval(object? sender, EventArgs e)
-    {
-        this.chart.ChartAreas[0].RecalculateAxesScale();
-        var pixelInterval = this.axisX.IsLogarithmic ? 30 : 100;
-        this.axisX.AdjustAxisInterval(pixelInterval);
-    } // private void AdjustXAxisInterval (object?, EventArgs)
+        => AdjustXAxisInterval();
 
     private void AdjustYAxisInterval(object? sender, EventArgs e)
+        => AdjustYAxisInterval();
+
+    private void AdjustXAxisInterval()
+        => AdjustAxisInterval(this.axisX);
+
+    private void AdjustYAxisInterval()
+        => AdjustAxisInterval(this.axisY);
+
+    private void AdjustAxisInterval(Axis axis)
     {
         this.chart.ChartAreas[0].RecalculateAxesScale();
-        var pixelInterval = this.axisY.IsLogarithmic ? 30 : 100;
-        this.axisY.AdjustAxisInterval(pixelInterval);
-    } // private void AdjustYAxisInterval (object?, EventArgs)
+        var pixelInterval = axis.IsLogarithmic ? 30 : 100;
+        axis.AdjustAxisInterval(pixelInterval);
+    } // private void AdjustAxisInterval (Axis)
+
+    private void AdjustAxesIntervals(object? sender, EventArgs e)
+        => AdjustAxesIntervals();
+
+    private void AdjustAxesIntervals()
+    {
+        AdjustXAxisInterval();
+        AdjustYAxisInterval();
+    } // private void AdjustAxesIntervals ()
 
     private void LevenbergMarquardtEstimationSelectedRow(object? sender, EventArgs e)
     {
