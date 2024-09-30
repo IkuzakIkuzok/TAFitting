@@ -3,6 +3,7 @@
 
 using Microsoft.Win32;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
 using TAFitting.Controls.Charting;
@@ -361,6 +362,33 @@ internal sealed class MainWindow : Form
             this.cb_invert.Checked = !this.cb_invert.Checked;
     } // override protected void OnKeyDown (KeyEventArgs)
 
+    private string GetTitle()
+    {
+        var sb = new StringBuilder(TextBase);
+
+        if (this.selectedModel != Guid.Empty)
+        {
+            var model = ModelManager.Models[this.selectedModel].Model;
+            sb.Append(" - ");
+            sb.Append(model.Name);
+        }
+
+        if (!string.IsNullOrEmpty(this.sampleName))
+        {
+            sb.Append(" | ");
+            sb.Append(this.sampleName);
+        }
+
+        if (this.row is not null)
+        {
+            sb.Append(" (");
+            sb.Append(this.row.Wavelength);
+            sb.Append(" nm)");
+        }
+
+        return sb.ToString();
+    } // private string GetTitle ()
+
     private void LoadDecays(object? sender, EventArgs e)
     {
         if (this.parametersTable.Edited)
@@ -401,7 +429,7 @@ internal sealed class MainWindow : Form
                 this.decays = Decays.FromFolder(folderName);
                 Invoke(() =>
                 {
-                    this.Text = $"{TextBase} - {this.sampleName}";
+                    this.Text = GetTitle();
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     this.nud_time0.Value = (decimal)this.decays.Time0;
                     MakeTable();
@@ -621,7 +649,7 @@ internal sealed class MainWindow : Form
             this.suppressAutoInvert = false;
         }
 
-        this.Text = $"{TextBase} - {this.sampleName} ({e.Row.Wavelength} nm)";
+        this.Text = GetTitle();
 
         ShowPlots();
         UpdatePreviewsSelectedWavelength();
