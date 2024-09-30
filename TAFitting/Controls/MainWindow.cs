@@ -537,18 +537,27 @@ internal sealed class MainWindow : Form
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
 
-        this.parametersTable.Rows.Clear();
-        foreach (var wl in this.decays.Keys)
+        try
         {
-            var decay = this.decays[wl];
-            var row = this.parametersTable.Add(wl, decay);
+            this.parametersTable.StopUpdateRSquared = true;
+            this.parametersTable.Rows.Clear();
+            foreach (var wl in this.decays.Keys)
+            {
+                var decay = this.decays[wl];
+                var row = this.parametersTable.Add(wl, decay);
 
-            var signals = decay.Signals;
-            var positives = signals.Where(s => s > 0).Count();
-            var negatives = signals.Where(s => s < 0).Count();
-            row.Inverted = negatives > positives;
+                var signals = decay.Signals;
+                var positives = signals.Where(s => s > 0).Count();
+                var negatives = signals.Where(s => s < 0).Count();
+                row.Inverted = negatives > positives;
+            }
+            
         }
-        this.parametersTable.RecalculateRSquared();
+        finally
+        {
+            this.parametersTable.StopUpdateRSquared = false;
+        }
+
         UpdatePreviewsParameters();
 
         this.s_observed.Points.Clear();
