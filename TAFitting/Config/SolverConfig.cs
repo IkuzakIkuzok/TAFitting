@@ -12,6 +12,11 @@ namespace TAFitting.Config;
 public sealed class SolverConfig
 {
     /// <summary>
+    /// Gets or sets the auto-fit flag.
+    /// </summary>
+    public bool AutoFit { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the threshold data count for parallel processing.
     /// </summary>
     [XmlElement("parallel-threshold")]

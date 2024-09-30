@@ -138,6 +138,16 @@ internal static class Program
         }
     }
 
+    internal static bool AutoFit
+    {
+        get => Config.SolverConfig.AutoFit;
+        set
+        {
+            Config.SolverConfig.AutoFit = value;
+            SaveConfig();
+        }
+    }
+
     /// <summary>
     /// Gets or sets the threshold data count for parallel processing.
     /// </summary>

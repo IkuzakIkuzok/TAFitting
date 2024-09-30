@@ -295,6 +295,13 @@ internal sealed class MainWindow : Form
         menu_dataLmaAll.Click += LevenbergMarquardtEstimationAllRows;
         menu_dataLma.DropDownItems.Add(menu_dataLmaAll);
 
+        var menu_dataAutoFit = new ToolStripMenuItem("&Auto-fit")
+        {
+            Checked = Program.AutoFit,
+        };
+        menu_dataAutoFit.Click += ToggleAutoFit;
+        menu_data.DropDownItems.Add(menu_dataAutoFit);
+
         menu_data.DropDownItems.Add(new ToolStripSeparator());
 
         var menu_dataPaste = new ToolStripMenuItem("&Paste table")
@@ -564,6 +571,9 @@ internal sealed class MainWindow : Form
                 var negatives = signals.Where(s => s < 0).Count();
                 row.Inverted = negatives > positives;
             }
+
+            if (Program.AutoFit)
+                LevenbergMarquardtEstimationAllRows();
             
         }
         finally
@@ -711,11 +721,14 @@ internal sealed class MainWindow : Form
     } // private void LevenbergMarquardtEstimationSelectedRow (object?, EventArgs)
 
     private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
+        => LevenbergMarquardtEstimationAllRows();
+
+    private void LevenbergMarquardtEstimationAllRows()
     {
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
         LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
-    } // private void LevenbergMarquardtEstimationAllRows (object?, EventArgs)
+    } // private void LevenbergMarquardtEstimationAllRows ()
 
     private async void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
     {
@@ -778,6 +791,12 @@ internal sealed class MainWindow : Form
         lma.Fit();
         return lma.Parameters;
     } // private void LevenbergMarquardtEstimation (ParametersTableRow)
+
+    private void ToggleAutoFit(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        Program.AutoFit = item.Checked = !item.Checked;
+    } // private void ToggleAutoFit (object?, EventArgs)
 
     private void EstimateParametersAllRows(object? sender, EventArgs e)
     {
