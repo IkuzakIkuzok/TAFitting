@@ -704,27 +704,35 @@ internal sealed class MainWindow : Form
 
         var start = DateTime.Now;
 
-        if (source.Length >= Program.ParallelThreshold)
+        try
         {
-            var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
-            await Task.Run(() => Parallel.ForEach(source, (row) =>
+            this.parametersTable.StopUpdateRSquared = true;
+            if (source.Length >= Program.ParallelThreshold)
             {
-                var parameters = LevenbergMarquardtEstimation(row);
-                results.TryAdd(row, parameters);
-            }));
+                var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
+                await Task.Run(() => Parallel.ForEach(source, (row) =>
+                {
+                    var parameters = LevenbergMarquardtEstimation(row);
+                    results.TryAdd(row, parameters);
+                }));
 
-            // updating parameters on the UI thread
-            // Invoke() in each iteration is too slow
-            foreach (var (row, parameters) in results)
+                // updating parameters on the UI thread
+                // Invoke() in each iteration is too slow
+                foreach (var (row, parameters) in results)
+                {
+                    if (row.DataGridView is null) continue;  // Removed from the table during the fitting
+                    row.Parameters = parameters;
+                }
+            }
+            else
             {
-                if (row.DataGridView is null) continue;  // Removed from the table during the fitting
-                row.Parameters = parameters;
+                foreach (var row in rows)
+                    row.Parameters = LevenbergMarquardtEstimation(row);
             }
         }
-        else
+        finally
         {
-            foreach (var row in rows)
-                row.Parameters = LevenbergMarquardtEstimation(row);
+            this.parametersTable.StopUpdateRSquared = false;
         }
 
         var elapsed = DateTime.Now - start;

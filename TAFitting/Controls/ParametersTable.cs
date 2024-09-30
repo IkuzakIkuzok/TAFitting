@@ -15,6 +15,7 @@ internal sealed class ParametersTable : DataGridView
     private ParameterConstraints[] constraints = [];
     private double[] initialValues = [];
     private int[] magnitudeColumns = [];
+    private bool stopUpdateRSquared = false;
 
     internal IFittingModel? Model { get; private set; }
 
@@ -42,6 +43,20 @@ internal sealed class ParametersTable : DataGridView
     /// </summary>
     internal bool Edited
         => this.ParameterRows.Any(row => row.Edited);
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to stop updating R-squared values.
+    /// </summary>
+    internal bool StopUpdateRSquared
+    {
+        get => this.stopUpdateRSquared;
+        set
+        {
+            if (this.stopUpdateRSquared == value) return;
+            this.stopUpdateRSquared = value;
+            if (!value) RecalculateRSquared();
+        }
+    }
 
     /// <summary>
     /// Gets the parameter row at the specified wavelength.
@@ -153,6 +168,7 @@ internal sealed class ParametersTable : DataGridView
     {
         base.OnCellValueChanged(e);
 
+        if (this.StopUpdateRSquared) return;
         if (e.RowIndex < 0) return;
         if (e.ColumnIndex < 1 || e.ColumnIndex > this.ColumnCount - 2) return;
         if (this.Rows[e.RowIndex] is not ParametersTableRow row) return;
