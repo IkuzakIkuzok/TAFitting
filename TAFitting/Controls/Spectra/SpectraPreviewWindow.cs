@@ -170,7 +170,10 @@ internal sealed class SpectraPreviewWindow : Form
 
         menu_file.DropDownItems.Add(new ToolStripSeparator());
 
-        var menu_fileClose = new ToolStripMenuItem("&Close");
+        var menu_fileClose = new ToolStripMenuItem("&Close")
+        {
+            ShortcutKeys = Keys.Control | Keys.W,
+        };
         menu_fileClose.Click += (sender, e) => Close();
         menu_file.DropDownItems.Add(menu_fileClose);
 
