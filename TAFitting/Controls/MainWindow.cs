@@ -152,6 +152,8 @@ internal sealed class MainWindow : Form
 
         #endregion params
 
+        #region view options
+
         this.rangeSelector = new(this.axisX, this.axisY)
         {
             Top = 10,
@@ -201,6 +203,8 @@ internal sealed class MainWindow : Form
             Location = new(305, 82),
             Parent = this.paramsContainer.Panel2,
         };
+
+        #endregion view options
 
         #region menu
 
@@ -598,7 +602,6 @@ internal sealed class MainWindow : Form
 
             if (Program.AutoFit)
                 LevenbergMarquardtEstimationAllRows();
-            
         }
         finally
         {
