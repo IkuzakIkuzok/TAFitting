@@ -34,7 +34,7 @@ namespace TAFitting.Data.Solver;
  *  Therefore, it is approximated by the first derivatives.
  *      ∂J/∂𝕦ᵢ = ΣΣ F(𝕩, 𝕦) ∂F(𝕩, 𝕦)/∂𝕦ᵢ
  *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ = ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ + F(𝕩, 𝕦) ∂²F(𝕩, 𝕦)/∂𝕦ᵢ∂𝕦ⱼ)
- *  If the 𝕦 is close to the optimal solution, the second term is negligible, i.e.,
+ *  If the 𝕦 is close to the optimal solution, the second term is negligible, row.e.,
  *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ ≃ ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ)
  *  
  *  The first derivatives of F is equal to the partial derivatives of the model function f,
@@ -250,26 +250,27 @@ internal sealed class LevenbergMarquardt
 
     private void CalcHessian()
     {
-        for (var i = 0; i < this.numberOfParameters; ++i)
-            for (var j = 0; j < this.numberOfParameters; ++j)
-                this.hessian[i, j] = CalcHessianElement(i, j);
+        for (var row = 0; row < this.numberOfParameters; ++row)
+            for (var col = 0; col < this.numberOfParameters; ++col)
+            {
+                var h= 0.0;
+                for (var i = 0; i < this.numberOfDataPoints; ++i)
+                    h += this.derivatives[i][row] * this.derivatives[i][col];
+                if (row == col) h *= 1 + this.Lambda;
+                this.hessian[row, col] = h;
+            }
     } // private void CalcHessian ()
-    
-    private double CalcHessianElement(int row, int col)
-    {
-        var res = Enumerable.Range(0, this.numberOfDataPoints).Select(i => this.derivatives[i][row] * this.derivatives[i][col]).Sum();
-        if (row == col) res *= 1 + this.Lambda;
-        return res;
-    } // private double CalcHessianElement (int, int)
 
     private void CalcGradient()
     {
-        for (var i = 0; i < this.numberOfParameters; ++i)
-            this.gradient[i] = CalcGradientElement(i);
+        for (var row = 0; row < this.numberOfParameters; ++row)
+        {
+            var g = 0.0;
+            for (var i = 0; i < this.numberOfDataPoints; ++i)
+                g += (this.y[i] - this.func(this.x[i])) * this.derivatives[i][row];
+            this.gradient[row] = g;
+        }
     } // private void CalcGradient ()
-
-    private double CalcGradientElement(int row)
-        => GetDiffs().Select((diff, i) => diff * this.derivatives[i][row]).Sum();
 
     private void ComputeDerivativesAnalytically()
     {
@@ -341,6 +342,4 @@ internal sealed class LevenbergMarquardt
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
-
-    private IEnumerable<double> GetDiffs() => this.x.Zip(this.y, (xi, yi) => yi - this.func(xi));
 } // internal sealed class LevenbergMarquardt
