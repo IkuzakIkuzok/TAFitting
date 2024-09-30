@@ -456,8 +456,27 @@ internal sealed class SpectraPreviewWindow : Form
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {
         this.parameters = parameters.ToDictionary();
+        if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
+            this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToString("F1")));
         DrawSpectra();
     } // internal void SetParameters (IDictionary<double, double[]>)
+
+    private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
+    {
+        if (wavelengths.Count < 2) return [];
+        var allSteps = new double[wavelengths.Count - 1];
+        for (var i = 0; i < allSteps.Length; i++)
+            allSteps[i] = wavelengths[i + 1] - wavelengths[i];
+        var steps = allSteps.Order().Reverse().ToArray();
+        if (steps.Length < 3) return [];
+        if (steps[0] >= steps[1] * 2)
+        {
+            var step = steps[0];
+            var index = Array.IndexOf(allSteps, step);
+            return [wavelengths[index] + step / 2];
+        }
+        return [];
+    } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
 
     private void SelectColorGradient(object? sender, EventArgs e)
     {
