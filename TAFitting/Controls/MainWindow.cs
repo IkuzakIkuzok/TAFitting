@@ -48,13 +48,9 @@ internal sealed class MainWindow : Form
 
     internal MainWindow()
     {
+        this.Text = TextBase;
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
-
-        var defaultModel = Program.DefaultModel;
-        if (ModelManager.Models.ContainsKey(defaultModel))
-            this.selectedModel = defaultModel;
-        this.Text = GetTitle();
 
         this.mainContainer = new SplitContainer
         {
@@ -341,6 +337,10 @@ internal sealed class MainWindow : Form
 
         #endregion menu
 
+        var defaultModel = Program.DefaultModel;
+        if (ModelManager.Models.ContainsKey(defaultModel))
+            SelectModel(defaultModel);
+
         this.mainContainer.SplitterDistance = 750;
         this.mainContainer.Panel2MinSize = 420;
 
@@ -358,9 +358,6 @@ internal sealed class MainWindow : Form
         this.rangeSelector.Signal.FromChanged += AdjustYAxisInterval;
         this.rangeSelector.Signal.ToChanged += AdjustYAxisInterval;
         this.rangeSelector.Signal.LogarithmicChanged += AdjustYAxisInterval;
-
-        this.rangeSelector.Time.Logarithmic = true;
-        this.rangeSelector.Signal.Logarithmic = true;
 
         this.chart.SizeChanged += AdjustAxesIntervals;
     } // override protected void OnShown (EventArgs)
@@ -581,6 +578,11 @@ internal sealed class MainWindow : Form
         }
 
         item.Checked = true;
+        SelectModel(guid);
+    } // private void SelectModel (object?, EventArgs)
+
+    private void SelectModel(Guid guid)
+    {
         this.selectedModel = Program.DefaultModel = guid;
         var model = ModelManager.Models[guid].Model;
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
@@ -590,7 +592,7 @@ internal sealed class MainWindow : Form
         MakeTable();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;
-    } // private void SelectModel (object?, EventArgs)
+    } // private void SelectModel (Guid)
 
     private void MakeTable()
     {
