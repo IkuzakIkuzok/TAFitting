@@ -48,13 +48,13 @@ internal sealed class MainWindow : Form
 
     internal MainWindow()
     {
-        this.Text = TextBase;
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
 
         var defaultModel = Program.DefaultModel;
         if (ModelManager.Models.ContainsKey(defaultModel))
             this.selectedModel = defaultModel;
+        this.Text = GetTitle();
 
         this.mainContainer = new SplitContainer
         {
@@ -586,6 +586,7 @@ internal sealed class MainWindow : Form
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
         this.parametersTable.SetColumns(model);
+        this.Text = GetTitle();
         MakeTable();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;
