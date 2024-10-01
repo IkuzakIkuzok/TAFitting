@@ -438,11 +438,17 @@ internal sealed class MainWindow : Form
                 Invoke(() =>
                 {
                     this.Text = GetTitle();
+
                     this.axisX.Title = $"Time ({this.decays.TimeUnit})";
                     this.axisY.Title = this.decays.SignalUnit;
+                    this.rangeSelector.Time.Text = $"Time ({this.decays.TimeUnit}):";
+                    this.rangeSelector.Signal.Text = $"{this.decays.SignalUnit}:";
+
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     this.rangeSelector.Signal.To = (decimal)(this.decays.MaxAbsSignal * 1.5);
+
                     this.nud_time0.Value = (decimal)this.decays.Time0;
+
                     MakeTable();
                 });
             }
