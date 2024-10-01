@@ -283,32 +283,6 @@ internal sealed class MainWindow : Form
 
         menu_data.DropDownItems.Add(new ToolStripSeparator());
 
-        var menu_dataLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt");
-        menu_data.DropDownItems.Add(menu_dataLma);
-
-        var menu_dataLmaSelected = new ToolStripMenuItem("Selected row")
-        {
-            ShortcutKeys = Keys.Control | Keys.L,
-        };
-        menu_dataLmaSelected.Click += LevenbergMarquardtEstimationSelectedRow;
-        menu_dataLma.DropDownItems.Add(menu_dataLmaSelected);
-
-        var menu_dataLmaAll = new ToolStripMenuItem("All rows")
-        {
-            ShortcutKeys = Keys.Control | Keys.Shift | Keys.L,
-        };
-        menu_dataLmaAll.Click += LevenbergMarquardtEstimationAllRows;
-        menu_dataLma.DropDownItems.Add(menu_dataLmaAll);
-
-        var menu_dataAutoFit = new ToolStripMenuItem("&Auto-fit")
-        {
-            Checked = Program.AutoFit,
-        };
-        menu_dataAutoFit.Click += ToggleAutoFit;
-        menu_data.DropDownItems.Add(menu_dataAutoFit);
-
-        menu_data.DropDownItems.Add(new ToolStripSeparator());
-
         var menu_dataPaste = new ToolStripMenuItem("&Paste table")
         {
             ShortcutKeys = Keys.Control | Keys.V,
@@ -326,6 +300,37 @@ internal sealed class MainWindow : Form
         UpdateModelList();
 
         #endregion menu.model
+
+        #region menu.fit
+
+        var menu_fit = new ToolStripMenuItem("&Fit");
+        this.MainMenuStrip.Items.Add(menu_fit);
+
+        var menu_fitLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt");
+        menu_fit.DropDownItems.Add(menu_fitLma);
+
+        var menu_fitLmaSelected = new ToolStripMenuItem("Selected row")
+        {
+            ShortcutKeys = Keys.Control | Keys.L,
+        };
+        menu_fitLmaSelected.Click += LevenbergMarquardtEstimationSelectedRow;
+        menu_fitLma.DropDownItems.Add(menu_fitLmaSelected);
+
+        var menu_fitLmaAll = new ToolStripMenuItem("All rows")
+        {
+            ShortcutKeys = Keys.Control | Keys.Shift | Keys.L,
+        };
+        menu_fitLmaAll.Click += LevenbergMarquardtEstimationAllRows;
+        menu_fitLma.DropDownItems.Add(menu_fitLmaAll);
+
+        var menu_fitAuto = new ToolStripMenuItem("&Auto-fit")
+        {
+            Checked = Program.AutoFit,
+        };
+        menu_fitAuto.Click += ToggleAutoFit;
+        menu_fit.DropDownItems.Add(menu_fitAuto);
+
+        #endregion menu.fit
 
         #region menu.help
 
