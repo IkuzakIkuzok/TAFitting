@@ -21,6 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
+    <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
   <ItemGroup>

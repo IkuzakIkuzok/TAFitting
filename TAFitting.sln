@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAFitting", "TAFitting\TAFitting.csproj", "{F7F1E4F6-68CC-4C28-9A9E-D1659A91CDC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting", "TAFitting\TAFitting.csproj", "{F7F1E4F6-68CC-4C28-9A9E-D1659A91CDC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAFitting.Model", "TAFitting.Model\TAFitting.Model.csproj", "{086822A3-7FC1-4ECF-973B-973E064AA143}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.Model", "TAFitting.Model\TAFitting.Model.csproj", "{086822A3-7FC1-4ECF-973B-973E064AA143}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAFitting.ModelGenerator", "TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj", "{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{086822A3-7FC1-4ECF-973B-973E064AA143}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{086822A3-7FC1-4ECF-973B-973E064AA143}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{086822A3-7FC1-4ECF-973B-973E064AA143}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
