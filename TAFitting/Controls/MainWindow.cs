@@ -202,6 +202,10 @@ internal sealed class MainWindow : Form
 
         #endregion view options
 
+        var defaultModel = Program.DefaultModel;
+        if (ModelManager.Models.ContainsKey(defaultModel))
+            SelectModel(defaultModel);
+
         #region menu
 
         this.MainMenuStrip = new()
@@ -336,10 +340,6 @@ internal sealed class MainWindow : Form
         #endregion menu.help
 
         #endregion menu
-
-        var defaultModel = Program.DefaultModel;
-        if (ModelManager.Models.ContainsKey(defaultModel))
-            SelectModel(defaultModel);
 
         this.mainContainer.SplitterDistance = 750;
         this.mainContainer.Panel2MinSize = 420;
