@@ -28,7 +28,7 @@ internal sealed class ParametersTableRow : DataGridViewRow
     /// <summary>
     /// Gets or sets the decay.
     /// </summary>
-    internal Decay Decay { get; }
+    internal Decay Decay { get; set; }
 
     /// <summary>
     /// Gets the number of parameters.
