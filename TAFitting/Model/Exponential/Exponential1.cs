@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 namespace TAFitting.Model.Exponential;
 
 [Guid("5C8EAF4E-C682-4524-BE0B-B0A1970E461B")]
-internal sealed class Exponential1Component : IFittingModel, IAnalyticallyDifferentiable
+internal sealed class Exponential1 : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
         new() { Name = "A0", IsMagnitude = true },
         new() { Name = "A1", InitialValue = 1e3, IsMagnitude = true },
-        new() { Name = "T1", Constraints = ParameterConstraints.Positive, InitialValue = 5.0 },
+        new() { Name = "T1", InitialValue = 5.0, Constraints = ParameterConstraints.Positive },
     ];
 
     /// <inheritdoc/>
@@ -32,6 +32,7 @@ internal sealed class Exponential1Component : IFittingModel, IAnalyticallyDiffer
     /// <inheritdoc/>
     public bool YLogScale => true;
 
+    /// <inheritdoc/>
     public Func<double, double> GetFunction(IReadOnlyList<double> parameters)
     {
         var a0 = parameters[0];
@@ -53,4 +54,4 @@ internal sealed class Exponential1Component : IFittingModel, IAnalyticallyDiffer
         var d_t1 = a1 * x * exp / (t1 * t1);
         return [d_a0, d_a1, d_t1];
     } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
-} // internal sealed class Exponential1Component, IAnalyticallyDifferentiable
+} // internal sealed class Exponential1, IAnalyticallyDifferentiable
