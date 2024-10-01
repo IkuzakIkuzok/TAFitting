@@ -434,10 +434,12 @@ internal sealed class MainWindow : Form
 
             try
             {
-                this.decays = Decays.FromFolder(folderName);
+                this.decays = Decays.MicrosecondFromFolder(folderName);
                 Invoke(() =>
                 {
                     this.Text = GetTitle();
+                    this.axisX.Title = $"Time ({this.decays.TimeUnit})";
+                    this.axisY.Title = this.decays.SignalUnit;
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     this.nud_time0.Value = (decimal)this.decays.Time0;
                     MakeTable();

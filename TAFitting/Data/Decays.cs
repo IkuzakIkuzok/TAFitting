@@ -40,6 +40,10 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     IEnumerator<Decay> IEnumerable<Decay>.GetEnumerator()
         => this.Values.GetEnumerator();
 
+    internal string TimeUnit { get; }
+
+    internal string SignalUnit { get; }
+
     internal double MaxTime
         => this.Values.Max(d => d.TimeMax);
 
@@ -53,12 +57,18 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         }
     }
 
-    internal static Decays FromFolder(string path)
+    private Decays(string timeUnit, string signalUnit)
+    {
+        this.TimeUnit = timeUnit;
+        this.SignalUnit = signalUnit;
+    } // ctor (string, string)
+
+    internal static Decays MicrosecondFromFolder(string path)
     {
         var format_ab = Program.AMinusBSignalFormat;
         var format_b = Program.BSignalFormat;
 
-        var decays = new Decays();
+        var decays = new Decays("µs", "ΔµOD");
         var l_t0 = new List<double>();
 
         var folders = Directory.EnumerateDirectories(path);
@@ -95,7 +105,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         decays.Time0 = t0;
 
         return decays;
-    } // internal static Decays FromFolder (string)
+    } // internal static Decays MicrosecondFromFolder (string)
 
     private void ChangeTime0(double time0)
     {
