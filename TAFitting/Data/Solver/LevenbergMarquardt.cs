@@ -327,8 +327,8 @@ internal sealed class LevenbergMarquardt
     {
         for (var i = 0; i < this.numberOfParameters; ++i)
         {
-            if (this.constraints[i] == ParameterConstraints.Positive && this.parameters[i] < 0)
-                this.parameters[i] = 0;
+            if (this.constraints[i] == ParameterConstraints.Positive && this.parameters[i] <= 0)
+                this.parameters[i] = 1e-10;
             if (this.constraints[i] == ParameterConstraints.NonNegative && this.parameters[i] < 0)
                 this.parameters[i] = 0;
             if (this.constraints[i] == ParameterConstraints.Integer)
