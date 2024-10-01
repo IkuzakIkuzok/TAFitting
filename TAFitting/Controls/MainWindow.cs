@@ -441,6 +441,7 @@ internal sealed class MainWindow : Form
                     this.axisX.Title = $"Time ({this.decays.TimeUnit})";
                     this.axisY.Title = this.decays.SignalUnit;
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
+                    this.rangeSelector.Signal.To = (decimal)(this.decays.MaxAbsSignal * 1.5);
                     this.nud_time0.Value = (decimal)this.decays.Time0;
                     MakeTable();
                 });

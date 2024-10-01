@@ -47,6 +47,9 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     internal double MaxTime
         => this.Values.Max(d => d.TimeMax);
 
+    internal double MaxAbsSignal
+        => this.Values.Max(d => d.Absolute.SignalMax);
+
     internal double Time0
     {
         get => this.time0;
