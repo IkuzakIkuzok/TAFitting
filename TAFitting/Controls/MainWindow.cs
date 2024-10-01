@@ -44,6 +44,8 @@ internal sealed class MainWindow : Form
 
     private double SelectedWavelength => this.row?.Wavelength ?? double.NaN;
 
+    private IFittingModel? SelectedModel => ModelManager.Models.TryGetValue(this.selectedModel, out var model) ? model.Model : null;
+
     private readonly List<SpectraPreviewWindow> previewWindows = [];
 
     internal MainWindow()
@@ -143,8 +145,6 @@ internal sealed class MainWindow : Form
         this.parametersTable.CellValueChanged += ShowFit;
         this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
         this.parametersTable.UserDeletedRow += RemoveDecay;
-        if (this.selectedModel != Guid.Empty)
-            this.parametersTable.SetColumns(ModelManager.Models[this.selectedModel].Model);
 
         #endregion params
 
@@ -374,9 +374,9 @@ internal sealed class MainWindow : Form
     {
         var sb = new StringBuilder(TextBase);
 
-        if (this.selectedModel != Guid.Empty)
+        var model = this.SelectedModel;
+        if (model is not null)
         {
-            var model = ModelManager.Models[this.selectedModel].Model;
             sb.Append(" - ");
             sb.Append(model.Name);
         }
@@ -584,7 +584,8 @@ internal sealed class MainWindow : Form
     private void SelectModel(Guid guid)
     {
         this.selectedModel = Program.DefaultModel = guid;
-        var model = ModelManager.Models[guid].Model;
+        var model = this.SelectedModel;
+        if (model is null) return;
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
         this.parametersTable.SetColumns(model);
@@ -631,10 +632,11 @@ internal sealed class MainWindow : Form
 
     private void PasteTable()
     {
-        if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
 
-        var model = ModelManager.Models[this.selectedModel].Model;
+        var model = this.SelectedModel;
+        if (model is null) return;
+
         var parameters = model.Parameters.Select(p => p.Name);
         var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
         foreach (var r in rows)
@@ -720,9 +722,11 @@ internal sealed class MainWindow : Form
 
     private void ShowFit()
     {
-        if (this.selectedModel == Guid.Empty) return;
-        var model = ModelManager.Models[this.selectedModel].Model;
         if (this.row is null) return;
+
+        var model = this.SelectedModel;
+        if (model is null) return;
+        
         var decay = this.row.Decay;
 
         var parameters = this.row.Parameters;
@@ -785,7 +789,6 @@ internal sealed class MainWindow : Form
     {
         var text = this.Text;
         this.Text += " - Fitting...";
-        var model = ModelManager.Models[this.selectedModel];
         var source = rows.ToArray();
 
         var start = DateTime.Now;
@@ -832,7 +835,7 @@ internal sealed class MainWindow : Form
 
     private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
     {
-        var model = ModelManager.Models[this.selectedModel].Model;
+        var model = this.SelectedModel!;
         var decay = row.Decay.OnlyAfterT0;
 
         var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
