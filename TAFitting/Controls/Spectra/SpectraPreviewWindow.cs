@@ -54,6 +54,12 @@ internal sealed class SpectraPreviewWindow : Form
         }
     }
 
+    internal string SignalUnit
+    {
+        get => this.axisY.Title;
+        set => this.axisY.Title = value;
+    }
+
     /// <summary>
     /// Gets the model.
     /// </summary>

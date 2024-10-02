@@ -481,6 +481,7 @@ internal sealed class MainWindow : Form
                     this.nud_time0.Value = (decimal)this.decays.Time0;
 
                     MakeTable();
+                    UpdatePreviewsUnits();
                 });
             }
             catch (Exception e)
@@ -931,6 +932,8 @@ internal sealed class MainWindow : Form
             ModelId = this.selectedModel,
             SelectedWavelength = this.SelectedWavelength,
         };
+        if (this.decays is not null)
+            preview.SignalUnit = this.decays.SignalUnit;
         this.previewWindows.Add(preview);
         preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
         preview.Show();
@@ -951,6 +954,14 @@ internal sealed class MainWindow : Form
         foreach (var preview in this.previewWindows)
             preview.SelectedWavelength = wavelength;
     } // private void UpdatePreviewsSelectedWavelength ()
+
+    private void UpdatePreviewsUnits()
+    {
+        if (this.decays is null) return;
+        var unit = this.decays.SignalUnit;
+        foreach (var preview in this.previewWindows)
+            preview.SignalUnit = unit;
+    } // private void UpdatePreviewsUnits ()
 
     private static void EditFilenameFormat(object? sender, EventArgs e)
     {
