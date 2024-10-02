@@ -110,6 +110,38 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         return decays;
     } // internal static Decays MicrosecondFromFolder (string)
 
+    internal static Decays FemtosecondFromFile(string path)
+    {
+        var lines = File.ReadAllBytes(path).GetText().Split('\n');
+
+        var header = lines[0].Split(',')[1..];
+        var times = header.Select(double.Parse).ToArray();
+
+        var decays = new Decays("fs", "ΔmOD");
+        foreach (var line in lines[1..])
+        {
+            var parts = line.Split(',');
+            if (!double.TryParse(parts[0], out var wl)) break;
+            var signals = parts[1..].Select(double.Parse).Select(s => s * 1e3).ToArray();
+
+            for (var i = 0; i < signals.Length; i++)
+            {
+                if (!double.IsNaN(signals[i])) continue;
+                var left = i > 0 ? signals[i - 1] : 0.0;
+                var right = i < signals.Length - 1 ? signals[i + 1] : 0.0;
+                if (double.IsNaN(left) || double.IsNaN(right))
+                    signals[i] = 0.0;
+                else
+                    signals[i] = (left + right) / 2.0;
+            }
+
+            var decay = new Decay(times, signals);
+            decays.decays.Add(wl, decay);
+        }
+
+        return decays;
+    } // internal static Decays FemtosecondFromFile (string)
+
     private void ChangeTime0(double time0)
     {
         var diff = time0 - this.time0;

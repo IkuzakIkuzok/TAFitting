@@ -218,12 +218,19 @@ internal sealed class MainWindow : Form
         var menu_file = new ToolStripMenuItem("&File");
         this.MainMenuStrip.Items.Add(menu_file);
 
-        var menu_fileOpen = new ToolStripMenuItem("&Open")
+        var menu_fileOpenMicrosecond = new ToolStripMenuItem("&Open µs-TAS")
         {
             ShortcutKeys = Keys.Control | Keys.O,
         };
-        menu_fileOpen.Click += LoadMicrosecondDecays;
-        menu_file.DropDownItems.Add(menu_fileOpen);
+        menu_fileOpenMicrosecond.Click += LoadMicrosecondDecays;
+        menu_file.DropDownItems.Add(menu_fileOpenMicrosecond);
+
+        var menu_fileOpenFemtosecond = new ToolStripMenuItem("&Open fs-TAS")
+        {
+            ShortcutKeys = Keys.Control | Keys.Shift | Keys.O,
+        };
+        menu_fileOpenFemtosecond.Click += LoadFemtosecondDecays;
+        menu_file.DropDownItems.Add(menu_fileOpenFemtosecond);
 
         menu_file.DropDownItems.Add(new ToolStripSeparator());
 
@@ -421,12 +428,30 @@ internal sealed class MainWindow : Form
     {
         var ofd = new OpenFolderDialog()
         {
-            Title = "Select a TAS data folder",
+            Title = "Select a µs-TAS data folder",
         };
         if (!(ofd.ShowDialog() ?? false)) return;
 
         LoadDecays(ofd.FolderName, Decays.MicrosecondFromFolder);
     } // private void LoadMicrosecondDecays ()
+
+    private void LoadFemtosecondDecays(object? sender, EventArgs e)
+    {
+        if (!CheckOverwriteDecays()) return;
+        LoadFemtosecondDecays();
+    } // private void LoadFemtosecondDecays (object?, EventArgs)
+
+    private void LoadFemtosecondDecays()
+    {
+        using var ofd = new System.Windows.Forms.OpenFileDialog()
+        {
+            Filter = "CSV files|*.csv|All files|*.*",
+            Title = "Select a fs-TAS data file",
+        };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        LoadDecays(ofd.FileName, Decays.FemtosecondFromFile);
+    } // private void LoadFemtosecondDecays ()
 
     private void LoadDecays(string path, Func<string, Decays> decaysLoader)
     {
