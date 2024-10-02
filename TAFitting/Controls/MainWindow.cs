@@ -222,7 +222,7 @@ internal sealed class MainWindow : Form
         {
             ShortcutKeys = Keys.Control | Keys.O,
         };
-        menu_fileOpen.Click += LoadDecays;
+        menu_fileOpen.Click += LoadMicrosecondDecays;
         menu_file.DropDownItems.Add(menu_fileOpen);
 
         menu_file.DropDownItems.Add(new ToolStripSeparator());
@@ -397,24 +397,27 @@ internal sealed class MainWindow : Form
         return sb.ToString();
     } // private string GetTitle ()
 
-    private void LoadDecays(object? sender, EventArgs e)
+    private bool CheckOverwriteDecays()
     {
-        if (this.parametersTable.Edited)
-        {
-            var dr = MessageBox.Show(
-                "The current data will be lost. Do you want to continue?",
-                "Warning",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button2
-            );
-            if (dr != DialogResult.Yes) return;
-        }
+        if (!this.parametersTable.Edited) return true;
 
-        LoadDecays();
-    } // private void LoadDecays (object?, EventArgs)
+        var dr = MessageBox.Show(
+            "The current data will be lost. Do you want to continue?",
+            "Warning",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2
+        );
+        return dr == DialogResult.Yes;
+    } // private bool CheckOverwriteDecays ()
 
-    private void LoadDecays()
+    private void LoadMicrosecondDecays(object? sender, EventArgs e)
+    {
+        if (!CheckOverwriteDecays()) return;
+        LoadMicrosecondDecays();
+    } // private void LoadMicrosecondDecays (object?, EventArgs)
+
+    private void LoadMicrosecondDecays()
     {
         var ofd = new OpenFolderDialog()
         {
@@ -422,10 +425,13 @@ internal sealed class MainWindow : Form
         };
         if (!(ofd.ShowDialog() ?? false)) return;
 
-        this.row = null;
+        LoadDecays(ofd.FolderName, Decays.MicrosecondFromFolder);
+    } // private void LoadMicrosecondDecays ()
 
-        var folderName = ofd.FolderName;
-        this.sampleName = Path.GetFileName(folderName);
+    private void LoadDecays(string path, Func<string, Decays> decaysLoader)
+    {
+        this.row = null;
+        this.sampleName = Path.GetFileName(path);
         Task.Run(() =>
         {
             // Temporary change the negative sign to U+002D
@@ -434,7 +440,7 @@ internal sealed class MainWindow : Form
 
             try
             {
-                this.decays = Decays.MicrosecondFromFolder(folderName);
+                this.decays = decaysLoader(path);
                 Invoke(() =>
                 {
                     this.Text = GetTitle();
@@ -462,7 +468,7 @@ internal sealed class MainWindow : Form
                 );
             }
         });
-    } // private void LoadDecays ()
+    } // private void LoadDecays (string, Func<string, Decays>)
 
     private void AddDummySeries()
     {
