@@ -16,19 +16,22 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.102.3" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.11.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="WinForms.DataVisualization" Version="1.9.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
-    <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="System.ComponentModel" />
-  <Using Include="System.IO" />
+    <Using Include="System.IO" />
+    <Using Include="System.Runtime.InteropServices" />
   </ItemGroup>
 
   <ItemGroup>
