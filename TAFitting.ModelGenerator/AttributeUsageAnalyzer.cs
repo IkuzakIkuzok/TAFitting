@@ -13,6 +13,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 {
     private const string GuidErrId = "TA0001";
     private const string PartialErrId = "TA0002";
+    private const string MultipleErrId = "TA0003";
 
 #pragma warning disable RS2008
 
@@ -34,6 +35,15 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor MultipleErr = new(
+        id                : MultipleErrId,
+        title             : "Multiple model attribute",
+        messageFormat     : "A class can have only one model attribute",
+        category          : "Usage",
+        defaultSeverity   : DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
     private static readonly string[] attributes;
 
     static AttributeUsageAnalyzer()
@@ -45,7 +55,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     } // cctor ()
 
     override public ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-        => [GuidErr, PartialErr];
+        => [GuidErr, PartialErr, MultipleErr];
 
     override public void Initialize(AnalysisContext context)
     {
@@ -61,8 +71,16 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         if (syntax.AttributeLists.Count == 0) return;
 
         var attrs = syntax.AttributeLists.SelectMany(al => al.Attributes);
-        var attr = attrs.FirstOrDefault(a => attributes.Contains(a.GetGetFullyQualifiedName(context)));
-        if (attr is null) return;
+        var modelAttrs = attrs.Where(a => attributes.Contains(a.GetGetFullyQualifiedName(context))).ToArray();
+        if (modelAttrs.Length == 0) return;
+        if (modelAttrs.Length > 1)
+        {
+            foreach (var a in modelAttrs)
+                context.ReportDiagnostic(Diagnostic.Create(MultipleErr, a.GetLocation()));
+            return;
+        }
+
+        var attr = modelAttrs.First();
 
         var attrName = attr.GetGetFullyQualifiedName(context).Split('.').Last();
 
