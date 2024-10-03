@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace TAFitting.ModelGenerator;
+namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>
 /// Base class for model series generators.

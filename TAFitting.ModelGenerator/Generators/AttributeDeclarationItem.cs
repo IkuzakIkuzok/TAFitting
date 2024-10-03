@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace TAFitting.ModelGenerator;
+namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>
 /// Represents an attribute declaration item.
@@ -29,7 +29,7 @@ internal sealed class AttributeDeclarationItem<T> where T : CSharpSyntaxNode
     /// <param name="attribute">The attribute syntax node.</param>
     internal AttributeDeclarationItem(T target, AttributeSyntax attribute)
     {
-        this.Target = target;
-        this.Attribute = attribute;
+        Target = target;
+        Attribute = attribute;
     } // ctor (T, AttributeSyntax)
 } // internal sealed class AttributeDeclarationItem<T> where T : CSharpSyntaxNode

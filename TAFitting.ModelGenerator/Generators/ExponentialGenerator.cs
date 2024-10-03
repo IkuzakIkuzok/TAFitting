@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-namespace TAFitting.ModelGenerator;
+namespace TAFitting.ModelGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class ExponentialGenerator : ModelGeneratorBase

@@ -5,8 +5,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using TAFitting.ModelGenerator.Generators;
 
-namespace TAFitting.ModelGenerator;
+namespace TAFitting.ModelGenerator.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer

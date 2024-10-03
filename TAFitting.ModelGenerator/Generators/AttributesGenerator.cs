@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-namespace TAFitting.ModelGenerator;
+namespace TAFitting.ModelGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class AttributesGenerator : ISourceGenerator
@@ -80,5 +80,5 @@ internal sealed class PolynomialModelAttribute : Attribute
     } // ctor (int)
 } // internal sealed class PolynomialModelAttribute : Attribute
 ";
-	#endregion sources
+    #endregion sources
 } // internal sealed class AttributesGenerator : ModelGeneratorBase
