@@ -1,8 +1,6 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using System.Runtime.InteropServices;
-
 namespace TAFitting.Model.PowerLaw;
 
 [Guid("25345F16-17DD-41F5-AC79-2E35B99D811D")]
