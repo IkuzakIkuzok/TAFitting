@@ -38,6 +38,9 @@ internal sealed class MainWindow : Form
     private string sampleName = string.Empty;
     private readonly CustomNumericUpDown nud_time0;
 
+    internal string SampleName
+        => this.sampleName;
+
     private IReadOnlyDictionary<double, double[]> ParametersList
         => this.parametersTable.ParameterRows
                .ToDictionary(row => row.Wavelength, row => row.Parameters.ToArray());

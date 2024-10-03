@@ -412,6 +412,7 @@ internal sealed class SpectraPreviewWindow : Form
         {
             Title = "Save Spectra",
             Filter = "Excel Workbook|*.xlsx|CSV files|*.csv|All files|*.*",
+            FileName = $"{Program.MainWindow.SampleName}_spectra.xlsx",
         };
         if (sfd.ShowDialog() != DialogResult.OK) return;
 
