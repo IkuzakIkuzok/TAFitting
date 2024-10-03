@@ -46,7 +46,7 @@ internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
     } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
 
     /// <inheritdoc/>
-    public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+    public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)
     {
         var a0 = parameters[0];
         var a = parameters[1];
@@ -54,15 +54,18 @@ internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
         var at = parameters[3];
         var tauT = parameters[4];
 
-        var ax = a * x;
-        var pow = Math.Pow(1 + ax, -alpha);
-        var exp = Math.Exp(-x / tauT);
+        return (x) =>
+        {
+            var ax = a * x;
+            var pow = Math.Pow(1 + ax, -alpha);
+            var exp = Math.Exp(-x / tauT);
 
-        var d_a0 = 1 / pow;
-        var d_a = -a0 * x * Math.Pow(1 + ax, -1 - alpha) * alpha;
-        var d_alpha = -a0 * Math.Log(1 + ax) * pow;
-        var d_at = exp;
-        var d_tauT = at * x * exp / (tauT * tauT);
-        return [d_a0, d_a, d_alpha, d_at, d_tauT];
-    } // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)
+            var d_a0 = 1 / pow;
+            var d_a = -a0 * x * Math.Pow(1 + ax, -1 - alpha) * alpha;
+            var d_alpha = -a0 * Math.Log(1 + ax) * pow;
+            var d_at = exp;
+            var d_tauT = at * x * exp / (tauT * tauT);
+            return [d_a0, d_a, d_alpha, d_at, d_tauT];
+        };
+    } // public Func<double, double[]> GetDerivatives (IReadOnlyList<double>)
 } // internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable

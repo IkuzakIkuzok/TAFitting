@@ -274,9 +274,10 @@ internal sealed class LevenbergMarquardt
     private void ComputeDerivativesAnalytically()
     {
         if (this.differentiable is null) return;
+        var d = this.differentiable.GetDerivatives(this.parameters);
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             Array.Copy(
-                this.differentiable.ComputeDifferentials(this.parameters, this.x[i]),
+                d(this.x[i]),
                 0,
                 this.derivatives[i],
                 0,

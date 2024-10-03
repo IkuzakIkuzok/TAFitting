@@ -103,11 +103,15 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         #endregion GetFunction
 
-        #region ComputeDifferentials
+        #region GetDerivatives
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
-        builder.AppendLine("\tpublic double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)");
+        builder.AppendLine("\tpublic Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t=> Derivatives;");
+
+        builder.AppendLine();
+        builder.AppendLine("\tprivate double[] Derivatives(double x)");
         builder.AppendLine("\t{");
         builder.AppendLine("\t\tvar d_a0 = 1.0;");
         for (var i = 1; i <= n; i++)
@@ -120,9 +124,9 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.Append($"\t\treturn [");
         builder.Append(string.Join(", ", Enumerable.Range(0, n + 1).Select(i => $"d_a{i}")));
         builder.AppendLine("];");
-        builder.AppendLine("\t} // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)");
+        builder.AppendLine("\t} // private double[] Derivatives(double x)");
 
-        #endregion ComputeDifferentials
+        #endregion GetDerivatives
 
         #endregion methods
 

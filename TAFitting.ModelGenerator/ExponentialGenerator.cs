@@ -89,11 +89,11 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         #endregion GetFunction
 
-        #region ComputeDifferentials
+        #region GetDerivatives
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
-        builder.AppendLine("\tpublic double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)");
+        builder.AppendLine("\tpublic Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t{");
         for (var i = 1; i <= n; i++)
         {
@@ -102,23 +102,26 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         }
         builder.AppendLine();
 
+        builder.AppendLine("\t\treturn (x) =>");
+        builder.AppendLine("\t\t{");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine($"\t\tvar exp{i} = Math.Exp(-x / t{i});");
+            builder.AppendLine($"\t\t\tvar exp{i} = Math.Exp(-x / t{i});");
         }
         builder.AppendLine();
-        builder.AppendLine("\t\tvar d_a0 = 1.0;");
+        builder.AppendLine("\t\t\tvar d_a0 = 1.0;");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine($"\t\tvar d_a{i} = exp{i};");
-            builder.AppendLine($"\t\tvar d_t{i} = a{i} * x * exp{i} / (t{i} * t{i});");
+            builder.AppendLine($"\t\t\tvar d_a{i} = exp{i};");
+            builder.AppendLine($"\t\t\tvar d_t{i} = a{i} * x * exp{i} / (t{i} * t{i});");
         }
-        builder.Append("\t\treturn [d_a0, ");
+        builder.Append("\t\t\treturn [d_a0, ");
         builder.Append(string.Join(", ", Enumerable.Range(1, n).Select(i => $"d_a{i}, d_t{i}")));
         builder.AppendLine("];");
-        builder.AppendLine("\t} // public double[] ComputeDifferentials(IReadOnlyList<double> parameters, double x)");
+        builder.AppendLine("\t\t};");
+        builder.AppendLine("\t} // public Func<double, double[]> GetDerivatives (IReadOnlyList<double>)");
 
-        #endregion ComputeDifferentials
+        #endregion GetDerivatives
 
         #endregion methods
 
