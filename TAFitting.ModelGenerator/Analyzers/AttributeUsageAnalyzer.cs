@@ -13,8 +13,10 @@ namespace TAFitting.ModelGenerator.Analyzers;
 internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 {
     internal const string GuidErrId = "TA0001";
-    internal const string PartialErrId = "TA0002";
-    internal const string MultipleErrId = "TA0003";
+    internal const string MultipleErrId = "TA0002";
+    internal const string PartialErrId = "TA0003";
+    internal const string StaticErrId = "TA0004";
+    
 
 #pragma warning disable RS2008
 
@@ -45,6 +47,15 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor StaticErr = new(
+        id                : StaticErrId,
+        title             : "Static modifier",
+        messageFormat     : "The class with '{0}' must not be static",
+        category          : "Usage",
+        defaultSeverity   : DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
     private static readonly string[] attributes;
 
     static AttributeUsageAnalyzer()
@@ -56,7 +67,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     } // cctor ()
 
     override public ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-        => [GuidErr, PartialErr, MultipleErr];
+        => [GuidErr, PartialErr, MultipleErr, StaticErr];
 
     override public void Initialize(AnalysisContext context)
     {
@@ -93,5 +104,9 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         var isPartial = modifiers.Contains("partial");
         if (!isPartial)
             context.ReportDiagnostic(Diagnostic.Create(PartialErr, syntax.Identifier.GetLocation(), attrName));
+
+        var isStatic = modifiers.Contains("static");
+        if (isStatic)
+            context.ReportDiagnostic(Diagnostic.Create(StaticErr, syntax.Identifier.GetLocation(), attrName));
     } // private static void AnalyzeClass (SyntaxNodeAnalysisContext)
 } // internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
