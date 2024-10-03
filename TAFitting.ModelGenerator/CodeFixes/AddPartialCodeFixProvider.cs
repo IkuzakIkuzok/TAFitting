@@ -11,6 +11,9 @@ using TAFitting.ModelGenerator.Analyzers;
 
 namespace TAFitting.ModelGenerator.CodeFixes;
 
+/// <summary>
+/// Provides a code fix for adding the partial modifier to a class declaration.
+/// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AddPartialCodeFixProvider))]
 [Shared]
 internal sealed class AddPartialCodeFixProvider : CodeFixProvider
@@ -44,6 +47,13 @@ internal sealed class AddPartialCodeFixProvider : CodeFixProvider
         );
     } // override public Task RegisterCodeFixesAsync (CodeFixContext)
 
+    /// <summary>
+    /// Adds the partial modifier to the class declaration.
+    /// </summary>
+    /// <param name="document">The document to be modified.</param>
+    /// <param name="classDeclarationSyntax">The class declaration syntax to be modified.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The modified document.</returns>
     private static async Task<Document> AddPartialModifier(Document document, ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
         var modifiers = classDeclarationSyntax.Modifiers;

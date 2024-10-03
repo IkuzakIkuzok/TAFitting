@@ -11,6 +11,9 @@ using TAFitting.ModelGenerator.Analyzers;
 
 namespace TAFitting.ModelGenerator.CodeFixes;
 
+/// <summary>
+/// Provides a code fix for adding the GUID attribute to a class declaration.
+/// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AddGuidCodeFixProvider))]
 [Shared]
 internal sealed class AddGuidCodeFixProvider : CodeFixProvider
@@ -44,6 +47,13 @@ internal sealed class AddGuidCodeFixProvider : CodeFixProvider
         );
     } // override public Task RegisterCodeFixesAsync (CodeFixContext)
 
+    /// <summary>
+    /// Adds the GUID attribute to the class declaration.
+    /// </summary>
+    /// <param name="document">The document to be modified.</param>
+    /// <param name="classDeclarationSyntax">The class declaration syntax to be modified.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The modified document.</returns>
     private static async Task<Document> AddGuidAttribute(Document document, ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
         var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);

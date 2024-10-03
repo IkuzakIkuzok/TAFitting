@@ -11,6 +11,9 @@ using TAFitting.ModelGenerator.Analyzers;
 
 namespace TAFitting.ModelGenerator.CodeFixes;
 
+/// <summary>
+/// Provides a code fix for removing the static modifier from a class declaration.
+/// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(RemoveStaticCodeFixProvider))]
 [Shared]
 internal sealed class RemoveStaticCodeFixProvider : CodeFixProvider
@@ -44,6 +47,14 @@ internal sealed class RemoveStaticCodeFixProvider : CodeFixProvider
         );
     } // override public Task RegisterCodeFixesAsync (CodeFixContext)
 
+
+    /// <summary>
+    /// Removes the static modifier from the class declaration.
+    /// </summary>
+    /// <param name="document">The document to be modified.</param>
+    /// <param name="classDeclarationSyntax">The class declaration syntax to be modified.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The modified document.</returns>
     private static async Task<Document> RemoveStaticModifier(Document document, ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
         var modifiers = classDeclarationSyntax.Modifiers;
