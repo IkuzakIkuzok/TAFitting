@@ -29,7 +29,7 @@ internal sealed class AttributeDeclarationItem<T> where T : CSharpSyntaxNode
     /// <param name="attribute">The attribute syntax node.</param>
     internal AttributeDeclarationItem(T target, AttributeSyntax attribute)
     {
-        Target = target;
-        Attribute = attribute;
+        this.Target = target;
+        this.Attribute = attribute;
     } // ctor (T, AttributeSyntax)
 } // internal sealed class AttributeDeclarationItem<T> where T : CSharpSyntaxNode
