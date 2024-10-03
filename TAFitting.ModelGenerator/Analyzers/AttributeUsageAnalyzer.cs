@@ -12,9 +12,9 @@ namespace TAFitting.ModelGenerator.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 {
-    private const string GuidErrId = "TA0001";
-    private const string PartialErrId = "TA0002";
-    private const string MultipleErrId = "TA0003";
+    internal const string GuidErrId = "TA0001";
+    internal const string PartialErrId = "TA0002";
+    internal const string MultipleErrId = "TA0003";
 
 #pragma warning disable RS2008
 
