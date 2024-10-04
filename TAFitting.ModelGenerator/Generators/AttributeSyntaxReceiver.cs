@@ -1,8 +1,6 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace TAFitting.ModelGenerator.Generators;
 
 internal sealed class AttributeSyntaxReceiver : ISyntaxReceiver

@@ -1,8 +1,6 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using TAFitting.ModelGenerator.Generators;
