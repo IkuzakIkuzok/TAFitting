@@ -7,11 +7,11 @@ namespace TAFitting.Model.PowerLaw;
 internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
 {
     private static readonly Parameter[] parameters = [
-        new Parameter { Name = "A0", InitialValue = 1e3, IsMagnitude = true },
-        new Parameter {Name = "a", Constraints = ParameterConstraints.Positive, InitialValue = 1.0 },
-        new Parameter {Name = "Alpha", Constraints = ParameterConstraints.Positive, InitialValue = 0.4 },
-        new() { Name = "AT", InitialValue = 1e3, IsMagnitude = true },
-        new() { Name = "τT", Constraints = ParameterConstraints.Positive, InitialValue = 5.0 },
+        new() { Name = "A0"   , InitialValue = 1e3, IsMagnitude = true },
+        new() { Name = "a"    , InitialValue = 1.0, Constraints = ParameterConstraints.Positive },
+        new() { Name = "Alpha", InitialValue = 0.4, Constraints = ParameterConstraints.Positive },
+        new() { Name = "AT"   , InitialValue = 1e3, IsMagnitude = true },
+        new() { Name = "τT"   , InitialValue = 5.0, Constraints = ParameterConstraints.Positive },
     ];
 
     /// <inheritdoc/>
