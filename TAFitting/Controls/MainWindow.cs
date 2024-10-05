@@ -213,6 +213,7 @@ internal sealed class MainWindow : Form
 
         this.MainMenuStrip = new()
         {
+            ShowItemToolTips = true,
             Parent = this,
         };
 
@@ -525,6 +526,7 @@ internal sealed class MainWindow : Form
                 var modelItem = new ToolStripMenuItem(model.Model.Name)
                 {
                     Tag = guid,
+                    ToolTipText = model.Model.Description,
                     Checked = guid == this.selectedModel,
                 };
                 modelItem.Click += SelectModel;
@@ -533,7 +535,10 @@ internal sealed class MainWindow : Form
                 if (!ModelManager.EstimateProviders.TryGetValue(guid, out var providers)) continue;
                 foreach (var provider in providers)
                 {
-                    var estimateItem = new ToolStripMenuItem(provider.Name);
+                    var estimateItem = new ToolStripMenuItem(provider.Name)
+                    {
+                        ToolTipText = provider.Description,
+                    };
                     modelItem.DropDownItems.Add(estimateItem);
 
                     var estimateAll = new ToolStripMenuItem("All rows")
