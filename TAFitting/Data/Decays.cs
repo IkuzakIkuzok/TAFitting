@@ -40,16 +40,31 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     IEnumerator<Decay> IEnumerable<Decay>.GetEnumerator()
         => this.Values.GetEnumerator();
 
+    /// <summary>
+    /// Gets the time unit.
+    /// </summary>
     internal string TimeUnit { get; }
 
+    /// <summary>
+    /// Gets the signal unit.
+    /// </summary>
     internal string SignalUnit { get; }
 
+    /// <summary>
+    /// Gets the maximum time.
+    /// </summary>
     internal double MaxTime
         => this.Values.Max(d => d.TimeMax);
 
+    /// <summary>
+    /// Gets the maximum value of the absolute signal.
+    /// </summary>
     internal double MaxAbsSignal
         => this.Values.Max(d => d.Absolute.SignalMax);
 
+    /// <summary>
+    /// Gets or sets the time zero.
+    /// </summary>
     internal double Time0
     {
         get => this.time0;
@@ -66,6 +81,12 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         this.SignalUnit = signalUnit;
     } // ctor (string, string)
 
+    /// <summary>
+    /// Loads the decay data from the folder.
+    /// </summary>
+    /// <param name="path">The path to the folder.</param>
+    /// <returns>The decay data.</returns>
+    /// <exception cref="IOException">No data found in the folder.</exception>
     internal static Decays MicrosecondFromFolder(string path)
     {
         var format_ab = Program.AMinusBSignalFormat;
@@ -110,6 +131,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         return decays;
     } // internal static Decays MicrosecondFromFolder (string)
 
+    /// <summary>
+    /// Loads the decay data from the file.
+    /// </summary>
+    /// <param name="path">The path to the file.</param>
+    /// <returns>The decay data.</returns>
     internal static Decays FemtosecondFromFile(string path)
     {
         var lines = File.ReadAllBytes(path).GetText().Split('\n');
@@ -139,6 +165,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             this.decays[wavelength] = decay.AddTime(-diff);
     } // private void ChangeTime0 (double)
 
+    /// <summary>
+    /// Removes the decay data.
+    /// </summary>
+    /// <param name="wavelength">The wavelength.</param>
+    /// <returns><see langword="true"/> if the decay data is successfully removed; otherwise, <see langword="false"/>.</returns>
     internal bool Remove(double wavelength)
         => this.decays.Remove(wavelength);
 
