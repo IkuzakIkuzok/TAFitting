@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting", "TAFitting\TAFi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.Model", "TAFitting.Model\TAFitting.Model.csproj", "{086822A3-7FC1-4ECF-973B-973E064AA143}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAFitting.ModelGenerator", "TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj", "{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.ModelGenerator", "TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj", "{9EDE77A4-BB16-418D-9C6D-61C6A8F2B1BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1440F8E3-96C3-452E-A318-D4E707AA4AF0}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
