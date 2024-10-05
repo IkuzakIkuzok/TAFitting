@@ -225,6 +225,7 @@ internal sealed class MainWindow : Form
         var menu_fileOpenMicrosecond = new ToolStripMenuItem("&Open µs-TAS")
         {
             ShortcutKeys = Keys.Control | Keys.O,
+            ToolTipText = "Open a µs-TAS data folder",
         };
         menu_fileOpenMicrosecond.Click += LoadMicrosecondDecays;
         menu_file.DropDownItems.Add(menu_fileOpenMicrosecond);
@@ -232,6 +233,7 @@ internal sealed class MainWindow : Form
         var menu_fileOpenFemtosecond = new ToolStripMenuItem("&Open fs-TAS")
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.O,
+            ToolTipText = "Open a fs-TAS data file",
         };
         menu_fileOpenFemtosecond.Click += LoadFemtosecondDecays;
         menu_file.DropDownItems.Add(menu_fileOpenFemtosecond);
@@ -241,6 +243,7 @@ internal sealed class MainWindow : Form
         var menu_fileExit = new ToolStripMenuItem("E&xit")
         {
             ShortcutKeyDisplayString = "Alt+F4",
+            ToolTipText = "Exit the application",
         };
         menu_fileExit.Click += (sender, e) => Close();
         menu_file.DropDownItems.Add(menu_fileExit);
@@ -252,25 +255,43 @@ internal sealed class MainWindow : Form
         var menu_view = new ToolStripMenuItem("&View");
         this.MainMenuStrip.Items.Add(menu_view);
 
-        var menu_viewColor = new ToolStripMenuItem("&Color");
+        var menu_viewColor = new ToolStripMenuItem("&Color")
+        {
+            ToolTipText = "Change the colors",
+        };
         menu_view.DropDownItems.Add(menu_viewColor);
 
-        var menu_viewColorObserved = new ToolStripMenuItem("&Observed");
+        var menu_viewColorObserved = new ToolStripMenuItem("&Observed")
+        {
+            ToolTipText = "Change the color of the observed data",
+        };
         menu_viewColorObserved.Click += SetObservedColor;
         menu_viewColor.DropDownItems.Add(menu_viewColorObserved);
 
-        var menu_viewColorFit = new ToolStripMenuItem("&Fit");
+        var menu_viewColorFit = new ToolStripMenuItem("&Fit")
+        {
+            ToolTipText = "Change the color of the fitting curve",
+        };
         menu_viewColorFit.Click += SetFitColor;
         menu_viewColor.DropDownItems.Add(menu_viewColorFit);
 
-        var menu_viewFont = new ToolStripMenuItem("&Font");
+        var menu_viewFont = new ToolStripMenuItem("&Font")
+        {
+            ToolTipText = "Change the fonts",
+        };
         menu_view.DropDownItems.Add(menu_viewFont);
 
-        var menu_viewFontAxisLabel = new ToolStripMenuItem("&Axis Label");
+        var menu_viewFontAxisLabel = new ToolStripMenuItem("&Axis Label")
+        {
+            ToolTipText = "Change the font of the axis labels",
+        };
         menu_viewFont.DropDownItems.Add(menu_viewFontAxisLabel);
         menu_viewFontAxisLabel.Click += SelectAxisLabelFont;
 
-        var menu_viewFontAxisTitle = new ToolStripMenuItem("&Axis Title");
+        var menu_viewFontAxisTitle = new ToolStripMenuItem("&Axis Title")
+        {
+            ToolTipText = "Change the font of the axis titles",
+        };
         menu_viewFont.DropDownItems.Add(menu_viewFontAxisTitle);
         menu_viewFontAxisTitle.Click += SelectAxisTitleFont;
 
@@ -284,11 +305,15 @@ internal sealed class MainWindow : Form
         var menu_dataPrevireSpec = new ToolStripMenuItem("Preview &spectra")
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.S,
+            ToolTipText = "Show the spectra preview window",
         };
         menu_dataPrevireSpec.Click += ShowSpectraPreview;
         menu_data.DropDownItems.Add(menu_dataPrevireSpec);
 
-        var menu_dataFileNameFormat = new ToolStripMenuItem("&Filename format");
+        var menu_dataFileNameFormat = new ToolStripMenuItem("&Filename format")
+        {
+            ToolTipText = "Change the filename format",
+        };
         menu_dataFileNameFormat.Click += EditFilenameFormat;
         menu_data.DropDownItems.Add(menu_dataFileNameFormat);
 
@@ -297,6 +322,7 @@ internal sealed class MainWindow : Form
         var menu_dataPaste = new ToolStripMenuItem("&Paste table")
         {
             ShortcutKeys = Keys.Control | Keys.V,
+            ToolTipText = "Paste the table from the clipboard",
         };
         menu_dataPaste.Click += PasteTable;
         menu_data.DropDownItems.Add(menu_dataPaste);
@@ -317,12 +343,16 @@ internal sealed class MainWindow : Form
         var menu_fit = new ToolStripMenuItem("&Fit");
         this.MainMenuStrip.Items.Add(menu_fit);
 
-        var menu_fitLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt");
+        var menu_fitLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt")
+        {
+            ToolTipText = "Fit the data using the Levenberg\u2013Marquardt algorithm",
+        };
         menu_fit.DropDownItems.Add(menu_fitLma);
 
         var menu_fitLmaSelected = new ToolStripMenuItem("Selected row")
         {
             ShortcutKeys = Keys.Control | Keys.L,
+            ToolTipText = "Fit the selected row",
         };
         menu_fitLmaSelected.Click += LevenbergMarquardtEstimationSelectedRow;
         menu_fitLma.DropDownItems.Add(menu_fitLmaSelected);
@@ -330,6 +360,7 @@ internal sealed class MainWindow : Form
         var menu_fitLmaAll = new ToolStripMenuItem("All rows")
         {
             ShortcutKeys = Keys.Control | Keys.Shift | Keys.L,
+            ToolTipText = "Fit all rows",
         };
         menu_fitLmaAll.Click += LevenbergMarquardtEstimationAllRows;
         menu_fitLma.DropDownItems.Add(menu_fitLmaAll);
@@ -337,6 +368,7 @@ internal sealed class MainWindow : Form
         var menu_fitAuto = new ToolStripMenuItem("&Auto-fit")
         {
             Checked = Program.AutoFit,
+            ToolTipText = "Automatically fit the data after loading",
         };
         menu_fitAuto.Click += ToggleAutoFit;
         menu_fit.DropDownItems.Add(menu_fitAuto);
@@ -563,6 +595,7 @@ internal sealed class MainWindow : Form
         var add_model = new ToolStripMenuItem()
         {
             Text = "Add model",
+            ToolTipText = "Add a new model",
         };
         add_model.Click += AddModel;
         this.menu_model.DropDownItems.Add(add_model);
