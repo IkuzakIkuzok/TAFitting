@@ -174,4 +174,21 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
         var index = Array.IndexOf(this.signals, min);
         return this.times[index];
     } // internal double FilndT0 ()
+
+    /// <summary>
+    /// Removes the NaN.
+    /// </summary>
+    internal void RemoveNaN()
+    {
+        for (var i = 0; i < this.signals.Length; i++)
+        {
+            if (!double.IsNaN(this.signals[i])) continue;
+            var left = i > 0 ? this.signals[i - 1] : 0.0;
+            var right = i < this.signals.Length - 1 ? this.signals[i + 1] : 0.0;
+            if (double.IsNaN(left) || double.IsNaN(right))
+                this.signals[i] = 0.0;
+            else
+                this.signals[i] = (left + right) / 2.0;
+        }
+    } // internal void RemoveNaN ()
 } // internal sealed class Decay : IEnumerable<(double Time, double Signal)>
