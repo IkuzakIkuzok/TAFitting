@@ -407,6 +407,8 @@ internal sealed class MainWindow : Form
         return sb.ToString();
     } // private string GetTitle ()
 
+    #region Data loading
+
     private bool CheckOverwriteDecays()
     {
         if (!this.parametersTable.Edited) return true;
@@ -499,17 +501,9 @@ internal sealed class MainWindow : Form
         });
     } // private void LoadDecays (string, Func<string, Decays>)
 
-    private void AddDummySeries()
-    {
-        var dummy = new Series()
-        {
-            ChartType = SeriesChartType.Point,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        dummy.Points.AddXY(1e-6, 1e-6);
-        this.chart.Series.Add(dummy);
-    } // private void AddDummySeries ()
+    #endregion Data loading
+
+    #region Models
 
     private void UpdateModelList(object? sender, EventArgs e)
         => UpdateModelList();
@@ -670,7 +664,9 @@ internal sealed class MainWindow : Form
 
         ShowPlots();
     } // private void MakeTable ()
-    
+
+    #endregion Models
+
     private void PasteTable(object? sender, EventArgs e)
         => PasteTable();
 
@@ -720,6 +716,8 @@ internal sealed class MainWindow : Form
         UpdatePreviewsParameters();
     } // private void RemoveDecay (object?, DataGridViewRowEventArgs)
 
+    #region Data manipulation
+
     private void InvertMagnitude(object? sender, EventArgs e)
     {
         if (this.suppressAutoInvert) return;
@@ -741,6 +739,24 @@ internal sealed class MainWindow : Form
             row.Decay = this.decays[row.Wavelength];
         ShowPlots();
     } // private void ChangeTime0 ()
+
+    #endregion Data manipulation
+
+    #region Plots
+
+    private void AddDummySeries()
+    {
+        var dummy = new Series()
+        {
+            ChartType = SeriesChartType.Point,
+            IsVisibleInLegend = false,
+            IsXValueIndexed = false,
+        };
+        dummy.Points.AddXY(1e-6, 1e-6);
+        this.chart.Series.Add(dummy);
+    } // private void AddDummySeries ()
+
+    #region Show plots
 
     private void ShowPlots(object? sender, EventArgs e)
         => ShowPlots();
@@ -785,6 +801,10 @@ internal sealed class MainWindow : Form
         this.s_fit.Points.AddDecay(times, signals);
     } // private void ShowFit ()
 
+    #endregion Show plots
+
+    #region Adjust axes
+
     private void AdjustXAxisInterval(object? sender, EventArgs e)
         => AdjustXAxisInterval();
 
@@ -812,6 +832,12 @@ internal sealed class MainWindow : Form
         AdjustXAxisInterval();
         AdjustYAxisInterval();
     } // private void AdjustAxesIntervals ()
+
+    #endregion Adjust axes
+
+    #endregion Plots
+
+    #region Levenberg-Marquardt estimation
 
     private void LevenbergMarquardtEstimationSelectedRow(object? sender, EventArgs e)
     {
@@ -898,6 +924,10 @@ internal sealed class MainWindow : Form
         Program.AutoFit = item.Checked = !item.Checked;
     } // private void ToggleAutoFit (object?, EventArgs)
 
+    #endregion Levenberg-Marquardt estimation
+
+    #region Estimate parameters
+
     private void EstimateParametersAllRows(object? sender, EventArgs e)
     {
         if (sender is not ToolStripMenuItem item) return;
@@ -924,6 +954,10 @@ internal sealed class MainWindow : Form
             row.Parameters = parameters;
         }
     } // private void EstimateParametersAllRows (IEstimateProvider)
+
+    #endregion Estimate parameters
+
+    #region Spectra preview
 
     private void ShowSpectraPreview(object? sender, EventArgs e)
         => ShowSpectraPreview();
@@ -965,6 +999,8 @@ internal sealed class MainWindow : Form
         foreach (var preview in this.previewWindows)
             preview.SignalUnit = unit;
     } // private void UpdatePreviewsUnits ()
+
+    #endregion Spectra preview
 
     private static void EditFilenameFormat(object? sender, EventArgs e)
     {
