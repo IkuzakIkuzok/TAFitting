@@ -17,25 +17,25 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     private double time0 = 0.0;
     private readonly Dictionary<double, Decay> decays = [];
 
-    public Decay this[double key] => ((IReadOnlyDictionary<double, Decay>)this.decays)[key];
+    public Decay this[double key] => this.decays[key];
 
-    public IEnumerable<double> Keys => ((IReadOnlyDictionary<double, Decay>)this.decays).Keys;
+    public IEnumerable<double> Keys => this.decays.Keys;
 
-    public IEnumerable<Decay> Values => ((IReadOnlyDictionary<double, Decay>)this.decays).Values;
+    public IEnumerable<Decay> Values => this.decays.Values;
 
-    public int Count => ((IReadOnlyCollection<KeyValuePair<double, Decay>>)this.decays).Count;
+    public int Count => this.decays.Count;
 
     public bool ContainsKey(double key)
-        => ((IReadOnlyDictionary<double, Decay>)this.decays).ContainsKey(key);
+        => this.decays.ContainsKey(key);
 
     public IEnumerator<KeyValuePair<double, Decay>> GetEnumerator()
-        => ((IEnumerable<KeyValuePair<double, Decay>>)this.decays).GetEnumerator();
+        => this.decays.GetEnumerator();
 
     public bool TryGetValue(double key, [MaybeNullWhen(false)] out Decay value)
-        => ((IReadOnlyDictionary<double, Decay>)this.decays).TryGetValue(key, out value);
+        => this.decays.TryGetValue(key, out value);
 
     IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable)this.decays).GetEnumerator();
+        => this.decays.GetEnumerator();
 
     IEnumerator<Decay> IEnumerable<Decay>.GetEnumerator()
         => this.Values.GetEnumerator();
