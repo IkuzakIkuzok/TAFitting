@@ -35,7 +35,7 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
         var a = parameters[1];
         var alpha = parameters[2];
         return x => a0 / Math.Pow(1 + a * x, alpha);
-    } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
+    } // public Func<double, double> GetFunction (IReadOnlyList<double>)
 
     /// <inheritdoc/>
     public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)
@@ -54,5 +54,5 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
             var d_alpha = -a0 * Math.Log(1 + ax) * pow;
             return [d_a0, d_a, d_alpha];
         };
-    } // public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters
+    } // public Func<double, double[]> GetDerivatives (IReadOnlyList<double>)
 } // internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable

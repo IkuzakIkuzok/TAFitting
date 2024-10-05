@@ -41,7 +41,7 @@ internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
         var at = parameters[3];
         var tauT = parameters[4];
         return x => a0 / Math.Pow(1 + a * x, alpha) + at * Math.Exp(-x / tauT);
-    } // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)
+    } // public Func<double, double> GetFunction (IReadOnlyList<double>)
 
     /// <inheritdoc/>
     public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)
