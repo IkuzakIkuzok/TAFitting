@@ -247,7 +247,7 @@ internal class CustomChart : Chart
     /// <summary>
     /// Checks whether the mouse cursor is in the chart area.
     /// </summary>
-    /// <returns><c>true</c> if the mouse cursor is in the chart area; otherwise, <c>false</c>.</returns>
+    /// <returns><see langword="true"/> if the mouse cursor is in the chart area; otherwise, <see langword="false"/>.</returns>
     protected bool IsMouseInChartArea()
     {
         var mousePx = GetCursorPositionPx();

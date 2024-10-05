@@ -15,7 +15,7 @@ internal static class IterUtils
     /// <param name="source">The source.</param>
     /// <param name="offset">The offset.</param>
     /// <returns>The enumeration of the elements with their index.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
     internal static IEnumerable<(int index, T element)> Enumerate<T>(this IEnumerable<T> source, int offset = 0)
     {
         ArgumentNullException.ThrowIfNull(source);

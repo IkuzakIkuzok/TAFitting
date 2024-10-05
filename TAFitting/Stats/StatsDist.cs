@@ -120,8 +120,8 @@ internal abstract class StatsDist
     /// </summary>
     /// <param name="x">The first value to be compared.</param>
     /// <param name="y">The second value to be compared.</param>
-    /// <returns><c>true</c> if two values are seem to be equal to each other;
-    /// otherwise, <c>false</c>.</returns>
+    /// <returns><see langword="true"/> if two values are seem to be equal to each other;
+    /// otherwise, <see langword="false"/>.</returns>
     protected static bool CompareDoubles(double x, double y)
         => Math.Abs(x - y) < EPSILON * Math.Max(Math.Abs(x), Math.Abs(y));
 } // internal abstract class StatsDist
