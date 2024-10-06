@@ -14,6 +14,7 @@ public sealed class SolverConfig
     /// <summary>
     /// Gets or sets the auto-fit flag.
     /// </summary>
+    [XmlElement("auto-fit")]
     public bool AutoFit { get; set; } = true;
 
     /// <summary>
