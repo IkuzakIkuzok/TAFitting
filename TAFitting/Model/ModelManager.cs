@@ -51,29 +51,32 @@ internal static class ModelManager
     {
         var types = assembly.GetTypes();
         foreach (var type in types)
+            AddType(type);
+    } // internal static void Load (Assembly)
+
+    private static void AddType(Type type)
+    {
+        var guid = type.GUID;
+        if (models.ContainsKey(guid)) return;
+
+        if (type.IsInterface || type.IsAbstract) return;
+
+        if (typeof(IFittingModel).IsAssignableFrom(type))
         {
-            var guid = type.GUID;
-            if (models.ContainsKey(guid)) continue;
-
-            if (type.IsInterface || type.IsAbstract) continue;
-
-            if (typeof(IFittingModel).IsAssignableFrom(type))
+            if (TryGetModelInstance(type, out var model))
             {
-                if (TryGetModelInstance(type, out var model))
-                {
-                    AddModel(guid, model);
-                }
-            }
-
-            if (typeof(IEstimateProvider).IsAssignableFrom(type))
-            {
-                if (TryGetEstimateProviderInstance(type, out var provider))
-                {
-                    AddEstimateProvider(provider);
-                }
+                AddModel(guid, model);
             }
         }
-    } // internal static void Load (Assembly)
+
+        if (typeof(IEstimateProvider).IsAssignableFrom(type))
+        {
+            if (TryGetEstimateProviderInstance(type, out var provider))
+            {
+                AddEstimateProvider(provider);
+            }
+        }
+    } // private static void AddType (Type)
 
     private static bool TryGetModelInstance(Type type, [NotNullWhen(true)] out IFittingModel? model)
     {
