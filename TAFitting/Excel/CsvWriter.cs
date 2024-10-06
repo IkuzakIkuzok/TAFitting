@@ -6,6 +6,9 @@ using TAFitting.Model;
 
 namespace TAFitting.Excel;
 
+/// <summary>
+/// Represents a writer for a CSV file.
+/// </summary>
 internal sealed class CsvWriter : ISpreadSheetWriter
 {
     private readonly List<RowData> rows = [];
@@ -16,6 +19,10 @@ internal sealed class CsvWriter : ISpreadSheetWriter
 
     public IReadOnlyList<double> Times { get; set; } = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CsvWriter"/> class.
+    /// </summary>
+    /// <param name="model">The model.</param>
     internal CsvWriter(IFittingModel model)
     {
         this.Model = model;

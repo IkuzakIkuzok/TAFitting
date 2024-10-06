@@ -6,6 +6,9 @@ using TAFitting.Model;
 
 namespace TAFitting.Excel;
 
+/// <summary>
+/// Represents a writer for an Excel spreadsheet.
+/// </summary>
 internal class ExcelWriter : ISpreadSheetWriter, IDisposable
 {
     private readonly XLWorkbook workbook;
@@ -51,6 +54,10 @@ internal class ExcelWriter : ISpreadSheetWriter, IDisposable
         }
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExcelWriter"/> class.
+    /// </summary>
+    /// <param name="model">The model.</param>
     internal ExcelWriter(IFittingModel model)
     {
         this.Model = model;
