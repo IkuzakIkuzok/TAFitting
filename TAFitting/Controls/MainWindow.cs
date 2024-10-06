@@ -776,6 +776,15 @@ internal sealed class MainWindow : Form
         UpdatePreviewsSelectedWavelength();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
 
+    internal void SelectWavelength(double wavelength)
+    {
+        if (this.decays is null) return;
+        var closest = this.decays.Keys.OrderBy(wl => Math.Abs(wl - wavelength)).First();
+        var row = this.parametersTable[closest];
+        if (row is null) return;
+        row.Selected = true;
+    } // internal void SelectWavelength (double)
+
     private void RemoveDecay(object? sender, DataGridViewRowEventArgs e)
     {
         if (this.decays is null) return;

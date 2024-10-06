@@ -115,7 +115,7 @@ internal sealed class SpectraPreviewWindow : Form
             AxisX = this.axisX,
             AxisY = this.axisY,
         });
-
+        this.chart.MouseDoubleClick += SelectWavelength;
         this.chart.Paint += AdjustAxisIntervalsOnFirstPaint;
 
         this.optionsContainer = new()
@@ -398,6 +398,15 @@ internal sealed class SpectraPreviewWindow : Form
         series.Points.AddXY(wavelength, signal);
         this.chart.Series.Add(series);
     } // private void HighlightWavelength (double)
+
+    private void SelectWavelength(object? sender, MouseEventArgs e)
+    {
+        var result = this.chart.HitTest(e.X, e.Y);
+        if (result.ChartElementType != ChartElementType.DataPoint) return;
+
+        var point = result.Series.Points[result.PointIndex];
+        Program.MainWindow.SelectWavelength(point.XValue);
+    } // private void SelectWavelength (object?, MouseEventArgs)
 
     private void SaveToFile(object? sender, EventArgs e)
         => SaveToFile();
