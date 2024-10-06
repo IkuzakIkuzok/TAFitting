@@ -3,6 +3,9 @@
 
 namespace TAFitting.Model;
 
+/// <summary>
+/// Represents a linear combination of models.
+/// </summary>
 internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDifferentiable
 {
     private readonly List<IAnalyticallyDifferentiable> models;
