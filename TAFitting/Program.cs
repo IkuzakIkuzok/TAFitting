@@ -1,6 +1,7 @@
 
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Diagnostics;
 using System.Reflection;
 using System.Resources;
 using TAFitting.Config;
@@ -14,6 +15,8 @@ namespace TAFitting;
 
 internal static class Program
 {
+    internal static readonly string GitHub = @"https://github.com/IkuzakIkuzok/TAFitting";
+
     internal static readonly string AppLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
     /// <summary>
@@ -310,4 +313,22 @@ internal static class Program
             FadingMessageBox.Show("Failed to save the app configuration.", 0.8, 1000, 75, 0.1);
         }
     } // private static void SaveConfig ()
+
+    /// <summary>
+    /// Opens the GitHub repository.
+    /// </summary>
+    internal static void OpenGitHub()
+    {
+        try
+        {
+            Process.Start("explorer", GitHub);
+        }
+        catch
+        {
+            FadingMessageBox.Show(
+                "Failed to open the GitHub page.",
+                0.8, 1000, 75, 0.1
+            );
+        }
+    } // internal static void OpenGitHub ()
 } // internal static class Program

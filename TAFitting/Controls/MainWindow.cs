@@ -381,6 +381,13 @@ internal sealed class MainWindow : Form
         var menu_help = new ToolStripMenuItem("&Help");
         this.MainMenuStrip.Items.Add(menu_help);
 
+        var menu_helpGitHub = new ToolStripMenuItem("Open &GitHub")
+        {
+            ToolTipText = "Open the GitHub repository",
+        };
+        menu_helpGitHub.Click += (sender, e) => Program.OpenGitHub();
+        menu_help.DropDownItems.Add(menu_helpGitHub);
+
         #endregion menu.help
 
         #endregion menu
