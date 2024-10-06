@@ -783,6 +783,9 @@ internal sealed class MainWindow : Form
         var row = this.parametersTable[closest];
         if (row is null) return;
         row.Selected = true;
+
+        var index = row.Index;
+        this.parametersTable.FirstDisplayedScrollingRowIndex = Math.Max(0, index - 5);
     } // internal void SelectWavelength (double)
 
     private void RemoveDecay(object? sender, DataGridViewRowEventArgs e)
