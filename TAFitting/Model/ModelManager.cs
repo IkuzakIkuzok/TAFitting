@@ -23,6 +23,9 @@ internal static class ModelManager
     {
         Load(Assembly.GetExecutingAssembly());
 
+        foreach (var item in Program.Config.ModelConfig.LinearCombinations)
+            item.Register();
+
         var modelsDirectory = Path.Combine(Program.AppLocation, "models");
         if (!Directory.Exists(modelsDirectory)) return;
         foreach (var file in Directory.EnumerateFiles(modelsDirectory, "*.dll"))
@@ -46,8 +49,6 @@ internal static class ModelManager
 
     internal static void Load(Assembly assembly)
     {
-        var added = false;
-
         var types = assembly.GetTypes();
         foreach (var type in types)
         {
@@ -61,7 +62,6 @@ internal static class ModelManager
                 if (TryGetModelInstance(type, out var model))
                 {
                     AddModel(guid, model);
-                    added = true;
                 }
             }
 
@@ -70,13 +70,9 @@ internal static class ModelManager
                 if (TryGetEstimateProviderInstance(type, out var provider))
                 {
                     AddEstimateProvider(provider);
-                    added = true;
                 }
             }
         }
-
-        if (added)
-            ModelsChanged?.Invoke(null, EventArgs.Empty);
     } // internal static void Load (Assembly)
 
     private static bool TryGetModelInstance(Type type, [NotNullWhen(true)] out IFittingModel? model)
@@ -111,9 +107,16 @@ internal static class ModelManager
 
     private static void AddModel(Guid guid, IFittingModel model)
     {
-        var item = new ModelItem(model);
-        models.Add(guid, item);
+        var category = model.GetType().Namespace?.Split('.').Last() ?? string.Empty;
+        AddModel(guid, model, category);
     } // private static void AddModel (Guid, IFittingModel)
+
+    internal static void AddModel(Guid guid, IFittingModel model, string category)
+    {
+        var item = new ModelItem(model, category);
+        models.Add(guid, item);
+        ModelsChanged?.Invoke(null, EventArgs.Empty);
+    } // internal static void AddModel (Guid, IFittingModel, string)
 
     private static void AddEstimateProvider(IEstimateProvider provider)
     {
@@ -123,5 +126,12 @@ internal static class ModelManager
                 estimateProviders.Add(supported, []);
             estimateProviders[supported].Add(provider);
         }
+        ModelsChanged?.Invoke(null, EventArgs.Empty);
     } // private static void AddEstimateProvider (IEstimateProvider)
+
+    internal static void RemoveModel(Guid guid)
+    {
+        models.Remove(guid);
+        ModelsChanged?.Invoke(null, EventArgs.Empty);
+    } // internal static void RemoveModel (Guid)
 } // internal static class ModelManager

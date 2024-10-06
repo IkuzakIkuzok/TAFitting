@@ -18,6 +18,13 @@ public sealed class ModelConfig
     public Guid DefaultModel { get; set; } = Guid.Empty;
 
     /// <summary>
+    /// Gets or sets the linear combination items.
+    /// </summary>
+    [XmlArray("linear-combinations")]
+    [XmlArrayItem("linear-combination")]
+    public List<LinearCombinationItem> LinearCombinations { get; set; } = [];
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ModelConfig"/> class.
     /// </summary>
     public ModelConfig() { }

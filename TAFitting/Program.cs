@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Resources;
 using TAFitting.Config;
 using TAFitting.Controls;
+using TAFitting.Model;
 using TAFitting.Properties;
 
 [assembly: NeutralResourcesLanguage("en-US")]
@@ -247,6 +248,29 @@ internal static class Program
     /// Occurs when the axis title font is changed.
     /// </summary>
     internal static event EventHandler? AxisTitleFontChanged;
+
+    internal static LinearCombinationItem AddLinearCombination(Guid guid, string name, string category, IEnumerable<Guid> guids)
+    {
+        var item = new LinearCombinationItem()
+        {
+            Guid = guid,
+            Name = name,
+            Category = category,
+            Components = [.. guids],
+        };
+        Config.ModelConfig.LinearCombinations.Add(item);
+        SaveConfig();
+        return item;
+    } // internal static LinearCombinationItem AddLinearCombination (Guid, string, string, IEnumerable<Guid>)
+
+    internal static void RemoveLinearCombination(Guid guid)
+    {
+        ModelManager.RemoveModel(guid);
+        var item = Config.ModelConfig.LinearCombinations.FirstOrDefault(i => i.Guid == guid);
+        if (item is null) return;
+        Config.ModelConfig.LinearCombinations.Remove(item);
+        SaveConfig();
+    } // internal static void RemoveLinearCombination (Guid)
 
     /// <summary>
     /// Gets the application configuration.

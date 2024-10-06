@@ -180,10 +180,12 @@ internal sealed class ParametersTable : DataGridView
     /// Sets the columns with the specified model.
     /// </summary>
     /// <param name="model">The fitting model.</param>
-    internal void SetColumns(IFittingModel model)
+    internal void SetColumns(IFittingModel? model)
     {
         this.Rows.Clear();
         this.Columns.Clear();
+
+        if (model is null) return;
 
         this.Model = model;
 
@@ -228,7 +230,7 @@ internal sealed class ParametersTable : DataGridView
             AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
         };
         this.Columns.Add(col_r2);
-    } // internal void SetColumns (IFittingModel)
+    } // internal void SetColumns (IFittingModel?)
 
     /// <summary>
     /// Gets the context menu of the specified column.

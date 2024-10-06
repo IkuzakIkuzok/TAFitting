@@ -9,9 +9,12 @@ internal sealed class ModelItem
 
     internal string Category { get; }
 
-    internal ModelItem(IFittingModel model)
+    internal ModelItem(IFittingModel model, string category)
     {
         this.Model = model;
-        this.Category = this.Model.GetType().Namespace?.Split('.').Last() ?? string.Empty;
-    } // internal ModelItem (IFittingModel)
+        this.Category = category;
+    } // internal ModelItem (IFittingModel, category)
+
+    override public string ToString()
+        => this.Model.Name;
 } // internal sealed class ModelItem

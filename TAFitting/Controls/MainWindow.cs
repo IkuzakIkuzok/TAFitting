@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
 using TAFitting.Controls.Charting;
+using TAFitting.Controls.LinearCombination;
 using TAFitting.Controls.Spectra;
 using TAFitting.Data;
 using TAFitting.Data.Solver;
@@ -564,6 +565,16 @@ internal sealed class MainWindow : Form
                 modelItem.Click += SelectModel;
                 categoryItem.DropDownItems.Add(modelItem);
 
+                if (model.Model is LinearCombinationModel)
+                {
+                    var removeModel = new ToolStripMenuItem("Remove")
+                    {
+                        Tag = guid,
+                    };
+                    removeModel.Click += RemoveLinearCombination;
+                    modelItem.DropDownItems.Add(removeModel);
+                }
+
                 if (!ModelManager.EstimateProviders.TryGetValue(guid, out var providers)) continue;
                 foreach (var provider in providers)
                 {
@@ -599,6 +610,14 @@ internal sealed class MainWindow : Form
         };
         add_model.Click += AddModel;
         this.menu_model.DropDownItems.Add(add_model);
+
+        var add_linear_combination = new ToolStripMenuItem()
+        {
+            Text = "Add linear combination",
+            ToolTipText = "Add the linear combination of models",
+        };
+        add_linear_combination.Click += AddLinearCombination;
+        this.menu_model.DropDownItems.Add(add_linear_combination);
     } // private void UpdateModelList ()
 
     private void AddModel(object? sender, EventArgs e)
@@ -660,16 +679,29 @@ internal sealed class MainWindow : Form
     private void SelectModel(Guid guid)
     {
         this.selectedModel = Program.DefaultModel = guid;
+        this.Text = GetTitle();
         var model = this.SelectedModel;
+        this.parametersTable.SetColumns(model);
         if (model is null) return;
+
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
-        this.parametersTable.SetColumns(model);
-        this.Text = GetTitle();
         MakeTable();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;
     } // private void SelectModel (Guid)
+
+    private void AddLinearCombination(object? sender, EventArgs e)
+        => new LinearCombinationEditWindow().ShowDialog();
+
+    private void RemoveLinearCombination(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not Guid guid) return;
+        if (this.selectedModel == guid)
+            SelectModel(Guid.Empty);
+        Program.RemoveLinearCombination(guid);
+    } // private void RemoveLinearCombination (object?, EventArgs)
 
     private void MakeTable()
     {
