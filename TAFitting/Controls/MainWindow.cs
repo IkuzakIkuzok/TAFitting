@@ -58,7 +58,7 @@ internal sealed class MainWindow : Form
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
 
-        this.mainContainer = new SplitContainer
+        this.mainContainer = new()
         {
             Dock = DockStyle.Fill,
             Orientation = Orientation.Vertical,
@@ -79,7 +79,7 @@ internal sealed class MainWindow : Form
             Parent = this.mainContainer.Panel1,
         };
 
-        this.axisX = new Axis()
+        this.axisX = new()
         {
             Title = "Time (µs)",
             Minimum = 0.05,
@@ -88,7 +88,7 @@ internal sealed class MainWindow : Form
             //Interval = 1,
             LabelStyle = new() { Format = "#.0e+0" },
         };
-        this.axisY = new Axis()
+        this.axisY = new()
         {
             Title = "ΔµOD",
             Minimum = 10,
@@ -110,7 +110,7 @@ internal sealed class MainWindow : Form
 
         AddDummySeries();
 
-        this.s_observed = new Series()
+        this.s_observed = new()
         {
             Color = Program.ObservedColor,
             ChartType = SeriesChartType.Point,
@@ -119,7 +119,7 @@ internal sealed class MainWindow : Form
         };
         this.chart.Series.Add(this.s_observed);
 
-        this.s_fit = new Series()
+        this.s_fit = new()
         {
             Color = Program.FitColor,
             ChartType = SeriesChartType.Line,
