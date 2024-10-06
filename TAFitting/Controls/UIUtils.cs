@@ -14,7 +14,9 @@ namespace TAFitting.Controls;
 internal static partial class UIUtils
 {
     [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
-    private static partial Regex re_expFormat();
+    private static partial Regex RegexExpFormat();
+
+    private static readonly Regex re_expFormat = RegexExpFormat();
 
     /// <summary>
     /// Formats the specified value in exponential notation.
@@ -30,7 +32,7 @@ internal static partial class UIUtils
         Match? match;
         try
         {
-            match = re_expFormat().Match(s);
+            match = re_expFormat.Match(s);
         }
         catch (RegexMatchTimeoutException)
         {
