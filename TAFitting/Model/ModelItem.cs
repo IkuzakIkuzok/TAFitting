@@ -1,8 +1,11 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Diagnostics;
+
 namespace TAFitting.Model;
 
+[DebuggerDisplay("[{Category,nq}] {Model.Name,nq}")]
 internal sealed class ModelItem
 {
     internal IFittingModel Model { get; }
