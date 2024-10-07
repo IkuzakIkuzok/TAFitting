@@ -22,9 +22,11 @@ public interface IFittingModel
     /// Gets the formula of the model for Excel.
     /// </summary>
     /// <remarks>
-    /// - Parameter names must be enclosed in square brackets. e.g., "[A0]"
-    /// - Time is notated as "$X"
-    /// - An equal sign is not required.
+    /// <list type="bullet">
+    ///     <item>Parameter names must be enclosed in square brackets. e.g., "[A0]"</item>
+    ///     <item>Time is notated as "$X"</item>
+    ///     <item>An equal sign is not required</item>
+    /// </list>
     /// </remarks>
     /// <example>
     /// "[A0] + [A1] * EXP(-$X / [T1])"
