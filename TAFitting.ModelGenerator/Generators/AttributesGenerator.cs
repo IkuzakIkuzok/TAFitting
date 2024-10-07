@@ -24,6 +24,8 @@ internal sealed class AttributesGenerator : ISourceGenerator
 
 using System;
 
+#nullable enable
+
 namespace TAFitting.Model;
 
 /// <summary>
@@ -36,6 +38,11 @@ internal sealed class ExponentialModelAttribute : Attribute
     /// Gets the number of components.
     /// </summary>
     internal int ComponentsCount { get; }
+
+    /// <summary>
+    /// Gets or sets the name of the model.
+    /// </summary>
+    public string? Name { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref=""ExponentialModelAttribute""/> class.
@@ -55,6 +62,8 @@ internal sealed class ExponentialModelAttribute : Attribute
 
 using System;
 
+#nullable enable
+
 namespace TAFitting.Model;
 
 /// <summary>
@@ -66,6 +75,11 @@ internal sealed class PolynomialModelAttribute : Attribute
     /// 
     /// </summary>
     internal int Order { get; }
+
+    /// <summary>
+    /// Gets or sets the name of the model.
+    /// </summary>
+    public string? Name { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref=""PolynomialModelAttribute""/> class.

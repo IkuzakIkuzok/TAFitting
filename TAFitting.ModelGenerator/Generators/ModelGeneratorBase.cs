@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using Microsoft.CodeAnalysis.CSharp;
+
 namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>
@@ -30,8 +32,8 @@ internal abstract class ModelGeneratorBase : ISourceGenerator
                 var attr = declaration.Attribute;
 
                 (var nameSpace, var className) = GetFullyQualifiedName(context, klass);
-                var order = GetOrder(context, attr);
-                var source = Generate(nameSpace, className, order);
+                GetArguments(context, attr, out var order, out var name);
+                var source = Generate(nameSpace, className, order, name);
                 var fileName = $"{className}.g.cs";
                 context.AddSource(fileName, source);
             }
@@ -48,24 +50,44 @@ internal abstract class ModelGeneratorBase : ISourceGenerator
     /// <param name="nameSpace">The namespace of the model.</param>
     /// <param name="className">The class name of the model.</param>
     /// <param name="n">The order parameter of the model.</param>
+    /// <param name="name">The name of the model.</param>
     /// <returns>The source code of the model.</returns>
-    abstract protected string Generate(string nameSpace, string className, int n);
+    abstract protected string Generate(string nameSpace, string className, int n, string? name);
 
     /// <summary>
-    /// Gets the order parameter of the model.
+    /// Gets the arguments of the model from the attribute.
     /// </summary>
-    /// <param name="context">The context.</param>
+    /// <param name="context">The context</param>
     /// <param name="attr">The attribute.</param>
-    /// <returns>The order parameter of the model.</returns>
-    /// <exception cref="Exception">Failed to get the order parameter of the model.</exception>
-    protected virtual int GetOrder(GeneratorExecutionContext context, AttributeSyntax attr)
+    /// <param name="order">When this method returns, contains the order parameter of the model.</param>
+    /// <param name="name">When this method returns, contains the name parameter of the model if it exists; otherwise, <see langword="null"/>.</param>
+    /// <exception cref="Exception">
+    /// Failed to get the order parameter of the model.
+    /// -or-
+    /// Failed to get the name parameter of the model.
+    /// </exception>
+    protected virtual void GetArguments(GeneratorExecutionContext context, AttributeSyntax attr, out int order, out string? name)
     {
-        var order = attr.ArgumentList?.Arguments.FirstOrDefault()?.Expression
+        var args = attr.ArgumentList?.Arguments.Cast<AttributeArgumentSyntax>();
+
+        var orderArg = args?.FirstOrDefault()?.Expression
             ?? throw new Exception("Failed to get the order parameter of the model.");
-        if (context.Compilation.GetSemanticModel(attr.SyntaxTree).GetConstantValue(order).Value is not int n)
+        if (context.Compilation.GetSemanticModel(attr.SyntaxTree).GetConstantValue(orderArg).Value is not int o)
             throw new Exception("Failed to get the order parameter of the model.");
-        return n;
-    } // protected virtual int GetOrder (AttributeSyntax)
+        order = o;
+
+        name = null;
+        if (args.Count() < 2) return;
+
+        var nameArgs = args.Where(args => args.NameEquals?.Name.Identifier.Text == "Name");
+        if (nameArgs.Any())
+        {
+            var nameArg = nameArgs.First().Expression;
+            if (context.Compilation.GetSemanticModel(attr.SyntaxTree).GetConstantValue(nameArg).Value is not string n)
+                throw new Exception("Failed to get the name parameter of the model.");
+            name = n;
+        }
+    } // protected virtual void GetArguments (GeneratorExecutionContext, AttributeSyntax, out int, out string?)
 
     /// <summary>
     /// Gets the fully qualified name of the class.

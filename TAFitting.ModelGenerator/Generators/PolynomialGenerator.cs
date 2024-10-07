@@ -8,7 +8,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 {
     override protected string AttributeName => AttributesGenerator.PolynomialModelName;
 
-    override protected string Generate(string nameSpace, string className, int n)
+    override protected string Generate(string nameSpace, string className, int n, string? name)
     {
         var builder = new StringBuilder();
 
@@ -38,6 +38,13 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         #endregion fields
 
         #region properties
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            builder.AppendLine();
+            builder.AppendLine("\t/// <inheritdoc/>");
+            builder.AppendLine($"\tpublic string Name => \"{name}\";");
+        }
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
@@ -133,5 +140,5 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine($"}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable");
 
         return builder.ToString();
-    } // override protected string Generate (string, string, int)
+    } // override protected string Generate (string, string, int, string?)
 } // internal sealed class PolynomialGenerator : ModelGeneratorBase

@@ -8,7 +8,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 {
     override protected string AttributeName => AttributesGenerator.ExponentialModelName;
 
-    override protected string Generate(string nameSpace, string className, int n)
+    override protected string Generate(string nameSpace, string className, int n, string? name)
     {
         var builder = new StringBuilder();
 
@@ -42,6 +42,13 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         #endregion fields
 
         #region properties
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            builder.AppendLine();
+            builder.AppendLine("\t/// <inheritdoc/>");
+            builder.AppendLine($"\tpublic string Name => \"{name}\";");
+        }
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
@@ -128,5 +135,5 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable");
 
         return builder.ToString();
-    } // override protected string Generate (string, string, int)
+    } // override protected string Generate (string, string, int, string?)
 } // internal sealed class ExponentialGenerator : ISourceGenerator
