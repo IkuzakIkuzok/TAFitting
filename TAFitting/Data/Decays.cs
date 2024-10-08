@@ -9,6 +9,9 @@ using TAFitting.Stats;
 
 namespace TAFitting.Data;
 
+/// <summary>
+/// Represents a collection of decay data corresponding to the wavelengths.
+/// </summary>
 [DebuggerDisplay("Count = {Count}")]
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
@@ -17,6 +20,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     private double time0 = 0.0;
     private readonly Dictionary<double, Decay> decays = [];
 
+    /// <summary>
+    /// Gets the decay data at the specified wavelength.
+    /// </summary>
+    /// <param name="key">The wavelength.</param>
+    /// <returns>The decay data at the specified wavelength.</returns>
     public Decay this[double key] => this.decays[key];
 
     public IEnumerable<double> Keys => this.decays.Keys;
