@@ -1,6 +1,8 @@
 ﻿
 using System.Runtime.CompilerServices;
 
+#pragma warning disable IDE0130
+
 namespace System;
 
 /// <summary>Represent a range has start and end indexes.</summary>
