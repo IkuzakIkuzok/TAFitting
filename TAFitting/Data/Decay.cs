@@ -2,12 +2,14 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using System.Collections;
+using System.Diagnostics;
 
 namespace TAFitting.Data;
 
 /// <summary>
 /// Represents a decay data.
 /// </summary>
+[DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq}, {this.times.Length} points")]
 internal sealed class Decay : IEnumerable<(double Time, double Signal)>
 {
     private readonly double[] times, signals;

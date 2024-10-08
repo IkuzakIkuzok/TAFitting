@@ -13,6 +13,9 @@ namespace TAFitting.Data;
 /// Represents a collection of decay data corresponding to the wavelengths.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
+#if DEBUG
+[DebuggerTypeProxy(typeof(DecaysDebugView))]
+#endif
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
     private static readonly Regex re_wavelength = RegexWavelength();
@@ -183,4 +186,32 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
     [GeneratedRegex(@"(\d+).*", RegexOptions.Compiled)]
     private static partial Regex RegexWavelength();
+
+
+#if DEBUG
+    private sealed class DecaysDebugView(Decays decays)
+    {
+        private readonly Decays decays = decays;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public DecayDebugViewItem[] Items
+        {
+            get
+            {
+                var items = new DecayDebugViewItem[this.decays.Count];
+                var i = 0;
+                foreach ((var wavelength, var decay) in this.decays)
+                    items[i++] = new DecayDebugViewItem(wavelength, decay);
+                return items;
+            }
+        }
+
+        [DebuggerDisplay("[{wavelength} nm] {decay}")]
+        public sealed class DecayDebugViewItem(double wavelength, Decay decay)
+        {
+            private readonly double wavelength = wavelength;
+            private readonly Decay decay = decay;
+        }
+    } // private sealed class DecaysDebugView (Decays)
+#endif
 } // internal sealed class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
