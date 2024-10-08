@@ -14,7 +14,8 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     internal const string MultipleErrId = "TA0002";
     internal const string PartialErrId = "TA0003";
     internal const string StaticErrId = "TA0004";
-    
+    internal const string NoNameErrId = "TA0101";
+    internal const string MultipleNameErrId = "TA0102";
 
 #pragma warning disable RS2008
 
@@ -54,6 +55,24 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
+    private static readonly DiagnosticDescriptor NoNameErr = new(
+        id                : NoNameErrId,
+        title             : "Missing Name property",
+        messageFormat     : "The model must have a Name property",
+        category          : "Usage",
+        defaultSeverity   : DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
+    private static readonly DiagnosticDescriptor MultipleNameErr = new(
+        id                : MultipleNameErrId,
+        title             : "Multiple Name properties",
+        messageFormat     : "The model must have only one Name property",
+        category          : "Usage",
+        defaultSeverity   : DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
     private static readonly string[] attributes;
 
     static AttributeUsageAnalyzer()
@@ -65,7 +84,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     } // cctor ()
 
     override public ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-        => [GuidErr, PartialErr, MultipleErr, StaticErr];
+        => [GuidErr, PartialErr, MultipleErr, StaticErr, NoNameErr, MultipleNameErr];
 
     override public void Initialize(AnalysisContext context)
     {
@@ -106,5 +125,14 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         var isStatic = modifiers.Contains("static");
         if (isStatic)
             context.ReportDiagnostic(Diagnostic.Create(StaticErr, syntax.Identifier.GetLocation(), attrName));
+
+        var nameArg = attr.ArgumentList?.Arguments.FirstOrDefault(a => a.NameEquals?.Name.Identifier.Text == "Name");
+        var nameProp = syntax.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(p => p.Identifier.Text == "Name");
+        var hasNameArg = nameArg is not null;
+        var hasNameProp = nameProp is not null;
+        if (!hasNameArg && !hasNameProp)
+            context.ReportDiagnostic(Diagnostic.Create(NoNameErr, attr.GetLocation(), attrName));
+        if (hasNameArg && hasNameProp)
+            context.ReportDiagnostic(Diagnostic.Create(MultipleNameErr, nameProp!.GetLocation(), attrName));
     } // private static void AnalyzeClass (SyntaxNodeAnalysisContext)
 } // internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
