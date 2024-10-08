@@ -154,7 +154,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var header = lines[0].Split(',')[1..];
         var times = header.Select(double.Parse).ToArray();
 
-        var decays = new Decays("fs", "ΔmOD");
+        var decays = new Decays("ps", "ΔmOD");
         foreach (var line in lines[1..])
         {
             var parts = line.Split(',');
