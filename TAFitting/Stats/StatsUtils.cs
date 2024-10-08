@@ -39,7 +39,7 @@ internal static class StatsUtils
             var t = TDist.InverseSurvivalFunction(alpha / (n << 1), n - 2);
             var tau = (n - 1) * t / Math.Sqrt(n * (n - 2) + n * t * t);
             var mu = list.Average();
-            var std = list.Select(Convert.ToDouble).StandardDeviation();
+            var std = list.StandardDeviation();
             var i_far = Math.Abs(list[n - 1] - mu) > Math.Abs(list[0] - mu) ? n - 1 : 0;
             var tau_far = Math.Abs((list[i_far] - mu) / std);
             if (tau_far < tau) break;
