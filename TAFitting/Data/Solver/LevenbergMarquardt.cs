@@ -195,7 +195,13 @@ internal sealed class LevenbergMarquardt
     private double CalcChi2(Numbers parameters)
     {
         var func = this.Model.GetFunction(parameters);
-        return this.x.Zip(this.y, (xi, yi) => yi - func(xi)).Select(diff => diff * diff).Sum();
+        var chi2 = 0.0;
+        for (var i = 0; i < this.numberOfDataPoints; ++i)
+        {
+            var diff = this.y[i] - func(this.x[i]);
+            chi2 += diff * diff;
+        }
+        return chi2;
     } // private double CalcChi2 (Numbers)
 
     private double CalcChi2()
