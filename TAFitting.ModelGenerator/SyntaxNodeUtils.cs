@@ -46,4 +46,10 @@ internal static class SyntaxNodeUtils
         names.Reverse();
         return string.Join(".", names);
     } // internal static string GetFullyQualifiedName (this ISymbol)
+
+    internal static string NormalizeAttributeName(this string name)
+    {
+        if (name.EndsWith("Attribute", StringComparison.Ordinal)) return name;
+        return name + "Attribute";
+    } // internal static string NormalizeAttributeName (this string)
 } // internal static class SyntaxNodeUtils

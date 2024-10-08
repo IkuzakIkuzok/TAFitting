@@ -75,6 +75,8 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 
     private static readonly string[] attributes;
 
+    internal static IReadOnlyCollection<string> Attributes => attributes;
+
     static AttributeUsageAnalyzer()
     {
         attributes = [
