@@ -95,6 +95,7 @@ internal sealed class LevenbergMarquardt
     private readonly ParameterConstraints[] constraints;
 
     private readonly int numberOfParameters, numberOfDataPoints;
+    private readonly double[] est_vals;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
     private readonly double[] temp;  // Temporary array for the partial derivatives calculation
@@ -148,6 +149,7 @@ internal sealed class LevenbergMarquardt
         this.constraints = model.Parameters.Select(p => p.Constraints).ToArray();
         
         this.incrementedParameters = new double[this.numberOfParameters];
+        this.est_vals = new double[this.numberOfDataPoints];
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
         this.temp = new double[this.numberOfParameters];
@@ -167,6 +169,8 @@ internal sealed class LevenbergMarquardt
         do
         {
             this.func = this.Model.GetFunction(this.parameters);
+            for (var i = 0; i < this.numberOfDataPoints; ++i)
+                this.est_vals[i] = this.func(this.x[i]);
             chi2 = CalcChi2();
             this.ComputeDerivativesCache();
             CalcHessian();
@@ -256,14 +260,24 @@ internal sealed class LevenbergMarquardt
     private void CalcHessian()
     {
         for (var row = 0; row < this.numberOfParameters; ++row)
-            for (var col = 0; col < this.numberOfParameters; ++col)
+        {
+            for (var col = row; col < this.numberOfParameters; ++col)
             {
-                var h= 0.0;
+                var h = 0.0;
                 for (var i = 0; i < this.numberOfDataPoints; ++i)
                     h += this.derivatives[i][row] * this.derivatives[i][col];
-                if (row == col) h *= 1 + this.Lambda;
-                this.hessian[row, col] = h;
+
+                if (row == col)
+                {
+                    this.hessian[row, row] = h * (1 + this.Lambda);
+                }
+                else
+                {
+                    this.hessian[row, col] = h;
+                    this.hessian[col, row] = h;
+                }
             }
+        }
     } // private void CalcHessian ()
 
     private void CalcGradient()
@@ -272,7 +286,7 @@ internal sealed class LevenbergMarquardt
         {
             var g = 0.0;
             for (var i = 0; i < this.numberOfDataPoints; ++i)
-                g += (this.y[i] - this.func(this.x[i])) * this.derivatives[i][row];
+                g += (this.y[i] - this.est_vals[i]) * this.derivatives[i][row];
             this.gradient[row] = g;
         }
     } // private void CalcGradient ()
