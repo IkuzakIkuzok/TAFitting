@@ -15,6 +15,9 @@ using TAFitting.Model;
 
 namespace TAFitting.Controls;
 
+/// <summary>
+/// Represents the main window.
+/// </summary>
 [DesignerCategory("Code")]
 internal sealed class MainWindow : Form
 {
@@ -39,19 +42,36 @@ internal sealed class MainWindow : Form
     private string sampleName = string.Empty;
     private readonly CustomNumericUpDown nud_time0;
 
+    /// <summary>
+    /// Gets the sample name.
+    /// </summary>
     internal string SampleName
         => this.sampleName;
 
+    /// <summary>
+    /// Gets the parameters list corresponding to the wavelengths.
+    /// </summary>
+    /// <value>A dictionary that contains the wavelengths as the keys and the parameters as the values.</value>
     private IReadOnlyDictionary<double, double[]> ParametersList
         => this.parametersTable.ParameterRows
                .ToDictionary(row => row.Wavelength, row => row.Parameters.ToArray());
 
+    /// <summary>
+    /// Gets the selected wavelength.
+    /// </summary>
     private double SelectedWavelength => this.row?.Wavelength ?? double.NaN;
 
+    /// <summary>
+    /// Gets the selected model.
+    /// </summary>
+    /// <value>The selected model if is valid; otherwise, <see langword="null"/>.</value>
     private IFittingModel? SelectedModel => ModelManager.Models.TryGetValue(this.selectedModel, out var model) ? model.Model : null;
 
     private readonly List<SpectraPreviewWindow> previewWindows = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainWindow"/> class.
+    /// </summary>
     internal MainWindow()
     {
         this.Text = TextBase;
@@ -421,6 +441,10 @@ internal sealed class MainWindow : Form
             this.cb_invert.Checked = !this.cb_invert.Checked;
     } // override protected void OnKeyDown (KeyEventArgs)
 
+    /// <summary>
+    /// Gets the title of the window.
+    /// </summary>
+    /// <returns>The title of the window representing the current state.</returns>
     private string GetTitle()
     {
         var sb = new StringBuilder(TextBase);
@@ -450,6 +474,12 @@ internal sealed class MainWindow : Form
 
     #region Data loading
 
+    /// <summary>
+    /// Checks whether the current data will be lost and asks the user to continue.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the data has not been edited or the user wants to continue; otherwise, <see langword="false"/>.
+    /// </returns>
     private bool CheckOverwriteDecays()
     {
         if (!this.parametersTable.Edited) return true;
@@ -470,6 +500,9 @@ internal sealed class MainWindow : Form
         LoadMicrosecondDecays();
     } // private void LoadMicrosecondDecays (object?, EventArgs)
 
+    /// <summary>
+    /// Loads the microsecond decay data.
+    /// </summary>
     private void LoadMicrosecondDecays()
     {
         var ofd = new OpenFolderDialog()
@@ -487,6 +520,9 @@ internal sealed class MainWindow : Form
         LoadFemtosecondDecays();
     } // private void LoadFemtosecondDecays (object?, EventArgs)
 
+    /// <summary>
+    /// Loads the femtosecond decay data.
+    /// </summary>
     private void LoadFemtosecondDecays()
     {
         using var ofd = new System.Windows.Forms.OpenFileDialog()
@@ -499,6 +535,11 @@ internal sealed class MainWindow : Form
         LoadDecays(ofd.FileName, Decays.FemtosecondFromFile);
     } // private void LoadFemtosecondDecays ()
 
+    /// <summary>
+    /// Loads the decay data from the specified path.
+    /// </summary>
+    /// <param name="path">The path to the file or the folder from which the decay data is loaded.</param>
+    /// <param name="decaysLoader">The function to load the decay data from the file or the folder.</param>
     private void LoadDecays(string path, Func<string, Decays> decaysLoader)
     {
         this.row = null;
@@ -549,6 +590,9 @@ internal sealed class MainWindow : Form
     private void UpdateModelList(object? sender, EventArgs e)
         => UpdateModelList();
 
+    /// <summary>
+    /// Updates the model list shown in the menu.
+    /// </summary>
     private void UpdateModelList()
     {
         this.menu_model.DropDownItems.Clear();
@@ -683,6 +727,10 @@ internal sealed class MainWindow : Form
         SelectModel(guid);
     } // private void SelectModel (object?, EventArgs)
 
+    /// <summary>
+    /// Changes the selected model.
+    /// </summary>
+    /// <param name="guid">The GUID of the model to select.</param>
     private void SelectModel(Guid guid)
     {
         this.selectedModel = Program.DefaultModel = guid;
@@ -710,6 +758,9 @@ internal sealed class MainWindow : Form
         Program.RemoveLinearCombination(guid);
     } // private void RemoveLinearCombination (object?, EventArgs)
 
+    /// <summary>
+    /// Makes the table of the parameters.
+    /// </summary>
     private void MakeTable()
     {
         if (this.selectedModel == Guid.Empty) return;
@@ -747,6 +798,9 @@ internal sealed class MainWindow : Form
     private void PasteTable(object? sender, EventArgs e)
         => PasteTable();
 
+    /// <summary>
+    /// Pastes the table from the clipboard.
+    /// </summary>
     private void PasteTable()
     {
         if (this.decays is null) return;
@@ -783,6 +837,10 @@ internal sealed class MainWindow : Form
         UpdatePreviewsSelectedWavelength();
     } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
 
+    /// <summary>
+    /// Selects the decay data with the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength to select.</param>
     internal void SelectWavelength(double wavelength)
     {
         if (this.decays is null) return;
@@ -813,12 +871,18 @@ internal sealed class MainWindow : Form
         InvertMagnitude();
     } // private void InvertMagnitude (object?, EventArgs)
 
+    /// <summary>
+    /// Inverts the magnitude of the decay data.
+    /// </summary>
     private void InvertMagnitude()
         => this.row?.InvertMagnitude();
 
     private void ChangeTime0(object? sender, EventArgs e)
         => ChangeTime0();
 
+    /// <summary>
+    /// Changes the time zero of the decay data.
+    /// </summary>
     private void ChangeTime0()
     {
         if (this.decays is null) return;
@@ -833,6 +897,9 @@ internal sealed class MainWindow : Form
 
     #region Plots
 
+    /// <summary>
+    /// Adds a dummy series to the chart.
+    /// </summary>
     private void AddDummySeries()
     {
         var dummy = new Series()
@@ -850,12 +917,18 @@ internal sealed class MainWindow : Form
     private void ShowPlots(object? sender, EventArgs e)
         => ShowPlots();
 
+    /// <summary>
+    /// Shows the observed and the fitting plots.
+    /// </summary>
     private void ShowPlots()
     {
         ShowObserved();
         ShowFit();
     } // private void ShowPlots ()
 
+    /// <summary>
+    /// Shows the observed plot.
+    /// </summary>
     private void ShowObserved()
     {
         if (this.row is null) return;
@@ -871,6 +944,9 @@ internal sealed class MainWindow : Form
     private void ShowFit(object? sender, EventArgs e)
         => ShowFit();
 
+    /// <summary>
+    /// Shows the fitting plot.
+    /// </summary>
     private void ShowFit()
     {
         if (this.row is null) return;
@@ -939,6 +1015,9 @@ internal sealed class MainWindow : Form
     private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
         => LevenbergMarquardtEstimationAllRows();
 
+    /// <summary>
+    /// Fits all rows using the Levenberg-Marquardt algorithm.
+    /// </summary>
     private void LevenbergMarquardtEstimationAllRows()
     {
         if (this.selectedModel == Guid.Empty) return;
@@ -946,6 +1025,10 @@ internal sealed class MainWindow : Form
         LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
     } // private void LevenbergMarquardtEstimationAllRows ()
 
+    /// <summary>
+    /// Fits the specified rows using the Levenberg-Marquardt algorithm.
+    /// </summary>
+    /// <param name="rows">The rows to fit.</param>
     private async void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
     {
         var text = this.Text;
@@ -994,6 +1077,11 @@ internal sealed class MainWindow : Form
         );
     } // private void LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
 
+    /// <summary>
+    /// Fits the specified row using the Levenberg-Marquardt algorithm.
+    /// </summary>
+    /// <param name="row">The row to fit.</param>
+    /// <returns>The estimated parameters.</returns>
     private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
     {
         var model = this.SelectedModel!;
@@ -1051,6 +1139,9 @@ internal sealed class MainWindow : Form
     private void ShowSpectraPreview(object? sender, EventArgs e)
         => ShowSpectraPreview();
 
+    /// <summary>
+    /// Shows the spectra preview window.
+    /// </summary>
     private void ShowSpectraPreview()
     {
         var preview = new SpectraPreviewWindow(this.ParametersList)
@@ -1068,12 +1159,18 @@ internal sealed class MainWindow : Form
     private void UpdatePreviewsParameters(object? sender, EventArgs e)
         => UpdatePreviewsParameters();
 
+    /// <summary>
+    /// Updates the parameters in the spectra preview windows.
+    /// </summary>
     private void UpdatePreviewsParameters()
     {
         foreach (var preview in this.previewWindows)
             preview.SetParameters(this.ParametersList);
     } // private void UpdatePreviewsParameters ()
 
+    /// <summary>
+    /// Updates the selected wavelength in the spectra preview windows.
+    /// </summary>
     private void UpdatePreviewsSelectedWavelength()
     {
         var wavelength = this.SelectedWavelength;
@@ -1081,6 +1178,9 @@ internal sealed class MainWindow : Form
             preview.SelectedWavelength = wavelength;
     } // private void UpdatePreviewsSelectedWavelength ()
 
+    /// <summary>
+    /// Updates the signal unit in the spectra preview windows.
+    /// </summary>
     private void UpdatePreviewsUnits()
     {
         if (this.decays is null) return;
