@@ -184,7 +184,7 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
     {
         for (var i = 0; i < this.signals.Length; i++)
         {
-            if (!double.IsNaN(this.signals[i])) continue;
+            if (double.IsFinite(this.signals[i])) continue;
             var left = i > 0 ? this.signals[i - 1] : 0.0;
             var right = i < this.signals.Length - 1 ? this.signals[i + 1] : 0.0;
             if (double.IsNaN(left) || double.IsNaN(right))
