@@ -27,7 +27,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// Gets the decay data at the specified wavelength.
     /// </summary>
     /// <param name="key">The wavelength.</param>
-    /// <returns>The decay data at the specified wavelength.</returns>
+    /// <value>The decay data at the specified wavelength.</value>
     public Decay this[double key] => this.decays[key];
 
     public IEnumerable<double> Keys => this.decays.Keys;
@@ -54,28 +54,33 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// <summary>
     /// Gets the time unit.
     /// </summary>
+    /// <value>The unit of the time.</value>
     internal string TimeUnit { get; }
 
     /// <summary>
     /// Gets the signal unit.
     /// </summary>
+    /// <value>The unit of the signal.</value>
     internal string SignalUnit { get; }
 
     /// <summary>
     /// Gets the maximum time.
     /// </summary>
+    /// <value>The maximum time in the unit specified by <see cref="TimeUnit"/>.</value>
     internal double MaxTime
         => this.Values.Max(d => d.TimeMax);
 
     /// <summary>
     /// Gets the maximum value of the absolute signal.
     /// </summary>
+    /// <value>The maximum value of the absolute signal.</value>
     internal double MaxAbsSignal
         => this.Values.Max(d => d.Absolute.SignalMax);
 
     /// <summary>
     /// Gets or sets the time zero.
     /// </summary>
+    /// <value>The time zero in thie unit specified by <see cref="TimeUnit"/>.</value>
     internal double Time0
     {
         get => this.time0;
