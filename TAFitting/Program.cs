@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Resources;
 using TAFitting.Config;
 using TAFitting.Controls;
+using TAFitting.Controls.Toast;
 using TAFitting.Model;
 using TAFitting.Properties;
 
@@ -302,6 +303,7 @@ internal static class Program
         typeof(Form).GetField("defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
         Application.Run(MainWindow);
+        ToastNotificationCallbackManager.Uninstall();
     } // private static void Main ()
 
     private static void SaveConfig()

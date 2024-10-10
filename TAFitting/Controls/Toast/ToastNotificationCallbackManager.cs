@@ -63,4 +63,7 @@ internal static class ToastNotificationCallbackManager
         foreach (var arg in l)
             callbacks.Remove(arg);
     } // private static void RemoveCallbacks (ToastArgument)
+
+    internal static void Uninstall()
+        => ToastNotificationManagerCompat.Uninstall();
 } // internal static class ToastNotificationCallbackManager
