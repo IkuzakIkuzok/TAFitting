@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Controls.Toast;
 using TAFitting.Excel;
 using TAFitting.Model;
 
@@ -444,10 +445,7 @@ internal sealed class SpectraPreviewWindow : Form
 
             writer.Write(filename);
 
-            FadingMessageBox.Show(
-                "Spectra saved successfully.",
-                0.8, 1000, 75, 0.1, this
-            );
+            ShowSavedNotification(filename);
         }
         catch (Exception e)
         {
@@ -464,6 +462,22 @@ internal sealed class SpectraPreviewWindow : Form
                 disposable.Dispose();
         }
     } // private void SaveToFile ()
+
+    private static void ShowSavedNotification(string path)
+    {
+        var ext = Path.GetExtension(path);
+        var launcher = AppLauncher.GetInstance(ext);
+
+        var toast =
+            new ToastNotification("Spectra saved successfully:")
+            .AddText(path)
+            .AddButton("OK");
+
+        if (launcher is not null)
+            toast.AddButton("Open", (_) => launcher.OpenFile(path));
+
+        toast.Show();
+    } // private static void ShowSavedNotification (string)
 
     private ISpreadSheetWriter GetSpreadSheetWriter(string extension)
         => extension.ToUpper() switch
