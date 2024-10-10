@@ -21,8 +21,6 @@ namespace TAFitting.Controls;
 [DesignerCategory("Code")]
 internal sealed class MainWindow : Form
 {
-    private const string TextBase = "TA Fitting";
-
     private readonly SplitContainer mainContainer, paramsContainer;
 
     private readonly CustomChart chart;
@@ -74,7 +72,7 @@ internal sealed class MainWindow : Form
     /// </summary>
     internal MainWindow()
     {
-        this.Text = TextBase;
+        this.Text = Program.AppName;
         this.Size = new Size(1200, 800);
         this.KeyPreview = true;
 
@@ -447,7 +445,7 @@ internal sealed class MainWindow : Form
     /// <returns>The title of the window representing the current state.</returns>
     private string GetTitle()
     {
-        var sb = new StringBuilder(TextBase);
+        var sb = new StringBuilder(Program.AppName);
 
         var model = this.SelectedModel;
         if (model is not null)
