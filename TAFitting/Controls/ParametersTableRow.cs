@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using TAFitting.Data;
+using Windows.ApplicationModel.Chat;
 
 namespace TAFitting.Controls;
 
@@ -81,12 +82,7 @@ internal sealed class ParametersTableRow : DataGridViewRow
         {
             var cell = this.Cells[this.Cells.Count - 1];
             cell.Value = NegativeSignHandler.ToMinusSign(value.ToString("F3"));
-            cell.Style.BackColor = value switch
-            {
-                > 0.5 => Color.LightGreen,
-                > 0.0 => Color.LightYellow,
-                _ => Color.LightPink
-            };
+            cell.Style.BackColor = GetRSquaredColor(value);
         }
     }
 
@@ -162,4 +158,9 @@ internal sealed class ParametersTableRow : DataGridViewRow
     /// </summary>
     internal void InvertMagnitude()
         => this.Inverted = !this.Inverted;
+
+    private static Color GetRSquaredColor(double value)
+        => Program.Config.AppearanceConfig.RSquaredThresholds
+            .OrderByDescending(t => t.Threshold)
+            .FirstOrDefault(t => value >= t.Threshold)?.Color ?? Color.White;
 } // internal sealed class ParametersTableRow : DataGridViewRow

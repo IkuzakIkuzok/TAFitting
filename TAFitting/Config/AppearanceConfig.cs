@@ -48,6 +48,17 @@ public sealed class AppearanceConfig
     public SpectraAppearanceConfig Spectra { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the R-squared thresholds.
+    /// </summary>
+    [XmlArray("r-squared")]
+    [XmlArrayItem("threshold")]
+    public RSquaredThresholdItem[] RSquaredThresholds { get; set; } = [
+        new(0.5, Color.LightGreen),
+        new(0.0, Color.LightYellow),
+        new(double.NegativeInfinity, Color.LightPink)
+    ];
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppearanceConfig"/> class.
     /// </summary>
     public AppearanceConfig() { }
