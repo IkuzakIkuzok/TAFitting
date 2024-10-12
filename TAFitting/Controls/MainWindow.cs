@@ -3,6 +3,7 @@
 
 using Microsoft.Win32;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
@@ -509,8 +510,15 @@ internal sealed class MainWindow : Form
         };
         if (!(ofd.ShowDialog() ?? false)) return;
 
-        LoadDecays(ofd.FolderName, Decays.MicrosecondFromFolder);
+        LoadMicrosecondDecays(ofd.FolderName);
     } // private void LoadMicrosecondDecays ()
+
+    /// <summary>
+    /// Loads the microsecond decay data from the specified path.
+    /// </summary>
+    /// <param name="path">The path to the folder from which the decay data is loaded.</param>
+    internal void LoadMicrosecondDecays(string path)
+        => LoadDecays(path, Decays.MicrosecondFromFolder);
 
     private void LoadFemtosecondDecays(object? sender, EventArgs e)
     {
@@ -530,8 +538,15 @@ internal sealed class MainWindow : Form
         };
         if (ofd.ShowDialog() != DialogResult.OK) return;
 
-        LoadDecays(ofd.FileName, Decays.FemtosecondFromFile);
+        LoadFemtosecondDecays(ofd.FileName);
     } // private void LoadFemtosecondDecays ()
+
+    /// <summary>
+    /// Loads the femtosecond decay data from the specified path.
+    /// </summary>
+    /// <param name="path">The path to the file from which the decay data is loaded.</param>
+    internal void LoadFemtosecondDecays(string path)
+        => LoadDecays(path, Decays.FemtosecondFromFile);
 
     /// <summary>
     /// Loads the decay data from the specified path.

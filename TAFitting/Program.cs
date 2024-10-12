@@ -298,13 +298,23 @@ internal static class Program
     ///  The main entry point for the application.
     /// </summary>
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
         typeof(Form).GetField("defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
+
+        if (args.Length > 0)
+        {
+            var path = args[0];
+            if (File.Exists(path))
+                MainWindow.LoadFemtosecondDecays(path);
+            else if (Directory.Exists(path))
+                MainWindow.LoadMicrosecondDecays(path);
+        }
+
         Application.Run(MainWindow);
         ToastNotificationCallbackManager.Uninstall();
-    } // private static void Main ()
+    } // private static void Main (string[])
 
     private static void SaveConfig()
     {
