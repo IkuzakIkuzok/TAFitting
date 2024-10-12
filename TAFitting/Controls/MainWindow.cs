@@ -842,10 +842,19 @@ internal sealed class MainWindow : Form
     internal void SelectWavelength(double wavelength)
     {
         if (this.decays is null) return;
+
+        var col = this.row?.Cells.OfType<DataGridViewCell>()
+            .Select((Cell, Index) => (Cell, Index))
+            .Where(x => x.Cell.Selected)
+            .FirstOrDefault().Index ?? 0;
+
         var closest = this.decays.Keys.OrderBy(wl => Math.Abs(wl - wavelength)).First();
         var row = this.parametersTable[closest];
         if (row is null) return;
+        foreach (var r in this.parametersTable.ParameterRows)
+            r.Selected = false;
         row.Selected = true;
+        row.Cells[col].Selected = true;
 
         var index = row.Index;
         this.parametersTable.FirstDisplayedScrollingRowIndex = Math.Max(0, index - 5);
