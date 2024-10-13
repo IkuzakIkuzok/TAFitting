@@ -3,7 +3,6 @@
 
 using Microsoft.Win32;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;

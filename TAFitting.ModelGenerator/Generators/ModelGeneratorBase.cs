@@ -1,8 +1,6 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using Microsoft.CodeAnalysis.CSharp;
-
 namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>

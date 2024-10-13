@@ -2,7 +2,6 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using TAFitting.Data;
-using Windows.ApplicationModel.Chat;
 
 namespace TAFitting.Controls;
 
