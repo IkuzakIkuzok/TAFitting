@@ -121,6 +121,9 @@ internal sealed class MainWindow : Form
         //this.axisX.MinorGrid.Interval = this.axisY.MinorGrid.Interval = 1;
         this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
 
+        this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
+        this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
+
         this.chart.ChartAreas.Add(new ChartArea()
         {
             AxisX = this.axisX,

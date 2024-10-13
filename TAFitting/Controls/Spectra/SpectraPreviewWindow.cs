@@ -108,6 +108,9 @@ internal sealed class SpectraPreviewWindow : Form
         this.axisX.MinorGrid.Interval = 20;
         this.axisY.MinorGrid.Interval = 100;
         this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
+
+        this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
+        this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
         Program.AxisTitleFontChanged += SetAxisTitleFont;
         Program.AxisLabelFontChanged += SetAxisLabelFont;
 
