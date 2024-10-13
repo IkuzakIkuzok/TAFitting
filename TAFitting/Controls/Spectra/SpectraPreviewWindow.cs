@@ -175,6 +175,13 @@ internal sealed class SpectraPreviewWindow : Form
         menu_fileSave.Click += SaveToFile;
         menu_file.DropDownItems.Add(menu_fileSave);
 
+        var menu_fileCopy = new ToolStripMenuItem("&Copy spectra")
+        {
+            ShortcutKeys = Keys.Control | Keys.C,
+        };
+        menu_fileCopy.Click += CopyPlotsToClipboard;
+        menu_file.DropDownItems.Add(menu_fileCopy);
+
         menu_file.DropDownItems.Add(new ToolStripSeparator());
 
         var menu_fileClose = new ToolStripMenuItem("&Close")
@@ -543,4 +550,14 @@ internal sealed class SpectraPreviewWindow : Form
 
     private void SetAxisLabelFont(object? sender, EventArgs e)
         => this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
+
+    private void CopyPlotsToClipboard(object? sender, EventArgs e)
+        => CopyPlotsToClipboard();
+
+    private void CopyPlotsToClipboard()
+    {
+        using var bitmap = new Bitmap(this.chart.Width, this.chart.Height);
+        this.chart.DrawToBitmap(bitmap, new(0, 0, this.chart.Width, this.chart.Height));
+        System.Windows.Forms.Clipboard.SetImage((Image)bitmap);
+    } // private void CopyPlotsToClipboard ()
 } // internal sealed class SpectraPreviewWindow : Form
