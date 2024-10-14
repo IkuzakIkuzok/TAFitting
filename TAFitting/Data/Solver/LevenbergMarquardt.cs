@@ -34,7 +34,7 @@ namespace TAFitting.Data.Solver;
  *  Therefore, it is approximated by the first derivatives.
  *      ∂J/∂𝕦ᵢ = ΣΣ F(𝕩, 𝕦) ∂F(𝕩, 𝕦)/∂𝕦ᵢ
  *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ = ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ + F(𝕩, 𝕦) ∂²F(𝕩, 𝕦)/∂𝕦ᵢ∂𝕦ⱼ)
- *  If the 𝕦 is close to the optimal solution, the second term is negligible, row.e.,
+ *  If the 𝕦 is close to the optimal solution, the second term is negligible, i.e.,
  *      ∂J²/∂𝕦ᵢ∂𝕦ⱼ ≃ ΣΣ (∂F(𝕩, 𝕦)/∂𝕦ᵢ ∂F(𝕩, 𝕦)/∂𝕦ⱼ)
  *  
  *  The first derivatives of F is equal to the partial derivatives of the model function f,
