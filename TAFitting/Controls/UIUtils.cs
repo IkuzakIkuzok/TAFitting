@@ -121,27 +121,27 @@ internal static partial class UIUtils
     /// Adjusts the interval of the specified axis.
     /// </summary>
     /// <param name="axis">The axis.</param>
-    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
-    internal static void AdjustAxisInterval(this Axis axis, double pixcelWidthInterval = 30)
+    /// <param name="pixelWidthInterval">The width of the interval in pixels.</param>
+    internal static void AdjustAxisInterval(this Axis axis, double pixelWidthInterval = 30)
     {
         if (axis.IsLogarithmic)
-            axis.AdjustAxisIntervalLogarithmic(pixcelWidthInterval);
+            axis.AdjustAxisIntervalLogarithmic(pixelWidthInterval);
         else
-            axis.AdjustAxisIntervalLinear(pixcelWidthInterval);
+            axis.AdjustAxisIntervalLinear(pixelWidthInterval);
     } // internal static void AdjustAxisInterval (this Axis, [double])
 
     /// <summary>
     /// Adjusts the interval of the specified axis in linear scale.
     /// </summary>
     /// <param name="axis">The axis.</param>
-    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
-    internal static void AdjustAxisIntervalLinear(this Axis axis, double pixcelWidthInterval = 50)
+    /// <param name="pixelWidthInterval">The width of the interval in pixels.</param>
+    internal static void AdjustAxisIntervalLinear(this Axis axis, double pixelWidthInterval = 50)
     {
         var min = axis.Minimum;
         var max = axis.Maximum;
 
         var pixelWidth = Math.Abs(axis.ValueToPixelPosition(max) - axis.ValueToPixelPosition(min));
-        var splitCount = (int)Math.Floor(pixelWidth / pixcelWidthInterval);
+        var splitCount = (int)Math.Floor(pixelWidth / pixelWidthInterval);
         var index = Array.FindIndex(axisSplitCount, sc => sc >= splitCount);
         if (index < 0) index = axisSplitCount.Length - 1;
         splitCount = axisSplitCount[index];
@@ -164,8 +164,8 @@ internal static partial class UIUtils
     /// Adjusts the interval of the specified axis in logarithmic scale.
     /// </summary>
     /// <param name="axis">The axis.</param>
-    /// <param name="pixcelWidthInterval">The width of the interval in pixels.</param>
-    internal static void AdjustAxisIntervalLogarithmic(this Axis axis, double pixcelWidthInterval = 50)
+    /// <param name="pixelWidthInterval">The width of the interval in pixels.</param>
+    internal static void AdjustAxisIntervalLogarithmic(this Axis axis, double pixelWidthInterval = 50)
     {
         var min = Math.Log10(axis.ScaleView.ViewMaximum);
         var max = Math.Log10(axis.ScaleView.ViewMaximum);
@@ -173,7 +173,7 @@ internal static partial class UIUtils
         var maxPx = axis.ValueToPixelPosition(axis.Maximum);
         var minPx = axis.ValueToPixelPosition(axis.Minimum);
         var pixelWidth = Math.Abs(maxPx - minPx);
-        var splitCount = (int)Math.Floor(pixelWidth / pixcelWidthInterval);
+        var splitCount = (int)Math.Floor(pixelWidth / pixelWidthInterval);
         var index = Array.FindIndex(axisSplitCount, sc => sc >= splitCount);
         if (index < 0) index = axisSplitCount.Length - 1;
         splitCount = axisSplitCount[index];
