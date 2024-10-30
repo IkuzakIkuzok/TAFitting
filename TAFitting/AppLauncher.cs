@@ -79,7 +79,14 @@ internal class AppLauncher
     /// <param name="filename">The name of the file to open.</param>
     /// <returns>The command to run the associated application with the specified file.</returns>
     protected virtual string GetRunCommand(string filename)
-        => this.appCommand.Replace("%1", filename);
+    {
+        var command = this.appCommand.Replace("%1", filename);
+        var parts = command.Split(' ', 2);
+        var app = Path.GetFullPath(parts[0]);
+        if (!app.StartsWith('"'))
+            app = $"\"{app}\"";
+        return parts.Length > 1 ? $"{app} {parts[1]}" : app;
+    } // protected virtual string GetRunCommand (string)
 
     /// <summary>
     /// Opens the specified file with the associated application.
