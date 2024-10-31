@@ -81,6 +81,7 @@ internal class AppLauncher
     protected virtual string GetRunCommand(string filename)
     {
         var command = this.appCommand.Replace("%1", filename);
+        if (command.StartsWith('"')) return command;
         var parts = command.Split(' ', 2);
         var app = Path.GetFullPath(parts[0]);
         if (!app.StartsWith('"'))
