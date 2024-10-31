@@ -55,6 +55,12 @@ internal sealed class SpectraPreviewWindow : Form
         }
     }
 
+    internal string TimeUnit
+    {
+        get => this.timeTable.Unit;
+        set => this.timeTable.Unit = value;
+    }
+
     internal string SignalUnit
     {
         get => this.axisY.Title;

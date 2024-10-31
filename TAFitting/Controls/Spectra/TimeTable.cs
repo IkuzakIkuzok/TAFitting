@@ -12,12 +12,18 @@ internal sealed class TimeTable : DataGridView
     /// <summary>
     /// Gets the times.
     /// </summary>
-    internal IEnumerable<double> Times
-        => this.Rows
+    internal IReadOnlyList<double> Times
+        => [.. this.Rows
                .Cast<DataGridViewRow>()
                .Where(row => !row.IsNewRow)
                .Select(row => (double)row.Cells["Time"].Value)
-               .Order();
+               .Order()];
+
+    internal string Unit
+    {
+        get => this.Columns["Time"].HeaderText[6..^1];
+        set => this.Columns["Time"].HeaderText = $"Time ({value})";
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeTable"/> class.
@@ -31,7 +37,7 @@ internal sealed class TimeTable : DataGridView
         var col = new DataGridViewNumericBoxColumn()
         {
             Name = "Time",
-            HeaderText = "Time",
+            HeaderText = "Time (µs)",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
         };
         this.Columns.Add(col);
