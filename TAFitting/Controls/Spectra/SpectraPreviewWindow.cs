@@ -6,6 +6,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Toast;
 using TAFitting.Excel;
 using TAFitting.Model;
+using TAFitting.Origin;
 
 namespace TAFitting.Controls.Spectra;
 
@@ -183,6 +184,16 @@ internal sealed class SpectraPreviewWindow : Form
         };
         menu_fileSave.Click += SaveToFile;
         menu_file.DropDownItems.Add(menu_fileSave);
+
+        if (OriginProject.IsAvailable)
+        {
+            var menu_fileExport = new ToolStripMenuItem("&Export to Origin")
+            {
+                ShortcutKeys = Keys.Control | Keys.E,
+            };
+            menu_fileExport.Click += ExportToOrigin;
+            menu_file.DropDownItems.Add(menu_fileExport);
+        }
 
         var menu_fileCopy = new ToolStripMenuItem("&Copy spectra")
         {
@@ -479,6 +490,69 @@ internal sealed class SpectraPreviewWindow : Form
                 disposable.Dispose();
         }
     } // private void SaveToFile ()
+
+    private void ExportToOrigin(object? sender, EventArgs e)
+        => ExportToOrigin();
+
+    private void ExportToOrigin()
+    {
+        if (this.modelId == Guid.Empty) return;
+        if (this.parameters.Count == 0) return;
+        if (this.timeTable.Rows.Count == 0) return;
+
+        using var sfd = new SaveFileDialog
+        {
+            Title = "Export to Origin",
+            Filter = "Origin Project|*.opju",
+            FileName = $"{Program.MainWindow.SampleName}_spectra.opju",
+        };
+        if (sfd.ShowDialog() != DialogResult.OK) return;
+        var filename = sfd.FileName;
+
+        try
+        {
+            using var origin = new OriginProject();
+            var book = origin.AddWorkbook();
+            book.Name = "Data";
+
+            var sheet = book.Worksheets[0];
+            sheet.Name = "Spectra";
+
+            var col_wl = sheet.Columns[0];
+            col_wl.LongName = "Wavelength";
+            col_wl.Units = "nm";
+            col_wl.SetData(this.parameters.Keys.Cast<object>().ToArray());
+
+            var timeUnit = this.TimeUnit;
+            var funcs = this.parameters.Values.Select(p => this.Model.GetFunction(p)).ToArray();
+            foreach ((var i, var time) in this.timeTable.Times.Enumerate())
+            {
+                var col_index = i + 1;
+                var col = col_index < sheet.ColumnsCount ? sheet.Columns[col_index] : sheet.Columns.Add();
+                col.LongName = $"{time} {timeUnit}";
+
+                var values = this.parameters.Keys.Select((wl, i) => funcs[i](time)).Cast<object>().ToArray();
+                col.SetData(values);
+            }
+
+            var graph = origin.AddGraph("Spectra", Program.OriginTemplateName);
+            var layer = graph.Layers[0];
+            var range = sheet.DataRange;
+            layer.DataPlots.Add(range, PlotTypes.PlotLine);
+
+            origin.Save(filename);
+            ShowSavedNotification(filename);
+        }
+        catch
+        {
+            MessageBox.Show(
+                "Failed to export to Origin.",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    } // private void ExportToOrigin ()
 
     private static void ShowSavedNotification(string path)
     {

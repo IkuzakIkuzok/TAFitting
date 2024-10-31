@@ -125,6 +125,19 @@ internal static class Program
     }
 
     /// <summary>
+    /// Gets or sets the template name in Origin.
+    /// </summary>
+    internal static string OriginTemplateName
+    {
+        get => Config.AppearanceConfig.Spectra.OriginTemplate;
+        set
+        {
+            Config.AppearanceConfig.Spectra.OriginTemplate = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Get or set the font of the axis labels.
     /// </summary>
     internal static Font AxisLabelFont

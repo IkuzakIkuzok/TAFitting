@@ -28,4 +28,10 @@ public sealed class SpectraAppearanceConfig
     /// </summary>
     [XmlElement("marker-size")]
     public int MarkerSize { get; set; } = 7;
+
+    /// <summary>
+    /// Gets or sets the graph template in Origin.
+    /// </summary>
+    [XmlElement("origin-template")]
+    public string OriginTemplate { get; set; } = "Origin";
 } // public sealed class Spectra
