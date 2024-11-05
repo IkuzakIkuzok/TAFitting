@@ -64,7 +64,12 @@ internal class Column
     internal object this[int index]
     {
         get => this.column.GetData(ArrayDataFormat.Array1DVariant, index, index);
+
+        // Using the collection literal causes CS9176: There is no target type for the collection literal,
+        // because the array is passed to a dyanmic method and the compiler cannot determine the type of the array.
+#pragma warning disable IDE0300
         set => this.column.SetData(new[] { value }, index);
+#pragma warning restore
     }
 
     /// <summary>
