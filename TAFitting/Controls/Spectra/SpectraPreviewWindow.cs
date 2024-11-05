@@ -512,6 +512,19 @@ internal sealed class SpectraPreviewWindow : Form
         try
         {
             using var origin = new OriginProject();
+
+            if (origin.IsModified)
+            {
+                MessageBox.Show(
+                    "The current Origin project has unsaved changes and will be closed without saving after pressing OK button. " +
+                    "Save the project before exporting to Origin.",
+                    "Warning",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+                origin.NewProject();
+            }
+
             var book = origin.AddWorkbook();
             book.Name = "Data";
 

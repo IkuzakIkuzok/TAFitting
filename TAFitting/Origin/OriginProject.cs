@@ -28,6 +28,22 @@ internal sealed class OriginProject : IDisposable
     internal static bool IsAvailable => ProgType is not null;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the project is modified.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the project is modified; otherwise, <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// Setting this property to <see langword="false"/> doen NOT save the project.
+    /// Call <see cref="Save(string)"/> method to save the project.
+    /// </remarks>
+    internal bool IsModified
+    {
+        get => this.app.IsModified;
+        set => this.app.IsModified = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="OriginProject"/> class.
     /// </summary>
     internal OriginProject()
@@ -62,6 +78,31 @@ internal sealed class OriginProject : IDisposable
     {
         this.app.Save(path);
     } // public void Save (string)
+
+    /// <summary>
+    /// Empties all worksheets and fill all matrices with missing-value.
+    /// Size of all worksheets are adjusted to the default size (30),
+    /// and size of all matrices are adjusted to the default size (2x2).
+    /// </summary>
+    /// <returns><see langword="true"/> if successful; otherwise, <see langword="false"/>.</returns>
+    internal bool Reset()
+        => Reset(true, true);
+
+    /// <summary>
+    /// Empties all worksheets and fill all matrices with missing-value.
+    /// </summary>
+    /// <param name="reduceWorksheets"><see langword="true"/> to adjust the size of worksheets to thier default size; otherwise, <see langword="false"/>.</param>
+    /// <param name="reduceMatrices"><see langword="true"/> to adjust the size of matrices to their default size; otherwise, <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if successful; otherwise, <see langword="false"/>.</returns>
+    internal bool Reset(bool reduceWorksheets, bool reduceMatrices)
+        => this.app.Reset(reduceWorksheets, reduceMatrices);
+
+    /// <summary>
+    /// Closes the current project and starts a new project.
+    /// </summary>
+    /// <returns><see langword="true"/> if successful; otherwise, <see langword="false"/>.</returns>
+    internal bool NewProject()
+        => this.app.NewProject();
 
     /// <summary>
     /// Adds a workbook.
