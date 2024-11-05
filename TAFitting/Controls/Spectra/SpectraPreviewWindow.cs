@@ -463,7 +463,7 @@ internal sealed class SpectraPreviewWindow : Form
         {
             using var _ = new NegativeSignHandler();
             writer.Parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
-            writer.Times = this.timeTable.Times.ToArray();
+            writer.Times = [.. this.timeTable.Times];
 
             foreach ((var wavelength, var parameters) in this.parameters)
             {
