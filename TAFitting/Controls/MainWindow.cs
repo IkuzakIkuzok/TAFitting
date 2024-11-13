@@ -3,6 +3,7 @@
 
 using Microsoft.Win32;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
@@ -1059,7 +1060,7 @@ internal sealed class MainWindow : Form
         this.Text += " - Fitting...";
         var source = rows.ToArray();
 
-        var start = DateTime.Now;
+        var start = Stopwatch.GetTimestamp();
 
         try
         {
@@ -1092,7 +1093,7 @@ internal sealed class MainWindow : Form
             this.parametersTable.StopUpdateRSquared = false;
         }
 
-        var elapsed = DateTime.Now - start;
+        var elapsed = Stopwatch.GetElapsedTime(start);
 
         this.Text = text;
         FadingMessageBox.Show(
