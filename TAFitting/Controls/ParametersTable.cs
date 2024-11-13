@@ -54,7 +54,15 @@ internal sealed class ParametersTable : DataGridView
         {
             if (this.stopUpdateRSquared == value) return;
             this.stopUpdateRSquared = value;
-            if (!value) RecalculateRSquared();
+            if (value)
+            {
+                ControlDrawingSuspender.StopPainting(this);
+            }
+            else
+            {
+                RecalculateRSquared();
+                ControlDrawingSuspender.ResumePainting(this);
+            }
         }
     }
 
