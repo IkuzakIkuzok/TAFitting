@@ -260,6 +260,20 @@ internal sealed class SpectraPreviewWindow : Form
 
         #endregion menu.view
 
+        #region menu.tools
+
+        var menu_tools = new ToolStripMenuItem("&Tools");
+        this.MainMenuStrip.Items.Add(menu_tools);
+
+        var menu_toolsCopyPlotArea = new ToolStripMenuItem("&Copy plot area")
+        {
+            ShortcutKeys = Keys.Control | Keys.Shift | Keys.C,
+        };
+        menu_toolsCopyPlotArea.Click += CopyPlotAreaToClipboard;
+        menu_tools.DropDownItems.Add(menu_toolsCopyPlotArea);
+
+        #endregion menu.tools
+
         #endregion menu
 
         this.mainContainer.SplitterDistance = 700;
@@ -615,6 +629,13 @@ internal sealed class SpectraPreviewWindow : Form
         }
         return [];
     } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
+
+    private void CopyPlotAreaToClipboard(object? sender, EventArgs e)
+    {
+        var image = this.chart.CaptureControl();
+        if (image is null) return;
+        System.Windows.Forms.Clipboard.SetImage(image);
+    } // private void CopyPlotAreaToClipboard (object?, EventArgs)
 
     private void SelectColorGradient(object? sender, EventArgs e)
     {

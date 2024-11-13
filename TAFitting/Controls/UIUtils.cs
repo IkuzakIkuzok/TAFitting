@@ -114,6 +114,13 @@ internal static partial class UIUtils
         return Color.FromArgb(color.A, m - r, m - g, m - b);
     } // internal static Color CalcInvertColor (Color)
 
+    internal static Bitmap CaptureControl(this Control control)
+    {
+        var bmp = new Bitmap(control.Width, control.Height);
+        control.DrawToBitmap(bmp, control.ClientRectangle);
+        return bmp;
+    } // internal static Bitmap CaptureControl (this Control)
+
     private static readonly int[] axisSplitCount = [1, 2, 4, 5, 10, 20, 40, 50, 100];
     private static readonly int[] axisIntervalSteps = [1, 2, 5, 10];
 
