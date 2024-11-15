@@ -54,7 +54,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     private readonly ParameterConstraints[] constraints;
 
     private readonly int numberOfParameters, numberOfDataPoints;
-    private TVector est_vals;
+    private readonly TVector est_vals;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
     private readonly double[][] temp_matrix;
@@ -107,10 +107,9 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         do
         {
             this.func = this.Model.GetFunction(this.parameters);
-            var tmp = new double[this.numberOfDataPoints];
             for (var i = 0; i < this.numberOfDataPoints; ++i)
-                tmp[i] = this.func(this.x[i]);
-            this.est_vals = TVector.Create(tmp);
+                this.temp_arr[i] = this.func(this.x[i]);
+            this.est_vals.Load(this.temp_arr);
             chi2 = CalcChi2();
             ComputeDerivatives();
             CalcHessian();
@@ -236,10 +235,9 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
 
         for (var i = 0; i < this.numberOfParameters; ++i)
         {
-            var v = new double[this.numberOfDataPoints];
             for (var j = 0; j < this.numberOfDataPoints; ++j)
-                v[j] = this.temp_matrix[j][i];
-            this.derivatives[i] = TVector.Create(v);
+                this.temp_arr[j] = this.temp_matrix[j][i];
+            this.derivatives[i].Load(this.temp_arr);
         }
     } // private void ComputeDerivativesCacheAnalytically ()
 

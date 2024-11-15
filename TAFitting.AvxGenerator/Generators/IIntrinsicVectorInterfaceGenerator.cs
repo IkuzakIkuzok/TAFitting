@@ -38,6 +38,12 @@ internal interface IIntrinsicVector<TSelf>
     double Sum { get; }
 
     /// <summary>
+    /// Loads the specified values.
+    /// </summary>
+    /// <param name=""values"">The values.</param>
+    abstract void Load(double[] values);
+
+    /// <summary>
     /// Creates a new instance of the <see cref=""IIntrinsicVector{TSelf}""/> class
     /// with the specified values.
     /// </summary>

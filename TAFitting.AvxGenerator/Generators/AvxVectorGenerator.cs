@@ -131,7 +131,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(p + {4 * x})", "; "))
             builder.AppendLine($"\t\t\t{element};");
         builder.AppendLine("\t\t}");
-        builder.AppendLine("\t} // ctor (IReadOnlyList<double>)");
+        builder.AppendLine("\t} // ctor (double[])");
 
         builder.AppendLine();
         builder.AppendLine("\t/// <summary>");
@@ -162,6 +162,17 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
 
         builder.AppendLine();
         builder.AppendLine($"#region IIntrinsicVector<{className}>");
+
+        builder.AppendLine();
+        builder.AppendLine("unsafe public void Load(double[] values)");
+        builder.AppendLine("\t{");
+        builder.AppendLine("\t\tfixed (double* p = values)");
+        builder.AppendLine("\t\t{");
+        foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(p + {4 * x})", "; "))
+            builder.AppendLine($"\t\t\t{element};");
+        builder.AppendLine("\t\t}");
+        builder.AppendLine("\t} // unsafe public void Load (double[])");
+
 
         builder.AppendLine();
         builder.AppendLine($"\tpublic static {className} Create(double[] values)");
