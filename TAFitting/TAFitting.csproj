@@ -12,6 +12,7 @@
 	<Company>Ohkita Lab.</Company>
 	<Copyright>(c) 2024 Kazuki Kohzuki</Copyright>
 	<RepositoryUrl>https://github.com/IkuzakIkuzok/TAFitting</RepositoryUrl>
+	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	<Configurations>Debug;Release</Configurations>
 	<Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
@@ -32,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TAFitting.AvxGenerator\TAFitting.AvxGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
     <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
