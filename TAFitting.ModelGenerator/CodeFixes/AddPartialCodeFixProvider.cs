@@ -39,7 +39,7 @@ internal sealed class AddPartialCodeFixProvider : CodeFixProvider
             CodeAction.Create(
                 title: "Add partial modifier",
                 createChangedDocument: c => AddPartialModifier(context.Document, node, c),
-                equivalenceKey: nameof(AddGuidCodeFixProvider)
+                equivalenceKey: nameof(AddPartialCodeFixProvider)
             ),
             diagnostic
         );

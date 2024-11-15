@@ -39,7 +39,7 @@ internal sealed class RemoveStaticCodeFixProvider : CodeFixProvider
             CodeAction.Create(
                 title: "Remove static modifier",
                 createChangedDocument: c => RemoveStaticModifier(context.Document, node, c),
-                equivalenceKey: nameof(AddGuidCodeFixProvider)
+                equivalenceKey: nameof(RemoveStaticCodeFixProvider)
             ),
             diagnostic
         );
