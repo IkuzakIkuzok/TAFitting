@@ -12,6 +12,7 @@ using TAFitting.Controls.LinearCombination;
 using TAFitting.Controls.Spectra;
 using TAFitting.Data;
 using TAFitting.Data.Solver;
+using TAFitting.Data.Solver.SIMD;
 using TAFitting.Model;
 
 namespace TAFitting.Controls;
@@ -1112,12 +1113,24 @@ internal sealed class MainWindow : Form
         var model = this.SelectedModel!;
         var decay = row.Decay.OnlyAfterT0;
 
-        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
+        if (LevenbergMarquardtAvx.CheckSupport(decay.Times.Count) && model is IAnalyticallyDifferentiable differentiable)
         {
-            MaxIteration = Program.MaxIterations,
-        };
-        lma.Fit();
-        return lma.Parameters;
+            var lma = new LevenbergMarquardtAvx(differentiable, decay.Times, decay.Signals, row.Parameters)
+            {
+                MaxIteration = Program.MaxIterations,
+            };
+            lma.Fit();
+            return lma.Parameters;
+        }
+        else
+        {
+            var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
+            {
+                MaxIteration = Program.MaxIterations,
+            };
+            lma.Fit();
+            return lma.Parameters;
+        }
     } // private void LevenbergMarquardtEstimation (ParametersTableRow)
 
     private void ToggleAutoFit(object? sender, EventArgs e)
