@@ -3,10 +3,10 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
-using TAFitting.AvxGenerator.Generators;
+using TAFitting.IntrinsicsGenerator.Generators;
 using TAFitting.SourceGeneratorUtils;
 
-namespace TAFitting.AvxGenerator.Analyzers;
+namespace TAFitting.IntrinsicsGenerator.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer

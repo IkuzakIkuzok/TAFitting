@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
 using System.Composition;
-using TAFitting.AvxGenerator.Analyzers;
+using TAFitting.IntrinsicsGenerator.Analyzers;
 
-namespace TAFitting.AvxGenerator.CodeFixes;
+namespace TAFitting.IntrinsicsGenerator.CodeFixes;
 
 /// <summary>
 /// Provides a code fix for removing the static modifier from a class declaration.

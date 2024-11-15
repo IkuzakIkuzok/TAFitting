@@ -1,12 +1,12 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-namespace TAFitting.AvxGenerator.Generators;
+namespace TAFitting.IntrinsicsGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
-internal sealed class IAvxVectorInterfaceGenerator : ISourceGenerator
+internal sealed class IIntrinsicVectorInterfaceGenerator : ISourceGenerator
 {
-    internal const string InterfaceName = "IAvxVector";
+    internal const string InterfaceName = "IIntrinsicVector";
 
     public void Initialize(GeneratorInitializationContext context) { }
 
@@ -28,9 +28,9 @@ namespace TAFitting.Data;
 /// <summary>
 /// An AVX vector.
 /// </summary>
-internal interface IAvxVector<TSelf>
+internal interface IIntrinsicVector<TSelf>
     : IAdditionOperators<TSelf,TSelf,TSelf>, ISubtractionOperators<TSelf,TSelf,TSelf>, IMultiplyOperators<TSelf,TSelf,TSelf>, IDivisionOperators<TSelf,TSelf,TSelf>
-    where TSelf : IAvxVector<TSelf>
+    where TSelf : IIntrinsicVector<TSelf>
 {
     /// <summary>
     /// Gets the sum of the elements.
@@ -38,19 +38,19 @@ internal interface IAvxVector<TSelf>
     double Sum { get; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref=""IAvxVector{TSelf}""/> class
+    /// Creates a new instance of the <see cref=""IIntrinsicVector{TSelf}""/> class
     /// with the specified values.
     /// </summary>
     /// <param name=""values"">The values.</param>
-    /// <returns>A new instance of the <see cref=""IAvxVector{TSelf}""/> class with the <paramref name=""values""/>.</returns>
+    /// <returns>A new instance of the <see cref=""IIntrinsicVector{TSelf}""/> class with the <paramref name=""values""/>.</returns>
     abstract static TSelf Create(double[] values);
 
     /// <summary>
-    /// Creates a new instance of the <see cref=""IAvxVector{TSelf}""/> class
+    /// Creates a new instance of the <see cref=""IIntrinsicVector{TSelf}""/> class
     /// with the specified length.
     /// </summary>
     /// <param name=""length"">The length.</param>
-    /// <returns>A new instance of the <see cref=""IAvxVector{TSelf}""/> class with the <paramref name=""length""/>.</returns>
+    /// <returns>A new instance of the <see cref=""IIntrinsicVector{TSelf}""/> class with the <paramref name=""length""/>.</returns>
     abstract static TSelf Create(int length);
 
     /// <summary>
@@ -64,6 +64,6 @@ internal interface IAvxVector<TSelf>
     /// </summary>
     /// <returns><see langword=""true""/> if the current hardware supports AVX; otherwise, <see langword=""false""/>.</returns>
     abstract static bool CheckSupported();
-} // internal interface IAvxVector<TSelf>
+} // internal interface IIntrinsicVector<TSelf>
 ";
-} // internal sealed class IAvxVectorInterfaceGenerator : ISourceGenerator
+} // internal sealed class IIntrinsicVectorInterfaceGenerator : ISourceGenerator

@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-namespace TAFitting.AvxGenerator.Generators;
+namespace TAFitting.IntrinsicsGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class AvxVectorGenerator : ISourceGenerator
@@ -58,7 +58,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine($"/// <summary>");
         builder.AppendLine($"/// An AVX vector of {count} elements.");
         builder.AppendLine($"/// </summary>");
-        builder.AppendLine($"internal partial class {className} : IAvxVector<{className}>");
+        builder.AppendLine($"internal partial class {className} : IIntrinsicVector<{className}>");
         builder.AppendLine("{");
 
         builder.AppendLine("#region static properties");
@@ -158,7 +158,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("#endregion constructors");
 
         builder.AppendLine();
-        builder.AppendLine($"#region IAvxVector<{className}>");
+        builder.AppendLine($"#region IIntrinsicVector<{className}>");
 
         builder.AppendLine();
         builder.AppendLine($"\tpublic static {className} Create(double[] values)");
@@ -177,7 +177,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("\t\t=> IsSupported;");
 
         builder.AppendLine();
-        builder.AppendLine($"#endregion IAvxVector<{className}>");
+        builder.AppendLine($"#endregion IIntrinsicVector<{className}>");
 
         builder.AppendLine();
         builder.AppendLine("#region operators");
@@ -190,7 +190,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine();
         builder.AppendLine("#endregion operators");
 
-        builder.AppendLine($"}} // internal partial class {className} : IAvxVector<{className}>");
+        builder.AppendLine($"}} // internal partial class {className} : IIntrinsicVector<{className}>");
 
         return builder.ToString();
     } // private static string Generate (string, string, int)

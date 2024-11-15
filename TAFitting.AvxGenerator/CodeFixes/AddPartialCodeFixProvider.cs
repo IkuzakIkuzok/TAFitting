@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
 using System.Composition;
-using TAFitting.AvxGenerator.Analyzers;
+using TAFitting.IntrinsicsGenerator.Analyzers;
 
-namespace TAFitting.AvxGenerator.CodeFixes;
+namespace TAFitting.IntrinsicsGenerator.CodeFixes;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AddPartialCodeFixProvider))]
 [Shared]

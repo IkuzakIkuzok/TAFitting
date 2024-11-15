@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-namespace TAFitting.AvxGenerator.Generators;
+namespace TAFitting.IntrinsicsGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class AvxVectorAttributesGenerator : ISourceGenerator

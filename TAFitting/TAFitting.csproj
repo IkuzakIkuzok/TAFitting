@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TAFitting.AvxGenerator\TAFitting.AvxGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\TAFitting.AvxGenerator\TAFitting.IntrinsicsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
     <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>

@@ -9,7 +9,7 @@ namespace TAFitting.Data.Solver.SIMD;
 /// <summary>
 /// Represents the Levenberg-Marquardt algorithm with AVX.
 /// </summary>
-internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<TVector>
+internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IIntrinsicVector<TVector>
 {
     /// <summary>
     /// Gets a value indicating whether LMA with AVX is supported.
@@ -270,4 +270,4 @@ internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<
         if (!IsSupported) return false;
         return dataCount <= (int)(TVector.GetCapacity() * (1 + Program.Config.SolverConfig.MaxTruncateRatio));
     } // internal static bool CheckSupport (int)
-} // internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<TVector>
+} // internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IIntrinsicVector<TVector>

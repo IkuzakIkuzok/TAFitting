@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-namespace TAFitting.AvxGenerator.Generators;
+namespace TAFitting.IntrinsicsGenerator.Generators;
 
 internal sealed class AttributeSyntaxReceiver : ISyntaxReceiver
 {
