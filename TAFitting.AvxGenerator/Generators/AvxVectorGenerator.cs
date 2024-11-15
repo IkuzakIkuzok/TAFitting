@@ -61,6 +61,9 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine($"internal partial class {className} : IIntrinsicVector<{className}>");
         builder.AppendLine("{");
 
+        builder.AppendLine("private static readonly bool isSupported = Avx.IsSupported && Vector256<double>.IsSupported;");
+
+        builder.AppendLine();
         builder.AppendLine("#region static properties");
 
         builder.AppendLine();
@@ -68,7 +71,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("\t/// Gets a value indicating whether the AVX instruction set is supported.");
         builder.AppendLine("\t///");
         builder.AppendLine("\t/// <value><see langword=\"true\"/> if the AVX instruction set is supported; otherwise, <see langword=\"false\"/>.</value>");
-        builder.AppendLine("\tinternal static bool IsSupported => Avx.IsSupported;");
+        builder.AppendLine("\tinternal static bool IsSupported => isSupported;");
 
         builder.AppendLine();
         builder.AppendLine("\t///");
