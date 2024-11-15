@@ -59,6 +59,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     private readonly double[] gradient;
     private readonly double[][] temp_matrix;
     private readonly double[] temp_arr;
+    private readonly TVector temp_vector;
     private readonly TVector[] derivatives;  // Cache for the partial derivatives
     private Func<double, double> func = null!;
 
@@ -88,6 +89,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             this.temp_matrix[i] = new double[this.numberOfParameters];
 
         this.temp_arr = new double[this.numberOfDataPoints];
+        this.temp_vector = TVector.Create(this.numberOfDataPoints);
 
         this.derivatives = new TVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
@@ -141,8 +143,9 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             this.temp_arr[i] = func(this.x[i]);
         var v_e = TVector.Create(this.temp_arr);
 
-        var diff = this.y - v_e;
-        return (diff * diff).Sum;
+        TVector.Subtract(this.y, v_e, this.temp_vector);
+        TVector.Multiply(this.temp_vector, this.temp_vector, this.temp_vector);
+        return this.temp_vector.Sum;
     } // private double CalcChi2 (Numbers)
 
     private double CalcChi2()
@@ -200,7 +203,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         {
             for (var col = 0; col < this.numberOfParameters; ++col)
             {
-                var h = (this.derivatives[row] * this.derivatives[col]).Sum;
+                TVector.Multiply(this.derivatives[row], this.derivatives[col], this.temp_vector);
+                var h = this.temp_vector.Sum;
                 this.hessian[row, col] = h;
                 this.hessian[col, row] = h;
             }
@@ -212,8 +216,9 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     {
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
-            var diff = this.y - this.est_vals;
-            this.gradient[row] = (diff * this.derivatives[row]).Sum;
+            TVector.Subtract(this.y, this.est_vals, this.temp_vector);
+            TVector.Multiply(this.temp_vector, this.derivatives[row], this.temp_vector);
+            this.gradient[row] = this.temp_vector.Sum;
         }
     } // private void CalcGradient ()
 

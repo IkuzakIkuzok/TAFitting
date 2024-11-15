@@ -179,6 +179,11 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("public static bool CheckSupported()");
         builder.AppendLine("\t\t=> IsSupported;");
 
+        AddCalculation(builder, className, "Add", "Add", n);
+        AddCalculation(builder, className, "Subtract", "Subtract", n);
+        AddCalculation(builder, className, "Multiply", "Multiply", n);
+        AddCalculation(builder, className, "Divide", "Divide", n);
+
         builder.AppendLine();
         builder.AppendLine($"#endregion IIntrinsicVector<{className}>");
 
@@ -208,6 +213,19 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
             yield return elements;
         }
     } // private static IEnumerable<string> GenerateElements (int, int, Func<int, string>, string)
+
+    private static void AddCalculation(StringBuilder builder, string className, string method, string avxMethod, int n)
+    {
+        builder.AppendLine();
+        builder.AppendLine($"\tpublic static void {method}({className} left, {className} right, {className} result)");
+        builder.AppendLine("\t{");
+        builder.AppendLine("\t\tif (left.count != right.count || left.count != result.count)");
+        builder.AppendLine("\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine();
+        foreach (var element in GenerateElements(n, 4, x => $"result.v{x} = Avx.{avxMethod}(left.v{x}, right.v{x})", "; "))
+            builder.AppendLine($"\t\t{element};");
+        builder.AppendLine($"\t}} // public static void {method}({className}, {className}, {className})");
+    } // private static void AddCalculation (string, string, string, string, int)
 
     private static void AddOperator(StringBuilder builder, string className, string op, string method, int n)
     {

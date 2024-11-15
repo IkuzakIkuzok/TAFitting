@@ -64,6 +64,38 @@ internal interface IIntrinsicVector<TSelf>
     /// </summary>
     /// <returns><see langword=""true""/> if the current hardware supports AVX; otherwise, <see langword=""false""/>.</returns>
     abstract static bool CheckSupported();
+
+    /// <summary>
+    /// Adds two vectors and stores the result in the specified vector.
+    /// </summary>
+    /// <param name=""left"">The left vector.</param>
+    /// <param name=""right"">The right vector.</param>
+    /// <param name=""result"">The result vector.</param>
+    abstract static void Add(TSelf left, TSelf right, TSelf result);
+
+    /// <summary>
+    /// Adds a vector and a scalar and stores the result in the specified vector.
+    /// </summary>
+    /// <param name=""left"">The left vector.</param>
+    /// <param name=""right"">The right scalar.</param>
+    /// <param name=""result"">The result vector.</param>
+    abstract static void Subtract(TSelf left, TSelf right, TSelf result);
+
+    /// <summary>
+    /// Multiplies two vectors and stores the result in the specified vector.
+    /// </summary>
+    /// <param name=""left"">The left vector.</param>
+    /// <param name=""right"">The right vector.</param>
+    /// <param name=""result"">The result vector.</param>
+    abstract static void Multiply(TSelf left, TSelf right, TSelf result);
+
+    /// <summary>
+    /// Divides two vectors and stores the result in the specified vector.
+    /// </summary>
+    /// <param name=""left"">The left vector.</param>
+    /// <param name=""right"">The right vector.</param>
+    /// <param name=""result"">The result vector.</param>
+    abstract static void Divide(TSelf left, TSelf right, TSelf result);
 } // internal interface IIntrinsicVector<TSelf>
 ";
 } // internal sealed class IIntrinsicVectorInterfaceGenerator : ISourceGenerator
