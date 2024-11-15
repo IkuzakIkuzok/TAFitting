@@ -1069,7 +1069,9 @@ internal sealed class MainWindow : Form
         if (model is IAnalyticallyDifferentiable)
         {
             var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
-            if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
+            if (LevenbergMarquardtSIMD<AvxVector1024>.CheckSupport(n))
+                estimation = LevenbergMarquardtEstimationSIMD<AvxVector1024>;
+            else if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
                 estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
         }
 
