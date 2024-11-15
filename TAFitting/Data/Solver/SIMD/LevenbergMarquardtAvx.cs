@@ -202,16 +202,10 @@ internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<
             for (var col = 0; col < this.numberOfParameters; ++col)
             {
                 var h = (this.derivatives[row] * this.derivatives[col]).Sum;
-                if (row == col)
-                {
-                    this.hessian[row, row] = h * (1 + this.Lambda);
-                }
-                else
-                {
-                    this.hessian[row, col] = h;
-                    this.hessian[col, row] = h;
-                }
+                this.hessian[row, col] = h;
+                this.hessian[col, row] = h;
             }
+            this.hessian[row, row] *= 1 + this.Lambda;
         }
     } // private void CalcHessian ()
 
