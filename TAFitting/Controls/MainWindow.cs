@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DocumentFormat.OpenXml.Math;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -1061,6 +1062,17 @@ internal sealed class MainWindow : Form
         this.Text += " - Fitting...";
         var source = rows.ToArray();
 
+        var model = this.SelectedModel;
+        if (model is null) return;
+
+        Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation = LevenbergMarquardtEstimation;
+        if (model is IAnalyticallyDifferentiable)
+        {
+            var n = this.decays?.Values.Select(d => d.Times.Count).Max() ?? 0;
+            if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
+                estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
+        }
+
         var start = Stopwatch.GetTimestamp();
 
         try
@@ -1071,7 +1083,7 @@ internal sealed class MainWindow : Form
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
                 await Task.Run(() => Parallel.ForEach(source, (row) =>
                 {
-                    var parameters = LevenbergMarquardtEstimation(row);
+                    var parameters = estimation(row, model);
                     results.TryAdd(row, parameters);
                 }));
 
@@ -1086,7 +1098,7 @@ internal sealed class MainWindow : Form
             else
             {
                 foreach (var row in rows)
-                    row.Parameters = LevenbergMarquardtEstimation(row);
+                    row.Parameters = estimation(row, model);
             }
         }
         finally
@@ -1107,31 +1119,35 @@ internal sealed class MainWindow : Form
     /// Fits the specified row using the Levenberg-Marquardt algorithm.
     /// </summary>
     /// <param name="row">The row to fit.</param>
+    /// <param name="model">The model to fit.</param>
     /// <returns>The estimated parameters.</returns>
-    private IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row)
+    private static IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row, IFittingModel model)
     {
-        var model = this.SelectedModel!;
         var decay = row.Decay.OnlyAfterT0;
+        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
+        {
+            MaxIteration = Program.MaxIterations,
+        };
+        lma.Fit();
+        return lma.Parameters;
+    } // private static void LevenbergMarquardtEstimation (ParametersTableRow, IFittingModel)
 
-        if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(decay.Times.Count) && model is IAnalyticallyDifferentiable differentiable)
+    /// <summary>
+    /// Fits the specified row using the SIMD-accelerated Levenberg-Marquardt algorithm.
+    /// </summary>
+    /// <param name="row">The row to fit.</param>
+    /// <param name="model">The model to fit.</param>
+    /// <returns>The estimated parameters.</returns>
+    private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD<TVector>(ParametersTableRow row, IFittingModel model) where TVector : IIntrinsicVector<TVector>
+    {
+        var decay = row.Decay.OnlyAfterT0;
+        var lma = new LevenbergMarquardtSIMD<TVector>((IAnalyticallyDifferentiable)model, decay.Times, decay.Signals, row.Parameters)
         {
-            var lma = new LevenbergMarquardtSIMD<AvxVector2048>(differentiable, decay.Times, decay.Signals, row.Parameters)
-            {
-                MaxIteration = Program.MaxIterations,
-            };
-            lma.Fit();
-            return lma.Parameters;
-        }
-        else
-        {
-            var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
-            {
-                MaxIteration = Program.MaxIterations,
-            };
-            lma.Fit();
-            return lma.Parameters;
-        }
-    } // private void LevenbergMarquardtEstimation (ParametersTableRow)
+            MaxIteration = Program.MaxIterations,
+        };
+        lma.Fit();
+        return lma.Parameters;
+    } // private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD<TVector> (ParametersTableRow, IAnalyticallyDifferentiable) where TVector : IIntrinsicVector<TVector>
 
     private void ToggleAutoFit(object? sender, EventArgs e)
     {
