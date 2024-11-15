@@ -45,6 +45,9 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine();
         builder.AppendLine("using System.Runtime.Intrinsics;");
         builder.AppendLine("using System.Runtime.Intrinsics.X86;");
+        if (!nameSpace.StartsWith("TAFitting.Data"))
+            builder.AppendLine("using TAFitting.Data;");
+
         if (!string.IsNullOrEmpty(nameSpace))
         {
             builder.AppendLine();
@@ -55,7 +58,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine($"/// <summary>");
         builder.AppendLine($"/// An AVX vector of {count} elements.");
         builder.AppendLine($"/// </summary>");
-        builder.AppendLine($"internal partial class {className}");
+        builder.AppendLine($"internal partial class {className} : IAvxVector<{className}>");
         builder.AppendLine("{");
 
         builder.AppendLine("#region static properties");
@@ -95,10 +98,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("\tinternal int Length => " + count + ";");
 
         builder.AppendLine();
-        builder.AppendLine("\t/// <summary>");
-        builder.AppendLine("\t/// Gets the sum of the elements.");
-        builder.AppendLine("\t/// </summary>");
-        builder.AppendLine("\tinternal double Sum");
+        builder.AppendLine("\tpublic double Sum");
         builder.AppendLine("\t{");
         builder.AppendLine("\t\tget");
         builder.AppendLine("\t\t{");
@@ -142,7 +142,6 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
             builder.AppendLine($"\t\t{element};");
         builder.AppendLine("\t} // ctor (int)");
 
-
         builder.AppendLine();
         builder.AppendLine("\t/// <summary>");
         builder.AppendLine("\t/// Initializes a new instance of the <see cref=\"AvxVector\"/> class with the specified vectors.");
@@ -159,6 +158,24 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("#endregion constructors");
 
         builder.AppendLine();
+        builder.AppendLine($"#region IAvxVector<{className}>");
+
+        builder.AppendLine();
+        builder.AppendLine($"\tpublic static {className} Create(double[] values)");
+        builder.AppendLine("\t\t=> new(values);");
+
+        builder.AppendLine();
+        builder.AppendLine($"\tpublic static {className} Create(int length)");
+        builder.AppendLine("\t\t=> new(length);");
+
+        builder.AppendLine();
+        builder.AppendLine("\tpublic static int GetCapacity()");
+        builder.AppendLine("\t\t=> Capacity;");
+
+        builder.AppendLine();
+        builder.AppendLine($"#endregion IAvxVector<{className}>");
+
+        builder.AppendLine();
         builder.AppendLine("#region operators");
 
         AddOperator(builder, className, "+", "Add", n);
@@ -169,7 +186,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine();
         builder.AppendLine("#endregion operators");
 
-        builder.AppendLine($"}} // internal partial class {className}");
+        builder.AppendLine($"}} // internal partial class {className} : IAvxVector<{className}>");
 
         return builder.ToString();
     } // private static string Generate (string, string, int)

@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Runtime.Intrinsics;
 using TAFitting.Model;
 using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 
@@ -9,13 +10,13 @@ namespace TAFitting.Data.Solver.SIMD;
 /// <summary>
 /// Represents the Levenberg-Marquardt algorithm with AVX.
 /// </summary>
-internal sealed class LevenbergMarquardtAvx
+internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<TVector>
 {
     /// <summary>
     /// Gets a value indicating whether LMA with AVX is supported.
     /// </summary>
     internal static bool IsSupported
-        => Program.Config.SolverConfig.UseSIMD && AvxVector2048.IsSupported;
+        => Program.Config.SolverConfig.UseSIMD && Vector256<double>.IsSupported;
 
     /// <summary>
     /// Gets the fitting model.
@@ -48,18 +49,18 @@ internal sealed class LevenbergMarquardtAvx
     internal Numbers Parameters => this.parameters;
 
     private readonly Numbers x;
-    private readonly AvxVector2048 y;
+    private readonly TVector y;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
 
     private readonly int numberOfParameters, numberOfDataPoints;
-    private AvxVector2048 est_vals;
+    private TVector est_vals;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
     private readonly double[][] temp_matrix;
     private readonly double[] temp_arr;
-    private readonly AvxVector2048[] derivatives;  // Cache for the partial derivatives
+    private readonly TVector[] derivatives;  // Cache for the partial derivatives
     private Func<double, double> func = null!;
 
     internal LevenbergMarquardtAvx(IAnalyticallyDifferentiable model, Numbers x, Numbers y, Numbers parameters)
@@ -69,7 +70,7 @@ internal sealed class LevenbergMarquardtAvx
 
         this.Model = model;
         this.x = x;
-        this.y = new([.. y]);
+        this.y = TVector.Create([.. y]);
 
         this.numberOfParameters = parameters.Count;
         this.numberOfDataPoints = x.Count;
@@ -79,7 +80,7 @@ internal sealed class LevenbergMarquardtAvx
         this.constraints = model.Parameters.Select(p => p.Constraints).ToArray();
 
         this.incrementedParameters = new double[this.numberOfParameters];
-        this.est_vals = new(this.numberOfDataPoints);
+        this.est_vals = TVector.Create(this.numberOfDataPoints);
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
 
@@ -89,9 +90,9 @@ internal sealed class LevenbergMarquardtAvx
 
         this.temp_arr = new double[this.numberOfDataPoints];
 
-        this.derivatives = new AvxVector2048[this.numberOfParameters];
+        this.derivatives = new TVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
-            this.derivatives[i] = new(this.numberOfDataPoints);
+            this.derivatives[i] = TVector.Create(this.numberOfDataPoints);
     } // ctor (IAnalyticallyDifferentiable, Numbers, Numbers, Numbers)
 
     /// <summary>
@@ -108,7 +109,7 @@ internal sealed class LevenbergMarquardtAvx
             var tmp = new double[this.numberOfDataPoints];
             for (var i = 0; i < this.numberOfDataPoints; ++i)
                 tmp[i] = this.func(this.x[i]);
-            this.est_vals = new(tmp);
+            this.est_vals = TVector.Create(tmp);
             chi2 = CalcChi2();
             ComputeDerivatives();
             CalcHessian();
@@ -139,7 +140,7 @@ internal sealed class LevenbergMarquardtAvx
         var func = this.Model.GetFunction(parameters);
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             this.temp_arr[i] = func(this.x[i]);
-        var v_e = new AvxVector2048(this.temp_arr);
+        var v_e = TVector.Create(this.temp_arr);
 
         var diff = this.y - v_e;
         return (diff * diff).Sum;
@@ -240,7 +241,7 @@ internal sealed class LevenbergMarquardtAvx
             var v = new double[this.numberOfDataPoints];
             for (var j = 0; j < this.numberOfDataPoints; ++j)
                 v[j] = this.temp_matrix[j][i];
-            this.derivatives[i] = new(v);
+            this.derivatives[i] = TVector.Create(v);
         }
     } // private void ComputeDerivativesCacheAnalytically ()
 
@@ -274,6 +275,6 @@ internal sealed class LevenbergMarquardtAvx
     internal static bool CheckSupport(int dataCount)
     {
         if (!IsSupported) return false;
-        return dataCount <= (int)(AvxVector2048.Capacity * (1 + Program.Config.SolverConfig.MaxTruncateRatio));
-    } // internal static bool CheckSupport (int
-} // internal sealed class LevenbergMarquardtAvx
+        return dataCount <= (int)(TVector.GetCapacity() * (1 + Program.Config.SolverConfig.MaxTruncateRatio));
+    } // internal static bool CheckSupport (int)
+} // internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<TVector>
