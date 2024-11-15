@@ -1,7 +1,6 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-using System.Runtime.Intrinsics;
 using TAFitting.Model;
 using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 
@@ -16,7 +15,7 @@ internal sealed class LevenbergMarquardtAvx<TVector> where TVector : IAvxVector<
     /// Gets a value indicating whether LMA with AVX is supported.
     /// </summary>
     internal static bool IsSupported
-        => Program.Config.SolverConfig.UseSIMD && Vector256<double>.IsSupported;
+        => Program.Config.SolverConfig.UseSIMD && TVector.CheckSupported();
 
     /// <summary>
     /// Gets the fitting model.

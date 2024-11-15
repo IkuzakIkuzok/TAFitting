@@ -173,6 +173,10 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         builder.AppendLine("\t\t=> Capacity;");
 
         builder.AppendLine();
+        builder.AppendLine("public static bool CheckSupported()");
+        builder.AppendLine("\t\t=> IsSupported;");
+
+        builder.AppendLine();
         builder.AppendLine($"#endregion IAvxVector<{className}>");
 
         builder.AppendLine();

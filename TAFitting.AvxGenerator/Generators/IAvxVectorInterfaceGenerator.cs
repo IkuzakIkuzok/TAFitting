@@ -58,6 +58,12 @@ internal interface IAvxVector<TSelf>
     /// </summary>
     /// <returns>The capacity.</returns>
     abstract static int GetCapacity();
+
+    /// <summary>
+    /// Gets a value indicating whether the current hardware supports AVX.
+    /// </summary>
+    /// <returns><see langword=""true""/> if the current hardware supports AVX; otherwise, <see langword=""false""/>.</returns>
+    abstract static bool CheckSupported();
 } // internal interface IAvxVector<TSelf>
 ";
 } // internal sealed class IAvxVectorInterfaceGenerator : ISourceGenerator
