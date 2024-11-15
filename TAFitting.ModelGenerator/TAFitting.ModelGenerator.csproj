@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TAFitting.SourceGeneratorUtils\TAFitting.SourceGeneratorUtils.csproj" />
+    <ProjectReference Include="..\TAFitting.SourceGeneratorUtils\TAFitting.SourceGeneratorUtils.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
