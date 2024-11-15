@@ -1068,7 +1068,7 @@ internal sealed class MainWindow : Form
         Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation = LevenbergMarquardtEstimation;
         if (model is IAnalyticallyDifferentiable)
         {
-            var n = this.decays?.Values.Select(d => d.Times.Count).Max() ?? 0;
+            var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
             if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
                 estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
         }
