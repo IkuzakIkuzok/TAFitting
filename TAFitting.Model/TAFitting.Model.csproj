@@ -9,6 +9,8 @@
 	<VersionPrefix>1.0.0</VersionPrefix>
 	<Company>Ohkita Lab.</Company>
 	<Copyright>(c) 2024 Kazuki Kohzuki</Copyright>
+	<Configurations>Debug;Release</Configurations>
+	<Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
 </Project>

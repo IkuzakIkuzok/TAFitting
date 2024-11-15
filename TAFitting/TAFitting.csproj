@@ -12,6 +12,8 @@
 	<Company>Ohkita Lab.</Company>
 	<Copyright>(c) 2024 Kazuki Kohzuki</Copyright>
 	<RepositoryUrl>https://github.com/IkuzakIkuzok/TAFitting</RepositoryUrl>
+	<Configurations>Debug;Release</Configurations>
+	<Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
