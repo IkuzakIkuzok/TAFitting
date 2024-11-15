@@ -1113,9 +1113,9 @@ internal sealed class MainWindow : Form
         var model = this.SelectedModel!;
         var decay = row.Decay.OnlyAfterT0;
 
-        if (LevenbergMarquardtAvx<AvxVector2048>.CheckSupport(decay.Times.Count) && model is IAnalyticallyDifferentiable differentiable)
+        if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(decay.Times.Count) && model is IAnalyticallyDifferentiable differentiable)
         {
-            var lma = new LevenbergMarquardtAvx<AvxVector2048>(differentiable, decay.Times, decay.Signals, row.Parameters)
+            var lma = new LevenbergMarquardtSIMD<AvxVector2048>(differentiable, decay.Times, decay.Signals, row.Parameters)
             {
                 MaxIteration = Program.MaxIterations,
             };
