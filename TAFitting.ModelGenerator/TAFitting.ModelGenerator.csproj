@@ -16,10 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TAFitting.SourceGeneratorUtils\TAFitting.SourceGeneratorUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Microsoft.CodeAnalysis" />
     <Using Include="System.Text" />
-    <Using Include="Microsoft.CodeAnalysis.CSharp"/>
-    <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax"/>
+    <Using Include="Microsoft.CodeAnalysis.CSharp" />
+    <Using Include="Microsoft.CodeAnalysis.CSharp.Syntax" />
   </ItemGroup>
 
   <PropertyGroup>

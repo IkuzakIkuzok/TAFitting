@@ -5,7 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace System;
 
-/// <summary>Represent a range has start and end indexes.</summary>
+/// <summary>
+/// Represent a range has start and end indexes.
+/// </summary>
 /// <remarks>
 /// Range is used by the C# compiler to support the range syntax.
 /// <code>
@@ -17,47 +19,63 @@ namespace System;
 /// <remarks>Construct a Range object using the start and end indexes.</remarks>
 /// <param name="start">Represent the inclusive start index of the range.</param>
 /// <param name="end">Represent the exclusive end index of the range.</param>
-internal readonly struct Range(Index start, Index end) : IEquatable<Range>
+public readonly struct Range(Index start, Index end) : IEquatable<Range>
 {
-    /// <summary>Represent the inclusive start index of the Range.</summary>
+    /// <summary>
+    /// Represent the inclusive start index of the Range.
+    /// </summary>
     public Index Start { get; } = start;
 
-    /// <summary>Represent the exclusive end index of the Range.</summary>
+    /// <summary>
+    /// Represent the exclusive end index of the Range.
+    /// </summary>
     public Index End { get; } = end;
 
-    /// <summary>Indicates whether the current Range object is equal to another object of the same type.</summary>
+    /// <summary>
+    /// Indicates whether the current Range object is equal to another object of the same type.
+    /// </summary>
     /// <param name="value">An object to compare with this object</param>
-    public override bool Equals(object? value) =>
+    override public bool Equals(object? value) =>
         value is Range r &&
         r.Start.Equals(this.Start) &&
         r.End.Equals(this.End);
 
-    /// <summary>Indicates whether the current Range object is equal to another Range object.</summary>
+    /// <summary>
+    /// Indicates whether the current Range object is equal to another Range object.
+    /// </summary>
     /// <param name="other">An object to compare with this object</param>
     public bool Equals(Range other) => other.Start.Equals(this.Start) && other.End.Equals(this.End);
 
-    /// <summary>Returns the hash code for this instance.</summary>
-    public override int GetHashCode()
-    {
-        return this.Start.GetHashCode() * 31 + this.End.GetHashCode();
-    }
+    /// <summary>
+    /// Returns the hash code for this instance.
+    /// </summary>
+    override public int GetHashCode()
+        => this.Start.GetHashCode() * 31 + this.End.GetHashCode();
 
-    /// <summary>Converts the value of the current Range object to its equivalent string representation.</summary>
-    public override string ToString()
-    {
-        return this.Start + ".." + this.End;
-    }
+    /// <summary>
+    /// Converts the value of the current Range object to its equivalent string representation.
+    /// </summary>
+    override public string ToString()
+        => this.Start + ".." + this.End;
 
-    /// <summary>Create a Range object starting from start index to the end of the collection.</summary>
+    /// <summary>
+    /// Create a Range object starting from start index to the end of the collection.
+    /// </summary>
     public static Range StartAt(Index start) => new(start, Index.End);
 
-    /// <summary>Create a Range object starting from first element in the collection to the end Index.</summary>
+    /// <summary>
+    /// Create a Range object starting from first element in the collection to the end Index.
+    /// </summary>
     public static Range EndAt(Index end) => new(Index.Start, end);
 
-    /// <summary>Create a Range object starting from first element to the end.</summary>
+    /// <summary>
+    /// Create a Range object starting from first element to the end.
+    /// </summary>
     public static Range All => new(Index.Start, Index.End);
 
-    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
+    /// <summary>
+    /// Calculate the start offset and length of range object using a collection length.
+    /// </summary>
     /// <param name="length">The length of the collection that the range will be used with. length has to be a positive value.</param>
     /// <remarks>
     /// For performance reason, we don't validate the input length parameter against negative values.
@@ -82,10 +100,8 @@ internal readonly struct Range(Index start, Index end) : IEquatable<Range>
             end = endIndex.Value;
 
         if ((uint)end > (uint)length || (uint)start > (uint)end)
-        {
             throw new ArgumentOutOfRangeException(nameof(length));
-        }
 
         return (start, end - start);
-    }
-} // internal readonly struct Range : IEquatable<Range>
+    } // public (int Offset, int Length) GetOffsetAndLength (int)
+} // public readonly struct Range : IEquatable<Range>

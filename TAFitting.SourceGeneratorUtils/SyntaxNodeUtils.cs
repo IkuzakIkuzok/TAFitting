@@ -1,14 +1,14 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024 Kazuki Kohzuki
 
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace TAFitting.AvxGenerator;
+namespace TAFitting.SourceGeneratorUtils;
 
 /// <summary>
 /// Provides extension methods for <see cref="SyntaxNode"/>.
 /// </summary>
-internal static class SyntaxNodeUtils
+public static class SyntaxNodeUtils
 {
     /// <summary>
     /// Gets the fully qualified name of the attribute.
@@ -16,11 +16,11 @@ internal static class SyntaxNodeUtils
     /// <param name="attribute">The attribute.</param>
     /// <param name="context">The context.</param>
     /// <returns>The fully qualified name.</returns>
-    internal static string GetGetFullyQualifiedName(this AttributeSyntax attribute, SyntaxNodeAnalysisContext context)
+    public static string GetGetFullyQualifiedName(this AttributeSyntax attribute, SyntaxNodeAnalysisContext context)
     {
         var symbol = context.SemanticModel.GetSymbolInfo(attribute).Symbol;
         return symbol?.GetFullyQualifiedName() ?? string.Empty;
-    } // internal static string GetGetFullyQualifiedName (AttributeSyntax, SyntaxNodeAnalysisContext)
+    } // public static string GetGetFullyQualifiedName (AttributeSyntax, SyntaxNodeAnalysisContext)
 
     /// <summary>
     /// Obtains the fully qualified name of the class.
@@ -29,7 +29,7 @@ internal static class SyntaxNodeUtils
     /// <returns>The fully qualified name.</returns>
     /// <remarks><see cref="ISymbol.ToDisplayParts(SymbolDisplayFormat?)"/> with argument <see cref="SymbolDisplayFormat.FullyQualifiedFormat"/>
     /// does NOT work as expected. This problem is already reported on <a href="https://github.com/dotnet/roslyn/issues/50259">GitHub</a>.</remarks>
-    internal static string GetFullyQualifiedName(this ISymbol symbol)
+    public static string GetFullyQualifiedName(this ISymbol symbol)
     {
         var definition = symbol.OriginalDefinition.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
         if (definition == null) return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -45,11 +45,11 @@ internal static class SyntaxNodeUtils
         }
         names.Reverse();
         return string.Join(".", names);
-    } // internal static string GetFullyQualifiedName (this ISymbol)
+    } // public static string GetFullyQualifiedName (this ISymbol)
 
-    internal static string NormalizeAttributeName(this string name)
+    public static string NormalizeAttributeName(this string name)
     {
         if (name.EndsWith("Attribute", StringComparison.Ordinal)) return name;
         return name + "Attribute";
-    } // internal static string NormalizeAttributeName (this string)
-} // internal static class SyntaxNodeUtils
+    } // public static string NormalizeAttributeName (this string)
+} // public static class SyntaxNodeUtils

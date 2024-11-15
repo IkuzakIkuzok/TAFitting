@@ -5,7 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace System;
 
-/// <summary>Represent a type can be used to index a collection either from the start or the end.</summary>
+/// <summary>
+/// Represent a type can be used to index a collection either from the start or the end.
+/// </summary>
 /// <remarks>
 /// Index is used by the C# compiler to support the new index syntax
 /// <code>
@@ -13,11 +15,13 @@ namespace System;
 /// int lastElement = someArray[^1]; // lastElement = 5
 /// </code>
 /// </remarks>
-internal readonly struct Index : IEquatable<Index>
+public readonly struct Index : IEquatable<Index>
 {
     private readonly int _value;
 
-    /// <summary>Construct an Index using a value and indicating if the index is from the start or from the end.</summary>
+    /// <summary>
+    /// Construct an Index using a value and indicating if the index is from the start or from the end.
+    /// </summary>
     /// <param name="value">The index value. it has to be zero or positive number.</param>
     /// <param name="fromEnd">Indicating if the index is from the start or from the end.</param>
     /// <remarks>
@@ -27,74 +31,78 @@ internal readonly struct Index : IEquatable<Index>
     public Index(int value, bool fromEnd = false)
     {
         if (value < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
-        }
 
         if (fromEnd)
             this._value = ~value;
         else
             this._value = value;
-    }
+    } // ctor (int, [bool])
 
     // The following private constructors mainly created for perf reason to avoid the checks
     private Index(int value)
     {
         this._value = value;
-    }
+    } // ctor (int)
 
-    /// <summary>Create an Index pointing at first element.</summary>
+    /// <summary>
+    /// Create an Index pointing at first element.
+    /// </summary>
     public static Index Start => new(0);
 
-    /// <summary>Create an Index pointing at beyond last element.</summary>
+    /// <summary>
+    /// Create an Index pointing at beyond last element.
+    /// </summary>
     public static Index End => new(~0);
 
-    /// <summary>Create an Index from the start at the position indicated by the value.</summary>
+    /// <summary>
+    /// Create an Index from the start at the position indicated by the value.
+    /// </summary>
     /// <param name="value">The index value from the start.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Index FromStart(int value)
     {
         if (value < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
-        }
 
         return new Index(value);
-    }
+    } // public static Index FromStart (int)
 
-    /// <summary>Create an Index from the end at the position indicated by the value.</summary>
+    /// <summary>
+    /// Create an Index from the end at the position indicated by the value.
+    /// </summary>
     /// <param name="value">The index value from the end.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Index FromEnd(int value)
     {
         if (value < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
-        }
 
         return new Index(~value);
-    }
+    } // public static Index FromEnd (int)
 
-    /// <summary>Returns the index value.</summary>
+    /// <summary>
+    /// Returns the index value.
+    /// </summary>
     public int Value
     {
         get
         {
             if (this._value < 0)
-            {
                 return ~this._value;
-            }
             else
-            {
                 return this._value;
-            }
         }
     }
 
-    /// <summary>Indicates whether the index is from the start or the end.</summary>
+    /// <summary>
+    /// Indicates whether the index is from the start or the end.
+    /// </summary>
     public bool IsFromEnd => this._value < 0;
 
-    /// <summary>Calculate the offset from the start using the giving collection length.</summary>
+    /// <summary>
+    /// Calculate the offset from the start using the giving collection length.
+    /// </summary>
     /// <param name="length">The length of the collection that the Index will be used with. length has to be a positive value</param>
     /// <remarks>
     /// For performance reason, we don't validate the input length parameter and the returned offset value against negative values.
@@ -115,28 +123,38 @@ internal readonly struct Index : IEquatable<Index>
             offset += length + 1;
         }
         return offset;
-    }
+    } // public int GetOffset (int)
 
-    /// <summary>Indicates whether the current Index object is equal to another object of the same type.</summary>
+    /// <summary>
+    /// Indicates whether the current Index object is equal to another object of the same type.
+    /// </summary>
     /// <param name="value">An object to compare with this object</param>
-    public override bool Equals(object? value) => value is Index index && this._value == index._value;
+    override public bool Equals(object? value) => value is Index index && this._value == index._value;
 
-    /// <summary>Indicates whether the current Index object is equal to another Index object.</summary>
+    /// <summary>
+    /// Indicates whether the current Index object is equal to another Index object.
+    /// </summary>
     /// <param name="other">An object to compare with this object</param>
     public bool Equals(Index other) => this._value == other._value;
 
-    /// <summary>Returns the hash code for this instance.</summary>
-    public override int GetHashCode() => this._value;
+    /// <summary>
+    /// Returns the hash code for this instance.
+    /// </summary>
+    override public int GetHashCode() => this._value;
 
-    /// <summary>Converts integer number to an Index.</summary>
+    /// <summary>
+    /// Converts integer number to an Index.
+    /// </summary>
     public static implicit operator Index(int value) => FromStart(value);
 
-    /// <summary>Converts the value of the current Index object to its equivalent string representation.</summary>
-    public override string ToString()
+    /// <summary>
+    /// Converts the value of the current Index object to its equivalent string representation.
+    /// </summary>
+    override public string ToString()
     {
         if (this.IsFromEnd)
             return "^" + ((uint)this.Value).ToString();
 
         return ((uint)this.Value).ToString();
-    }
-} // internal readonly struct Index : IEquatable<Index>
+    } // public string ToString ()
+} // public readonly struct Index : IEquatable<Index>

@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
 using System.Composition;
 using TAFitting.ModelGenerator.Analyzers;
+using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.ModelGenerator.CodeFixes;
 

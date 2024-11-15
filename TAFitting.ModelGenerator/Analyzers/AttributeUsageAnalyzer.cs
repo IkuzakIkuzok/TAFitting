@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using TAFitting.ModelGenerator.Generators;
+using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.ModelGenerator.Analyzers;
 
