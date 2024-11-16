@@ -1,7 +1,6 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using DocumentFormat.OpenXml.Math;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
