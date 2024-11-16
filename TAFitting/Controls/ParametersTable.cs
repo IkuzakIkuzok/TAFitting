@@ -175,11 +175,11 @@ internal sealed class ParametersTable : DataGridView
     override protected void OnCellValueChanged(DataGridViewCellEventArgs e)
     {
         if (this.StopUpdateRSquared) return;
+        if (e.RowIndex < 0) return;
+        if (e.ColumnIndex < 1 || e.ColumnIndex > this.ColumnCount - 2) return;
 
         base.OnCellValueChanged(e);
 
-        if (e.RowIndex < 0) return;
-        if (e.ColumnIndex < 1 || e.ColumnIndex > this.ColumnCount - 2) return;
         if (this.Rows[e.RowIndex] is not ParametersTableRow row) return;
         CalculateRSquared(row);
     } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
