@@ -225,13 +225,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     {
         var d = this.Model.GetDerivatives(this.parameters);
         for (var i = 0; i < this.numberOfDataPoints; ++i)
-            Array.Copy(
-                d(this.x[i]),
-                0,
-                this.temp_matrix[i],
-                0,
-                this.numberOfParameters
-            );
+            d(this.x[i], this.temp_matrix[i]);
 
         for (var i = 0; i < this.numberOfParameters; ++i)
         {

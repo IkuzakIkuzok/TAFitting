@@ -22,5 +22,5 @@ public interface IAnalyticallyDifferentiable : IFittingModel
     /// </summary>
     /// <param name="parameters">The parameters of the model.</param>
     /// <returns>The derivative functions of the model with respect to the parameters.</returns>
-    public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters);
+    public Action<double, double[]> GetDerivatives(IReadOnlyList<double> parameters);
 } // public interface IAnalyticallyDifferentiable : IFittingModel

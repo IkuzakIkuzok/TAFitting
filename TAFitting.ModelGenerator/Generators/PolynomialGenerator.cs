@@ -114,11 +114,11 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
-        builder.AppendLine("\tpublic Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\tpublic Action<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t=> Derivatives;");
 
         builder.AppendLine();
-        builder.AppendLine("\tprivate double[] Derivatives(double x)");
+        builder.AppendLine("\tprivate void Derivatives(double x, double[] res)");
         builder.AppendLine("\t{");
         builder.AppendLine("\t\tvar d_a0 = 1.0;");
         for (var i = 1; i <= n; i++)
@@ -128,10 +128,10 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             else
                 builder.AppendLine($"\t\tvar d_a{i} = d_a{i - 1} * x;");
         }
-        builder.Append($"\t\treturn [");
-        builder.Append(string.Join(", ", Enumerable.Range(0, n + 1).Select(i => $"d_a{i}")));
-        builder.AppendLine("];");
-        builder.AppendLine("\t} // private double[] Derivatives(double x)");
+        builder.AppendLine();
+        builder.AppendLine("\t\tres[0] = d_a0;");
+        builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\tres[{i}] = d_a{i};")));
+        builder.AppendLine("\n\t} // private void Derivatives (double, double[])");
 
         #endregion GetDerivatives
 

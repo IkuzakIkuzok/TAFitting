@@ -89,9 +89,9 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
     } // public Func<double, double> GetFunction (IReadOnlyList<double>)
 
     /// <inheritdoc/>
-    public Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)
+    public Action<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)
     {
-        var derivs = new Func<double, double[]>[this.models.Count];
+        var derivs = new Action<double, double[]>[this.models.Count];
         foreach ((var i, var model) in this.models.Enumerate())
         {
             var n = model.Parameters.Count;
@@ -99,18 +99,18 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
             derivs[i] = model.GetDerivatives(p);
             parameters = parameters.Skip(n).ToArray();
         }
-        return (x) =>
+        return (x, res) =>
         {
             var ret = new double[this.parameters.Count];
             var offset = 0;
             foreach ((var i, var model) in this.models.Enumerate())
             {
-                var d = derivs[i](x);
-                var n = d.Length;
-                Array.Copy(d, 0, ret, offset, d.Length);
+                var arr = new double[model.Parameters.Count];
+                derivs[i](x, arr);
+                var n = arr.Length;
+                Array.Copy(arr, 0, ret, offset, n);
                 offset += n;
             }
-            return ret;
         };
-    } // public Func<double, double[]> GetDerivatives (IReadOnlyList<double>)
+    } // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)
 } // internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDifferentiable

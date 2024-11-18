@@ -100,7 +100,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t/// <inheritdoc/>");
-        builder.AppendLine("\tpublic Func<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\tpublic Action<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t{");
         for (var i = 1; i <= n; i++)
         {
@@ -109,7 +109,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         }
         builder.AppendLine();
 
-        builder.AppendLine("\t\treturn (x) =>");
+        builder.AppendLine("\t\treturn (x, res) =>");
         builder.AppendLine("\t\t{");
         for (var i = 1; i <= n; i++)
         {
@@ -122,11 +122,11 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
             builder.AppendLine($"\t\t\tvar d_a{i} = exp{i};");
             builder.AppendLine($"\t\t\tvar d_t{i} = a{i} * x * exp{i} / (t{i} * t{i});");
         }
-        builder.Append("\t\t\treturn [d_a0, ");
-        builder.Append(string.Join(", ", Enumerable.Range(1, n).Select(i => $"d_a{i}, d_t{i}")));
-        builder.AppendLine("];");
-        builder.AppendLine("\t\t};");
-        builder.AppendLine("\t} // public Func<double, double[]> GetDerivatives (IReadOnlyList<double>)");
+        builder.AppendLine();
+        builder.AppendLine("\t\t\tres[0] = d_a0;");
+        builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\t\tres[{2 * i - 1}] = d_a{i};\n\t\t\tres[{2 * i}] = d_t{i};")));
+        builder.AppendLine("\n\t\t};");
+        builder.AppendLine("\t} // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)");
 
         #endregion GetDerivatives
 
