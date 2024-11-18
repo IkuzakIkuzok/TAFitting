@@ -144,8 +144,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         var v_e = TVector.Create(this.temp_arr);
 
         TVector.Subtract(this.y, v_e, this.temp_vector);
-        TVector.Multiply(this.temp_vector, this.temp_vector, this.temp_vector);
-        return this.temp_vector.Sum;
+        //TVector.Multiply(this.temp_vector, this.temp_vector, this.temp_vector);
+        return TVector.InnerProduct(this.temp_vector, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 
     private double CalcChi2()
