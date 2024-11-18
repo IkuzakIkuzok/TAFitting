@@ -196,6 +196,19 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         AddCalculation(builder, className, "Divide", "Divide", n);
 
         builder.AppendLine();
+        builder.AppendLine($"\tpublic static double InnerProduct({className} left, {className} right)");
+        builder.AppendLine("\t{");
+        builder.AppendLine("\t\tif (left.count != right.count)");
+        builder.AppendLine("\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine();
+        builder.AppendLine("\t\tvar acc = Vector256<double>.Zero;");
+        foreach (var element in GenerateElements(n, 4, x => $"acc = Avx.Add(acc, Avx.Multiply(left.v{x}, right.v{x}))", "; "))
+            builder.AppendLine($"\t\t{element};");
+        builder.AppendLine();
+        builder.AppendLine("\t\treturn acc.GetElement(0) + acc.GetElement(1) + acc.GetElement(2) + acc.GetElement(3);");
+        builder.AppendLine($"\t}} // public static double InnerProduct ({className}, {className})");
+
+        builder.AppendLine();
         builder.AppendLine($"#endregion IIntrinsicVector<{className}>");
 
         builder.AppendLine();

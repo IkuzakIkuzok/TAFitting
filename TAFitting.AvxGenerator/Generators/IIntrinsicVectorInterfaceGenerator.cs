@@ -102,6 +102,14 @@ internal interface IIntrinsicVector<TSelf>
     /// <param name=""right"">The right vector.</param>
     /// <param name=""result"">The result vector.</param>
     abstract static void Divide(TSelf left, TSelf right, TSelf result);
+
+    /// <summary>
+    /// Computes the inner product of two vectors.
+    /// </summary>
+    /// <param name=""left"">The left vector.</param>
+    /// <param name=""right"">The right vector.</param>
+    /// <returns>The inner product of the two vectors.</returns>
+    abstract static double InnerProduct(TSelf left, TSelf right);
 } // internal interface IIntrinsicVector<TSelf>
 ";
 } // internal sealed class IIntrinsicVectorInterfaceGenerator : ISourceGenerator
