@@ -105,14 +105,15 @@ internal abstract class StatsDist
     {
         var S = .0;
         var w = (b - a) / n;
-        for (var i = 0; i < n; ++i)
+        for (var i = 1; i < n - 1; ++i)
         {
             var x1 = a + i * w;
-            var x2 = a + (i + 1) * w;
-            S += (func(x1) + func(x2));
+            S += func(x1);
         }
 
-        return S * w / 2;
+        S *= w;
+        S += (func(a) + func(b)) * w / 2;
+        return S;
     } // protected static double Integrate (Func<double, double>, double, double, int)
 
     /// <summary>
