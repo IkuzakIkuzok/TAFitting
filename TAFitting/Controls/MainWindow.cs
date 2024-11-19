@@ -38,6 +38,7 @@ internal sealed class MainWindow : Form
 
     private Decays? decays;
     private readonly Series s_observed, s_fit;
+    private bool stopDrawing = false;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
     private readonly CustomNumericUpDown nud_time0;
@@ -957,6 +958,7 @@ internal sealed class MainWindow : Form
     /// </summary>
     private void ShowObserved()
     {
+        if (this.stopDrawing) return;
         if (this.row is null) return;
         var decay = this.row.Decay;
 
@@ -975,6 +977,7 @@ internal sealed class MainWindow : Form
     /// </summary>
     private void ShowFit()
     {
+        if (this.stopDrawing) return;
         if (this.row is null) return;
 
         var model = this.SelectedModel;
@@ -1079,6 +1082,7 @@ internal sealed class MainWindow : Form
         try
         {
             this.parametersTable.StopUpdateRSquared = true;
+            this.stopDrawing = true;
             if (source.Length >= Program.ParallelThreshold)
             {
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
@@ -1105,9 +1109,12 @@ internal sealed class MainWindow : Form
         finally
         {
             this.parametersTable.StopUpdateRSquared = false;
+            this.stopDrawing = false;
         }
 
         var elapsed = Stopwatch.GetElapsedTime(start);
+
+        ShowPlots();
 
         this.Text = text;
         FadingMessageBox.Show(
