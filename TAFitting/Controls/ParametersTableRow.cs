@@ -82,6 +82,7 @@ internal sealed class ParametersTableRow : DataGridViewRow
             var cell = this.Cells[this.Cells.Count - 1];
             cell.Value = NegativeSignHandler.ToMinusSign(value.ToString("F3"));
             cell.Style.BackColor = GetRSquaredColor(value);
+            this.DataGridView?.InvalidateCell(cell);
         }
     }
 

@@ -235,7 +235,7 @@ internal sealed class ParametersTable : DataGridView
             HeaderText = "R²",
             DataPropertyName = "R2",
             ReadOnly = true,
-            AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells,
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
         };
         this.Columns.Add(col_r2);
     } // internal void SetColumns (IFittingModel?)
