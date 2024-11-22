@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using TAFitting.SourceGeneratorUtils;
+
 namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>
@@ -52,7 +54,7 @@ internal abstract class ModelGeneratorBase : ISourceGenerator
             }
         }
 
-        context.AddSource(this.FileName, builder.ToString());
+        context.AddSource(this.FileName, builder.ToString().NormalizeNewLines());
     } // public void Execute (GeneratorExecutionContext)
 
     /// <summary>
