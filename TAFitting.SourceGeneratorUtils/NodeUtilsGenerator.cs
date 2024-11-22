@@ -22,7 +22,7 @@ namespace TAFitting.SourceGeneratorUtils;
 /// <summary>
 /// Provides extension methods for <see cref=""SyntaxNode""/>.
 /// </summary>
-public static class SyntaxNodeUtils
+internal static class SyntaxNodeUtils
 {
     /// <summary>
     /// Gets the fully qualified name of the attribute.
@@ -30,11 +30,11 @@ public static class SyntaxNodeUtils
     /// <param name=""attribute"">The attribute.</param>
     /// <param name=""context"">The context.</param>
     /// <returns>The fully qualified name.</returns>
-    public static string GetGetFullyQualifiedName(this AttributeSyntax attribute, SyntaxNodeAnalysisContext context)
+    internal static string GetGetFullyQualifiedName(this AttributeSyntax attribute, SyntaxNodeAnalysisContext context)
     {
         var symbol = context.SemanticModel.GetSymbolInfo(attribute).Symbol;
         return symbol?.GetFullyQualifiedName() ?? string.Empty;
-    } // public static string GetGetFullyQualifiedName (AttributeSyntax, SyntaxNodeAnalysisContext)
+    } // internal static string GetGetFullyQualifiedName (AttributeSyntax, SyntaxNodeAnalysisContext)
 
     /// <summary>
     /// Obtains the fully qualified name of the class.
@@ -43,7 +43,7 @@ public static class SyntaxNodeUtils
     /// <returns>The fully qualified name.</returns>
     /// <remarks><see cref=""ISymbol.ToDisplayParts(SymbolDisplayFormat?)""/> with argument <see cref=""SymbolDisplayFormat.FullyQualifiedFormat""/>
     /// does NOT work as expected. This problem is already reported on <a href=""https://github.com/dotnet/roslyn/issues/50259"">GitHub</a>.</remarks>
-    public static string GetFullyQualifiedName(this ISymbol symbol)
+    internal static string GetFullyQualifiedName(this ISymbol symbol)
     {
         var definition = symbol.OriginalDefinition.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
         if (definition == null) return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -59,13 +59,13 @@ public static class SyntaxNodeUtils
         }
         names.Reverse();
         return string.Join(""."", names);
-    } // public static string GetFullyQualifiedName (this ISymbol)
+    } // internal static string GetFullyQualifiedName (this ISymbol)
 
-    public static string NormalizeAttributeName(this string name)
+    internal static string NormalizeAttributeName(this string name)
     {
         if (name.EndsWith(""Attribute"", StringComparison.Ordinal)) return name;
         return name + ""Attribute"";
-    } // public static string NormalizeAttributeName (this string)
-} // public static class SyntaxNodeUtils
+    } // internal static string NormalizeAttributeName (this string)
+} // internal static class SyntaxNodeUtils
 ";
 } // internal sealed class NodeUtilsGenerator : ISourceGenerator
