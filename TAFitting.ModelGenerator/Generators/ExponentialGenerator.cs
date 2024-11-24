@@ -168,7 +168,7 @@ file static class MathUtil
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static double FastExp(double x)
     {{
-        if (x <= {Math.Log(double.Epsilon)}) return 0;
+        if (x <= {Math.Log(Math.Pow(2, -1022))}) return 0;
         if (x >= {Math.Log(double.MaxValue)}) return double.PositiveInfinity;
 
         var d = x * ({2048 / Math.Log(2)}) + ({3UL << 51});
