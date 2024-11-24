@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.IntrinsicsGenerator", "TAFitting.AvxGenerator\TAFitting.IntrinsicsGenerator.csproj", "{55E016BD-62E7-48E1-94E6-D82C4084B024}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.IntrinsicsGenerator", "TAFitting.IntrinsicsGenerator\TAFitting.IntrinsicsGenerator.csproj", "{55E016BD-62E7-48E1-94E6-D82C4084B024}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAFitting.SourceGeneratorUtils", "TAFitting.SourceGeneratorUtils\TAFitting.SourceGeneratorUtils.csproj", "{6E833621-FE20-4950-93AF-E30BB99E7E9A}"
 EndProject
