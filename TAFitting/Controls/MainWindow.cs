@@ -1068,14 +1068,11 @@ internal sealed class MainWindow : Form
         if (model is null) return;
 
         Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation = LevenbergMarquardtEstimation;
-        if (model is IAnalyticallyDifferentiable)
-        {
-            var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
-            if (LevenbergMarquardtSIMD<AvxVector1024>.CheckSupport(n))
-                estimation = LevenbergMarquardtEstimationSIMD<AvxVector1024>;
-            else if (LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
-                estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
-        }
+        var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
+        if (model is IVectorizedModel<AvxVector1024> && LevenbergMarquardtSIMD<AvxVector1024>.CheckSupport(n))
+            estimation = LevenbergMarquardtEstimationSIMD<AvxVector1024>;
+        else if (model is IVectorizedModel<AvxVector2048> && LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
+            estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
 
         var start = Stopwatch.GetTimestamp();
 
@@ -1149,7 +1146,7 @@ internal sealed class MainWindow : Form
     private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD<TVector>(ParametersTableRow row, IFittingModel model) where TVector : IIntrinsicVector<TVector>
     {
         var decay = row.Decay.OnlyAfterT0;
-        var lma = new LevenbergMarquardtSIMD<TVector>((IAnalyticallyDifferentiable)model, decay.Times, decay.Signals, row.Parameters)
+        var lma = new LevenbergMarquardtSIMD<TVector>((IVectorizedModel<TVector>)model, decay.Times, decay.Signals, row.Parameters)
         {
             MaxIteration = Program.MaxIterations,
         };

@@ -20,7 +20,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     /// <summary>
     /// Gets the fitting model.
     /// </summary>
-    internal IAnalyticallyDifferentiable Model { get; }
+    internal IVectorizedModel<TVector> Model { get; }
 
     /// <summary>
     /// Gets the lambda (damping parameter).
@@ -47,29 +47,26 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     /// </summary>
     internal Numbers Parameters => this.parameters;
 
-    private readonly Numbers x;
-    private readonly TVector y;
+    private readonly TVector x, y;
+    private TVector est_vals;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
 
     private readonly int numberOfParameters, numberOfDataPoints;
-    private readonly TVector est_vals;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
-    private readonly double[][] temp_matrix;
-    private readonly double[] temp_arr;
     private readonly TVector temp_vector, temp_vector2;
     private readonly TVector[] derivatives;  // Cache for the partial derivatives
-    private Func<double, double> func = null!;
+    private Func<TVector, TVector> func = null!;
 
-    internal LevenbergMarquardtSIMD(IAnalyticallyDifferentiable model, Numbers x, Numbers y, Numbers parameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel<TVector> model, Numbers x, Numbers y, Numbers parameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
 
         this.Model = model;
-        this.x = x;
+        this.x = TVector.Create([.. x]);
         this.y = TVector.Create([.. y]);
 
         this.numberOfParameters = parameters.Count;
@@ -84,18 +81,13 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
 
-        this.temp_matrix = new double[this.numberOfDataPoints][];
-        for (var i = 0; i < this.numberOfDataPoints; ++i)
-            this.temp_matrix[i] = new double[this.numberOfParameters];
-
-        this.temp_arr = new double[this.numberOfDataPoints];
         this.temp_vector = TVector.Create(this.numberOfDataPoints);
         this.temp_vector2 = TVector.Create(this.numberOfDataPoints);
 
         this.derivatives = new TVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
             this.derivatives[i] = TVector.Create(this.numberOfDataPoints);
-    } // ctor (IAnalyticallyDifferentiable, Numbers, Numbers, Numbers)
+    } // ctor (IVectorizedModel<TVector>, Numbers, Numbers, Numbers)
 
     /// <summary>
     /// Fits the model to the data.
@@ -107,10 +99,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         double chi2, incrementedChi2;
         do
         {
-            this.func = this.Model.GetFunction(this.parameters);
-            for (var i = 0; i < this.numberOfDataPoints; ++i)
-                this.temp_arr[i] = this.func(this.x[i]);
-            this.est_vals.Load(this.temp_arr);
+            this.func = this.Model.GetVectorizedFunc(this.parameters);
+            this.est_vals = this.func(this.x);
             chi2 = CalcChi2();
             ComputeDerivatives();
             CalcHessian();
@@ -138,13 +128,10 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
 
     private double CalcChi2(Numbers parameters)
     {
-        var func = this.Model.GetFunction(parameters);
-        for (var i = 0; i < this.numberOfDataPoints; ++i)
-            this.temp_arr[i] = func(this.x[i]);
-        var v_e = TVector.Create(this.temp_arr);
+        var func = this.Model.GetVectorizedFunc(parameters);
+        var v_e = func(this.x);
 
         TVector.Subtract(this.y, v_e, this.temp_vector);
-        //TVector.Multiply(this.temp_vector, this.temp_vector, this.temp_vector);
         return TVector.InnerProduct(this.temp_vector, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 
@@ -224,16 +211,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
 
     private void ComputeDerivatives()
     {
-        var d = this.Model.GetDerivatives(this.parameters);
-        for (var i = 0; i < this.numberOfDataPoints; ++i)
-            d(this.x[i], this.temp_matrix[i]);
-
-        for (var i = 0; i < this.numberOfParameters; ++i)
-        {
-            for (var j = 0; j < this.numberOfDataPoints; ++j)
-                this.temp_arr[j] = this.temp_matrix[j][i];
-            this.derivatives[i].Load(this.temp_arr);
-        }
+        var d = this.Model.GetVectorizedDerivatives(this.parameters);
+        d(this.x, this.derivatives);
     } // private void ComputeDerivativesCacheAnalytically ()
 
     private void UpdateParameters()

@@ -352,7 +352,7 @@ internal sealed class LevenbergMarquardt
     } // private void CheckConstraints ()
 
     private bool CheckStop(int iterCount, double chi2, double incrementedChi2)
-    {
+    {        
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
