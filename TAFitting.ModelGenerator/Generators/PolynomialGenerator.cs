@@ -10,7 +10,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
     override protected string FileName => "GeneratedPolynomialModels.g.cs";
 
-    override protected string AdditionalCode => string.Empty;
+    override protected string AdditionalCode => "using TAFitting.Data.Solver.SIMD;";
 
     override protected string Generate(string nameSpace, string className, int n, string? name)
     {
@@ -24,7 +24,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}{GetSuffix(n)}-order polynomial model.");
         builder.AppendLine($"\t/// </summary>");
-        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable");
+        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector2048>");
         builder.AppendLine("\t{");
 
         #region fields
@@ -74,6 +74,8 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         #region GetFunction
 
+        static string GetTerm(int i) => $"a{i} * x{i}";
+
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
         builder.AppendLine("\t\tpublic Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
@@ -101,11 +103,29 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
                 else
                     builder.AppendLine($"\t\t\t\tvar x{i} = x{i - 1} * x;");
             }
-            static string GetTerm(int i) => $"a{i} * x{i}";
+            
             builder.AppendLine($"\t\t\t\treturn a0 + {string.Join(" + ", Enumerable.Range(1, n).Select(GetTerm))};");
             builder.AppendLine("\t\t\t};");
         } // if (n == 1)
         builder.AppendLine("\t\t} // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)");
+
+        builder.AppendLine();
+        builder.AppendLine("\t\t/// <inheritdoc/>");
+        builder.AppendLine("\t\tpublic Func<AvxVector2048, AvxVector2048> GetVectorizedFunc(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t\t=> x => ");
+        builder.AppendLine("\t\t\t{");
+        builder.AppendLine("\t\t\t\tvar length = x.Length << 2;");
+        for (var i = 0; i <= n; i++)
+            builder.AppendLine($"\t\t\t\tvar a{i} = new AvxVector2048(length, parameters[{i}]);");
+        for (var i = 1; i <= n; i++)
+        {
+            if (i == 1)
+                builder.AppendLine($"\t\t\t\tvar x1 = x;");
+            else
+                builder.AppendLine($"\t\t\t\tvar x{i} = x{i - 1} * x;");
+        }
+        builder.AppendLine($"\t\t\t\treturn a0 + {string.Join(" + ", Enumerable.Range(1, n).Select(GetTerm))};");
+        builder.AppendLine("\t\t\t};");
 
         #endregion GetFunction
 
@@ -132,11 +152,30 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\t\tres[{i}] = d_a{i};")));
         builder.AppendLine("\n\t\t} // private void Derivatives (double, double[])");
 
+        builder.AppendLine();
+        builder.AppendLine("\t\t/// <inheritdoc/>");
+        builder.AppendLine("\t\tpublic Action<AvxVector2048, AvxVector2048[]> GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t\t=> (x, res) =>");
+        builder.AppendLine("\t\t\t{");
+        builder.AppendLine("\t\t\t\tvar length = x.Length << 2;");
+        builder.AppendLine("\t\t\t\tvar d_a0 = new AvxVector2048(length, 1.0);");
+        for (var i = 1; i <= n; i++)
+        {
+            if (i == 1)
+                builder.AppendLine($"\t\t\t\tvar d_a{i} = x;");
+            else
+                builder.AppendLine($"\t\t\t\tvar d_a{i} = d_a{i - 1} * x;");
+        }
+        builder.AppendLine();
+        builder.AppendLine("\t\t\t\tres[0] = d_a0;");
+        builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\t\t\tres[{i}] = d_a{i};")));
+        builder.AppendLine("\n\t\t\t};");
+
         #endregion GetDerivatives
 
         #endregion methods
 
-        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable");
+        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector2048>");
         builder.AppendLine("} // namespace" + nameSpace);
 
         return builder.ToString();
