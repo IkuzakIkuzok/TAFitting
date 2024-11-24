@@ -86,11 +86,11 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine($"\t\t\tvar a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"\t\t\tvar t{i} = parameters[{2 * i}];");
+            builder.AppendLine($"\t\t\tvar t{i} = -1.0 / parameters[{2 * i}];");
         }
         builder.AppendLine();
         builder.AppendLine("\t\t\treturn x => a0"
-            + string.Concat(Enumerable.Range(1, n).Select(i => $" + a{i} * MathUtil.FastExp(-x / t{i})")) + ";");
+            + string.Concat(Enumerable.Range(1, n).Select(i => $" + a{i} * MathUtil.FastExp(x * t{i})")) + ";");
         builder.AppendLine("\t\t} // public Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
 
         #endregion GetFunction
@@ -104,7 +104,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine($"\t\t\tvar a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"\t\t\tvar t{i} = parameters[{2 * i}];");
+            builder.AppendLine($"\t\t\tvar t{i} = -1.0 / parameters[{2 * i}];");
         }
         builder.AppendLine();
 
@@ -112,14 +112,14 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\t\t\t{");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine($"\t\t\t\tvar exp{i} = MathUtil.FastExp(-x / t{i});");
+            builder.AppendLine($"\t\t\t\tvar exp{i} = MathUtil.FastExp(x * t{i});");
         }
         builder.AppendLine();
         builder.AppendLine("\t\t\t\tvar d_a0 = 1.0;");
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine($"\t\t\t\tvar d_a{i} = exp{i};");
-            builder.AppendLine($"\t\t\t\tvar d_t{i} = a{i} * x * exp{i} / (t{i} * t{i});");
+            builder.AppendLine($"\t\t\t\tvar d_t{i} = a{i} * x * exp{i} * (t{i} * t{i});");
         }
         builder.AppendLine();
         builder.AppendLine("\t\t\t\tres[0] = d_a0;");
