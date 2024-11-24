@@ -155,8 +155,6 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length << 2;");
-        builder.AppendLine();
         builder.AppendLine("\t\t\t\tres[0].Load(1.0);");
         for (var i = 1; i <= n; i++)
         {
