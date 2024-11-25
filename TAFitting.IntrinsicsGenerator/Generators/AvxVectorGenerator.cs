@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki Kohzuki
 
 using System.Runtime.InteropServices;
+using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.IntrinsicsGenerator.Generators;
 
@@ -38,7 +39,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
             }
         }
 
-        context.AddSource("AvxVectors.g.cs", builder.ToString());
+        context.AddSource("AvxVectors.g.cs", builder.ToString().NormalizeNewLines());
     } // public void Execute (GeneratorExecutionContext)
 
     private static ulong Mask64(int n) => (1UL << n) - 1;
