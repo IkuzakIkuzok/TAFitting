@@ -7,12 +7,13 @@ using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 namespace TAFitting.Data.Solver.SIMD;
 
 /// <summary>
-/// Represents the Levenberg-Marquardt algorithm with AVX.
+/// Represents the Levenberg-Marquardt algorithm with SIMD.
 /// </summary>
+/// <typeparam name="TVector">The type of the intrinsic vector.</typeparam>
 internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsicVector<TVector>
 {
     /// <summary>
-    /// Gets a value indicating whether LMA with AVX is supported.
+    /// Gets a value indicating whether LMA with SIMD is supported.
     /// </summary>
     internal static bool IsSupported
         => Program.Config.SolverConfig.UseSIMD && TVector.CheckSupported();
@@ -60,6 +61,14 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     private readonly TVector[] derivatives;  // Cache for the partial derivatives
     private Func<TVector, TVector> func = null!;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LevenbergMarquardtSIMD{TVector}"/> class.
+    /// </summary>
+    /// <param name="model">The fitting model.</param>
+    /// <param name="x">The x values.</param>
+    /// <param name="y">The y values.</param>
+    /// <param name="parameters">The initial parameters.</param>
+    /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
     internal LevenbergMarquardtSIMD(IVectorizedModel<TVector> model, Numbers x, Numbers y, Numbers parameters)
     {
         if (x.Count != y.Count)
