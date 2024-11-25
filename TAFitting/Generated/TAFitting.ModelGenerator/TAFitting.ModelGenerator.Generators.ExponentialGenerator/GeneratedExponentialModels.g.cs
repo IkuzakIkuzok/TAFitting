@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using TAFitting.Data.Solver.SIMD;
 
+/// <summary>
+/// Provides mathematical utility functions.
+/// </summary>
 file static class MathUtil
 {
     private static readonly ulong[] table = [
@@ -267,6 +270,11 @@ file static class MathUtil
 		4479244665758681UL, 4482285430887897UL, 4485327225340595UL, 4488370049465210UL, 4491413903610294UL, 4494458788124517UL, 4497504703356668UL, 4500551649655653UL
     ];
 
+    /// <summary>
+    /// Computes the exponential function of the specified number.
+    /// </summary>
+    /// <param name="x">The number to compute the exponential function.</param>
+    /// <returns>The exponential function of the specified number.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static double FastExp(double x)
     {

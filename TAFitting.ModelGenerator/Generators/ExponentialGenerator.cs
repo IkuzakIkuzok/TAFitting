@@ -223,12 +223,20 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 using System.Runtime.CompilerServices;
 using TAFitting.Data.Solver.SIMD;
 
+/// <summary>
+/// Provides mathematical utility functions.
+/// </summary>
 file static class MathUtil
 {{
     private static readonly ulong[] table = [
         {string.Join(",\n\t\t", GenerateElements(s, 8, i => ComputeTable(i).ToString() + "UL", ", "))}
     ];
 
+    /// <summary>
+    /// Computes the exponential function of the specified number.
+    /// </summary>
+    /// <param name=""x"">The number to compute the exponential function.</param>
+    /// <returns>The exponential function of the specified number.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static double FastExp(double x)
     {{

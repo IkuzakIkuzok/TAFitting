@@ -7,6 +7,9 @@ using TAFitting.Data;
 
 namespace TAFitting.Data
 {
+    /// <summary>
+    /// Provides mathematical functions.
+    /// </summary>
     file static class MathUtils
     {
         private static readonly Vector256<double> ExpMin, ExpMax;
@@ -301,6 +304,11 @@ namespace TAFitting.Data
             return Avx.LoadVector256(arr);
         } // private static Vector256<ulong> Create (ulong)
 
+        /// <summary>
+        /// Computes the exponential function for each element of the specified vector.
+        /// </summary>
+        /// <param name="v">The vector.</param>
+        /// <returns>The exponential function for each element of the specified vector.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe internal static Vector256<double> Exp(Vector256<double> v)
         {
@@ -340,6 +348,11 @@ namespace TAFitting.Data
             }
         } // unsafe internal static Vector256<double> Exp (Vector256<double>)
 
+        /// <summary>
+        /// Computes the exponential function for the specified value.
+        /// </summary>
+        /// <param name="x">The value.</param>
+        /// <returns>The exponential function for the specified value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double FastExp(double x)
         {
