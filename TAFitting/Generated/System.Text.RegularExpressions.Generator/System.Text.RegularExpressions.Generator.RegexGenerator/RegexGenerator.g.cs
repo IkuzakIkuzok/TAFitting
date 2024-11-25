@@ -21,7 +21,7 @@ namespace TAFitting.Controls
         ///         ○ Match a character other than '\n' atomically any number of times.<br/>
         /// </code>
         /// </remarks>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
         private static partial global::System.Text.RegularExpressions.Regex RegexExpFormat() => global::System.Text.RegularExpressions.Generated.RegexExpFormat_0.Instance;
     }
 }
@@ -42,7 +42,7 @@ namespace TAFitting.Data
         /// ○ Match a character other than '\n' atomically any number of times.<br/>
         /// </code>
         /// </remarks>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
         private static partial global::System.Text.RegularExpressions.Regex RegexWavelength() => global::System.Text.RegularExpressions.Generated.RegexWavelength_1.Instance;
     }
 }
@@ -68,7 +68,7 @@ namespace TAFitting.Data
         /// ○ Match '&gt;'.<br/>
         /// </code>
         /// </remarks>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
         private static partial global::System.Text.RegularExpressions.Regex BasenamePattern() => global::System.Text.RegularExpressions.Generated.BasenamePattern_2.Instance;
     }
 }
@@ -95,7 +95,7 @@ namespace TAFitting
         ///                     ○ Match a Unicode digit atomically at least once.<br/>
         /// </code>
         /// </remarks>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
         private static partial global::System.Text.RegularExpressions.Regex NamePartsPattern() => global::System.Text.RegularExpressions.Generated.NamePartsPattern_3.Instance;
     }
 }
@@ -113,7 +113,7 @@ namespace System.Text.RegularExpressions.Generated
     using System.Threading;
 
     /// <summary>Custom <see cref="Regex"/>-derived type for the RegexExpFormat method.</summary>
-    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
     [SkipLocalsInit]
     file sealed class RegexExpFormat_0 : Regex
     {
@@ -308,7 +308,7 @@ namespace System.Text.RegularExpressions.Generated
     }
     
     /// <summary>Custom <see cref="Regex"/>-derived type for the RegexWavelength method.</summary>
-    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
     [SkipLocalsInit]
     file sealed class RegexWavelength_1 : Regex
     {
@@ -479,7 +479,7 @@ namespace System.Text.RegularExpressions.Generated
     }
     
     /// <summary>Custom <see cref="Regex"/>-derived type for the BasenamePattern method.</summary>
-    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
     [SkipLocalsInit]
     file sealed class BasenamePattern_2 : Regex
     {
@@ -722,7 +722,7 @@ namespace System.Text.RegularExpressions.Generated
     }
     
     /// <summary>Custom <see cref="Regex"/>-derived type for the NamePartsPattern method.</summary>
-    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
     [SkipLocalsInit]
     file sealed class NamePartsPattern_3 : Regex
     {
@@ -987,7 +987,7 @@ namespace System.Text.RegularExpressions.Generated
     }
     
     /// <summary>Helper methods used by generated <see cref="Regex"/>-derived implementations.</summary>
-    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.10.36612")]
+    [GeneratedCodeAttribute("System.Text.RegularExpressions.Generator", "8.0.11.1707")]
     file static class Utilities
     {
         /// <summary>Default timeout value set in <see cref="AppContext"/>, or <see cref="Regex.InfiniteMatchTimeout"/> if none was set.</summary>
