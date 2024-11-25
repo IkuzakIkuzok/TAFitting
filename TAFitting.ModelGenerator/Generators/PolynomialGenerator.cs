@@ -20,7 +20,6 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine($"namespace {nameSpace}");
         builder.AppendLine("{");
 
-        builder.AppendLine();
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}{GetSuffix(n)}-order polynomial model.");
         builder.AppendLine($"\t/// </summary>");

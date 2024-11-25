@@ -6,7 +6,6 @@ using TAFitting.Data.Solver.SIMD;
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 1st-order polynomial model.
 	/// </summary>
@@ -81,7 +80,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 2nd-order polynomial model.
 	/// </summary>
@@ -172,7 +170,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 3rd-order polynomial model.
 	/// </summary>
@@ -279,7 +276,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 4th-order polynomial model.
 	/// </summary>
@@ -397,7 +393,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 5th-order polynomial model.
 	/// </summary>
@@ -526,7 +521,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 6th-order polynomial model.
 	/// </summary>
@@ -666,7 +660,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 7th-order polynomial model.
 	/// </summary>
@@ -817,7 +810,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 8th-order polynomial model.
 	/// </summary>
@@ -979,7 +971,6 @@ namespace TAFitting.Model.Polynomial
 
 namespace TAFitting.Model.Polynomial
 {
-
 	/// <summary>
 	/// Represents a 9th-order polynomial model.
 	/// </summary>

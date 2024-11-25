@@ -297,7 +297,6 @@ file static class MathUtil
 
 namespace TAFitting.Model.Exponential
 {
-
 	/// <summary>
 	/// Represents a 1-component exponential model.
 	/// </summary>
@@ -396,7 +395,6 @@ namespace TAFitting.Model.Exponential
 
 namespace TAFitting.Model.Exponential
 {
-
 	/// <summary>
 	/// Represents a 2-component exponential model.
 	/// </summary>
@@ -522,7 +520,6 @@ namespace TAFitting.Model.Exponential
 
 namespace TAFitting.Model.Exponential
 {
-
 	/// <summary>
 	/// Represents a 3-component exponential model.
 	/// </summary>
@@ -675,7 +672,6 @@ namespace TAFitting.Model.Exponential
 
 namespace TAFitting.Model.Exponential
 {
-
 	/// <summary>
 	/// Represents a 4-component exponential model.
 	/// </summary>

@@ -22,7 +22,6 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"namespace {nameSpace}");
         builder.AppendLine("{");
 
-        builder.AppendLine();
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}-component exponential model.");
         builder.AppendLine($"\t/// </summary>");
