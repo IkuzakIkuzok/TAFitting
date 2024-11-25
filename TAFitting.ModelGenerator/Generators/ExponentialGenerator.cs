@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Runtime.InteropServices;
+
 namespace TAFitting.ModelGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
@@ -182,34 +184,50 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         return builder.ToString();
     } // override protected string Generate (string, string, int, string?)
 
+    private static ulong Mask64(int n) => (1UL << n) - 1;
+
+    private const int TABLE_SIZE = 11;
+    private const int s = 1 << TABLE_SIZE;
+
+    private static ulong ComputeTable(int index)
+    {
+        var du = new BitsConverter64 { Double = Math.Pow(2, index * (1.0 / s)) };
+        return du.UInt64 & Mask64(52);
+    } // private static ulong ComputeTable (int)
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct BitsConverter64
+    {
+        [FieldOffset(0)]
+        public double Double;
+
+        [FieldOffset(0)]
+        public ulong UInt64;
+
+        [FieldOffset(0)]
+        public long Int64;
+    } // private struct BitsConverter64
+
+    private static IEnumerable<string> GenerateElements(int n, int elementsInLine, Func<int, string> func, string separator)
+    {
+        for (var i = 0; i < n; i += elementsInLine)
+        {
+            var start = i;
+            var end = Math.Min(i + elementsInLine, n);
+            var elements = string.Join(separator, Enumerable.Range(start, end - start).Select(func));
+            yield return elements;
+        }
+    } // private static IEnumerable<string> GenerateElements (int, int, Func<int, string>, string)
+
     private static readonly string MathUtil = @$"
 using System.Runtime.CompilerServices;
 using TAFitting.Data.Solver.SIMD;
 
 file static class MathUtil
 {{
-    private const int TABLE_SIZE = 11;
-    private const int s = 1 << TABLE_SIZE;
-
-    private static readonly ulong[] table;
-
-    static MathUtil()
-    {{
-        table = new ulong[s];
-    }} // cctor ()
-
-    [ModuleInitializer]
-    internal static void MakeTable()
-    {{
-        var di = new DoubleUInt64();
-        for (var i = 0UL; i < s; i++)
-        {{
-            di.Double = Math.Pow(2, i * (1.0 / s));
-            table[i] = di.UInt64 & Mask64(52);
-        }}
-    }} // private static void MakeTable ()
-
-    private static ulong Mask64(int n) => (1UL << n) - 1;
+    private static readonly ulong[] table = [
+        {string.Join(",\n\t\t", GenerateElements(s, 8, i => ComputeTable(i).ToString() + "UL", ", "))}
+    ];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static double FastExp(double x)
@@ -228,18 +246,6 @@ file static class MathUtil
 
         return d * y;
     }} // internal static double FastExp (double)
-
-    [StructLayout(LayoutKind.Explicit)]
-    private struct DoubleUInt64
-    {{
-        [FieldOffset(0)]
-        public double Double = 0;
-
-        [FieldOffset(0)]
-        public ulong UInt64 = 0;
-
-        public DoubleUInt64() {{ }}
-    }} // private struct DoubleUInt64
 }} // file static class MathUtil
 ";
 } // internal sealed class ExponentialGenerator : ISourceGenerator
