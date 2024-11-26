@@ -18,6 +18,108 @@ namespace WinRT.TAFittingGenericHelpers
         private static ComWrappers.ComInterfaceEntry[] LookupVtableEntries(Type type)
         {
             string typeName = type.ToString();
+            if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Object]]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_System_Collections_Generic_IEnumerable_object_.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_System_Collections_IEnumerable.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.IEnumerable<object>>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.IEnumerable<object>>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.IEnumerable>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.IEnumerable>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.IDisposableMethods.IID,
+                Vtable = global::ABI.System.IDisposableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
+            if (typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Double,System.Double[]]"
+            || typeName == "System.Collections.Generic.Dictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+            || typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+            || typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,TAFitting.Model.ModelItem]"
+            || typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Double,System.Double[]]"
+            || typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+            || typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,TAFitting.Model.ModelItem]"
+            || typeName == "System.Collections.Generic.Dictionary`2[System.Guid,TAFitting.Model.ModelItem]"
+            || typeName == "System.Collections.Generic.Dictionary`2[System.Double,System.Double[]]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
+                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
+            if (typeName == "System.Collections.Generic.Dictionary`2+ValueCollection[System.Double,TAFitting.Data.Decay]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_Generic_IEnumerable_object_.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_IEnumerable.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.IEnumerable<object>>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.IEnumerable<object>>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.IEnumerable>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.IEnumerable>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
+                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
+            if (typeName == "System.Collections.Generic.KeyValuePair`2[System.String,System.String]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.KeyValuePair_string_string.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.KeyValuePairMethods<string, string>.IID,
+                Vtable = global::ABI.System.Collections.Generic.KeyValuePairMethods<string, string>.AbiToProjectionVftablePtr
+            },
+};
+
+            }
             if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Object]"
             )
             {
@@ -70,21 +172,52 @@ namespace WinRT.TAFittingGenericHelpers
 };
 
             }
-            if (typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
-            || typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,TAFitting.Model.ModelItem]"
-            || typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Double,System.Double[]]"
-            || typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
-            || typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,TAFitting.Model.ModelItem]"
-            || typeName == "System.Collections.Generic.Dictionary`2[System.Guid,TAFitting.Model.ModelItem]"
-            || typeName == "System.Collections.Generic.Dictionary`2[System.Double,System.Double[]]"
-            || typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Double,System.Double[]]"
-            || typeName == "System.Collections.Generic.Dictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+            if (typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.String,System.String]"
             )
             {
-                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+                        _ = global::WinRT.TAFittingGenericHelpers.IReadOnlyDictionary_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.KeyValuePair_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_Generic_KeyValuePair_string__string_.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
 
         return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
         {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
+                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
+            if (typeName == "System.Collections.Generic.Dictionary`2+KeyCollection[System.Double,TAFitting.Data.Decay]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_double.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<double>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<double>.AbiToProjectionVftablePtr
+            },
             new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
             {
                 IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
@@ -274,6 +407,33 @@ namespace WinRT.TAFittingGenericHelpers
 };
 
             }
+            if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.KeyValuePair`2[System.String,System.String]]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.KeyValuePair_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_System_Collections_Generic_KeyValuePair_string__string_.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_object.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<object>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<object>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.IDisposableMethods.IID,
+                Vtable = global::ABI.System.IDisposableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
             if (typeName == "System.Collections.Generic.List`1[System.Double]"
             || typeName == "System.Collections.ObjectModel.ReadOnlyCollection`1[System.Double]"
             )
@@ -445,38 +605,6 @@ namespace WinRT.TAFittingGenericHelpers
 };
 
             }
-            if (typeName == "System.Collections.Generic.Dictionary`2+ValueCollection[System.Double,TAFitting.Data.Decay]"
-            )
-            {
-                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
-        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_Generic_IEnumerable_object_.Initialized;
-        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_IEnumerable.Initialized;
-
-        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
-        {
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.IEnumerable<object>>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.IEnumerable<object>>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.IEnumerable>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.IEnumerable>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
-                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
-            },
-};
-
-            }
             if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Char]]"
             )
             {
@@ -599,6 +727,45 @@ namespace WinRT.TAFittingGenericHelpers
 };
 
             }
+            if (typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.String,System.String]"
+            )
+            {
+                        _ = global::WinRT.TAFittingGenericHelpers.IDictionary_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IReadOnlyDictionary_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.KeyValuePair_string_string.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_System_Collections_Generic_KeyValuePair_string__string_.Initialized;
+        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
+
+        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
+        {
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<global::System.Collections.Generic.KeyValuePair<string, string>>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
+                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
+            },
+            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
+            {
+                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
+                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
+            },
+};
+
+            }
             if (typeName == "TAFitting.Model.Parameter[]"
             )
             {
@@ -630,64 +797,39 @@ namespace WinRT.TAFittingGenericHelpers
 };
 
             }
-            if (typeName == "System.Collections.Generic.Dictionary`2+KeyCollection[System.Double,TAFitting.Data.Decay]"
-            )
-            {
-                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_double.Initialized;
-        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
-
-        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
-        {
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<double>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<double>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumerableMethods<object>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.IEnumerableMethods.IID,
-                Vtable = global::ABI.System.Collections.IEnumerableMethods.AbiToProjectionVftablePtr
-            },
-};
-
-            }
-            if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Object]]"
-            )
-            {
-                        _ = global::WinRT.TAFittingGenericHelpers.IEnumerable_object.Initialized;
-        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_System_Collections_Generic_IEnumerable_object_.Initialized;
-        _ = global::WinRT.TAFittingGenericHelpers.IEnumerator_System_Collections_IEnumerable.Initialized;
-
-        return new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry[]
-        {
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.IEnumerable<object>>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.Generic.IEnumerable<object>>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.IEnumerable>.IID,
-                Vtable = global::ABI.System.Collections.Generic.IEnumeratorMethods<global::System.Collections.IEnumerable>.AbiToProjectionVftablePtr
-            },
-            new global::System.Runtime.InteropServices.ComWrappers.ComInterfaceEntry
-            {
-                IID = global::ABI.System.IDisposableMethods.IID,
-                Vtable = global::ABI.System.IDisposableMethods.AbiToProjectionVftablePtr
-            },
-};
-
-            }
             return default;
         }
 private static string LookupRuntimeClassName(Type type)
 {
     string typeName = type.ToString();
+if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Object]]"
+)
+{
+    return "Windows.Foundation.Collections.IIterator`1<Windows.Foundation.Collections.IIterable`1<Object>>";
+}
+if (typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Double,System.Double[]]"
+|| typeName == "System.Collections.Generic.Dictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+|| typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+|| typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,TAFitting.Model.ModelItem]"
+|| typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Double,System.Double[]]"
+|| typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+|| typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,TAFitting.Model.ModelItem]"
+|| typeName == "System.Collections.Generic.Dictionary`2[System.Guid,TAFitting.Model.ModelItem]"
+|| typeName == "System.Collections.Generic.Dictionary`2[System.Double,System.Double[]]"
+)
+{
+    return "Windows.Foundation.Collections.IIterable`1<Object>";
+}
+if (typeName == "System.Collections.Generic.Dictionary`2+ValueCollection[System.Double,TAFitting.Data.Decay]"
+)
+{
+    return "Windows.Foundation.Collections.IIterable`1<Windows.Foundation.Collections.IIterable`1<Object>>";
+}
+if (typeName == "System.Collections.Generic.KeyValuePair`2[System.String,System.String]"
+)
+{
+    return "Windows.Foundation.Collections.IKeyValuePair`2<String, String>";
+}
 if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Object]"
 )
 {
@@ -699,18 +841,15 @@ if (typeName == "System.Collections.ObjectModel.ReadOnlyCollection`1[TAFitting.M
 {
     return "Windows.Foundation.Collections.IVectorView`1<Object>";
 }
-if (typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
-|| typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Guid,TAFitting.Model.ModelItem]"
-|| typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.Double,System.Double[]]"
-|| typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
-|| typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Guid,TAFitting.Model.ModelItem]"
-|| typeName == "System.Collections.Generic.Dictionary`2[System.Guid,TAFitting.Model.ModelItem]"
-|| typeName == "System.Collections.Generic.Dictionary`2[System.Double,System.Double[]]"
-|| typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.Double,System.Double[]]"
-|| typeName == "System.Collections.Generic.Dictionary`2[System.Guid,System.Collections.Generic.List`1[TAFitting.Model.IEstimateProvider]]"
+if (typeName == "ABI.System.Collections.Generic.ConstantSplittableMap`2[System.String,System.String]"
 )
 {
-    return "Windows.Foundation.Collections.IIterable`1<Object>";
+    return "Windows.Foundation.Collections.IMapView`2<String, String>";
+}
+if (typeName == "System.Collections.Generic.Dictionary`2+KeyCollection[System.Double,TAFitting.Data.Decay]"
+)
+{
+    return "Windows.Foundation.Collections.IIterable`1<Double>";
 }
 if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Double]"
 )
@@ -731,6 +870,11 @@ if (typeName == "System.Windows.Forms.SplitterPanel"
 )
 {
     return "Windows.Foundation.IClosable";
+}
+if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.KeyValuePair`2[System.String,System.String]]"
+)
+{
+    return "Windows.Foundation.Collections.IIterator`1<Windows.Foundation.Collections.IKeyValuePair`2<String, String>>";
 }
 if (typeName == "System.Collections.Generic.List`1[System.Double]"
 || typeName == "System.Collections.ObjectModel.ReadOnlyCollection`1[System.Double]"
@@ -753,11 +897,6 @@ if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.
 {
     return "Windows.Foundation.Collections.IIterator`1<Int32>";
 }
-if (typeName == "System.Collections.Generic.Dictionary`2+ValueCollection[System.Double,TAFitting.Data.Decay]"
-)
-{
-    return "Windows.Foundation.Collections.IIterable`1<Windows.Foundation.Collections.IIterable`1<Object>>";
-}
 if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Char]]"
 )
 {
@@ -768,15 +907,10 @@ if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.
 {
     return "Windows.Foundation.Collections.IIterator`1<String>";
 }
-if (typeName == "System.Collections.Generic.Dictionary`2+KeyCollection[System.Double,TAFitting.Data.Decay]"
+if (typeName == "System.Collections.ObjectModel.ReadOnlyDictionary`2[System.String,System.String]"
 )
 {
-    return "Windows.Foundation.Collections.IIterable`1<Double>";
-}
-if (typeName == "ABI.System.Collections.Generic.ToAbiEnumeratorAdapter`1[System.Collections.Generic.IEnumerable`1[System.Object]]"
-)
-{
-    return "Windows.Foundation.Collections.IIterator`1<Windows.Foundation.Collections.IIterable`1<Object>>";
+    return "Windows.Foundation.Collections.IMap`2<String, String>";
 }
             return default;
         }

@@ -5,6 +5,88 @@ using System.Runtime.CompilerServices;
 namespace WinRT.TAFittingGenericHelpers
 {
 
+// System.Collections.Generic.KeyValuePair<string, string>
+internal static class KeyValuePair_string_string
+{
+    private static readonly bool _initialized = Init();
+    internal static bool Initialized => _initialized;
+
+    private static unsafe bool Init()
+    {
+        return global::ABI.System.Collections.Generic.KeyValuePairMethods<string, IntPtr, string, IntPtr>.InitCcw(
+           &Do_Abi_get_Key_0,
+           &Do_Abi_get_Value_1
+        );
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_Key_0(IntPtr thisPtr, IntPtr* __return_value__)
+    {
+        string ____return_value__ = default;
+        *__return_value__ = default;
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.KeyValuePairMethods<string, string>.Abi_get_Key_0(thisPtr);
+            *__return_value__ = MarshalString.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_Value_1(IntPtr thisPtr, IntPtr* __return_value__)
+    {
+        string ____return_value__ = default;
+        *__return_value__ = default;
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.KeyValuePairMethods<string, string>.Abi_get_Value_1(thisPtr);
+            *__return_value__ = MarshalString.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+}
+
+// System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, string>>
+internal static class IEnumerable_System_Collections_Generic_KeyValuePair_string__string_
+{
+    private static readonly bool _initialized = Init();
+    internal static bool Initialized => _initialized;
+
+    private static unsafe bool Init()
+    {
+        return global::ABI.System.Collections.Generic.IEnumerableMethods<System.Collections.Generic.KeyValuePair<string, string>, IntPtr>.InitCcw(
+           &Do_Abi_First_0
+        );
+    }
+    
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_First_0(IntPtr thisPtr, IntPtr* __return_value__)
+    {
+        *__return_value__ = default;
+        try
+        {
+            *__return_value__ = MarshalInterface<global::System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>>>.
+               FromManaged(global::ABI.System.Collections.Generic.IEnumerableMethods<System.Collections.Generic.KeyValuePair<string, string>>.Abi_First_0(thisPtr));
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+}
+
 // System.Collections.Generic.IReadOnlyList<global::System.Collections.Generic.IEnumerable<object>>
 internal static class IReadOnlyList_System_Collections_Generic_IEnumerable_object_
 {
@@ -1548,6 +1630,105 @@ internal static class IEnumerable_System_Collections_Generic_IEnumerable_char_
     }
 }
 
+// System.Collections.Generic.IReadOnlyDictionary<string, string>
+internal static class IReadOnlyDictionary_string_string
+{
+    private static readonly bool _initialized = Init();
+    internal static bool Initialized => _initialized;
+
+    private static unsafe bool Init()
+    {
+        return global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, IntPtr, string, IntPtr>.InitCcw(
+           &Do_Abi_Lookup_0,
+           &Do_Abi_get_Size_1,
+           &Do_Abi_HasKey_2,
+           &Do_Abi_Split_3
+        );
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Lookup_0(IntPtr thisPtr, IntPtr key, IntPtr* __return_value__)
+    {
+        string ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.Abi_Lookup_0(thisPtr, MarshalString.FromAbi(key));
+            *__return_value__ = MarshalString.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_HasKey_2(IntPtr thisPtr, IntPtr key, byte* __return_value__)
+    {
+        bool ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.Abi_HasKey_2(thisPtr, MarshalString.FromAbi(key));
+            *__return_value__ = (byte)(____return_value__ ? 1 : 0);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Split_3(IntPtr thisPtr, IntPtr* first, IntPtr* second)
+    {
+        *first = default;
+        *second = default;
+        IntPtr __first = default;
+        IntPtr __second = default;
+
+        try
+        {
+            global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.Abi_Split_3(thisPtr, out __first, out __second);
+            *first = __first;
+            *second = __second;
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_Size_1(IntPtr thisPtr, uint* __return_value__)
+    {
+        uint ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IReadOnlyDictionaryMethods<string, string>.Abi_get_Size_1(thisPtr);
+            *__return_value__ = ____return_value__;
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+}
+
 // System.Collections.Generic.IReadOnlyList<global::System.Collections.IEnumerable>
 internal static class IReadOnlyList_System_Collections_IEnumerable
 {
@@ -2794,6 +2975,255 @@ internal static class IEnumerable_System_Guid
         {
             *__return_value__ = MarshalInterface<global::System.Collections.Generic.IEnumerator<System.Guid>>.
                FromManaged(global::ABI.System.Collections.Generic.IEnumerableMethods<System.Guid>.Abi_First_0(thisPtr));
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+}
+
+// System.Collections.Generic.IDictionary<string, string>
+internal static class IDictionary_string_string
+{
+    private static readonly bool _initialized = Init();
+    internal static bool Initialized => _initialized;
+
+    private static unsafe bool Init()
+    {
+        return global::ABI.System.Collections.Generic.IDictionaryMethods<string, IntPtr, string, IntPtr>.InitCcw(
+           &Do_Abi_Lookup_0,
+           &Do_Abi_get_Size_1,
+           &Do_Abi_HasKey_2,
+           &Do_Abi_GetView_3,
+           &Do_Abi_Insert_4,
+           &Do_Abi_Remove_5,
+           &Do_Abi_Clear_6
+        );
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Lookup_0(IntPtr thisPtr, IntPtr key, IntPtr* __return_value__)
+    {
+        string ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_Lookup_0(thisPtr, MarshalString.FromAbi(key));
+            *__return_value__ = MarshalString.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_HasKey_2(IntPtr thisPtr, IntPtr key, byte* __return_value__)
+    {
+        bool ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_HasKey_2(thisPtr, MarshalString.FromAbi(key));
+            *__return_value__ = (byte)(____return_value__ ? 1 : 0);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_GetView_3(IntPtr thisPtr, IntPtr* __return_value__)
+    {
+        global::System.Collections.Generic.IReadOnlyDictionary<string, string> ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_GetView_3(thisPtr);
+            *__return_value__ = MarshalInterface<global::System.Collections.Generic.IReadOnlyDictionary<string, string>>.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Insert_4(IntPtr thisPtr, IntPtr key, IntPtr value, byte* __return_value__)
+    {
+        bool ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_Insert_4(thisPtr, MarshalString.FromAbi(key), MarshalString.FromAbi(value));
+            *__return_value__ = (byte)(____return_value__ ? 1 : 0);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Remove_5(IntPtr thisPtr, IntPtr key)
+    {
+        try
+        {
+            global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_Remove_5(thisPtr, MarshalString.FromAbi(key));
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_Clear_6(IntPtr thisPtr)
+    {
+        try
+        {
+            global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_Clear_6(thisPtr);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_Size_1(IntPtr thisPtr, uint* __return_value__)
+    {
+        uint ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IDictionaryMethods<string, string>.Abi_get_Size_1(thisPtr);
+            *__return_value__ = ____return_value__;
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+}
+
+// System.Collections.Generic.IEnumerator<global::System.Collections.Generic.KeyValuePair<string, string>>
+internal static class IEnumerator_System_Collections_Generic_KeyValuePair_string__string_
+{
+    private static readonly bool _initialized = Init();
+    internal static bool Initialized => _initialized;
+
+    private static unsafe bool Init()
+    {
+        return global::ABI.System.Collections.Generic.IEnumeratorMethods<System.Collections.Generic.KeyValuePair<string, string>, IntPtr>.InitCcw(
+           &Do_Abi_get_Current_0,
+           &Do_Abi_get_HasCurrent_1,
+           &Do_Abi_MoveNext_2,
+           &Do_Abi_GetMany_3
+        );
+    }
+    
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_MoveNext_2(IntPtr thisPtr, byte* __return_value__)
+    {
+        bool ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IEnumeratorMethods<System.Collections.Generic.KeyValuePair<string, string>>.Abi_MoveNext_2(thisPtr);
+            *__return_value__ = (byte)(____return_value__ ? 1 : 0);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_GetMany_3(IntPtr thisPtr, int __itemsSize, IntPtr items, uint* __return_value__)
+    {
+        uint ____return_value__ = default;
+
+        *__return_value__ = default;
+        System.Collections.Generic.KeyValuePair<string, string>[] __items = MarshalInterface<System.Collections.Generic.KeyValuePair<string, string>>.FromAbiArray((__itemsSize, items));
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IEnumeratorMethods<System.Collections.Generic.KeyValuePair<string, string>>.Abi_GetMany_3(thisPtr, ref __items);
+            MarshalInterface<System.Collections.Generic.KeyValuePair<string, string>>.CopyManagedArray(__items, items);
+            *__return_value__ = ____return_value__;
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_Current_0(IntPtr thisPtr, IntPtr* __return_value__)
+    {
+        System.Collections.Generic.KeyValuePair<string, string> ____return_value__ = default;
+        
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IEnumeratorMethods<System.Collections.Generic.KeyValuePair<string, string>>.Abi_get_Current_0(thisPtr);
+            *__return_value__ = MarshalInterface<System.Collections.Generic.KeyValuePair<string, string>>.FromManaged(____return_value__);
+        }
+        catch (global::System.Exception __exception__)
+        {
+            global::WinRT.ExceptionHelpers.SetErrorInfo(__exception__);
+            return global::WinRT.ExceptionHelpers.GetHRForException(__exception__);
+        }
+        return 0;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    private static unsafe int Do_Abi_get_HasCurrent_1(IntPtr thisPtr, byte* __return_value__)
+    {
+        bool ____return_value__ = default;
+
+        *__return_value__ = default;
+
+        try
+        {
+            ____return_value__ = global::ABI.System.Collections.Generic.IEnumeratorMethods<System.Collections.Generic.KeyValuePair<string, string>>.Abi_get_HasCurrent_1(thisPtr);
+            *__return_value__ = (byte)(____return_value__ ? 1 : 0);
         }
         catch (global::System.Exception __exception__)
         {

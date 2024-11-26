@@ -8,7 +8,7 @@ namespace TAFitting.Origin;
 /// <summary>
 /// Wraps an Origin project.
 /// </summary>
-internal sealed class OriginProject : IDisposable
+internal sealed partial class OriginProject : IDisposable
 {
     private const string ProgID = "Origin.ApplicationSI";
 
@@ -147,5 +147,5 @@ internal sealed class OriginProject : IDisposable
             Marshal.ReleaseComObject(this.app);
         }
         this._disposed = true;
-    } // private void Dispose (bool
+    } // private void Dispose (bool)
 } // internal sealed class OriginProject : IDisposable

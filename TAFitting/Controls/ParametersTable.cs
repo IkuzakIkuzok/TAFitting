@@ -10,7 +10,7 @@ namespace TAFitting.Controls;
 /// Represents a table of parameters.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class ParametersTable : DataGridView
+internal sealed partial class ParametersTable : DataGridView
 {
     private ParameterConstraints[] constraints = [];
     private double[] initialValues = [];
@@ -407,4 +407,4 @@ internal sealed class ParametersTable : DataGridView
         var p = row.Parameters.Count;
         row.RSquared = 1 - Se / St * (N - 1) / (N - p - 1);
     } // private void CalculateRSquared (ParametersTableRow)
-} // internal sealed class ParametersTable : DataGridView
+} // internal sealed partial class ParametersTable : DataGridView

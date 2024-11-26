@@ -5,7 +5,7 @@ using TAFitting.Model;
 
 namespace TAFitting.Controls.LinearCombination;
 
-internal sealed class ModelRow : DataGridViewRow
+internal sealed partial class ModelRow : DataGridViewRow
 {
     internal IFittingModel Model { get; }
 
@@ -16,4 +16,4 @@ internal sealed class ModelRow : DataGridViewRow
         this.Cells.Add(new DataGridViewTextBoxCell() { Value = modelItem.Category });
         this.Cells.Add(new DataGridViewTextBoxCell() { Value = this.Model.Parameters.Count });
     } // internal ModelRow (ModelItem)
-} // internal sealed class ModelRow : DataGridViewRow
+} // internal sealed partial class ModelRow : DataGridViewRow

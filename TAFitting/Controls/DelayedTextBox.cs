@@ -9,7 +9,7 @@ namespace TAFitting.Controls;
 /// Represents a text box with delayed text changed event.
 /// </summary>
 [DesignerCategory("Code")]
-internal class DelayedTextBox : TextBox
+internal partial class DelayedTextBox : TextBox
 {
     private Timer? delayedTextChangedTimer;
 
@@ -76,4 +76,4 @@ internal class DelayedTextBox : TextBox
 
         base.Dispose(disposing);
     } // override protected void Dispose (bool)
-} // internal class DelayedTextBox : TextBox
+} // internal partial class DelayedTextBox : TextBox

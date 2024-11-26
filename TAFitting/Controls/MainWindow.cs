@@ -21,7 +21,7 @@ namespace TAFitting.Controls;
 /// Represents the main window.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class MainWindow : Form
+internal sealed partial class MainWindow : Form
 {
     private readonly SplitContainer mainContainer, paramsContainer;
 
@@ -1306,4 +1306,4 @@ internal sealed class MainWindow : Form
     } // private void SelectAxisTitleFont (object?, EventArgs)
 
     #endregion change appearance
-} // internal sealed class MainWindow : Form
+} // internal sealed partial class MainWindow : Form

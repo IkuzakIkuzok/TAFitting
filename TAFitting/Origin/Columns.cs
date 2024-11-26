@@ -8,7 +8,7 @@ namespace TAFitting.Origin;
 /// <summary>
 /// A collection of <see cref="Column"/> objects.
 /// </summary>
-internal class Columns : IReadOnlyList<Column>
+internal partial class Columns : IReadOnlyList<Column>
 {
     private readonly dynamic _columns;
     private readonly List<Column> columns = [];
@@ -44,4 +44,4 @@ internal class Columns : IReadOnlyList<Column>
 
     IEnumerator IEnumerable.GetEnumerator()
         => this.columns.GetEnumerator();
-} // internal class Columns
+} // internal partial class Columns : IReadOnlyList<Column>

@@ -8,7 +8,7 @@ namespace TAFitting.Controls;
 /// <summary>
 /// Suspends drawing of the specified control.
 /// </summary>
-internal sealed class ControlDrawingSuspender : IDisposable
+internal sealed partial class ControlDrawingSuspender : IDisposable
 {
     private readonly Control _control;
     private bool _disposed = false;
@@ -59,4 +59,4 @@ internal sealed class ControlDrawingSuspender : IDisposable
             this._disposed = true;
         }
     } // private void Dispose (bool)
-} // internal sealed class ControlDrawingSuspender : IDisposable
+} // internal sealed partial class ControlDrawingSuspender : IDisposable

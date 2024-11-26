@@ -6,7 +6,7 @@ using TAFitting.Model;
 namespace TAFitting.Controls.LinearCombination;
 
 [DesignerCategory("Code")]
-internal sealed class LinearCombinationEditWindow : Form
+internal sealed partial class LinearCombinationEditWindow : Form
 {
     private readonly TextBox tb_name;
     private readonly ComboBox cb_categoryFilter, cb_model, cb_newCategory;
@@ -169,4 +169,4 @@ internal sealed class LinearCombinationEditWindow : Form
         var item = Program.AddLinearCombination(guid, name, category, components);
         item.Register();
     } // private void RegisterModel ()
-} // internal sealed class LinearCombinationEditWindow : Form
+} // internal sealed partial class LinearCombinationEditWindow : Form

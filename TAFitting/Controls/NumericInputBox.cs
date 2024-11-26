@@ -7,7 +7,7 @@ namespace TAFitting.Controls;
 /// Represents a numeric input box.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class NumericInputBox : Form
+internal sealed partial class NumericInputBox : Form
 {
     private readonly LogarithmicNumericUpDown _numericUpDown;
 
@@ -81,4 +81,4 @@ internal sealed class NumericInputBox : Form
             Parent = this,
         };
     } // ctor ()
-} // internal sealed class NumericInputBox : Form
+} // internal sealed partial class NumericInputBox : Form

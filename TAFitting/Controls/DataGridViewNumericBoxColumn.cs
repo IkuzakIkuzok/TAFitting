@@ -7,7 +7,7 @@ namespace TAFitting.Controls;
 /// <summary>
 /// Represents a column that contains <see cref="DataGridViewNumericBoxCell"/> objects.
 /// </summary>
-internal class DataGridViewNumericBoxColumn : DataGridViewColumn
+internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
 {
     /// <summary>
     /// Gets or sets the bias of the digit order for incrementing.
@@ -108,4 +108,4 @@ internal class DataGridViewNumericBoxColumn : DataGridViewColumn
         this.CellTemplate = new DataGridViewNumericBoxCell(defaultValue);
         this.SortMode = DataGridViewColumnSortMode.Automatic;
     } // ctor (double)
-} // internal class DataGridViewNumericBoxColumn : DataGridViewColumn
+} // internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn

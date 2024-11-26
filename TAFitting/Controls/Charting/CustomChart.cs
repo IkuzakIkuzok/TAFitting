@@ -9,7 +9,7 @@ namespace TAFitting.Controls.Charting;
 /// Represents a customizable chart control.
 /// </summary>
 [DesignerCategory("Code")]
-internal class CustomChart : Chart
+internal partial class CustomChart : Chart
 {
     protected Point mouseLeftMoveStartPx, mouseRightMoveStartPx;
 
@@ -295,4 +295,4 @@ internal class CustomChart : Chart
     /// <param name="e"></param>
     protected virtual void OnAxisYRangeChanged(AxisRangeChangedEventArgs e)
         => AxisYRangeChanged?.Invoke(this, e);
-} // internal class CustomChart : Chart
+} // internal partial class CustomChart : Chart

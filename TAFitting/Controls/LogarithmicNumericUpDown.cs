@@ -7,7 +7,7 @@ namespace TAFitting.Controls;
 /// Represents a Windows spin box (also known as an up-down control) that displays numeric values in a logarithmic scale.
 /// </summary>
 [DesignerCategory("Code")]
-internal class LogarithmicNumericUpDown : NumericUpDown
+internal partial class LogarithmicNumericUpDown : NumericUpDown
 {
     protected Func<decimal, string>? _formatter;
 
@@ -75,4 +75,4 @@ internal class LogarithmicNumericUpDown : NumericUpDown
         else
             base.UpdateEditText();
     } // override protected void UpdateEditText ()
-} // internal class LogarithmicNumericUpDown : NumericUpDown
+} // internal partial class LogarithmicNumericUpDown : NumericUpDown

@@ -11,7 +11,7 @@ namespace TAFitting.Controls.Toast;
 /// The ID has some key-value pairs, each of them is separated by the ampersand (&amp;), and they are separated by the equal sign (=).
 /// This class wraps the key-value pairs as a dictionary, for better handling.
 /// </remarks>
-internal sealed class ToastArgument : Dictionary<string, string?>
+internal sealed partial class ToastArgument : Dictionary<string, string?>
 {
     /// <summary>
     /// Gets or sets the ID of the toast notification, i.e., the root element of the notification.
@@ -40,4 +40,4 @@ internal sealed class ToastArgument : Dictionary<string, string?>
 
         return ta;
     } // public static explicit operator ToastArgument (string)
-} // internal sealed class ToastArgument : Dictionary<string, string?>
+} // internal sealed partial class ToastArgument : Dictionary<string, string?>

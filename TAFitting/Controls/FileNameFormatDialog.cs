@@ -9,7 +9,7 @@ namespace TAFitting.Controls;
 /// Represents a dialog for setting the filename format.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class FileNameFormatDialog : Form
+internal sealed partial class FileNameFormatDialog : Form
 {
     private readonly TextBox tb_ab, tb_b, tb_basename;
     private readonly Label lb_ab, lb_b;
@@ -176,5 +176,5 @@ internal sealed class FileNameFormatDialog : Form
         this.lb_ab.Text = FileNameHandler.GetFileName(basename, format_ab);
         this.lb_b.Text = FileNameHandler.GetFileName(basename, format_b);
     } // UpdateText ()
-} // internal sealed class FileNameFormatDialog : Form
+} // internal sealed partial class FileNameFormatDialog : Form
 

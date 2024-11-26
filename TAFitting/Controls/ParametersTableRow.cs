@@ -8,7 +8,7 @@ namespace TAFitting.Controls;
 /// <summary>
 /// Represents a row of parameters.
 /// </summary>
-internal sealed class ParametersTableRow : DataGridViewRow
+internal sealed partial class ParametersTableRow : DataGridViewRow
 {
     private bool inverted = false;
     private int[] magnitudeColumns = [];
@@ -163,4 +163,4 @@ internal sealed class ParametersTableRow : DataGridViewRow
         => Program.Config.AppearanceConfig.RSquaredThresholds
             .OrderByDescending(t => t.Threshold)
             .FirstOrDefault(t => value >= t.Threshold)?.Color ?? Color.White;
-} // internal sealed class ParametersTableRow : DataGridViewRow
+} // internal sealed partial class ParametersTableRow : DataGridViewRow

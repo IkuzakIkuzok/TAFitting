@@ -8,7 +8,7 @@ namespace TAFitting.Origin;
 /// <summary>
 /// Wraps a worksheet collection.
 /// </summary>
-internal class Worksheets : IReadOnlyList<Worksheet>
+internal partial class Worksheets : IReadOnlyList<Worksheet>
 {
     private readonly dynamic _worksheets;
     private readonly List<Worksheet> worksheets;
@@ -34,4 +34,4 @@ internal class Worksheets : IReadOnlyList<Worksheet>
 
     IEnumerator IEnumerable.GetEnumerator()
         => this.worksheets.GetEnumerator();
-} // internal class Worksheets
+} // internal partial class Worksheets : IReadOnlyList<Worksheet>

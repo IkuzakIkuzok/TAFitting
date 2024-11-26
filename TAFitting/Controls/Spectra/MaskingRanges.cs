@@ -8,7 +8,7 @@ namespace TAFitting.Controls.Spectra;
 /// <summary>
 /// Represents a collection of masking ranges.
 /// </summary>
-internal sealed class MaskingRanges : IEnumerable<MaskingRange>
+internal sealed partial class MaskingRanges : IEnumerable<MaskingRange>
 {
     private readonly HashSet<MaskingRange> _maskingRanges;
 
@@ -51,4 +51,4 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
                .Select(p => points.SkipWhile(w => w < p).FirstOrDefault(double.NaN))
                .Where(p => !double.IsNaN(p))
                .ToArray();
-} // internal sealed class MaskingRanges : IEnumerable<MaskingRange>
+} // internal sealed partial class MaskingRanges : IEnumerable<MaskingRange>

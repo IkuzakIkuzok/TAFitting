@@ -6,7 +6,7 @@ namespace TAFitting.Controls;
 /// <summary>
 /// Displays an editable numeric value in a <see cref="DataGridView"/> control.
 /// </summary>
-internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
+internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
 {
     /// <summary>
     /// Gets or sets the bias of the digit order for incrementing.
@@ -194,4 +194,4 @@ internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         var order = Math.Floor(log) + this.IncrementOrderBias;
         return log % 1 == 0 ? Math.Pow(10, order - 1) : Math.Pow(10, order);
     } // protected virtual double CalcDecrement ()
-} // internal class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
+} // internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell

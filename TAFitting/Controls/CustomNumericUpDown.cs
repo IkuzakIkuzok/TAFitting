@@ -7,7 +7,7 @@ namespace TAFitting.Controls;
 /// Represents a customizable numeric up-down control.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class CustomNumericUpDown : NumericUpDown
+internal sealed partial class CustomNumericUpDown : NumericUpDown
 {
     private decimal _abs_increment, _increment;
     private decimal _abs_scroll_increment, _scroll_increment;
@@ -105,4 +105,4 @@ internal sealed class CustomNumericUpDown : NumericUpDown
         this.Text = NegativeSignHandler.ToMinusSign(this.Text);
         base.OnLostFocus(e);
     } // override protected void OnLostFocus (EventArgs)
-} // internal sealed class CustomNumericUpDown : NumericUpDown
+} // internal sealed partial class CustomNumericUpDown : NumericUpDown

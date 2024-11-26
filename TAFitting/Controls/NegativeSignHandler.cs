@@ -23,7 +23,7 @@ namespace TAFitting.Controls;
 ///     // The negative sign is restored to the original sign when the using block is exited.
 /// </code>
 /// </example>
-internal sealed class NegativeSignHandler : IDisposable
+internal sealed partial class NegativeSignHandler : IDisposable
 {
     /// <summary>
     /// Hyphen-minus sign (U+002D).
@@ -100,4 +100,4 @@ internal sealed class NegativeSignHandler : IDisposable
     /// <returns>The converted text.</returns>
     internal static string ToMinusSign(string text)
         => text.Replace(HyphenMinus, MinusSign);
-} // internal sealed class NegativeSignHandler : IDisposable
+} // internal sealed partial class NegativeSignHandler : IDisposable

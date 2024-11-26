@@ -9,7 +9,7 @@ namespace TAFitting.Controls;
 /// Displays a message box that fades out without blocking the main thread.
 /// </summary>
 [DesignerCategory("Code")]
-internal class FadingMessageBox : Form
+internal partial class FadingMessageBox : Form
 {
     private static FadingMessageBox? showing = null;
 
@@ -141,4 +141,4 @@ internal class FadingMessageBox : Form
 
     private void OnParentClosed(object? sender, EventArgs e)
         => Close();
-} // internal class FadingMessageBox : Form
+} // internal partial class FadingMessageBox : Form

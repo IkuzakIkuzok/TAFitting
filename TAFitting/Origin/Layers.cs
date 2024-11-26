@@ -8,7 +8,7 @@ namespace TAFitting.Origin;
 /// <summary>
 /// A collection of <see cref="Layer"/> objects.
 /// </summary>
-internal class Layers : IReadOnlyList<Layer>
+internal partial class Layers : IReadOnlyList<Layer>
 {
     private readonly dynamic _layers;
     private readonly List<Layer> layers;
@@ -34,4 +34,4 @@ internal class Layers : IReadOnlyList<Layer>
 
     IEnumerator IEnumerable.GetEnumerator()
         => this.layers.GetEnumerator();
-} // internal class Layers
+} // internal partial class Layers : IReadOnlyList<Layer>

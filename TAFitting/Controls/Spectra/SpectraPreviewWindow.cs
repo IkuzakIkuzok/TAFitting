@@ -14,7 +14,7 @@ namespace TAFitting.Controls.Spectra;
 /// Represents a window for previewing spectra.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class SpectraPreviewWindow : Form
+internal sealed partial class SpectraPreviewWindow : Form
 {
     private readonly SplitContainer mainContainer, optionsContainer;
 
@@ -677,4 +677,4 @@ internal sealed class SpectraPreviewWindow : Form
         this.chart.DrawToBitmap(bitmap, new(0, 0, this.chart.Width, this.chart.Height));
         System.Windows.Forms.Clipboard.SetImage((Image)bitmap);
     } // private void CopyPlotsToClipboard ()
-} // internal sealed class SpectraPreviewWindow : Form
+} // internal sealed partial class SpectraPreviewWindow : Form

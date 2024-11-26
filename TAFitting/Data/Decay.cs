@@ -10,7 +10,7 @@ namespace TAFitting.Data;
 /// Represents a decay data.
 /// </summary>
 [DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq}, {this.times.Length} points")]
-internal sealed class Decay : IEnumerable<(double Time, double Signal)>
+internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 {
     private readonly double[] times, signals;
 
@@ -193,4 +193,4 @@ internal sealed class Decay : IEnumerable<(double Time, double Signal)>
                 this.signals[i] = (left + right) / 2.0;
         }
     } // internal void RemoveNaN ()
-} // internal sealed class Decay : IEnumerable<(double Time, double Signal)>
+} // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>

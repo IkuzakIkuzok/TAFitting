@@ -7,7 +7,7 @@ namespace TAFitting.Controls;
 /// Represents a button that displays a color.
 /// </summary>
 [DesignerCategory("Code")]
-internal class ColorButton : Button
+internal partial class ColorButton : Button
 {
     /// <summary>
     /// Gets the text of the button.
@@ -86,4 +86,4 @@ internal class ColorButton : Button
     /// <returns>The string representation of the color.</returns>
     protected virtual string GetColorText(Color color)
         => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-} // internal class ColorButton : Button
+} // internal partial class ColorButton : Button

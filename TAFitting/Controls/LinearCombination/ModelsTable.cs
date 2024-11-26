@@ -6,7 +6,7 @@ using TAFitting.Model;
 namespace TAFitting.Controls.LinearCombination;
 
 [DesignerCategory("Code")]
-internal sealed class ModelsTable : DataGridView
+internal sealed partial class ModelsTable : DataGridView
 {
     internal IEnumerable<ModelRow> ModelRows
         => this.Rows.OfType<ModelRow>();
@@ -47,4 +47,4 @@ internal sealed class ModelsTable : DataGridView
     {
         this.Rows.Add(new ModelRow(modelItem));
     } // internal void AddModel (ModelItem)
-} // internal sealed class ModelsTable : DataGridView
+} // internal sealed partial class ModelsTable : DataGridView

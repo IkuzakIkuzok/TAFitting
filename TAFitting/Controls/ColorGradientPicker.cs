@@ -10,7 +10,7 @@ namespace TAFitting.Controls;
 /// Represents a color gradient picker.
 /// </summary>
 [DesignerCategory("Code")]
-internal class ColorGradientPicker : Form
+internal partial class ColorGradientPicker : Form
 {
     protected readonly ColorGradient colorGradient;
 
@@ -123,4 +123,4 @@ internal class ColorGradientPicker : Form
         this.end.Color = this.colorGradient.EndColor;
         this.colorGradient.FillRectangle(this.lb_gradient, LinearGradientMode.Horizontal);
     } // protected virtual void SetColor ()
-} // internal class ColorGradientPicker
+} // internal partial class ColorGradientPicker : Form

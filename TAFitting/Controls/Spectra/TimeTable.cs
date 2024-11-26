@@ -7,7 +7,7 @@ namespace TAFitting.Controls.Spectra;
 /// Represents a table of times.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed class TimeTable : DataGridView
+internal sealed partial class TimeTable : DataGridView
 {
     /// <summary>
     /// Gets the times.
@@ -66,4 +66,4 @@ internal sealed class TimeTable : DataGridView
             row.HeaderCell.Style.BackColor = gradient[i];
         }
     } // internal void SetColors ()
-} // internal sealed class TimeTable : DataGridView
+} // internal sealed partial class TimeTable : DataGridView
