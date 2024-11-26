@@ -85,7 +85,7 @@ namespace TAFitting.Data
         private static readonly Vector256<double> C1, C2, C3;
         private static readonly Vector256<double> Round;
         private static readonly Vector256<ulong> Mask11;
-        private static readonly Vector256<ulong> V2095104;
+        private static readonly Vector256<ulong> Adj;
 
         private static readonly ulong[] table = [
             {string.Join(",\n\t\t\t", GenerateElements(s, 8, i => ComputeTable(i).ToString() + "UL", ", "))}
@@ -102,7 +102,7 @@ namespace TAFitting.Data
             C1 = Create(1.0);
             Round = Create({3UL << 51}.0);
             Mask11 = Create(2047UL);
-            V2095104 = Create(2095104);
+            Adj = Create({(1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE)});
         }} // static MathUtils()
 
         unsafe private static Vector256<double> Create(double value)
@@ -133,7 +133,7 @@ namespace TAFitting.Data
                 var d = Avx.Add(Avx.Multiply(v, Alpha), Round);
                 var i = d.AsUInt64<double>();
 
-                var u = Avx2.Add(i, V2095104);
+                var u = Avx2.Add(i, Adj);
                 u = Avx2.ShiftRightLogical(u, 11);
                 u = Avx2.ShiftLeftLogical(u, 52);
 
