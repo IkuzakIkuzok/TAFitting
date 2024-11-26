@@ -15,6 +15,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     internal const string StaticErrId = "AV0002";
     internal const string CountErrId = "AV0101";
 
+#pragma warning disable IDE0079
 #pragma warning disable RS2008
 
     private static readonly DiagnosticDescriptor PartialErr = new(

@@ -18,6 +18,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     internal const string NoNameErrId = "TA0101";
     internal const string MultipleNameErrId = "TA0102";
 
+#pragma warning disable IDE0079
 #pragma warning disable RS2008
 
     private static readonly DiagnosticDescriptor GuidErr = new(
