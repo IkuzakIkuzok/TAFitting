@@ -183,7 +183,6 @@ namespace TAFitting.Data
 
             var e = d * y;
             var l = Math.Exp(x);
-            System.Diagnostics.Debug.WriteLineIf(Math.Abs(e - l) > 1e-6 * l, $""{{x}}: {{e}} != {{l}}"");
             return d * y;
         }} // private static double FastExp (double)
     }} // file static class MathUtils
