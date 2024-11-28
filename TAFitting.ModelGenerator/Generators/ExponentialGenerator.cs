@@ -246,7 +246,7 @@ file static class MathUtil
         var i = BitConverter.DoubleToUInt64Bits(d);
         var iax = table[i & 2047];
         var t = (d - ({3UL << 51})) * {Math.Log(2) / 2048} - x;
-        var u = ((i + 2095104) >> 11) << 52;
+        var u = ((i + {(1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE)}) >> 11) << 52;
         var y = (3.0000000027955394 - t) * (t * t) * 0.16666666685227835 - t + 1;
         i = u | iax;
         d = BitConverter.UInt64BitsToDouble(i);
