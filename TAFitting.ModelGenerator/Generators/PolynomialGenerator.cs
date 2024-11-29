@@ -130,11 +130,14 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             {
                 builder.AppendLine();
                 builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{i}];");
-                builder.AppendLine("\t\t\t\tAvxVector2048.Multiply(x, temp_x, temp_x);");
-                builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(temp_x, a{i}, temp);");
-                builder.AppendLine($"\t\t\t\tAvxVector2048.Add(temp, a0, a0);");
+                builder.Append("\t\t\t\tAvxVector2048.Multiply(x, temp_x, temp_x);  // ");
+                builder.AppendLine(i == 1 ? "x = 1.0 * x" : $"x^{i} = x^{i - 1} * x");
+                builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(temp_x, a{i}, temp);   // a{i} * x^{i}");
+                builder.AppendLine($"\t\t\t\tAvxVector2048.Add(temp, a0, a0);            // a0 += a{i} * x^{i}");
             }
             builder.AppendLine();
+            builder.Append("\t\t\t\t// a0 + a1*x");
+            builder.AppendLine(string.Concat(Enumerable.Range(2, n - 1).Select(i => $" + a{i}*x^{i}")));
             builder.AppendLine("\t\t\t\treturn a0;");
         }
         builder.AppendLine("\t\t\t};");
@@ -175,7 +178,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             if (i == 1)
                 builder.AppendLine($"\t\t\t\tres[{i}] = x;");
             else
-                builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(res[{i - 1}], x, res[{i}]);");
+                builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(res[{i - 1}], x, res[{i}]);  // x^{i} = x^{i-1} * x");
         }
         builder.AppendLine("\t\t\t};");
 
