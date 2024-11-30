@@ -3,6 +3,9 @@
 
 namespace TAFitting.ModelGenerator.Generators;
 
+/// <summary>
+/// Generates polynomial models.
+/// </summary>
 [Generator(LanguageNames.CSharp)]
 internal sealed class PolynomialGenerator : ModelGeneratorBase
 {

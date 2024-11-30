@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace TAFitting.ModelGenerator.Generators;
 
+/// <summary>
+/// Generates exponential models.
+/// </summary>
 [Generator(LanguageNames.CSharp)]
 internal sealed class ExponentialGenerator : ModelGeneratorBase
 {
@@ -184,26 +187,48 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         return builder.ToString();
     } // override protected string Generate (string, string, int, string?)
 
+    /// <summary>
+    /// Generates the mask of the specified number of bits.
+    /// </summary>
+    /// <param name="n">The number of bits.</param>
+    /// <returns>The 64-bit mask of the specified number of bits.</returns>
     private static ulong Mask64(int n) => (1UL << n) - 1;
 
     private const int TABLE_SIZE = 11;
     private const int s = 1 << TABLE_SIZE;
 
+    /// <summary>
+    /// Computes the table value at the specified index.
+    /// </summary>
+    /// <param name="index">The index of the table.</param>
+    /// <returns>The table value at the specified index.</returns>
     private static ulong ComputeTable(int index)
     {
         var du = new BitsConverter64 { Double = Math.Pow(2, index * (1.0 / s)) };
         return du.UInt64 & Mask64(52);
     } // private static ulong ComputeTable (int)
 
+    /// <summary>
+    /// A union to convert between <see cref="double"/>, <see cref="ulong"/>, and <see cref="long"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     private struct BitsConverter64
     {
+        /// <summary>
+        /// A <see cref="double"/> value.
+        /// </summary>
         [FieldOffset(0)]
         public double Double;
 
+        /// <summary>
+        /// A <see cref="ulong"/> value.
+        /// </summary>
         [FieldOffset(0)]
         public ulong UInt64;
 
+        /// <summary>
+        /// A <see cref="long"/> value.
+        /// </summary>
         [FieldOffset(0)]
         public long Int64;
     } // private struct BitsConverter64

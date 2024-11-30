@@ -15,8 +15,17 @@ internal abstract class ModelGeneratorBase : ISourceGenerator
     /// </summary>
     abstract protected string AttributeName { get; }
 
+    /// <summary>
+    /// Gets a hint name of the generated file.
+    /// </summary>
     abstract protected string FileName { get; }
 
+    /// <summary>
+    /// Gets the additional code to be added to the generated file.
+    /// </summary>
+    /// <remarks>
+    /// The additional codes are recommended to be file-scoped.
+    /// </remarks>
     abstract protected string AdditionalCode { get; }
 
     public void Initialize(GeneratorInitializationContext context)
