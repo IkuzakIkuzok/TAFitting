@@ -55,13 +55,13 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// Gets the time unit.
     /// </summary>
     /// <value>The unit of the time.</value>
-    internal string TimeUnit { get; }
+    internal TimeUnit TimeUnit { get; }
 
     /// <summary>
     /// Gets the signal unit.
     /// </summary>
     /// <value>The unit of the signal.</value>
-    internal string SignalUnit { get; }
+    internal SignalUnit SignalUnit { get; }
 
     /// <summary>
     /// Gets the maximum time.
@@ -91,11 +91,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         }
     }
 
-    private Decays(string timeUnit, string signalUnit)
+    private Decays(TimeUnit timeUnit, SignalUnit signalUnit)
     {
         this.TimeUnit = timeUnit;
         this.SignalUnit = signalUnit;
-    } // ctor (string, string)
+    } // ctor (TimeUnit, SignalUnit)
 
     /// <summary>
     /// Loads the decay data from the folder.
@@ -105,10 +105,13 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// <exception cref="IOException">No data found in the folder.</exception>
     internal static Decays MicrosecondFromFolder(string path)
     {
+        var timeUnit = TimeUnit.Microsecond;
+        var signalUnit = SignalUnit.MicroOD;
+
         var format_ab = Program.AMinusBSignalFormat;
         var format_b = Program.BSignalFormat;
 
-        var decays = new Decays("µs", "ΔµOD");
+        var decays = new Decays(timeUnit, signalUnit);
         var l_t0 = new List<double>();
 
         var folders = Directory.EnumerateDirectories(path);
@@ -132,8 +135,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
             if (!File.Exists(file_ab) || !File.Exists(file_b)) continue;
 
-            var decay_ab = Decay.FromFile(file_ab, 1e6, 1e6);
-            var decay_b = Decay.FromFile(file_b, 1e6, 1e6);
+            var decay_ab = Decay.FromFile(file_ab, 1.0 / timeUnit, 1.0 / signalUnit);
+            var decay_b = Decay.FromFile(file_b, 1.0 / timeUnit, 1.0 / signalUnit);
             decays.decays.Add(wavelength, decay_ab);
 
             l_t0.Add(decay_b.FilndT0());
@@ -154,17 +157,20 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// <returns>The decay data.</returns>
     internal static Decays FemtosecondFromFile(string path)
     {
+        var timeUnit = TimeUnit.Picosecond;
+        var signalUnit = SignalUnit.MilliOD;
+
         var lines = File.ReadAllBytes(path).GetText().Split('\n');
 
         var header = lines[0].Split(',')[1..];
         var times = header.Select(double.Parse).ToArray();
 
-        var decays = new Decays("ps", "ΔmOD");
+        var decays = new Decays(timeUnit, signalUnit);
         foreach (var line in lines[1..])
         {
             var parts = line.Split(',');
             if (!double.TryParse(parts[0], out var wl)) break;
-            var signals = parts[1..].Select(double.Parse).Select(s => s * 1e3).ToArray();
+            var signals = parts[1..].Select(double.Parse).Select(s => s / signalUnit).ToArray();
             var decay = new Decay(times, signals);
             decay.RemoveNaN();
             decays.decays.Add(wl, decay);
