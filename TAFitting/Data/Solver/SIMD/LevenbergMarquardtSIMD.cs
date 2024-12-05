@@ -75,8 +75,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             throw new ArgumentException("The number of x and y values must be the same.");
 
         this.Model = model;
-        this.x = TVector.Create([.. x]);
-        this.y = TVector.Create([.. y]);
+        this.x = TVector.CreateReadonly([.. x]);
+        this.y = TVector.CreateReadonly([.. y]);
 
         this.numberOfParameters = parameters.Count;
         this.numberOfDataPoints = x.Count;
