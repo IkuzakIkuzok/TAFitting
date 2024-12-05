@@ -245,6 +245,9 @@ namespace TAFitting.Data
         builder.AppendLine("\t\tinternal int Length => " + count + ";");
 
         builder.AppendLine();
+        builder.AppendLine("\t\tpublic bool IsReadonly { get; }");
+
+        builder.AppendLine();
         builder.AppendLine("\t\tpublic double Sum");
         builder.AppendLine("\t\t{");
         builder.AppendLine("\t\t\tget");
@@ -267,15 +270,24 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t/// Initializes a new instance of the <see cref=\"AvxVector\"/> class with the specified values.");
         builder.AppendLine("\t\t/// </summary>");
         builder.AppendLine("\t\t/// <param name=\"values\">The values.</param>");
-        builder.AppendLine($"\t\tunsafe internal {className}(double[] values)");
+        builder.AppendLine($"\t\tinternal {className}(double[] values) : this(values, false) {{}}");
+
+        builder.AppendLine();
+        builder.AppendLine("\t\t/// <summary>");
+        builder.AppendLine("\t\t/// Initializes a new instance of the <see cref=\"AvxVector\"/> class with the specified values.");
+        builder.AppendLine("\t\t/// </summary>");
+        builder.AppendLine("\t\t/// <param name=\"values\">The values.</param>");
+        builder.AppendLine("\t\t/// <param name=\"isReadonly\">The value indicating whether the vector is readonly.</param>");
+        builder.AppendLine($"\t\tunsafe internal {className}(double[] values, bool isReadonly)");
         builder.AppendLine("\t\t{");
         builder.AppendLine($"\t\t\tthis.count = Math.Min(values.Length >> 2, {n});");
+        builder.AppendLine("\t\t\tthis.IsReadonly = isReadonly;");
         builder.AppendLine("\t\t\tfixed (double* p = values)");
         builder.AppendLine("\t\t\t{");
         foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(p + {4 * x})", "; "))
             builder.AppendLine($"\t\t\t\t{element};");
         builder.AppendLine("\t\t\t}");
-        builder.AppendLine("\t\t} // ctor (double[])");
+        builder.AppendLine("\t\t} // ctor (double[], bool)");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <summary>");
@@ -283,13 +295,23 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t/// </summary>");
         builder.AppendLine("\t\t/// <param name=\"length\">The length.</param>");
         builder.AppendLine("\t\t/// <param name=\"value\">The value.</param>");
-        builder.AppendLine($"\t\tunsafe internal {className}(int length, double value)");
+        builder.AppendLine($"\t\tunsafe internal {className}(int length, double value) : this(length, value, false) {{}}");
+
+        builder.AppendLine();
+        builder.AppendLine("\t\t/// <summary>");
+        builder.AppendLine("\t\t/// Initializes a new instance of the <see cref=\"AvxVector\"/> class with the specified value.");
+        builder.AppendLine("\t\t/// </summary>");
+        builder.AppendLine("\t\t/// <param name=\"length\">The length.</param>");
+        builder.AppendLine("\t\t/// <param name=\"value\">The value.</param>");
+        builder.AppendLine("\t\t/// <param name=\"isReadonly\">The value indicating whether the vector is readonly.</param>");
+        builder.AppendLine($"\t\tunsafe internal {className}(int length, double value, bool isReadonly)");
         builder.AppendLine("\t\t{");
         builder.AppendLine($"\t\t\tthis.count = Math.Min(length >> 2, {n});");
+        builder.AppendLine("\t\t\tthis.IsReadonly = isReadonly;");
         builder.AppendLine("\t\t\tvar arr = stackalloc double[4] { value, value, value, value };");
         foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(arr)", "; "))
             builder.AppendLine($"\t\t\t{element};");
-        builder.AppendLine("\t\t} // ctor (int, double)");
+        builder.AppendLine("\t\t} // ctor (int, double, bool)");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <summary>");
@@ -324,6 +346,9 @@ namespace TAFitting.Data
         builder.AppendLine();
         builder.AppendLine("\t\tunsafe public void Load(double[] values)");
         builder.AppendLine("\t\t{");
+        builder.AppendLine("\t\t\tif (this.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The current vector is readonly.\");");
+        builder.AppendLine();
         builder.AppendLine("\t\t\tfixed (double* p = values)");
         builder.AppendLine("\t\t\t{");
         foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(p + {4 * x})", "; "))
@@ -334,6 +359,9 @@ namespace TAFitting.Data
         builder.AppendLine();
         builder.AppendLine("\t\tunsafe public void Load(double value)");
         builder.AppendLine("\t\t{");
+        builder.AppendLine("\t\t\tif (this.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The current vector is readonly.\");");
+        builder.AppendLine();
         builder.AppendLine("\t\t\tvar arr = stackalloc double[4] { value, value, value, value };");
         foreach (var element in GenerateElements(n, 4, x => $"this.v{x} = Avx.LoadVector256(arr)", "; "))
             builder.AppendLine($"\t\t\t{element};");
@@ -341,15 +369,23 @@ namespace TAFitting.Data
 
         builder.AppendLine();
         builder.AppendLine($"\t\tpublic static {className} Create(double[] values)");
-        builder.AppendLine("\t\t\t=> new(values);");
+        builder.AppendLine("\t\t\t=> new(values, false);");
 
         builder.AppendLine();
         builder.AppendLine($"\t\tpublic static {className} Create(int length, double value)");
-        builder.AppendLine("\t\t\t=> new(length, value);");
+        builder.AppendLine("\t\t\t=> new(length, value, false);");
 
         builder.AppendLine();
         builder.AppendLine($"\t\tpublic static {className} Create(int length)");
         builder.AppendLine("\t\t\t=> new(length);");
+
+        builder.AppendLine();
+        builder.AppendLine($"\t\tpublic static {className} CreateReadonly(double[] values)");
+        builder.AppendLine("\t\t\t=> new(values, true);");
+
+        builder.AppendLine();
+        builder.AppendLine($"\t\tpublic static {className} CreateReadonly(int length, double value)");
+        builder.AppendLine("\t\t\t=> new(length, value, true);");
 
         builder.AppendLine();
         builder.AppendLine("\t\tpublic static int GetCapacity()");
@@ -391,6 +427,10 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t{");
         builder.AppendLine("\t\t\tif (!isSupported)");
         builder.AppendLine("\t\t\t\tthrow new NotSupportedException(\"The AVX instruction set is not supported.\");");
+        builder.AppendLine("\t\t\tif (vector.count != result.count)");
+        builder.AppendLine("\t\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine("\t\t\tif (result.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The result vector is readonly.\");");
         builder.AppendLine();
         foreach (var element in GenerateElements(n, 4, x => $"result.v{x} = MathUtils.Exp(vector.v{x})", "; "))
             builder.AppendLine($"\t\t\t{element};");
@@ -434,6 +474,8 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t{");
         builder.AppendLine("\t\t\tif (left.count != right.count || left.count != result.count)");
         builder.AppendLine("\t\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine("\t\t\tif (result.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The result vector is readonly.\");");
         builder.AppendLine();
         foreach (var element in GenerateElements(n, 4, x => $"result.v{x} = Avx.{avxMethod}(left.v{x}, right.v{x})", "; "))
             builder.AppendLine($"\t\t\t{element};");
@@ -445,6 +487,11 @@ namespace TAFitting.Data
         builder.AppendLine();
         builder.AppendLine($"\t\tunsafe public static void {method}({className} left, double right, {className} result)");
         builder.AppendLine("\t\t{");
+        builder.AppendLine("\t\t\tif (left.count != result.count)");
+        builder.AppendLine("\t\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine("\t\t\tif (result.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The result vector is readonly.\");");
+        builder.AppendLine();
         builder.AppendLine("\t\t\tvar arr = stackalloc double[4] { right, right, right, right };");
         builder.AppendLine("\t\t\tvar v_right = Avx.LoadVector256(arr);");
         builder.AppendLine();
@@ -458,6 +505,11 @@ namespace TAFitting.Data
         builder.AppendLine();
         builder.AppendLine($"\t\tunsafe public static void {method}(double left, {className} right, {className} result)");
         builder.AppendLine("\t\t{");
+        builder.AppendLine("\t\t\tif (right.count != result.count)");
+        builder.AppendLine("\t\t\t\tthrow new ArgumentException(\"The count of the vectors must be the same.\");");
+        builder.AppendLine("\t\t\tif (result.IsReadonly)");
+        builder.AppendLine("\t\t\t\tthrow new InvalidOperationException(\"The result vector is readonly.\");");
+        builder.AppendLine();
         builder.AppendLine("\t\t\tvar arr = stackalloc double[4] { left, left, left, left };");
         builder.AppendLine("\t\t\tvar v_left = Avx.LoadVector256(arr);");
         builder.AppendLine();

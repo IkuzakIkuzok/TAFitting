@@ -17,6 +17,14 @@ public interface IIntrinsicVector<TSelf>
     where TSelf : IIntrinsicVector<TSelf>
 {
     /// <summary>
+    /// Gets a value indicating whether the vector is readonly.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the vector is readonly; otherwise, <see langword="false"/>.
+    /// </value>
+    bool IsReadonly { get; }
+
+    /// <summary>
     /// Gets the sum of the elements.
     /// </summary>
     double Sum { get; }
@@ -45,6 +53,7 @@ public interface IIntrinsicVector<TSelf>
     /// Creates a new instance of the <see cref="IIntrinsicVector{TSelf}"/> class
     /// containing the specified value in all elements.
     /// </summary>
+    /// <param name="length">The length.</param>
     /// <param name="value">The value.</param>
     /// <returns>A new instance of the <see cref="IIntrinsicVector{TSelf}"/> class with the <paramref name="value"/>.</returns>
     abstract static TSelf Create(int length, double value);
@@ -56,6 +65,23 @@ public interface IIntrinsicVector<TSelf>
     /// <param name="length">The length.</param>
     /// <returns>A new instance of the <see cref="IIntrinsicVector{TSelf}"/> class with the <paramref name="length"/>.</returns>
     abstract static TSelf Create(int length);
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="IIntrinsicVector{TSelf}"/> class
+    /// with the specified values and makes it read-only.
+    /// </summary>
+    /// <param name="values">The values.</param>
+    /// <returns>A new read-only instance of the <see cref="IIntrinsicVector{TSelf}"/> class with the <paramref name="values"/>.</returns>
+    abstract static TSelf CreateReadonly(double[] values);
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="IIntrinsicVector{TSelf}"/> class
+    /// with the specified value in all elements and makes it read-only.
+    /// </summary>
+    /// <param name="length">The length.</param>
+    /// <param name="value">The value.</param>
+    /// <returns>A new read-only instance of the <see cref="IIntrinsicVector{TSelf}"/> class with the <paramref name="value"/>.</returns>
+    abstract static TSelf CreateReadonly(int length, double value);
 
     /// <summary>
     /// Gets the capacity.
