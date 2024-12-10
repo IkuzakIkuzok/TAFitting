@@ -116,7 +116,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine("\t\tpublic Func<AvxVector2048, AvxVector2048> GetVectorizedFunc(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> x => ");
         builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length << 2;");
+        builder.AppendLine("\t\t\t\tvar length = x.Length;");
         if (n == 1)
         {
             builder.AppendLine("\t\t\t\tvar a = new AvxVector2048(length, parameters[1]);");

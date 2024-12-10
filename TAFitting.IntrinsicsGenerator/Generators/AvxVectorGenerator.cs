@@ -242,7 +242,7 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t/// <summary>");
         builder.AppendLine("\t\t/// Gets the number of elements.");
         builder.AppendLine("\t\t/// </summary>");
-        builder.AppendLine("\t\tinternal int Length => " + count + ";");
+        builder.AppendLine("\t\tinternal int Length => this.count << 2;");
 
         builder.AppendLine();
         builder.AppendLine("\t\tpublic bool IsReadonly { get; }");

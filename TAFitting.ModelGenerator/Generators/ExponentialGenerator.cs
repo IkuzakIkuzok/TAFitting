@@ -102,7 +102,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\t\tpublic Func<AvxVector2048, AvxVector2048> GetVectorizedFunc(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> x =>");
         builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length << 2;");
+        builder.AppendLine("\t\t\t\tvar length = x.Length;");
         builder.AppendLine("\t\t\t\tvar temp = AvxVector2048.Create(length);");
         builder.AppendLine("\t\t\t\tvar a0 = AvxVector2048.Create(length, parameters[0]);");
         for (var i = 1; i <= n; i++)
