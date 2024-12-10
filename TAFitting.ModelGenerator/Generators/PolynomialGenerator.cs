@@ -109,7 +109,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             builder.AppendLine($"\t\t\t\treturn a0 + {string.Join(" + ", Enumerable.Range(1, n).Select(GetTerm))};");
             builder.AppendLine("\t\t\t};");
         } // if (n == 1)
-        builder.AppendLine("\t\t} // public Func<double, double> GetFunction (IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t} // public Func<double, double> GetFunction (IReadOnlyList<double>)");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
