@@ -28,7 +28,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}-component exponential model.");
         builder.AppendLine($"\t/// </summary>");
-        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector2048>");
+        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector1024>, IVectorizedModel<AvxVector2048>");
         builder.AppendLine("\t{");
 
         #region fields
@@ -97,27 +97,8 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
             + string.Concat(Enumerable.Range(1, n).Select(i => $" + a{i} * MathUtil.FastExp(x * t{i})")) + ";");
         builder.AppendLine("\t\t} // public Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
 
-        builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic Func<AvxVector2048, AvxVector2048> GetVectorizedFunc(IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> x =>");
-        builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length;");
-        builder.AppendLine("\t\t\t\tvar temp = AvxVector2048.Create(length);");
-        builder.AppendLine("\t\t\t\tvar a0 = AvxVector2048.Create(length, parameters[0]);");
-        for (var i = 1; i <= n; i++)
-        {
-            builder.AppendLine();
-            builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"\t\t\t\tvar t{i} = -1.0 / parameters[{2 * i}];");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(x, t{i}, temp);     // temp = -x / t{i}");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Exp(temp, temp);           // temp = exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(temp, a{i}, temp);  // temp = a{i} * exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Add(a0, temp, a0);         // a0 += a{i} * exp(-x / t{i})");
-        }
-        builder.AppendLine();
-        builder.AppendLine("\t\t\t\treturn a0;");
-        builder.AppendLine("\t\t\t};");
+        GenerateGetVectorizedFunc(builder, "AvxVector1024", n);
+        GenerateGetVectorizedFunc(builder, "AvxVector2048", n);
 
         #endregion GetFunction
 
@@ -153,10 +134,50 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\n\t\t\t};");
         builder.AppendLine("\t\t} // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)");
 
+        GenerateGetVectorizedDerivatives(builder, "AvxVector1024", n);
+        GenerateGetVectorizedDerivatives(builder, "AvxVector2048", n);
+
+        #endregion GetDerivatives
+
+        #endregion methods
+
+        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector1024>, IVectorizedModel<AvxVector2048>");
+        builder.AppendLine("} // namespace " + nameSpace);
+
+        return builder.ToString();
+    } // override protected string Generate (string, string, int, string?)
+
+    private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
+    {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic Action<AvxVector2048, AvxVector2048[]> GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
-        
+        builder.AppendLine($"\t\tFunc<{TVector}, {TVector}> IVectorizedModel<{TVector}>.GetVectorizedFunc(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t\t=> (x) =>");
+        builder.AppendLine("\t\t\t{");
+        builder.AppendLine("\t\t\t\tvar length = x.Length;");
+        builder.AppendLine($"\t\t\t\tvar temp = {TVector}.Create(length);");
+        builder.AppendLine($"\t\t\t\tvar a0 = {TVector}.Create(length, parameters[0]);");
+        for (var i = 1; i <= n; i++)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
+            builder.AppendLine($"\t\t\t\tvar t{i} = -1.0 / parameters[{2 * i}];");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(x, t{i}, temp);     // temp = -x / t{i}");
+            builder.AppendLine($"\t\t\t\t{TVector}.Exp(temp, temp);           // temp = exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(temp, a{i}, temp);  // temp = a{i} * exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Add(a0, temp, a0);         // a0 += a{i} * exp(-x / t{i})");
+        }
+        builder.AppendLine();
+        builder.AppendLine("\t\t\t\treturn a0;");
+        builder.AppendLine("\t\t\t};");
+    } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
+
+    private static void GenerateGetVectorizedDerivatives(StringBuilder builder, string TVector, int n)
+    {
+        builder.AppendLine();
+        builder.AppendLine("\t\t/// <inheritdoc/>");
+        builder.AppendLine($"\t\tAction<{TVector}, {TVector}[]> IVectorizedModel<{TVector}>.GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
+
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\t// The first parameter is a constant term and its derivative is always 1.0.");
@@ -168,24 +189,15 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
             builder.AppendLine($"\t\t\t\tvar t{i} = -1.0 / parameters[{2 * i - 0}];");
 
             builder.AppendLine($"\t\t\t\t// res[{2 * i - 1}] = exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(x, t{i}, res[{2 * i - 1}]);  // -x / t{i}");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Exp(res[{2 * i - 1}], res[{2 * i - 1}]);      // exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(x, t{i}, res[{2 * i - 1}]);  // -x / t{i}");
+            builder.AppendLine($"\t\t\t\t{TVector}.Exp(res[{2 * i - 1}], res[{2 * i - 1}]);      // exp(-x / t{i})");
 
             builder.AppendLine($"\t\t\t\t// res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(res[{2 * i - 1}], a{i} * t{i} * t{i}, res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
-            builder.AppendLine($"\t\t\t\tAvxVector2048.Multiply(res[{2 * i - 0}], x, res[{2 * i - 0}]);             // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 1}], a{i} * t{i} * t{i}, res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 0}], x, res[{2 * i - 0}]);             // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
         }
         builder.AppendLine("\t\t\t};");
-
-        #endregion GetDerivatives
-
-        #endregion methods
-
-        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector2048>");
-        builder.AppendLine("} // namespace " + nameSpace);
-
-        return builder.ToString();
-    } // override protected string Generate (string, string, int, string?)
+    } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
 
     /// <summary>
     /// Generates the mask of the specified number of bits.
