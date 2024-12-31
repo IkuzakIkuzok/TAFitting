@@ -142,10 +142,10 @@ internal static class Program
     /// </summary>
     internal static Font AxisLabelFont
     {
-        get => Config.AppearanceConfig.AxisLabelFont.Font;
+        get => Config.AppearanceConfig.AxisLabelFont;
         set
         {
-            Config.AppearanceConfig.AxisLabelFont.Font = value;
+            Config.AppearanceConfig.AxisLabelFont = value;
             SaveConfig();
             AxisLabelFontChanged?.Invoke(null, EventArgs.Empty);
         }
@@ -156,10 +156,10 @@ internal static class Program
     /// </summary>
     internal static Font AxisTitleFont
     {
-        get => Config.AppearanceConfig.AxisTitleFont.Font;
+        get => Config.AppearanceConfig.AxisTitleFont;
         set
         {
-            Config.AppearanceConfig.AxisTitleFont.Font = value;
+            Config.AppearanceConfig.AxisTitleFont = value;
             SaveConfig();
             AxisTitleFontChanged?.Invoke(null, EventArgs.Empty);
         }

@@ -64,4 +64,10 @@ public sealed class FontConfig
     {
         this.Font = font;
     } // ctor (Font)
+
+    public static implicit operator Font(FontConfig config)
+        => config.Font;
+
+    public static implicit operator FontConfig(Font font)
+        => new(font);
 } // public sealed class FontConfig
