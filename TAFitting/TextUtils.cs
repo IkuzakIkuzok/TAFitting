@@ -12,12 +12,16 @@ internal static class TextUtils
 {
     private static readonly Encoding DefaultEncoding;
 
+    internal static Encoding CP932;
+
     static TextUtils()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         var codePage = Thread.CurrentThread.CurrentCulture.TextInfo.ANSICodePage;
         DefaultEncoding = Encoding.GetEncoding(codePage);
+
+        CP932 = Encoding.GetEncoding(932);
     } // cctor ()
     
     internal static string GetText(this byte[] bytes)

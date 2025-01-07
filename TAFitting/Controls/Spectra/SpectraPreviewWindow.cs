@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Toast;
+using TAFitting.Data;
 using TAFitting.Excel;
 using TAFitting.Model;
 using TAFitting.Origin;
@@ -23,6 +24,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
+
+    private SteadyStateSpectrum? steadyStateSpectrum;
 
     private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
@@ -177,6 +180,15 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         var menu_file = new ToolStripMenuItem("&File");
         this.MainMenuStrip.Items.Add(menu_file);
+
+        var menu_loadSteadyStateSpectrum = new ToolStripMenuItem("&Load steady-state spectrum")
+        {
+            ShortcutKeys = Keys.Control | Keys.O,
+        };
+        menu_loadSteadyStateSpectrum.Click += LoadSteadyStateSpectrum;
+        menu_file.DropDownItems.Add(menu_loadSteadyStateSpectrum);
+
+        menu_file.DropDownItems.Add(new ToolStripSeparator());
 
         var menu_fileSave = new ToolStripMenuItem("&Save")
         {
@@ -363,10 +375,28 @@ internal sealed partial class SpectraPreviewWindow : Form
                 sigMax = Math.Max(sigMax, max);
             }
 
+            sigMin = Math.Min(sigMin, 0.0);
+            sigMax = Math.Max(sigMax, 0.0);
+
+            if (this.steadyStateSpectrum is not null)
+            {
+                sigMax = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
+                var s_sss = new Series()
+                {
+                    Color = Color.Black,
+                    ChartType = SeriesChartType.Line,
+                    BorderDashStyle = ChartDashStyle.Dot,
+                    BorderWidth = 2,
+                };
+                foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, sigMax))
+                    s_sss.Points.AddXY(wl, a);
+                this.chart.Series.Add(s_sss);
+            }
+
             this.axisX.Minimum = wlMin;
             this.axisX.Maximum = wlMax;
-            this.axisY.Minimum = Math.Min(sigMin * 1.1, 0.0);
-            this.axisY.Maximum = Math.Max(sigMax * 1.1, 0.0);
+            this.axisY.Minimum = sigMin * 1.1;
+            this.axisY.Maximum = sigMax * 1.1;
 
             AdjustAxesIntervals();
         }
@@ -452,6 +482,31 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void SaveToFile(object? sender, EventArgs e)
         => SaveToFile();
+
+    private void LoadSteadyStateSpectrum(object? sender, EventArgs e)
+    {
+        using var dialog = new OpenFileDialog()
+        {
+            Title = "Load Steady State Spectrum",
+            Filter = "Text files|*.txt|All files|*.*",
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        try
+        {
+            this.steadyStateSpectrum = new(dialog.FileName, TextUtils.CP932);
+            DrawSpectra();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    } // private void LoadSteadyStateSpectrum ()
 
     private void SaveToFile()
     {
