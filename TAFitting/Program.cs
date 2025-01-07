@@ -22,6 +22,8 @@ internal static class Program
 
     internal static readonly string AppLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
+    internal static readonly Guid FileDialogCommonId = new("897E3944-14A7-4D69-80D2-A28C5BD0E7BF");
+    internal static readonly Guid SaveDialogId = new("C81B4633-F930-4C49-BC19-BB516B195980");
     /// <summary>
     /// Gets the main window.
     /// </summary>

@@ -17,6 +17,8 @@ namespace TAFitting.Controls.Spectra;
 [DesignerCategory("Code")]
 internal sealed partial class SpectraPreviewWindow : Form
 {
+    private static readonly Guid steadyStateDialog = new("AE0B2F4B-7A4E-425A-89DF-E81194032356");
+
     private readonly SplitContainer mainContainer, optionsContainer;
 
     private readonly TimeTable timeTable;
@@ -489,6 +491,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         {
             Title = "Load Steady State Spectrum",
             Filter = "Text files|*.txt|All files|*.*",
+            ClientGuid = Program.Config.SeparateFileDialogState ? steadyStateDialog : Program.FileDialogCommonId,
         };
         if (dialog.ShowDialog() != DialogResult.OK) return;
 
@@ -519,6 +522,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             Title = "Save Spectra",
             Filter = "Excel Workbook|*.xlsx|CSV files|*.csv|All files|*.*",
             FileName = $"{Program.MainWindow.SampleName}_spectra.xlsx",
+            ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };
         if (sfd.ShowDialog() != DialogResult.OK) return;
 
@@ -574,6 +578,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             Title = "Export to Origin",
             Filter = "Origin Project|*.opju",
             FileName = $"{Program.MainWindow.SampleName}_spectra.opju",
+            ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };
         if (sfd.ShowDialog() != DialogResult.OK) return;
         var filename = sfd.FileName;

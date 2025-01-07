@@ -23,6 +23,9 @@ namespace TAFitting.Controls;
 [DesignerCategory("Code")]
 internal sealed partial class MainWindow : Form
 {
+    private static readonly Guid usTasDialog = new("E7757DD6-FDB0-4670-BD39-C499E9F46174");
+    private static readonly Guid fsTasDialog = new("4801BD77-1083-4A89-B489-394BEC83D1C9");
+
     private readonly SplitContainer mainContainer, paramsContainer;
 
     private readonly CustomChart chart;
@@ -512,6 +515,7 @@ internal sealed partial class MainWindow : Form
         var ofd = new OpenFolderDialog()
         {
             Title = "Select a µs-TAS data folder",
+            ClientGuid = Program.Config.SeparateFileDialogState ? usTasDialog : Program.FileDialogCommonId,
         };
         if (!(ofd.ShowDialog() ?? false)) return;
 
@@ -540,6 +544,7 @@ internal sealed partial class MainWindow : Form
         {
             Filter = "CSV files|*.csv|All files|*.*",
             Title = "Select a fs-TAS data file",
+            ClientGuid = Program.Config.SeparateFileDialogState ? fsTasDialog : Program.FileDialogCommonId,
         };
         if (ofd.ShowDialog() != DialogResult.OK) return;
 

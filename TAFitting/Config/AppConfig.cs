@@ -51,6 +51,12 @@ public sealed class AppConfig
     public DecayLoadingConfig DecayLoadingConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets a value indicating whether to use different state for file dialog.
+    /// </summary>
+    [XmlElement("separate-file-dialog-state")]
+    public bool SeparateFileDialogState { get; set; } = true;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// </summary>
     public AppConfig() { }
