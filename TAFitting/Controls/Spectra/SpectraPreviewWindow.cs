@@ -382,7 +382,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
             if (this.steadyStateSpectrum is not null)
             {
-                sigMax = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
+                var scale = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
                 var s_sss = new Series()
                 {
                     Color = Color.Black,
@@ -390,9 +390,17 @@ internal sealed partial class SpectraPreviewWindow : Form
                     BorderDashStyle = ChartDashStyle.Dot,
                     BorderWidth = 2,
                 };
-                foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, sigMax))
-                    s_sss.Points.AddXY(wl, a);
-                this.chart.Series.Add(s_sss);
+                try
+                {
+                    foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
+                        s_sss.Points.AddXY(wl, a);
+                    this.chart.Series.Add(s_sss);
+                    sigMax = scale;
+                }
+                catch (InvalidOperationException)
+                {
+                    // No absorbance data within the wavelength range
+                }
             }
 
             this.axisX.Minimum = wlMin;
