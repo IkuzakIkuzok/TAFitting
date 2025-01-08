@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2025 Kazuki KOHZUKI
 
 using Microsoft.Win32;
 using System.Collections.Concurrent;
@@ -1215,6 +1215,7 @@ internal sealed partial class MainWindow : Form
         };
         if (this.decays is not null)
             preview.SignalUnit = this.decays.SignalUnit;
+        SetTimeTable(preview);
         this.previewWindows.Add(preview);
         preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
         preview.Show();
@@ -1229,8 +1230,14 @@ internal sealed partial class MainWindow : Form
     private void UpdatePreviewsParameters()
     {
         foreach (var preview in this.previewWindows)
+        {
             preview.SetParameters(this.ParametersList);
+            SetTimeTable(preview);
+        }
     } // private void UpdatePreviewsParameters ()
+
+    private void SetTimeTable(SpectraPreviewWindow preview)
+        => preview.SetTimeTable((double)this.rangeSelector.Time.To);
 
     /// <summary>
     /// Updates the selected wavelength in the spectra preview windows.

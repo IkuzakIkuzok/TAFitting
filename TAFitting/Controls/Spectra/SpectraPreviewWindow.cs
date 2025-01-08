@@ -22,6 +22,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private readonly SplitContainer mainContainer, optionsContainer;
 
     private readonly TimeTable timeTable;
+    private bool timeEdited = false;
     private readonly MaskingRangeBox maskingRangeBox;
 
     private readonly Chart chart;
@@ -148,12 +149,17 @@ internal sealed partial class SpectraPreviewWindow : Form
             Parent = this.optionsContainer.Panel1,
         };
         this.timeTable.CellValueChanged += DrawSpectra;
+        this.timeTable.RowsAdded += DrawSpectra;
         this.timeTable.RowsRemoved += DrawSpectra;
+
         this.timeTable.Rows.Add(0.5);
         this.timeTable.Rows.Add(1.0);
         this.timeTable.Rows.Add(2.0);
         this.timeTable.Rows.Add(4.0);
         this.timeTable.Rows.Add(8.0);
+        this.timeTable.CellValueChanged += SetTimeEdited;
+        this.timeTable.RowsAdded += SetTimeEdited;
+        this.timeTable.RowsRemoved += SetTimeEdited;
 
         _ = new Label()
         {
@@ -338,17 +344,26 @@ internal sealed partial class SpectraPreviewWindow : Form
         AdjustAxesIntervals();
     } // private void AdjustAxisIntervalsOnFirstPaint (object?, EventArgs)
 
+    private void SetTimeEdited(object? sender, EventArgs e)
+        => this.timeEdited = true;
+
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
 
     private void DrawSpectra()
     {
         if (this.modelId == Guid.Empty) return;
+        if (this.timeTable.Updating) return;
         var model = this.Model;
 
         this.chart.Series.Clear();
+        this.timeTable.SetColors();
 
-        if (this.parameters.Count == 0) return;
+        if (this.parameters.Count == 0)
+        {
+            DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
+            return;
+        }
 
         try
         {
@@ -356,8 +371,6 @@ internal sealed partial class SpectraPreviewWindow : Form
             var wlMax = this.parameters.Keys.Max();
 
             DrawHorizontalLine(wlMin, wlMax);
-
-            this.timeTable.SetColors();
 
             var maskingRanges = this.maskingRangeBox.MaskingRanges;
             var wavelengths = this.parameters.Keys.Order().ToArray();
@@ -688,6 +701,13 @@ internal sealed partial class SpectraPreviewWindow : Form
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToString("F1")));
         DrawSpectra();
     } // internal void SetParameters (IDictionary<double, double[]>)
+
+    internal void SetTimeTable(double maxTime)
+    {
+        if (this.timeEdited) return;
+        this.timeTable.SetTimes(maxTime);
+        this.timeEdited = false;  // Reset the flag because the time table is updated by calling `SetTimeTable` method
+    } // internal void SetTimeTable (double)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {

@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki Kohzuki
+// (c) 2024-2025 Kazuki Kohzuki
 
 namespace TAFitting.Controls.Spectra;
 
@@ -9,6 +9,12 @@ namespace TAFitting.Controls.Spectra;
 [DesignerCategory("Code")]
 internal sealed partial class TimeTable : DataGridView
 {
+    /// <summary>
+    /// Gets a value indicating whether the table is updating.
+    /// </summary>
+    /// <value><see langword="true"/> if the table is updating; otherwise, <see langword="false"/>.</value>
+    internal bool Updating { get; private set; } = false;
+
     /// <summary>
     /// Gets the times.
     /// </summary>
@@ -57,6 +63,8 @@ internal sealed partial class TimeTable : DataGridView
     /// </summary>
     internal void SetColors()
     {
+        if (this.Updating) return;
+
         Sort(this.Columns["Time"], ListSortDirection.Ascending);
         var count = this.Rows.Count - 1;
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, count);
@@ -66,4 +74,42 @@ internal sealed partial class TimeTable : DataGridView
             row.HeaderCell.Style.BackColor = gradient[i];
         }
     } // internal void SetColors ()
+
+    /// <summary>
+    /// Sets the times.
+    /// </summary>
+    /// <param name="maxTime">The maximum time.</param>
+    /// <param name="n">The number of times.</param>
+    internal void SetTimes(double maxTime, int n = 5)
+    {
+        this.Updating = true;
+        try
+        {
+            var times = new double[n];
+            var d = Math.Pow(10, Math.Floor(Math.Log10(maxTime)));
+            var m = maxTime / d;
+
+            if (m < 5)
+            {
+                d /= 10;
+                m *= 10;
+            }
+
+            var t = Math.Pow(2, Math.Floor(Math.Log2(m))) * d;
+            for (var i = n - 1; i >= 0; i--)
+            {
+                times[i] = t;
+                t /= 2;
+            }
+
+            this.Rows.Clear();
+            foreach (var time in times)
+                this.Rows.Add(time);
+        }
+        finally
+        {
+            this.Updating = false;
+            SetColors();
+        }
+    } // internal void SetTimes (double, [int])
 } // internal sealed partial class TimeTable : DataGridView
