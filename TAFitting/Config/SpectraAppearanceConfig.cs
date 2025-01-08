@@ -18,7 +18,7 @@ public sealed class SpectraAppearanceConfig
     public ColorGradientConfig ColorGradientConfig { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the color of the observed data.
+    /// Gets or sets the line width of the spectra.
     /// </summary>
     [XmlElement("line-width")]
     public int LineWidth { get; set; } = 2;
