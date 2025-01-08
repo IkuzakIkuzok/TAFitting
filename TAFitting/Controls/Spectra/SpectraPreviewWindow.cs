@@ -1,10 +1,10 @@
 ﻿
-// (c) 2024 Kazuki Kohzuki
+// (c) 2024-2025 Kazuki Kohzuki
 
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Toast;
-using TAFitting.Data;
+using TAFitting.Data.SteadyState;
 using TAFitting.Excel;
 using TAFitting.Model;
 using TAFitting.Origin;
@@ -183,12 +183,15 @@ internal sealed partial class SpectraPreviewWindow : Form
         var menu_file = new ToolStripMenuItem("&File");
         this.MainMenuStrip.Items.Add(menu_file);
 
-        var menu_loadSteadyStateSpectrum = new ToolStripMenuItem("&Load steady-state spectrum")
-        {
-            ShortcutKeys = Keys.Control | Keys.O,
-        };
-        menu_loadSteadyStateSpectrum.Click += LoadSteadyStateSpectrum;
+        var menu_loadSteadyStateSpectrum = new ToolStripMenuItem("&Load steady-state spectrum");
         menu_file.DropDownItems.Add(menu_loadSteadyStateSpectrum);
+
+        var menu_loadUH4150 = new ToolStripMenuItem("&UH4150")
+        {
+            ShortcutKeys = Keys.Control | Keys.U,
+        };
+        menu_loadUH4150.Click += LoadUH4150Spectrum;
+        menu_loadSteadyStateSpectrum.DropDownItems.Add(menu_loadUH4150);
 
         menu_file.DropDownItems.Add(new ToolStripSeparator());
 
@@ -493,19 +496,24 @@ internal sealed partial class SpectraPreviewWindow : Form
     private void SaveToFile(object? sender, EventArgs e)
         => SaveToFile();
 
-    private void LoadSteadyStateSpectrum(object? sender, EventArgs e)
+    private void LoadUH4150Spectrum(object? sender, EventArgs e)
+        => LoadSteadyStateSpectrum<UH4150>("UH4150", "Text files|*.txt|All files|*.*");
+
+    private void LoadSteadyStateSpectrum<T>(string name, string filter) where T : SteadyStateSpectrum, new()
     {
         using var dialog = new OpenFileDialog()
         {
-            Title = "Load Steady State Spectrum",
-            Filter = "Text files|*.txt|All files|*.*",
+            Title = $"Load steady-state spectrum ({name})",
+            Filter = filter,
             ClientGuid = Program.Config.SeparateFileDialogState ? steadyStateDialog : Program.FileDialogCommonId,
         };
         if (dialog.ShowDialog() != DialogResult.OK) return;
 
         try
         {
-            this.steadyStateSpectrum = new(dialog.FileName, TextUtils.CP932);
+            var s = new T();
+            s.LoadFile(dialog.FileName);
+            this.steadyStateSpectrum = s;
             DrawSpectra();
         }
         catch (Exception ex)
@@ -517,7 +525,7 @@ internal sealed partial class SpectraPreviewWindow : Form
                 MessageBoxIcon.Error
             );
         }
-    } // private void LoadSteadyStateSpectrum ()
+    } // private void LoadSteadyStateSpectrum<T> (string)
 
     private void SaveToFile()
     {
