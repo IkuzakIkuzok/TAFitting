@@ -10,7 +10,7 @@ namespace TAFitting.Controls;
 /// Represents an extension filter for file dialogs.
 /// </summary>
 [CollectionBuilder(typeof(ExtensionFilter), nameof(Create))]
-internal sealed class ExtensionFilter : IEnumerable<ExtensionItem>
+internal sealed partial class ExtensionFilter : IEnumerable<ExtensionItem>
 {
     private readonly List<ExtensionItem> _extensions = [];
 
@@ -49,4 +49,4 @@ internal sealed class ExtensionFilter : IEnumerable<ExtensionItem>
 
     IEnumerator IEnumerable.GetEnumerator()
         => this._extensions.GetEnumerator();
-} // internal sealed class ExtensionFilter : IEnumerable<ExtensionItem>
+} // internal sealed partial class ExtensionFilter : IEnumerable<ExtensionItem>

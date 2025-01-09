@@ -6,7 +6,7 @@ namespace TAFitting.Data.SteadyState;
 /// <summary>
 /// Represents a steady-state spectrum measured with a UH4150 spectrophotometer.
 /// </summary>
-internal sealed class UH4150 : SteadyStateSpectrum
+internal sealed  partial class UH4150 : SteadyStateSpectrum
 {
     override internal void LoadFile(string path)
     {
@@ -40,4 +40,4 @@ internal sealed class UH4150 : SteadyStateSpectrum
 
     private static double FromAbsorbance(double x)
         => x;
-} // internal sealed class UH4150 : SteadyStateSpectrum
+} // internal sealed partial class UH4150 : SteadyStateSpectrum

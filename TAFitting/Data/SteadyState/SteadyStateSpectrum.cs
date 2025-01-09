@@ -8,7 +8,7 @@ namespace TAFitting.Data.SteadyState;
 /// <summary>
 /// Represents a steady-state spectrum of a sample, which is a collection of wavelength and absorbance pairs.
 /// </summary>
-internal class SteadyStateSpectrum : IEnumerable<(double Wavelength, double Absorbance)>
+internal partial class SteadyStateSpectrum : IEnumerable<(double Wavelength, double Absorbance)>
 {
     protected readonly List<(double Wavelength, double Absorbance)> _spectrum = [];
 
@@ -58,4 +58,4 @@ internal class SteadyStateSpectrum : IEnumerable<(double Wavelength, double Abso
 
     IEnumerator IEnumerable.GetEnumerator()
         => this._spectrum.GetEnumerator();
-} // internal class SteadyStateSpectrum : IEnumerable<(double Wavelength, double Absorbance)>
+} // internal partial class SteadyStateSpectrum : IEnumerable<(double Wavelength, double Absorbance)>
