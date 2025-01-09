@@ -510,7 +510,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         => SaveToFile();
 
     private void LoadUH4150Spectrum(object? sender, EventArgs e)
-        => LoadSteadyStateSpectrum<UH4150>("UH4150", "Text files|*.txt|All files|*.*");
+        => LoadSteadyStateSpectrum<UH4150>("UH4150", ExtensionFilter.TextFiles);
 
     private void LoadSteadyStateSpectrum<T>(string name, string filter) where T : SteadyStateSpectrum, new()
     {
@@ -549,7 +549,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         using var sfd = new SaveFileDialog
         {
             Title = "Save Spectra",
-            Filter = "Excel Workbook|*.xlsx|CSV files|*.csv|All files|*.*",
+            Filter = ExtensionFilter.SpreadSheets,
             FileName = $"{Program.MainWindow.SampleName}_spectra.xlsx",
             ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };
@@ -605,7 +605,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         using var sfd = new SaveFileDialog
         {
             Title = "Export to Origin",
-            Filter = "Origin Project|*.opju",
+            Filter = ExtensionFilter.OriginProjects,
             FileName = $"{Program.MainWindow.SampleName}_spectra.opju",
             ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };

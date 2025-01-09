@@ -542,7 +542,7 @@ internal sealed partial class MainWindow : Form
     {
         using var ofd = new System.Windows.Forms.OpenFileDialog()
         {
-            Filter = "CSV files|*.csv|All files|*.*",
+            Filter = ExtensionFilter.CsvFiles,
             Title = "Select a fs-TAS data file",
             ClientGuid = Program.Config.SeparateFileDialogState ? fsTasDialog : Program.FileDialogCommonId,
         };
@@ -698,7 +698,7 @@ internal sealed partial class MainWindow : Form
     {
         using var dialog = new System.Windows.Forms.OpenFileDialog
         {
-            Filter = "Assembly files|*.dll|All files|*.*",
+            Filter = ExtensionFilter.Assemblies,
             Title = "Select an assembly file",
         };
         if (dialog.ShowDialog() != DialogResult.OK) return;
