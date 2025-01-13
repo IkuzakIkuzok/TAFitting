@@ -8,6 +8,7 @@ using TAFitting.Data.SteadyState;
 using TAFitting.Excel;
 using TAFitting.Model;
 using TAFitting.Origin;
+using TAFitting.Print;
 
 namespace TAFitting.Controls.Spectra;
 
@@ -27,6 +28,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
+    private readonly List<Series> wavelengthHighlights = [];
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
@@ -231,6 +233,13 @@ internal sealed partial class SpectraPreviewWindow : Form
         menu_fileCopy.Click += CopyPlotsToClipboard;
         menu_file.DropDownItems.Add(menu_fileCopy);
 
+        var menu_filePrint = new ToolStripMenuItem("&Print summary")
+        {
+            ShortcutKeys = Keys.Control | Keys.P,
+        };
+        menu_filePrint.Click += PrintSummary;
+        menu_file.DropDownItems.Add(menu_filePrint);
+
         menu_file.DropDownItems.Add(new ToolStripSeparator());
 
         var menu_fileClose = new ToolStripMenuItem("&Close")
@@ -364,6 +373,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         this.chart.Series.Clear();
         this.timeTable.SetColors();
+        this.wavelengthHighlights.Clear();
 
         if (this.parameters.Count == 0)
         {
@@ -506,7 +516,20 @@ internal sealed partial class SpectraPreviewWindow : Form
         };
         series.Points.AddXY(wavelength, signal);
         this.chart.Series.Add(series);
+        this.wavelengthHighlights.Add(series);
     } // private void HighlightWavelength (double)
+
+    private void HideWavelengthHighlights()
+    {
+        foreach (var series in this.wavelengthHighlights)
+            series.Enabled = false;
+    } // private void HideWavelengthHighlights ()
+
+    private void ShowWavelengthHighlights()
+    {
+        foreach (var series in this.wavelengthHighlights)
+            series.Enabled = true;
+    } // private void ShowWavelengthHighlights ()
 
     private void SelectWavelength(object? sender, MouseEventArgs e)
     {
@@ -784,4 +807,52 @@ internal sealed partial class SpectraPreviewWindow : Form
         this.chart.DrawToBitmap(bitmap, new(0, 0, this.chart.Width, this.chart.Height));
         System.Windows.Forms.Clipboard.SetImage((Image)bitmap);
     } // private void CopyPlotsToClipboard ()
+
+    private void PrintSummary(object? sender, EventArgs e)
+        => PrintSummary();
+
+    private void PrintSummary()
+    {
+        if (this.modelId == Guid.Empty) return;
+        if (this.parameters.Count == 0) return;
+        if (this.timeTable.Rows.Count == 0) return;
+
+        using var plot = new Bitmap(this.chart.Width, this.chart.Height);
+        try
+        {
+            // temporarily hide wavelength highlights to avoid printing them
+            HideWavelengthHighlights();
+            this.chart.DrawToBitmap(plot, new(0, 0, this.chart.Width, this.chart.Height));
+        }
+        finally
+        {
+            // show wavelength highlights again
+            ShowWavelengthHighlights();
+        }
+
+        var parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
+        var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
+        {
+            DocumentName = Program.MainWindow.SampleName,
+        };
+
+        using var dialog = new PrintDialog()
+        {
+            Document = document,
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            dialog.Document.Print();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    } // private void PrintSummary ()
 } // internal sealed partial class SpectraPreviewWindow : Form
