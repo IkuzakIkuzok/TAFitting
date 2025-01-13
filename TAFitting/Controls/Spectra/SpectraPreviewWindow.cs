@@ -127,6 +127,12 @@ internal sealed partial class SpectraPreviewWindow : Form
         Program.AxisTitleFontChanged += SetAxisTitleFont;
         Program.AxisLabelFontChanged += SetAxisLabelFont;
 
+        this.chart.Legends.Add(new Legend()
+        {
+            Docking = Docking.Top,
+            Alignment = StringAlignment.Center,
+        });
+
         this.chart.ChartAreas.Add(new ChartArea()
         {
             AxisX = this.axisX,
@@ -405,6 +411,7 @@ internal sealed partial class SpectraPreviewWindow : Form
                     ChartType = SeriesChartType.Line,
                     BorderDashStyle = ChartDashStyle.Dot,
                     BorderWidth = 2,
+                    LegendText = "Steady-state",
                 };
                 try
                 {
@@ -434,6 +441,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
+        var count = 0;
         Series MakeSeries() => new()
         {
             ChartType = SeriesChartType.Line,
@@ -441,7 +449,8 @@ internal sealed partial class SpectraPreviewWindow : Form
             MarkerSize = Program.SpectraMarkerSize,
             Color = color,
             BorderWidth = Program.SpectraLineWidth,
-            LegendText = time.ToString("F2"),
+            LegendText = $"{time:F2} {this.TimeUnit}",
+            IsVisibleInLegend = count++ == 0,
         };
 
         var series = MakeSeries();
@@ -477,6 +486,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             ChartType = SeriesChartType.Line,
             Color = Color.Black,
             BorderWidth = 2,
+            IsVisibleInLegend = false,
         };
         horizontal.Points.AddXY(wlMin, 0);
         horizontal.Points.AddXY(wlMax, 0);
@@ -492,6 +502,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             MarkerSize = Program.SpectraMarkerSize + 10,
             Color = color,
             BorderWidth = 2,
+            IsVisibleInLegend = false,
         };
         series.Points.AddXY(wavelength, signal);
         this.chart.Series.Add(series);
