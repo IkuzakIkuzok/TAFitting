@@ -79,7 +79,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         while (fontSize > 4)
         {
             var f = new Font(this.FontName, fontSize);
-            if (e.Graphics.MeasureString(thead, f).Width < width)
+            if (e.Graphics.MeasureString(thead, f).Width <= width)
                 break;
             fontSize -= 0.5f;
         }
@@ -87,7 +87,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         while (fontSize > 4)
         {
             var f = new Font(this.FontName, fontSize);
-            if (e.Graphics.MeasureString("Wavelength", f).Height * nrow * this.BaselineSkip < height)
+            if (e.Graphics.MeasureString("Wavelength", f).Height * nrow * this.BaselineSkip <= height)
                 break;
             fontSize -= 0.5f;
         }
@@ -109,7 +109,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         var pos = new float[this.parameters.Length];
         var ws = new float[this.parameters.Length];
         e.Graphics.DrawString("Wavelength", font, brush, x, y);
-        x += e.Graphics.MeasureString("Wavelength", font).Width;
+        x += size.Width;
         foreach ((var i, var p) in this.parameters.Enumerate())
         {
             x += dx;
@@ -141,7 +141,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
             {
                 x = pos[i];
                 var max = ws[i] + dx - MARGIN_CELL;
-                var s = FormatValue(v[i], s => e.Graphics.MeasureString(s, font).Width < max);
+                var s = FormatValue(v[i], s => e.Graphics.MeasureString(s, font).Width <= max);
                 var o = max - e.Graphics.MeasureString(s, font).Width;
                 e.Graphics.DrawString(s, font, brush, x + o, y);
             }
