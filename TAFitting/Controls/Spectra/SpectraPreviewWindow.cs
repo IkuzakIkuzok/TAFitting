@@ -339,7 +339,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         base.OnShown(e);
 
-        DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
+        DrawSpectra();
     } // override protected void OnShown (EventArgs)
 
     private void AdjustAxesIntervals(object? sender, EventArgs e)
