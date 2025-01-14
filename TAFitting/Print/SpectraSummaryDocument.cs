@@ -87,7 +87,7 @@ internal sealed partial class SpectraSummaryDocument : Document
         var size = e.Graphics.MeasureString("Wavelength", font);
         var brush = new SolidBrush(Color.Black);
         
-        var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / this.parameters.Length;
+        var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / (this.parameters.Length + 1);
         dx = Math.Min(dx, size.Width);
         var dy = size.Height * this.BaselineSkip;
 
