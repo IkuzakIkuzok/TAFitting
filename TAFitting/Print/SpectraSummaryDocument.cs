@@ -27,6 +27,11 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
     private readonly Dictionary<double, double[]> values;
 
     /// <summary>
+    /// Gets or sets the additional contents.
+    /// </summary>
+    internal AdditionalContentCollection AdditionalContents { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the font name.
     /// </summary>
     internal string FontName { get; set; } = "Arial";
@@ -63,12 +68,13 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
 
         var leftMargin = e.MarginBounds.Left;
         var topMargin = e.MarginBounds.Top;
-        var width = e.MarginBounds.Width;
+        var docWidth = e.MarginBounds.Width;
+        var docHeight = e.MarginBounds.Height;
 
         // Draw the plot
-        var plotWidth = Math.Min(this.plot.Width, width);
+        var plotWidth = Math.Min(this.plot.Width, docWidth);
         var plotHeight = plotWidth * this.plot.Height / this.plot.Width;
-        var plotLeftMargin = (width - plotWidth) / 2;
+        var plotLeftMargin = (docWidth - plotWidth) / 2;
         e.Graphics.DrawImage(this.plot, leftMargin + plotLeftMargin, topMargin, plotWidth, plotHeight);
 
         var height = e.MarginBounds.Height - plotHeight - MARGIN;
@@ -79,7 +85,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         while (fontSize > 4)
         {
             var f = new Font(this.FontName, fontSize);
-            if (e.Graphics.MeasureString(thead, f).Width <= width)
+            if (e.Graphics.MeasureString(thead, f).Width <= docWidth)
                 break;
             fontSize -= 0.5f;
         }
@@ -97,7 +103,7 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         var size = e.Graphics.MeasureString("Wavelength", font);
         var brush = new SolidBrush(Color.Black);
         
-        var dx = (width - e.Graphics.MeasureString(thead, font).Width) / this.parameters.Length;
+        var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / this.parameters.Length;
         dx = Math.Min(dx, size.Width);
         var dy = size.Height * this.BaselineSkip;
 
@@ -148,6 +154,33 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
             y += dy;
         }
         DrawHorizontalLine(y);  // bottomrule
+
+        // Draw additional contents
+        foreach (var content in this.AdditionalContents)
+        {
+            var f = content.Font ?? font;
+            var s = content.Text;
+            var sz = e.Graphics.MeasureString(s, f);
+            var w = sz.Width;
+            var h = sz.Height;
+            var cx = content.Position switch
+            {
+                AdditionalContentPosition.UpperLeft  => leftMargin,
+                AdditionalContentPosition.UpperRight => leftMargin + docWidth - w,
+                AdditionalContentPosition.LowerLeft  => leftMargin,
+                AdditionalContentPosition.LowerRight => leftMargin + docWidth - w,
+                _ => leftMargin
+            };
+            var cy = content.Position switch
+            {
+                AdditionalContentPosition.UpperLeft  => topMargin - h,
+                AdditionalContentPosition.UpperRight => topMargin - h,
+                AdditionalContentPosition.LowerLeft  => topMargin + docHeight,
+                AdditionalContentPosition.LowerRight => topMargin + docHeight,
+                _ => topMargin
+            };
+            e.Graphics.DrawString(s, f, brush, cx, cy);
+        }
 
         e.HasMorePages = false;
     } // override protected void OnPrintPage (PrintPageEventArgs)

@@ -834,6 +834,10 @@ internal sealed partial class SpectraPreviewWindow : Form
         var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
         {
             DocumentName = Program.MainWindow.SampleName,
+            AdditionalContents = [
+                new(Program.MainWindow.SampleName, AdditionalContentPosition.UpperLeft),
+                new(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), AdditionalContentPosition.UpperRight),
+            ],
         };
 
         using var dialog = new PrintDialog()
