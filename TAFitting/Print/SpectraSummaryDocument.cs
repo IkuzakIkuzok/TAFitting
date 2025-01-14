@@ -12,7 +12,7 @@ namespace TAFitting.Print;
 /// Represents a document for printing the summary of spectra.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed partial class SpectraSummaryDocument : PrintDocument
+internal sealed partial class SpectraSummaryDocument : Document
 {
     private const float MARGIN = 20;
     private const float MARGIN_CELL = 5;
@@ -25,24 +25,6 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
     private readonly Bitmap plot;
     private readonly string[] parameters;
     private readonly Dictionary<double, double[]> values;
-
-    /// <summary>
-    /// Gets or sets the additional contents.
-    /// </summary>
-    internal AdditionalContentCollection AdditionalContents { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the font name.
-    /// </summary>
-    internal string FontName { get; set; } = "Arial";
-
-    /// <summary>
-    /// Gets or sets the font size.
-    /// </summary>
-    /// <remarks>
-    /// Actual font size may be smaller than this value to fit the table in the page.
-    /// </remarks>
-    internal float FonrSize { get; set; } = 16;
 
     /// <summary>
     /// Gets or sets the baseline skip.
@@ -64,6 +46,8 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
 
     override protected void OnPrintPage(PrintPageEventArgs e)
     {
+        base.OnPrintPage(e);
+
         if (e.Graphics is null) return;
 
         var leftMargin = e.MarginBounds.Left;
@@ -155,33 +139,6 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
         }
         DrawHorizontalLine(y);  // bottomrule
 
-        // Draw additional contents
-        foreach (var content in this.AdditionalContents)
-        {
-            var f = content.Font ?? font;
-            var s = content.Text;
-            var sz = e.Graphics.MeasureString(s, f);
-            var w = sz.Width;
-            var h = sz.Height;
-            var cx = content.Position switch
-            {
-                AdditionalContentPosition.UpperLeft  => leftMargin,
-                AdditionalContentPosition.UpperRight => leftMargin + docWidth - w,
-                AdditionalContentPosition.LowerLeft  => leftMargin,
-                AdditionalContentPosition.LowerRight => leftMargin + docWidth - w,
-                _ => leftMargin
-            };
-            var cy = content.Position switch
-            {
-                AdditionalContentPosition.UpperLeft  => topMargin - h,
-                AdditionalContentPosition.UpperRight => topMargin - h,
-                AdditionalContentPosition.LowerLeft  => topMargin + docHeight,
-                AdditionalContentPosition.LowerRight => topMargin + docHeight,
-                _ => topMargin
-            };
-            e.Graphics.DrawString(s, f, brush, cx, cy);
-        }
-
         e.HasMorePages = false;
     } // override protected void OnPrintPage (PrintPageEventArgs)
 
@@ -266,4 +223,4 @@ internal sealed partial class SpectraSummaryDocument : PrintDocument
 
         return sb.ToString();
     } // private static string ExpFormatValue (double, int)
-} // internal sealed partial class SpectraSummaryDocument
+} // internal sealed partial class Document
