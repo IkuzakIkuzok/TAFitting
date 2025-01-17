@@ -803,9 +803,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void CopyPlotsToClipboard()
     {
-        using var bitmap = new Bitmap(this.chart.Width, this.chart.Height);
-        this.chart.DrawToBitmap(bitmap, new(0, 0, this.chart.Width, this.chart.Height));
-        System.Windows.Forms.Clipboard.SetImage((Image)bitmap);
+        using var bitmap = CaptureSpectra();
+        System.Windows.Forms.Clipboard.SetImage(bitmap);
     } // private void CopyPlotsToClipboard ()
 
     private void PrintSummary(object? sender, EventArgs e)
@@ -817,18 +816,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
-        using var plot = new Bitmap(this.chart.Width, this.chart.Height);
-        try
-        {
-            // temporarily hide wavelength highlights to avoid printing them
-            HideWavelengthHighlights();
-            this.chart.DrawToBitmap(plot, new(0, 0, this.chart.Width, this.chart.Height));
-        }
-        finally
-        {
-            // show wavelength highlights again
-            ShowWavelengthHighlights();
-        }
+        using var plot = CaptureSpectra();
 
         var parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
         var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
@@ -842,4 +830,22 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         new SummaryPreviewWindow(document).ShowDialog();
     } // private void PrintSummary ()
+
+    private Bitmap CaptureSpectra()
+    {
+        try
+        {
+            // temporarily hide wavelength highlights to avoid printing them
+            HideWavelengthHighlights();
+            var plot = new Bitmap(this.chart.Width, this.chart.Height);
+            this.chart.DrawToBitmap(plot, new(0, 0, this.chart.Width, this.chart.Height));
+            return plot;
+
+        }
+        finally
+        {
+            // show wavelength highlights again
+            ShowWavelengthHighlights();
+        }
+    } // private Bitmap CaptureSpectra ()
 } // internal sealed partial class SpectraPreviewWindow : Form
