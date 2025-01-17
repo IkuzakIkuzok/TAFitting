@@ -840,23 +840,6 @@ internal sealed partial class SpectraPreviewWindow : Form
             ],
         };
 
-        using var dialog = new PrintDialog()
-        {
-            Document = document,
-        };
-        if (dialog.ShowDialog() != DialogResult.OK) return;
-        try
-        {
-            dialog.Document.Print();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                ex.Message,
-                "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error
-            );
-        }
+        new SummaryPreviewWindow(document).ShowDialog();
     } // private void PrintSummary ()
 } // internal sealed partial class SpectraPreviewWindow : Form

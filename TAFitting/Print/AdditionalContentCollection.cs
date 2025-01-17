@@ -14,6 +14,9 @@ internal class AdditionalContentCollection : IEnumerable<AdditionalContent>
 {
     private readonly List<AdditionalContent> _contents = [];
 
+    internal IEnumerable<AdditionalContent> this[AdditionalContentPosition position]
+        => this._contents.Where(c => c.Position == position);
+
     /// <summary>
     /// Gets or sets the mode for handling the overlap of additional contents.
     /// </summary>
