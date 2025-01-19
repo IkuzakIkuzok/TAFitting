@@ -45,7 +45,6 @@ internal sealed partial class ControlDrawingSuspender : IDisposable
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     } // public void Dispose ()
 
     private void Dispose(bool disposing)

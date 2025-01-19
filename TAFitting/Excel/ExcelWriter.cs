@@ -9,7 +9,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a writer for an Excel spreadsheet.
 /// </summary>
-internal partial class ExcelWriter : ISpreadSheetWriter, IDisposable
+internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
 {
     private readonly XLWorkbook workbook;
     private readonly IXLWorksheet worksheet;
@@ -123,4 +123,4 @@ internal partial class ExcelWriter : ISpreadSheetWriter, IDisposable
     {
         ((IDisposable)this.workbook).Dispose();
     } // public void Dispose ()
-} // internal partial class ExcelWriter : ISpreadSheetWriter, IDisposable
+} // internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable

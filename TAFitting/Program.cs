@@ -350,7 +350,7 @@ internal static class Program
     {
         try
         {
-            Process.Start("explorer", GitHub);
+            using var _ = Process.Start("explorer", GitHub);
         }
         catch
         {

@@ -8,6 +8,7 @@ namespace TAFitting.Controls.LinearCombination;
 [DesignerCategory("Code")]
 internal sealed partial class LinearCombinationEditWindow : Form
 {
+    private readonly Label lb_filter, lb_model, lb_name, lb_category;
     private readonly TextBox tb_name;
     private readonly ComboBox cb_categoryFilter, cb_model, cb_newCategory;
     private readonly ModelsTable modelsTable;
@@ -19,7 +20,7 @@ internal sealed partial class LinearCombinationEditWindow : Form
         this.Size = this.MinimumSize = this.MaximumSize = new Size(440, 440);
         this.SizeGripStyle = SizeGripStyle.Hide;
 
-        _ = new Label()
+        this.lb_filter = new()
         {
             Text = "Filter:",
             Location = new Point(10, 10),
@@ -42,7 +43,7 @@ internal sealed partial class LinearCombinationEditWindow : Form
             .ToArray();
         this.cb_categoryFilter.Items.AddRange(categories);
 
-        _ = new Label()
+        this.lb_model = new()
         {
             Text = "Model:",
             Location = new Point(10, 40),
@@ -79,7 +80,7 @@ internal sealed partial class LinearCombinationEditWindow : Form
             Parent = this,
         };
 
-        _ = new Label()
+        this.lb_name = new()
         {
             Text = "Name:",
             Location = new Point(10, 300),
@@ -94,7 +95,7 @@ internal sealed partial class LinearCombinationEditWindow : Form
             Parent = this,
         };
 
-        _ = new Label()
+        this.lb_category = new()
         {
             Text = "Category:",
             Location = new Point(10, 330),
@@ -169,4 +170,22 @@ internal sealed partial class LinearCombinationEditWindow : Form
         var item = Program.AddLinearCombination(guid, name, category, components);
         item.Register();
     } // private void RegisterModel ()
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing) return;
+        this.lb_filter.Dispose();
+        this.cb_categoryFilter.Dispose();
+        this.lb_model.Dispose();
+        this.cb_model.Dispose();
+        this.btn_addModel.Dispose();
+        this.modelsTable.Dispose();
+        this.lb_name.Dispose();
+        this.tb_name.Dispose();
+        this.lb_category.Dispose();
+        this.cb_newCategory.Dispose();
+        this.btn_register.Dispose();
+    } // override protected void Dispose (bool)
 } // internal sealed partial class LinearCombinationEditWindow : Form

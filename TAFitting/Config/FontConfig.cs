@@ -11,28 +11,62 @@ namespace TAFitting.Config;
 [Serializable]
 public sealed class FontConfig
 {
+    private Font font = new("Arial", 12.0f, FontStyle.Regular, GraphicsUnit.Point);
+
     /// <summary>
     /// Gets or sets the name of the font.
     /// </summary>
     [XmlElement("name")]
-    public string Name { get; set; } = "Arial";
+    public string Name
+    {
+        get => this.Font.Name;
+        set
+        {
+            if (this.Font.Name == value) return;
+            this.Font = new(value, this.Size, this.Style, this.Unit);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the size of the font.
     /// </summary>
     [XmlElement("size")]
-    public float Size { get; set; } = 12.0f;
+    public float Size
+    {
+        get => this.Font.Size;
+        set
+        {
+            if (this.Font.Size == value) return;
+            this.Font = new(this.Name, value, this.Style, this.Unit);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the style of the font.
     /// </summary>
     [XmlElement("style")]
-    public FontStyle Style { get; set; } = FontStyle.Regular;
+    public FontStyle Style
+    {
+        get => this.Font.Style;
+        set
+        {
+            if (this.Font.Style == value) return;
+            this.Font = new(this.Name, this.Size, value, this.Unit);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the unit of the font.
     /// </summary>
-    public GraphicsUnit Unit { get; set; } = GraphicsUnit.Point;
+    public GraphicsUnit Unit
+    {
+        get => this.Font.Unit;
+        set
+        {
+            if (this.Font.Unit == value) return;
+            this.Font = new(this.Name, this.Size, this.Style, value);
+        }
+    }
 
     /// <summary>
     /// Gets or sets the font.
@@ -40,14 +74,8 @@ public sealed class FontConfig
     [XmlIgnore]
     public Font Font
     {
-        get => new(this.Name, this.Size, this.Style, this.Unit);
-        set
-        {
-            this.Name = value.Name;
-            this.Size = value.Size;
-            this.Style = value.Style;
-            this.Unit = value.Unit;
-        }
+        get => this.font;
+        set => this.font = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     /// <summary>

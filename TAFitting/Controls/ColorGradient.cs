@@ -165,7 +165,8 @@ internal class ColorGradient
         var handler = new PaintEventHandler((object? sender, PaintEventArgs e) =>
         {
             var rect = new RectangleF(0, 0, control.Width, control.Height);
-            e.Graphics.FillRectangle(GetBrush(rect, gradientMode), rect);
+            using var brush = GetBrush(rect, gradientMode);
+            e.Graphics.FillRectangle(brush, rect);
         });
         control.Paint += handler;
         paintHandlers.Add(control.Handle, handler);

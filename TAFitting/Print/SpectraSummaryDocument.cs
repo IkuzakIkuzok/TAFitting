@@ -68,7 +68,7 @@ internal sealed partial class SpectraSummaryDocument : Document
         var thead = "Wavelength" + string.Join("", this.parameters);
         while (fontSize > 4)
         {
-            var f = new Font(this.FontName, fontSize);
+            using var f = new Font(this.FontName, fontSize);
             if (e.Graphics.MeasureString(thead, f).Width <= docWidth)
                 break;
             fontSize -= 0.5f;
@@ -76,16 +76,16 @@ internal sealed partial class SpectraSummaryDocument : Document
         var nrow = this.values.Count + 1;  // +1 for the header
         while (fontSize > 4)
         {
-            var f = new Font(this.FontName, fontSize);
+            using var f = new Font(this.FontName, fontSize);
             if (e.Graphics.MeasureString("Wavelength", f).Height * nrow * this.BaselineSkip <= height)
                 break;
             fontSize -= 0.5f;
         }
 
         // Draw the table
-        var font = new Font(this.FontName, fontSize);
+        using var font = new Font(this.FontName, fontSize);
         var size = e.Graphics.MeasureString("Wavelength", font);
-        var brush = new SolidBrush(Color.Black);
+        using var brush = new SolidBrush(Color.Black);
         
         var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / (this.parameters.Length + 1);
         dx = Math.Min(dx, size.Width);
@@ -109,12 +109,13 @@ internal sealed partial class SpectraSummaryDocument : Document
             x += w;
         }
         var tableRight = x + dx;
+        using var blackPen = new Pen(Color.Black);
         void DrawHorizontalLine(float ypos)
         {
             // Adjust the baseline to the center of the text
             var yOffset = size.Height * (this.BaselineSkip - 1) / 2;
             ypos -= yOffset;
-            e.Graphics!.DrawLine(new Pen(Color.Black), leftMargin + xOffset, ypos, tableRight, ypos);
+            e.Graphics!.DrawLine(blackPen, leftMargin + xOffset, ypos, tableRight, ypos);
         }
 
         DrawHorizontalLine(y);  // toprule

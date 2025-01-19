@@ -292,7 +292,7 @@ internal sealed partial class ParametersTable : DataGridView
     /// <param name="rows">The rows.</param>
     private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
     {
-        var nib = new NumericInputBox()
+        using var nib = new NumericInputBox()
         {
             Text = column.HeaderText,
             Minimum = (decimal)Math.Max(column.Minimum, -1e28),

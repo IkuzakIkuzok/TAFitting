@@ -24,6 +24,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private readonly TimeTable timeTable;
     private bool timeEdited = false;
+    private readonly Label lb_mask;
     private readonly MaskingRangeBox maskingRangeBox;
 
     private readonly Chart chart;
@@ -169,7 +170,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         this.timeTable.RowsAdded += SetTimeEdited;
         this.timeTable.RowsRemoved += SetTimeEdited;
 
-        _ = new Label()
+        this.lb_mask = new()
         {
             Text = "Masking",
             Location = new(10, 10),
@@ -574,6 +575,12 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
     } // private void LoadSteadyStateSpectrum<T> (string)
 
+#pragma warning disable IDE0079
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "IDisposableAnalyzers.Correctness",
+        "IDISP001:Dispose created",
+        Justification = "The spread sheet writer will be disposed in `finally` blick if its implement `IDisposable`.")]
+#pragma warning restore
     private void SaveToFile()
     {
         if (this.modelId == Guid.Empty) return;
@@ -762,14 +769,14 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void CopyPlotAreaToClipboard(object? sender, EventArgs e)
     {
-        var image = this.chart.CaptureControl();
+        using var image = this.chart.CaptureControl();
         if (image is null) return;
         System.Windows.Forms.Clipboard.SetImage(image);
     } // private void CopyPlotAreaToClipboard (object?, EventArgs)
 
     private void SelectColorGradient(object? sender, EventArgs e)
     {
-        var picker = new ColorGradientPicker(Program.GradientStart, Program.GradientEnd)
+        using var picker = new ColorGradientPicker(Program.GradientStart, Program.GradientEnd)
         {
             StartPosition = FormStartPosition.CenterParent,
         };
@@ -819,7 +826,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         using var plot = CaptureSpectra();
 
         var parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
-        var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
+        using var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
         {
             DocumentName = Program.MainWindow.SampleName,
             AdditionalContents = [
@@ -828,7 +835,8 @@ internal sealed partial class SpectraPreviewWindow : Form
             ],
         };
 
-        new SummaryPreviewWindow(document).ShowDialog();
+        using var preview = new SummaryPreviewWindow(document);
+        preview.ShowDialog();
     } // private void PrintSummary ()
 
     private Bitmap CaptureSpectra()
@@ -848,4 +856,22 @@ internal sealed partial class SpectraPreviewWindow : Form
             ShowWavelengthHighlights();
         }
     } // private Bitmap CaptureSpectra ()
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing) return;
+        this.mainContainer.Dispose();
+        this.optionsContainer.Dispose();
+        this.timeTable.Dispose();
+        this.lb_mask.Dispose();
+        this.maskingRangeBox.Dispose();
+        this.chart.Dispose();
+        this.axisX.Dispose();
+        this.axisY.Dispose();
+        foreach (var series in this.wavelengthHighlights)
+            series.Dispose();
+        this.wavelengthHighlights.Clear();
+    } // override protected void Dispose (bool)
 } // internal sealed partial class SpectraPreviewWindow : Form

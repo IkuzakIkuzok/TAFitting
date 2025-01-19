@@ -38,11 +38,11 @@ internal class Document : PrintDocument
         var docWidth = e.MarginBounds.Width;
         var docHeight = e.MarginBounds.Height;
 
-        var brush = new SolidBrush(Color.Black);
+        using var brush = new SolidBrush(Color.Black);
 
         foreach (var content in this.AdditionalContents)
         {
-            var f = content.Font ?? new Font(this.FontName, this.FonrSize);
+            using var f = content.Font ?? new Font(this.FontName, this.FonrSize);
             var s = content.Text;
             var size = e.Graphics.MeasureString(s, f);
             var w = size.Width;

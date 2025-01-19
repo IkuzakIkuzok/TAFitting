@@ -45,6 +45,7 @@ internal sealed partial class MainWindow : Form
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
     private readonly CustomNumericUpDown nud_time0;
+    private readonly Label lb_t0, lb_timeUnit;
 
     /// <summary>
     /// Gets the sample name.
@@ -202,7 +203,7 @@ internal sealed partial class MainWindow : Form
         this.cb_invert.CheckedChanged += InvertMagnitude;
         this.cb_invert.CheckedChanged += ShowPlots;
 
-        _ = new Label()
+        this.lb_t0 = new()
         {
             Text = "Time 0",
             Size = new(50, 20),
@@ -223,7 +224,7 @@ internal sealed partial class MainWindow : Form
         };
         this.nud_time0.ValueChanged += ChangeTime0;
 
-        _ = new Label()
+        this.lb_timeUnit = new()
         {
             Text = "µs",
             Size = new(20, 20),
@@ -770,7 +771,10 @@ internal sealed partial class MainWindow : Form
     } // private void SelectModel (Guid)
 
     private void AddLinearCombination(object? sender, EventArgs e)
-        => new LinearCombinationEditWindow().ShowDialog();
+    {
+        using var dialog = new LinearCombinationEditWindow();
+        dialog.ShowDialog();
+    } // private void AddLinearCombination (object?, EventArgs)
 
     private void RemoveLinearCombination(object? sender, EventArgs e)
     {
@@ -784,6 +788,12 @@ internal sealed partial class MainWindow : Form
     /// <summary>
     /// Makes the table of the parameters.
     /// </summary>
+    #pragma warning disable IDE0079
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "IDisposableAnalyzers.Correctness",
+        "IDISP001:Dispose created",
+        Justification = "The newly created row must NOT be disposed.")]
+#pragma warning restore
     private void MakeTable()
     {
         if (this.selectedModel == Guid.Empty) return;
@@ -1318,4 +1328,14 @@ internal sealed partial class MainWindow : Form
     } // private void SelectAxisTitleFont (object?, EventArgs)
 
     #endregion change appearance
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (!disposing) return;
+
+        this.menu_model.Dispose();
+        this.lb_t0.Dispose();
+        this.lb_timeUnit.Dispose();
+    } // override protected void Dispose (bool)
 } // internal sealed partial class MainWindow : Form

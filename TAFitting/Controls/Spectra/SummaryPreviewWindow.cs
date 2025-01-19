@@ -13,9 +13,11 @@ internal sealed class SummaryPreviewWindow : Form
     private readonly SplitContainer main_container;
     private readonly PrintPreviewControl preview;
 
+    private readonly Label lb_name, lb_font;
     private readonly DelayedTextBox sample_name;
     private readonly CheckBox datetime;
     private readonly Label font;
+    private readonly Button changeFont;
 
     internal SummaryPreviewWindow(SpectraSummaryDocument document)
     {
@@ -41,7 +43,7 @@ internal sealed class SummaryPreviewWindow : Form
 
         this.preview.InvalidatePreview();
 
-        _ = new Label()
+        this.lb_name = new()
         {
             Text = "Sample Name",
             Width = 100,
@@ -68,7 +70,7 @@ internal sealed class SummaryPreviewWindow : Form
         };
         this.datetime.CheckedChanged += SetDateTime;
 
-        _ = new Label()
+        this.lb_font = new()
         {
             Text = "Font",
             Width = 100,
@@ -84,14 +86,14 @@ internal sealed class SummaryPreviewWindow : Form
             Parent = this.main_container.Panel2,
         };
 
-        var changeFont = new Button()
+        this.changeFont = new()
         {
             Text = "Change...",
             Width = 80,
             Location = new(240, 110),
             Parent = this.main_container.Panel2,
         };
-        changeFont.Click += ChangeFont;
+        this.changeFont.Click += ChangeFont;
 
         this.CancelButton = new Button()
         {
@@ -169,4 +171,19 @@ internal sealed class SummaryPreviewWindow : Form
             );
         }
     } // private void Run ()
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing) return;
+        this.main_container.Dispose();
+        this.preview.Dispose();
+        this.lb_name.Dispose();
+        this.sample_name.Dispose();
+        this.datetime.Dispose();
+        this.lb_font.Dispose();
+        this.font.Dispose();
+        this.changeFont.Dispose();
+    } // override protected void Dispose (bool)
 } // internal sealed class SummaryPreviewWindow : Form

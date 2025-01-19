@@ -115,6 +115,7 @@ internal partial class FadingMessageBox : Form
 
         showing = this;
 
+        this.timer?.Dispose();
         this.timer = new Timer()
         {
             Interval = this.initialInterval,
@@ -141,4 +142,12 @@ internal partial class FadingMessageBox : Form
 
     private void OnParentClosed(object? sender, EventArgs e)
         => Close();
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (!disposing) return;
+        this.timer?.Dispose();
+        this.label.Dispose();
+    } // protected override void Dispose (bool)
 } // internal partial class FadingMessageBox : Form

@@ -11,8 +11,10 @@ namespace TAFitting.Controls;
 [DesignerCategory("Code")]
 internal sealed partial class FileNameFormatDialog : Form
 {
+    private readonly Label lb_ab, lb_b, lb_basename;
     private readonly TextBox tb_ab, tb_b, tb_basename;
-    private readonly Label lb_ab, lb_b;
+    private readonly Label lb_test_ab, lb_test_b;
+    private readonly Label lb_sample_ab, lb_sample_b;
     private readonly Button ok;
 
     /// <summary>
@@ -42,7 +44,7 @@ internal sealed partial class FileNameFormatDialog : Form
         this.Size = this.MinimumSize = this.MaximumSize = new Size(400, 300);
         this.MaximizeBox = false;
 
-        _ = new Label()
+        this.lb_ab = new()
         {
             Text = "a\u2212b",
             Location = new Point(10, 10),
@@ -50,7 +52,7 @@ internal sealed partial class FileNameFormatDialog : Form
             Parent = this,
         };
 
-        this.tb_ab = new TextBox()
+        this.tb_ab = new()
         {
             Text = Program.AMinusBSignalFormat,
             Location = new Point(60, 10),
@@ -60,7 +62,7 @@ internal sealed partial class FileNameFormatDialog : Form
         };
         this.tb_ab.TextChanged += UpdateText;
 
-        _ = new Label()
+        this.lb_b = new()
         {
             Text = "b",
             Location = new Point(10, 40),
@@ -68,7 +70,7 @@ internal sealed partial class FileNameFormatDialog : Form
             Parent = this,
         };
 
-        this.tb_b = new TextBox()
+        this.tb_b = new()
         {
             Text = Program.BSignalFormat,
             Location = new Point(60, 40),
@@ -78,7 +80,7 @@ internal sealed partial class FileNameFormatDialog : Form
         };
         this.tb_b.TextChanged += UpdateText;
 
-        _ = new Label()
+        this.lb_basename = new()
         {
             Text = "Test basename",
             Location = new Point(10, 100),
@@ -86,7 +88,7 @@ internal sealed partial class FileNameFormatDialog : Form
             Parent = this,
         };
 
-        this.tb_basename = new TextBox()
+        this.tb_basename = new()
         {
             Text = "600nm",
             Location = new Point(100, 100),
@@ -95,7 +97,7 @@ internal sealed partial class FileNameFormatDialog : Form
         };
         this.tb_basename.TextChanged += UpdateText;
 
-        _ = new Label()
+        this.lb_test_ab = new()
         {
             Text = "a\u2212b test",
             Location = new Point(10, 130),
@@ -103,14 +105,14 @@ internal sealed partial class FileNameFormatDialog : Form
             Parent = this,
         };
 
-        this.lb_ab = new Label()
+        this.lb_sample_ab = new()
         {
             Location = new Point(100, 130),
             Width = 260,
             Parent = this,
         };
 
-        _ = new Label()
+        this.lb_test_b = new()
         {
             Text = "b test",
             Location = new Point(10, 160),
@@ -118,14 +120,14 @@ internal sealed partial class FileNameFormatDialog : Form
             Parent = this,
         };
 
-        this.lb_b = new Label()
+        this.lb_sample_b = new()
         {
             Location = new Point(100, 160),
             Width = 260,
             Parent = this,
         };
 
-        this.ok = new Button()
+        this.ok = new()
         {
             Text = "OK",
             Location = new Point(10, 200),
@@ -173,8 +175,26 @@ internal sealed partial class FileNameFormatDialog : Form
         var basename = this.tb_basename.Text;
         if (string.IsNullOrEmpty(basename)) return;
 
-        this.lb_ab.Text = FileNameHandler.GetFileName(basename, format_ab);
-        this.lb_b.Text = FileNameHandler.GetFileName(basename, format_b);
+        this.lb_sample_ab.Text = FileNameHandler.GetFileName(basename, format_ab);
+        this.lb_sample_b.Text = FileNameHandler.GetFileName(basename, format_b);
     } // UpdateText ()
+
+    override protected void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (!disposing) return;
+        this.lb_ab.Dispose();
+        this.tb_ab.Dispose();
+        this.lb_b.Dispose();
+        this.tb_b.Dispose();
+        this.lb_basename.Dispose();
+        this.tb_basename.Dispose();
+        this.lb_test_ab.Dispose();
+        this.lb_sample_ab.Dispose();
+        this.lb_test_b.Dispose();
+        this.lb_sample_b.Dispose();
+        this.ok.Dispose();
+    } // override void protected Dispose (bool)
 } // internal sealed partial class FileNameFormatDialog : Form
 

@@ -67,13 +67,8 @@ internal partial class DelayedTextBox : TextBox
 
     override protected void Dispose(bool disposing)
     {
-        if (this.delayedTextChangedTimer is not null)
-        {
-            this.delayedTextChangedTimer.Stop();
-            if (disposing)
-                this.delayedTextChangedTimer.Dispose();
-        }
-
         base.Dispose(disposing);
+        if (disposing)
+            this.delayedTextChangedTimer?.Dispose();
     } // override protected void Dispose (bool)
 } // internal partial class DelayedTextBox : TextBox

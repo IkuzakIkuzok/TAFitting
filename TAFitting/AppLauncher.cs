@@ -58,7 +58,7 @@ internal class AppLauncher
     {
         if (this.appCommand is not null) return this.appCommand;
 
-        var keyExt = Registry.ClassesRoot.OpenSubKey(extension);
+        using var keyExt = Registry.ClassesRoot.OpenSubKey(extension);
         if (keyExt?.OpenSubKey(OpenCommand) is RegistryKey openKey)
         {
             if (openKey.GetValue(string.Empty) is string command)
@@ -68,8 +68,8 @@ internal class AppLauncher
         if (keyExt?.GetValue(string.Empty) is not string appName)
             return this.appCommand = string.Empty;
 
-        var appKey = Registry.ClassesRoot.OpenSubKey(appName);
-        var appOpenKey = appKey?.OpenSubKey(OpenCommand);
+        using var appKey = Registry.ClassesRoot.OpenSubKey(appName);
+        using var appOpenKey = appKey?.OpenSubKey(OpenCommand);
         return this.appCommand = appOpenKey?.GetValue(string.Empty) as string ?? string.Empty;
     } // protected virtual string SearchApp (string)
 
