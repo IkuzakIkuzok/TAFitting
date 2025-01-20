@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024-2025 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace TAFitting.Controls;
 /// Represents the main window.
 /// </summary>
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal sealed partial class MainWindow : Form
 {
     private static readonly Guid usTasDialog = new("E7757DD6-FDB0-4670-BD39-C499E9F46174");
@@ -1328,14 +1330,4 @@ internal sealed partial class MainWindow : Form
     } // private void SelectAxisTitleFont (object?, EventArgs)
 
     #endregion change appearance
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        if (!disposing) return;
-
-        this.menu_model.Dispose();
-        this.lb_t0.Dispose();
-        this.lb_timeUnit.Dispose();
-    } // override protected void Dispose (bool)
 } // internal sealed partial class MainWindow : Form

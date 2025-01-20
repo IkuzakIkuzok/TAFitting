@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
@@ -9,6 +10,7 @@ namespace TAFitting.Controls;
 /// Displays a message box that fades out without blocking the main thread.
 /// </summary>
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal partial class FadingMessageBox : Form
 {
     private static FadingMessageBox? showing = null;
@@ -16,6 +18,8 @@ internal partial class FadingMessageBox : Form
     private readonly Label label;
     private Timer? timer;
     private bool flag = false;
+
+    [NotToBeDisposed]  // The parent form must NOT be disposed when the current instance is disposed.
     private readonly Form parent;
 
     private int initialInterval;
@@ -142,12 +146,4 @@ internal partial class FadingMessageBox : Form
 
     private void OnParentClosed(object? sender, EventArgs e)
         => Close();
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        if (!disposing) return;
-        this.timer?.Dispose();
-        this.label.Dispose();
-    } // protected override void Dispose (bool)
 } // internal partial class FadingMessageBox : Form

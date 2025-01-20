@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TAFitting.Origin;
@@ -8,15 +9,14 @@ namespace TAFitting.Origin;
 /// <summary>
 /// Wraps an Origin project.
 /// </summary>
-internal sealed partial class OriginProject : IDisposable
+[AutoDisposal(UnmanagedDisposalMethod = nameof(ReleaseUnmanagedResources))]
+internal sealed partial class OriginProject
 {
     private const string ProgID = "Origin.ApplicationSI";
 
     private static readonly Type? ProgType = Type.GetTypeFromProgID(ProgID);
 
     private readonly dynamic app;
-
-    private bool _disposed = false;
 
     /// <summary>
     /// Gets a value indicating whether Origin is available.
@@ -135,17 +135,9 @@ internal sealed partial class OriginProject : IDisposable
         throw new COMException("Origin is not available.");
     } // private static void ThrowCOMException ()
 
-    public void Dispose()
-        => Dispose(true);
-
-    private void Dispose(bool disposing)
+    private void ReleaseUnmanagedResources()
     {
-        if (this._disposed) return;
-        if (disposing)
-        {
-            this.app.Exit();
-            Marshal.ReleaseComObject(this.app);
-        }
-        this._disposed = true;
-    } // private void Dispose (bool)
-} // internal sealed class OriginProject : IDisposable
+        this.app.Exit();
+        Marshal.ReleaseComObject(this.app);
+    } // private void ReleaseUnmanagedResources ()
+} // internal sealed class OriginProject

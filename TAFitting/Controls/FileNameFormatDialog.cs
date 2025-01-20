@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using TAFitting.Data;
 
 namespace TAFitting.Controls;
@@ -9,6 +10,7 @@ namespace TAFitting.Controls;
 /// Represents a dialog for setting the filename format.
 /// </summary>
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal sealed partial class FileNameFormatDialog : Form
 {
     private readonly Label lb_ab, lb_b, lb_basename;
@@ -178,23 +180,5 @@ internal sealed partial class FileNameFormatDialog : Form
         this.lb_sample_ab.Text = FileNameHandler.GetFileName(basename, format_ab);
         this.lb_sample_b.Text = FileNameHandler.GetFileName(basename, format_b);
     } // UpdateText ()
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (!disposing) return;
-        this.lb_ab.Dispose();
-        this.tb_ab.Dispose();
-        this.lb_b.Dispose();
-        this.tb_b.Dispose();
-        this.lb_basename.Dispose();
-        this.tb_basename.Dispose();
-        this.lb_test_ab.Dispose();
-        this.lb_sample_ab.Dispose();
-        this.lb_test_b.Dispose();
-        this.lb_sample_b.Dispose();
-        this.ok.Dispose();
-    } // override void protected Dispose (bool)
 } // internal sealed partial class FileNameFormatDialog : Form
 

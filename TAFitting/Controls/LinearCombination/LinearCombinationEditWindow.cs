@@ -1,11 +1,13 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using TAFitting.Model;
 
 namespace TAFitting.Controls.LinearCombination;
 
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal sealed partial class LinearCombinationEditWindow : Form
 {
     private readonly Label lb_filter, lb_model, lb_name, lb_category;
@@ -170,22 +172,4 @@ internal sealed partial class LinearCombinationEditWindow : Form
         var item = Program.AddLinearCombination(guid, name, category, components);
         item.Register();
     } // private void RegisterModel ()
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (!disposing) return;
-        this.lb_filter.Dispose();
-        this.cb_categoryFilter.Dispose();
-        this.lb_model.Dispose();
-        this.cb_model.Dispose();
-        this.btn_addModel.Dispose();
-        this.modelsTable.Dispose();
-        this.lb_name.Dispose();
-        this.tb_name.Dispose();
-        this.lb_category.Dispose();
-        this.cb_newCategory.Dispose();
-        this.btn_register.Dispose();
-    } // override protected void Dispose (bool)
 } // internal sealed partial class LinearCombinationEditWindow : Form

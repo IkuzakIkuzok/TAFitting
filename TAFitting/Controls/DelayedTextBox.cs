@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
@@ -9,6 +10,7 @@ namespace TAFitting.Controls;
 /// Represents a text box with delayed text changed event.
 /// </summary>
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal partial class DelayedTextBox : TextBox
 {
     private Timer? delayedTextChangedTimer;
@@ -64,11 +66,4 @@ internal partial class DelayedTextBox : TextBox
 
         OnDelayedTextChanged(EventArgs.Empty);
     } // private void HandleDelayedTextChangedTimerTick (object?, EventArgs)
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        if (disposing)
-            this.delayedTextChangedTimer?.Dispose();
-    } // override protected void Dispose (bool)
 } // internal partial class DelayedTextBox : TextBox

@@ -1,12 +1,14 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using DisposalGenerator;
 using TAFitting.Print;
 
 namespace TAFitting.Controls.Spectra;
 
 [DesignerCategory("Code")]
-internal sealed class SummaryPreviewWindow : Form
+[AutoDisposal]
+internal sealed partial class SummaryPreviewWindow : Form
 {
     private readonly SpectraSummaryDocument document;
 
@@ -171,19 +173,4 @@ internal sealed class SummaryPreviewWindow : Form
             );
         }
     } // private void Run ()
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (!disposing) return;
-        this.main_container.Dispose();
-        this.preview.Dispose();
-        this.lb_name.Dispose();
-        this.sample_name.Dispose();
-        this.datetime.Dispose();
-        this.lb_font.Dispose();
-        this.font.Dispose();
-        this.changeFont.Dispose();
-    } // override protected void Dispose (bool)
-} // internal sealed class SummaryPreviewWindow : Form
+} // internal sealed partial class SummaryPreviewWindow : Form

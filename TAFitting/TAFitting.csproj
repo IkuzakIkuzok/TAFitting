@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DisposalGenerator\DisposalGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\TAFitting.IntrinsicsGenerator\TAFitting.IntrinsicsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\TAFitting.Model\TAFitting.Model.csproj" />
     <ProjectReference Include="..\TAFitting.ModelGenerator\TAFitting.ModelGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
