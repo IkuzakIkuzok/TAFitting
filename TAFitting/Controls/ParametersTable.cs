@@ -17,6 +17,9 @@ internal sealed partial class ParametersTable : DataGridView
     private int[] magnitudeColumns = [];
     private bool stopUpdateRSquared = false;
 
+    private readonly UndoBuffer<ParamsEditCommand> undoBuffer = new();
+    private double oldValue, newValue;
+
     internal IFittingModel? Model { get; private set; }
 
     private int ParametersCount => this.constraints.Length;
@@ -67,6 +70,18 @@ internal sealed partial class ParametersTable : DataGridView
     }
 
     /// <summary>
+    /// Gets a value indicating whether the undo operation can be performed.
+    /// </summary>
+    /// <value><see langword="true"/> if the undo operation can be performed; otherwise, <see langword="false"/>.</value>
+    internal bool CanUndo => this.undoBuffer.CanUndo;
+
+    /// <summary>
+    /// Gets a value indicating whether the redo operation can be performed.
+    /// </summary>
+    /// <value><see langword="true"/> if the redo operation can be performed; otherwise, <see langword="false"/>.</value>
+    internal bool CanRedo => this.undoBuffer.CanRedo;
+
+    /// <summary>
     /// Gets the parameter row at the specified wavelength.
     /// </summary>
     /// <param name="wavelength">The wavelength.</param>
@@ -108,6 +123,7 @@ internal sealed partial class ParametersTable : DataGridView
     override protected void OnCellBeginEdit(DataGridViewCellCancelEventArgs e)
     {
         NegativeSignHandler.SetHyphenMinus();
+        this.oldValue = (double)this[e.ColumnIndex, e.RowIndex].Value;
         base.OnCellBeginEdit(e);
     } // override protected void OnCellBeginEdit (DataGridViewCellCancelEventArgs)
 
@@ -115,7 +131,15 @@ internal sealed partial class ParametersTable : DataGridView
     override protected void OnCellEndEdit(DataGridViewCellEventArgs e)
     {
         NegativeSignHandler.SetMinusSign();
+        this.newValue = (double)this[e.ColumnIndex, e.RowIndex].Value;
         base.OnCellEndEdit(e);
+
+        if (this.StopUpdateRSquared) return;
+        if (this.oldValue == this.newValue) return;
+        var row = (ParametersTableRow)this.Rows[e.RowIndex];
+        var wl = row.Wavelength;
+        var idx = e.ColumnIndex - 1;
+        this.undoBuffer.Push(new(this, wl, idx, this.oldValue, this.newValue));
     } // override protected void OnCellEndEdit (DataGridViewCellEventArgs)
 
     /// <inheritdoc/>
@@ -183,6 +207,17 @@ internal sealed partial class ParametersTable : DataGridView
         if (this.Rows[e.RowIndex] is not ParametersTableRow row) return;
         CalculateRSquared(row);
     } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
+
+    internal void Undo()
+        => this.undoBuffer.Undo();
+
+    internal void Redo()
+        => this.undoBuffer.Redo();
+
+    internal void ClearUndoBuffer()
+    {
+        this.undoBuffer.Clear();
+    } // internal void ClearUndoBuffer ()
 
     /// <summary>
     /// Sets the columns with the specified model.

@@ -350,6 +350,30 @@ internal sealed partial class MainWindow : Form
 
         menu_data.DropDownItems.Add(new ToolStripSeparator());
 
+        var menu_dataUndo = new ToolStripMenuItem("&Undo")
+        {
+            ShortcutKeys = Keys.Control | Keys.Z,
+            ToolTipText = "Undo the last change",
+        };
+        menu_dataUndo.Click += Undo;
+        menu_data.DropDownItems.Add(menu_dataUndo);
+
+        var menu_dataRedo = new ToolStripMenuItem("&Redo")
+        {
+            ShortcutKeys = Keys.Control | Keys.Y,
+            ToolTipText = "Redo the last change",
+        };
+        menu_dataRedo.Click += Redo;
+        menu_data.DropDownItems.Add(menu_dataRedo);
+
+        menu_data.DropDownOpening += (sender, e) =>
+        {
+            menu_dataUndo.Enabled = this.parametersTable.CanUndo;
+            menu_dataRedo.Enabled = this.parametersTable.CanRedo;
+        };
+
+        menu_data.DropDownItems.Add(new ToolStripSeparator());
+
         var menu_dataPaste = new ToolStripMenuItem("&Paste table")
         {
             ShortcutKeys = Keys.Control | Keys.V,
@@ -594,6 +618,7 @@ internal sealed partial class MainWindow : Form
                     this.nud_time0.Value = (decimal)this.decays.Time0;
 
                     MakeTable();
+                    this.parametersTable.ClearUndoBuffer();
                     UpdatePreviewsUnits();
                 });
             }
@@ -768,6 +793,7 @@ internal sealed partial class MainWindow : Form
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
         MakeTable();
+        this.parametersTable.ClearUndoBuffer();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;
     } // private void SelectModel (Guid)
@@ -829,6 +855,12 @@ internal sealed partial class MainWindow : Form
     } // private void MakeTable ()
 
     #endregion Models
+
+    private void Undo(object? sender, EventArgs e)
+        => this.parametersTable.Undo();
+
+    private void Redo(object? sender, EventArgs e)
+        => this.parametersTable.Redo();
 
     private void PasteTable(object? sender, EventArgs e)
         => PasteTable();
