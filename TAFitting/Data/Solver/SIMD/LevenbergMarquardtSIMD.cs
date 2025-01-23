@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Runtime.CompilerServices;
 using TAFitting.Model;
 using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 
@@ -144,9 +145,11 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         return TVector.InnerProduct(this.temp_vector, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcChi2()
         => CalcChi2(this.parameters);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcIncrementedChi2()
         => CalcChi2(this.incrementedParameters);
 
@@ -193,6 +196,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             this.incrementedParameters[i] = this.parameters[i] + this.gradient[i];
     } // private void SolveIncrements ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CalcHessian()
     {
         for (var row = 0; row < this.numberOfParameters; ++row)
@@ -207,6 +211,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         }
     } // private void CalcHessian ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CalcGradient()
     {
         TVector.Subtract(this.y, this.est_vals, this.temp_vector2);
@@ -218,15 +223,18 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         }
     } // private void CalcGradient ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ComputeDerivatives()
     {
         var d = this.Model.GetVectorizedDerivatives(this.parameters);
         d(this.x, this.derivatives);
     } // private void ComputeDerivativesCacheAnalytically ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateParameters()
         => Array.Copy(this.incrementedParameters, 0, this.parameters, 0, this.numberOfParameters);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CheckConstraints()
     {
         for (var i = 0; i < this.numberOfParameters; ++i)
@@ -240,6 +248,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         }
     } // private void CheckConstraints ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool CheckStop(int iterCount, double chi2, double incrementedChi2)
     {
         if (iterCount > this.MaxIteration) return true;
