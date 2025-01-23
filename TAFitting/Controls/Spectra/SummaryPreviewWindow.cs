@@ -6,10 +6,14 @@ using TAFitting.Print;
 
 namespace TAFitting.Controls.Spectra;
 
+/// <summary>
+/// Represents a window for previewing the summary of spectra for printing.
+/// </summary>
 [DesignerCategory("Code")]
 [AutoDisposal]
 internal sealed partial class SummaryPreviewWindow : Form
 {
+    [NotToBeDisposed]  // The document should be disposed by the caller.
     private readonly SpectraSummaryDocument document;
 
     private readonly SplitContainer main_container;
@@ -21,6 +25,10 @@ internal sealed partial class SummaryPreviewWindow : Form
     private readonly Label font;
     private readonly Button changeFont;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SummaryPreviewWindow"/> class.
+    /// </summary>
+    /// <param name="document">The document to preview.</param>
     internal SummaryPreviewWindow(SpectraSummaryDocument document)
     {
         this.document = document;
