@@ -332,9 +332,7 @@ internal sealed partial class ParametersTable : DataGridView
         const double DecimalMin = -7.9e28;  // -79,228,162,514,264,337,593,543,950,335
         const double DecimalMax = +7.9e28;  // +79,228,162,514,264,337,593,543,950,335
 
-        var val = (double)rows.First().Cells[column.Index].Value;
-        val = Math.Max(val, DecimalMax);
-        val = Math.Min(val, DecimalMin);
+        var val = Math.Clamp((double)rows.First().Cells[column.Index].Value, DecimalMin, DecimalMax);
         using var nib = new NumericInputBox()
         {
             Text = column.HeaderText,
