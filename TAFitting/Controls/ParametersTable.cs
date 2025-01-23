@@ -327,13 +327,21 @@ internal sealed partial class ParametersTable : DataGridView
     /// <param name="rows">The rows.</param>
     private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
     {
+        // Casting decimal.MinValue and decimal.MaxValue to double results in the OverflowException.
+        // Therefore, the approximate values of them are used.
+        const double DecimalMin = -7.9e28;  // -79,228,162,514,264,337,593,543,950,335
+        const double DecimalMax = +7.9e28;  // +79,228,162,514,264,337,593,543,950,335
+
+        var val = (double)rows.First().Cells[column.Index].Value;
+        val = Math.Max(val, DecimalMax);
+        val = Math.Min(val, DecimalMin);
         using var nib = new NumericInputBox()
         {
             Text = column.HeaderText,
-            Minimum = (decimal)Math.Max(column.Minimum, -1e28),
-            Maximum = (decimal)Math.Min(column.Maximum, 1e28),
+            Minimum = (decimal)Math.Max(column.Minimum, DecimalMin),
+            Maximum = (decimal)Math.Min(column.Maximum, DecimalMax),
             DecimalPlaces = column.DecimalPlaces,
-            Value = (decimal)(double)this.Rows[0].Cells[column.Index].Value,
+            Value = (decimal)val,
         };
         using var _ = new NegativeSignHandler();
         if (nib.ShowDialog() != DialogResult.OK) return;
