@@ -13,6 +13,9 @@ namespace TAFitting.Controls;
 /// </summary>
 internal static partial class UIUtils
 {
+    private const double DecimalMin = -7.9e28;
+    private const double DecimalMax = +7.9e28;
+
     [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
     private static partial Regex RegexExpFormat();
 
@@ -83,22 +86,27 @@ internal static partial class UIUtils
     /// <param name="points">The points.</param>
     /// <param name="decay">The decay.</param>
     internal static void AddDecay(this DataPointCollection points, Decay decay)
-    {
-        foreach (var (time, signal) in decay)
-        {
-            if (time <= 0) continue;
-            points.AddXY(time, signal);
-        }
-    } // internal static void AddDecay (this DataPointCollection, Decay)
+        => points.AddDecay((IEnumerable<(double, double)>)decay);
 
+    /// <summary>
+    /// Adds the specified decay to the data points.
+    /// </summary>
+    /// <param name="points">The points.</param>
+    /// <param name="times">The time series.</param>
+    /// <param name="signals">The signal series.</param>
     internal static void AddDecay(this DataPointCollection points, IEnumerable<double> times, IEnumerable<double> signals)
+        => points.AddDecay(times.Zip(signals));
+
+    private static void AddDecay(this DataPointCollection points, IEnumerable<(double, double)> signals)
     {
-        foreach (var (time, signal) in times.Zip(signals))
+        foreach (var (time, signal) in signals)
         {
             if (time <= 0) continue;
-            points.AddXY(time, signal);
+            if (double.IsNaN(signal)) continue;
+            var y = Math.Clamp(signal, DecimalMin, DecimalMax);
+            points.AddXY(time, y);
         }
-    } // internal static void AddDecay (this DataPointCollection, IEnumerable<double>, IEnumerable<double>)
+    } // private static void AddDecay (this DataPointCollection, IEnumerable<(double, double)>)
 
     /// <summary>
     /// Calculates the inverted color of the specified color.
