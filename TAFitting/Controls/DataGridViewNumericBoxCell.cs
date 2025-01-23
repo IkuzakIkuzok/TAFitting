@@ -98,7 +98,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
         if (!this.FreezeEditedState) this.Edited = true;
         if (value is string s && double.TryParse(s, out var d))
         {
-            d = Math.Max(this.Minimum, Math.Min(this.Maximum, d));
+            d = Math.Clamp(d, this.Minimum, this.Maximum);
             return base.SetValue(rowIndex, d);
         }
         return base.SetValue(rowIndex, value);
