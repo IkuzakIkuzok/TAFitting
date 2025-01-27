@@ -398,6 +398,14 @@ internal sealed partial class MainWindow : Form
         var menu_fit = new ToolStripMenuItem("&Fit");
         this.MainMenuStrip.Items.Add(menu_fit);
 
+        var menu_fitAverage = new ToolStripMenuItem("Take average")
+        {
+            ShortcutKeys = Keys.Control | Keys.M,
+            ToolTipText = "Fit the data using the average of the observed data",
+        };
+        menu_fitAverage.Click += TakeAverage;
+        menu_file.DropDownItems.Add(menu_fitAverage);
+
         var menu_fitLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt")
         {
             ToolTipText = "Fit the data using the Levenberg\u2013Marquardt algorithm",
@@ -1241,6 +1249,51 @@ internal sealed partial class MainWindow : Form
     } // private void EstimateParametersAllRows (IEstimateProvider)
 
     #endregion Estimate parameters
+
+    #region Average and outlier removal
+
+    private void TakeAverage(object? sender, EventArgs e)
+    {
+        if (this.selectedModel == Guid.Empty) return;
+        if (this.decays is null) return;
+        if (this.row is null) return;
+        TakeAverage(this.row);
+    } // private void TakeAverage (object?, EventArgs)
+
+    private void TakeAverage(ParametersTableRow row)
+    {
+        if (this.decays is null) return;
+        var wl = row.Wavelength;
+        var prev = this.decays.Keys.Where(w => w < wl);
+        var next = this.decays.Keys.Where(w => w > wl);
+
+        if (!(prev.Any() || next.Any())) return;  // Only one row exists
+
+        if (prev.Any() && next.Any())
+        {
+            var p = this.parametersTable[prev.Max()];
+            var n = this.parametersTable[next.Min()];
+            if (p is null || n is null) return;
+
+            for (var i = 0; i < row.Parameters.Count; i++)
+                row[i] = (p[i] + n[i]) / 2;
+        }
+        else if (prev.Any())
+        {
+            var p = this.parametersTable[prev.Max()];
+            if (p is null) return;
+            row.Parameters = p.Parameters;
+        }
+        else
+        {
+            var n = this.parametersTable[next.Min()];
+            if (n is null) return;
+            row.Parameters = n.Parameters;
+        }
+
+    } // private void TakeAverage (ParametersTableRow)
+
+    #endregion Average and outlier removal
 
     #region Spectra preview
 
