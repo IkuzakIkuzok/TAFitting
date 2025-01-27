@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using TAFitting.Filter;
 
 namespace TAFitting.Data;
 
@@ -203,6 +204,16 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 this.signals[i] = (left + right) / 2.0;
         }
     } // internal void RemoveNaN ()
+
+    /// <summary>
+    /// Applies the filter.
+    /// </summary>
+    /// <param name="filter">The filter.</param>
+    internal void Filter(IFilter filter)
+    {
+        var filtered = filter.Filter(this.times, this.signals).ToArray();
+        Array.Copy(filtered, this.modified, this.times.Length);
+    } // internal void Filter (IFilter)
 
     /// <summary>
     /// Restores the original data.
