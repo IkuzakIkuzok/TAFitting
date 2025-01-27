@@ -12,7 +12,9 @@ namespace TAFitting.Data;
 [DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq}, {this.times.Length} points")]
 internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 {
-    private readonly double[] times, signals;
+    // Separately store the original data and the modified data,
+    // so that the original data can be restored.
+    private readonly double[] times, signals, modified;
 
     /// <summary>
     /// An empty decay data.
@@ -64,6 +66,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal Decay Inverted => new(this.times, this.signals.Select(s => -s).ToArray());
 
+    /// <summary>
+    /// Gets the modified decay data.
+    /// </summary>
+    internal Decay Modified => new(this.times, this.modified);
+
     internal Decay OnlyAfterT0
     {
         get
@@ -86,6 +93,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         this.times = times;
         this.signals = signals;
+        
+        this.modified = new double[times.Length];
+        RestoreOriginal();
     } // ctor (double[], double[])
 
     /// <summary>
@@ -193,4 +203,10 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 this.signals[i] = (left + right) / 2.0;
         }
     } // internal void RemoveNaN ()
+
+    /// <summary>
+    /// Restores the original data.
+    /// </summary>
+    internal void RestoreOriginal()
+        => Array.Copy(this.signals, this.modified, this.signals.Length);
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>

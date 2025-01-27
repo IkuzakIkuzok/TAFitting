@@ -1023,7 +1023,7 @@ internal sealed partial class MainWindow : Form
             decay = decay.Inverted;
 
         this.s_observed.Points.Clear();
-        this.s_observed.Points.AddDecay(decay);
+        this.s_observed.Points.AddDecay(decay.Modified);
     } // private void ShowObserved ()
 
     private void ShowFit(object? sender, EventArgs e)
