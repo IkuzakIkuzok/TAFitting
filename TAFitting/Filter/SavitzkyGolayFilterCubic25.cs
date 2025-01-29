@@ -4,6 +4,7 @@
 namespace TAFitting.Filter;
 
 [EquivalentSIMD(null)]
+[Guid("C5AFD300-722D-485E-B176-2B9D44476C5A")]
 internal sealed class SavitzkyGolayFilterCubic25 : SavitzkyGolayFilterCubic
 {
     private static readonly double h = 1 / 5175.0;
