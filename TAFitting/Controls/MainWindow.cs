@@ -14,6 +14,7 @@ using TAFitting.Controls.Spectra;
 using TAFitting.Data;
 using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
+using TAFitting.Filter;
 using TAFitting.Model;
 
 namespace TAFitting.Controls;
@@ -38,11 +39,12 @@ internal sealed partial class MainWindow : Form
 
     private readonly ParametersTable parametersTable;
 
-    private readonly ToolStripMenuItem menu_model;
+    private readonly ToolStripMenuItem menu_filter, menu_model;
+    private readonly ToolStripMenuItem menu_hideOriginal, menu_unfilter;
     private Guid selectedModel = Guid.Empty;
 
     private Decays? decays;
-    private readonly Series s_observed, s_fit;
+    private readonly Series s_observed, s_filtered, s_fit;
     private bool stopDrawing = false;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
@@ -148,6 +150,15 @@ internal sealed partial class MainWindow : Form
             IsXValueIndexed = false,
         };
         this.chart.Series.Add(this.s_observed);
+
+        this.s_filtered = new()
+        {
+            Color = Program.FilteredColor,
+            ChartType = SeriesChartType.Line,
+            IsVisibleInLegend = false,
+            IsXValueIndexed = false,
+        };
+        this.chart.Series.Add(this.s_filtered);
 
         this.s_fit = new()
         {
@@ -299,6 +310,13 @@ internal sealed partial class MainWindow : Form
         menu_viewColorObserved.Click += SetObservedColor;
         menu_viewColor.DropDownItems.Add(menu_viewColorObserved);
 
+        var menu_viewColorFiltered = new ToolStripMenuItem("&Filtered")
+        {
+            ToolTipText = "Change the color of the filtered data",
+        };
+        menu_viewColorFiltered.Click += SetFilteredColor;
+        menu_viewColor.DropDownItems.Add(menu_viewColorFiltered);
+
         var menu_viewColorFit = new ToolStripMenuItem("&Fit")
         {
             ToolTipText = "Change the color of the fitting curve",
@@ -383,6 +401,41 @@ internal sealed partial class MainWindow : Form
         menu_data.DropDownItems.Add(menu_dataPaste);
 
         #endregion menu.data
+
+        #region menu.filter
+		 
+        this.menu_filter = new("&Filter");
+        this.MainMenuStrip.Items.Add(this.menu_filter);
+
+        this.menu_hideOriginal = new("&Hide observed")
+        {
+            ToolTipText = "Hide the original data",
+        };
+        this.menu_hideOriginal.Click += ToggleHideOriginal;
+
+        this.menu_unfilter = new("&Unfilter")
+        {
+            ToolTipText = "Remove the filter",
+        };
+        
+        var menu_unfilterSelectedRow = new ToolStripMenuItem("&Selected row")
+        {
+            ToolTipText = "Remove the filter from the selected row",
+        };
+        menu_unfilterSelectedRow.Click += UnfilterSelectedRow;
+        this.menu_unfilter.DropDownItems.Add(menu_unfilterSelectedRow);
+
+        var menu_unfilterAll = new ToolStripMenuItem("&All rows")
+        {
+            ToolTipText = "Remove the filter from all rows",
+        };
+        menu_unfilterAll.Click += UnfilterAll;
+        this.menu_unfilter.DropDownItems.Add(menu_unfilterAll);
+
+        FilterManager.FiltersChanged += UpdateFilterList;
+        UpdateFilterList();
+
+        #endregion menu.filter
 
         #region menu.model
 
@@ -643,6 +696,126 @@ internal sealed partial class MainWindow : Form
     } // private void LoadDecays (string, Func<string, Decays>)
 
     #endregion Data loading
+
+    #region filters
+
+    private void UpdateFilterList(object? sender, EventArgs e)
+        => UpdateFilterList();
+
+    private void UpdateFilterList()
+    {
+        this.menu_filter.DropDownItems.Clear();
+        var filters = FilterManager.Filters;
+        foreach (var filter in filters)
+        {
+            var item = new ToolStripMenuItem(filter.Name)
+            {
+                ToolTipText = filter.Description,
+            };
+            this.menu_filter.DropDownItems.Add(item);
+
+            var applySelectedRow = new ToolStripMenuItem("Apply to selected row")
+            {
+                Tag = filter,
+            };
+            applySelectedRow.Click += ApplyFilterSelectedRow;
+            item.DropDownItems.Add(applySelectedRow);
+
+            var applyAllRows = new ToolStripMenuItem("Apply to all rows")
+            {
+                Tag = filter,
+            };
+            applyAllRows.Click += ApplyFilterAllRows;
+            item.DropDownItems.Add(applyAllRows);
+        }
+
+        this.menu_filter.DropDownItems.Add(new ToolStripSeparator());
+
+        this.menu_filter.DropDownItems.Add(this.menu_hideOriginal);
+        this.menu_filter.DropDownItems.Add(this.menu_unfilter);
+
+        var add_filter = new ToolStripMenuItem()
+        {
+            Text = "Add filter",
+            ToolTipText = "Add a new filter",
+        };
+        add_filter.Click += AddFilter;
+        this.menu_filter.DropDownItems.Add(add_filter);
+    } // private void UpdateFilterList ()
+
+    private void ApplyFilterSelectedRow(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not IFilter filter) return;
+        if (this.row is null) return;
+        ApplyFilter(filter, [this.row]);
+    } // private void ApplyFilterSelectedRow (object?, EventArgs)
+
+    private void ApplyFilterAllRows(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not IFilter filter) return;
+        ApplyFilter(filter, this.parametersTable.ParameterRows);
+    } // private void ApplyFilterAllRows (object?, EventArgs)
+
+    private void ApplyFilter(IFilter filter, IEnumerable<ParametersTableRow> rows)
+    {
+        foreach (var row in rows)
+        {
+            var decay = row.Decay;
+            decay?.Filter(filter);
+        } // foreach (var row in rows)
+
+        ShowPlots();
+    } // private void ApplyFilter (IFilter, IEnumerable<ParametersTableRow>)
+
+    private void AddFilter(object? sender, EventArgs e)
+    {
+        using var dialog = new System.Windows.Forms.OpenFileDialog
+        {
+            Filter = ExtensionFilter.Assemblies,
+            Title = "Select an assembly file",
+        };
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        try
+        {
+            ModelManager.Load(dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    } // private void AddFilter (object?, EventArgs)
+
+    private void ToggleHideOriginal(object? sender, EventArgs e)
+    {
+        this.menu_hideOriginal.Checked = !this.menu_hideOriginal.Checked;
+        ShowPlots();
+    } // private void ToggleHideOriginal (object?, EventArgs)
+
+    private void UnfilterSelectedRow(object? sender, EventArgs e)
+    {
+        if (this.row is null) return;
+        Unfilter([this.row]);
+    } // private void UnfilterSelectedRow (object?, EventArgs)
+
+    private void UnfilterAll(object? sender, EventArgs e)
+        => Unfilter(this.parametersTable.ParameterRows);
+
+    private void Unfilter(IEnumerable<ParametersTableRow> rows)
+    {
+        foreach (var row in rows)
+            row.Decay?.RestoreOriginal();
+        ShowPlots();
+    } // private void Unfilter (IEnumerable<ParametersTableRow>)
+
+    #endregion filters
 
     #region Models
 
@@ -1018,13 +1191,21 @@ internal sealed partial class MainWindow : Form
         if (this.stopDrawing) return;
         if (this.row is null) return;
         var decay = this.row.Decay;
+        var filtered = decay.Filtered;
 
         if (this.cb_invert.Checked)
+        {
             decay = decay.Inverted;
+            filtered = filtered.Inverted;
+        }
 
         this.s_observed.Points.Clear();
-        this.s_observed.Points.AddDecay(decay.Modified);
-    } // private void ShowObserved ()
+        if (!this.menu_hideOriginal.Checked)
+            this.s_observed.Points.AddDecay(decay);
+
+        this.s_filtered.Points.Clear();
+        this.s_filtered.Points.AddDecay(filtered);
+    }// private void ShowObserved ()
 
     private void ShowFit(object? sender, EventArgs e)
         => ShowFit();
@@ -1383,6 +1564,16 @@ internal sealed partial class MainWindow : Form
         if (cd.ShowDialog() != DialogResult.OK) return;
         this.s_observed.Color = Program.ObservedColor = cd.Color;
     } // private void SetObservedColor (object?, EventArgs)
+
+    private void SetFilteredColor(object? sender, EventArgs e)
+    {
+        using var cd = new ColorDialog()
+        {
+            Color = Program.FilteredColor,
+        };
+        if (cd.ShowDialog() != DialogResult.OK) return;
+        this.s_filtered.Color = Program.FilteredColor = cd.Color;
+    } // private void SetFilteredColor (object?, EventArgs)
 
     private void SetFitColor(object? sender, EventArgs e)
     {

@@ -73,6 +73,19 @@ internal static class Program
     }
 
     /// <summary>
+    /// Gets or sets the line color of the filtered data.
+    /// </summary>
+    internal static Color FilteredColor
+    {
+        get => Config.AppearanceConfig.FilteredColor;
+        set
+        {
+            Config.AppearanceConfig.FilteredColor = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the line color of the fit lines.
     /// </summary>
     internal static Color FitColor

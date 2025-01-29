@@ -15,7 +15,13 @@ public sealed class AppearanceConfig
     /// Gets or sets the color of the observed data.
     /// </summary>
     [XmlElement("observed-color")]
-    public SerializableColor ObservedColor { get; set; } = Color.Blue;
+    public SerializableColor ObservedColor { get; set; } = Color.Gray;
+
+    /// <summary>
+    /// Gets or sets the color of the filtered data.
+    /// </summary>
+    [XmlElement("filtered-color")]
+    public SerializableColor FilteredColor { get; set; } = Color.Blue;
 
     /// <summary>
     /// Gets or sets the color of the fit lines.

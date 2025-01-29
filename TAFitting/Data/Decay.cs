@@ -13,14 +13,16 @@ namespace TAFitting.Data;
 [DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq}, {this.times.Length} points")]
 internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 {
-    // Separately store the original data and the modified data,
+    // Separately store the original data and the filtered data,
     // so that the original data can be restored.
-    private readonly double[] times, signals, modified;
+    private readonly double[] times, signals, filtered;
 
     /// <summary>
     /// An empty decay data.
     /// </summary>
     internal static readonly Decay Empty = new([], []);
+
+    internal bool HasFiltered { get; private set; } = false;
 
     /// <summary>
     /// Gets the times.
@@ -68,9 +70,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal Decay Inverted => new(this.times, this.signals.Select(s => -s).ToArray());
 
     /// <summary>
-    /// Gets the modified decay data.
+    /// Gets the filtered decay data.
     /// </summary>
-    internal Decay Modified => new(this.times, this.modified);
+    internal Decay Filtered => new(this.times, this.filtered);
 
     internal Decay OnlyAfterT0
     {
@@ -95,7 +97,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         this.times = times;
         this.signals = signals;
         
-        this.modified = new double[times.Length];
+        this.filtered = new double[times.Length];
         RestoreOriginal();
     } // ctor (double[], double[])
 
@@ -212,12 +214,16 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal void Filter(IFilter filter)
     {
         var filtered = filter.Filter(this.times, this.signals).ToArray();
-        Array.Copy(filtered, this.modified, this.times.Length);
+        Array.Copy(filtered, this.filtered, this.times.Length);
+        this.HasFiltered = true;
     } // internal void Filter (IFilter)
 
     /// <summary>
     /// Restores the original data.
     /// </summary>
     internal void RestoreOriginal()
-        => Array.Copy(this.signals, this.modified, this.signals.Length);
+    {
+        Array.Copy(this.signals, this.filtered, this.signals.Length);
+        this.HasFiltered = false;
+    } // internal void RestoreOriginal ()
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
