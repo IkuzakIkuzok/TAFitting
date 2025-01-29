@@ -22,6 +22,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal static readonly Decay Empty = new([], []);
 
+    /// <summary>
+    /// Gets a value indicating whether the data has been filtered.
+    /// </summary>
     internal bool HasFiltered { get; private set; } = false;
 
     /// <summary>
@@ -74,6 +77,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal Decay Filtered => this.HasFiltered ? new(this.times, this.filtered) : this;
 
+    /// <summary>
+    /// Gets the decay data after t=0.
+    /// </summary>
     internal Decay OnlyAfterT0
     {
         get
