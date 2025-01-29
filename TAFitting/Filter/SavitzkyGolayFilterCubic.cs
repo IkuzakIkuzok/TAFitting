@@ -34,7 +34,7 @@ internal abstract class SavitzkyGolayFilterCubic : IFilter
             throw new ArgumentException("The number of time points and signal points must be the same.");
 
         if (time.Count < this.n)
-            throw new ArgumentException("The number of points must be greater than or equal to 15.");
+            throw new ArgumentException($"The number of points must be greater than or equal to {this.n}.");
 
         var filtered = new double[time.Count];
         for (var i = 0; i < time.Count; ++i)
