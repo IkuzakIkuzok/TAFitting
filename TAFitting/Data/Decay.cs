@@ -72,7 +72,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the filtered decay data.
     /// </summary>
-    internal Decay Filtered => new(this.times, this.filtered);
+    internal Decay Filtered => this.HasFiltered ? new(this.times, this.filtered) : this;
 
     internal Decay OnlyAfterT0
     {
@@ -223,6 +223,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal void RestoreOriginal()
     {
+        if (!this.HasFiltered) return;
         Array.Copy(this.signals, this.filtered, this.signals.Length);
         this.HasFiltered = false;
     } // internal void RestoreOriginal ()
