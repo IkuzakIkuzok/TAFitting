@@ -181,6 +181,42 @@ internal static class Program
     }
 
     /// <summary>
+    /// Gets or sets the default filter.
+    /// </summary>
+    internal static Guid DefaultFilter
+    {
+        get => Config.FilterConfig.DefaultFilter;
+        set
+        {
+            Config.FilterConfig.DefaultFilter = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to auto-apply the filter.
+    /// </summary>
+    internal static bool AutoApplyFilter
+    {
+        get => Config.FilterConfig.AutoApply;
+        set
+        {
+            Config.FilterConfig.AutoApply = value;
+            SaveConfig();
+        }
+    }
+
+    internal static bool HideOriginalData
+    {
+        get => Config.FilterConfig.HideOriginal;
+        set
+        {
+            Config.FilterConfig.HideOriginal = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the default model.
     /// </summary>
     internal static Guid DefaultModel

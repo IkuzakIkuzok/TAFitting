@@ -33,6 +33,12 @@ public sealed class AppConfig
     public AppearanceConfig AppearanceConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the filter configuration.
+    /// </summary>
+    [XmlElement("filter")]
+    public FilterConfig FilterConfig { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the model configuration.
     /// </summary>
     [XmlElement("model")]

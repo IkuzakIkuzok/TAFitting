@@ -22,7 +22,17 @@ internal static class FilterManager
     /// <summary>
     /// Gets the filters.
     /// </summary>
-    internal static IEnumerable<IFilter> Filters => filters.Values.Select(item => item.Instance);
+    internal static IReadOnlyDictionary<Guid, IFilter> Filters
+        => filters.ToDictionary(pair => pair.Key, pair => pair.Value.Instance);
+
+    internal static IFilter? DefaultFilter
+    {
+        get
+        {
+            var id = Program.Config.FilterConfig.DefaultFilter;
+            return filters.TryGetValue(id, out var filter) ? filter.Instance : null;
+        }
+    }
 
     static FilterManager()
     {

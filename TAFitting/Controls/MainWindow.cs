@@ -40,7 +40,7 @@ internal sealed partial class MainWindow : Form
     private readonly ParametersTable parametersTable;
 
     private readonly ToolStripMenuItem menu_filter, menu_model;
-    private readonly ToolStripMenuItem menu_hideOriginal, menu_unfilter;
+    private readonly ToolStripMenuItem menu_autoApplyFilter, menu_hideOriginal, menu_unfilter;
     private Guid selectedModel = Guid.Empty;
 
     private Decays? decays;
@@ -407,8 +407,16 @@ internal sealed partial class MainWindow : Form
         this.menu_filter = new("&Filter");
         this.MainMenuStrip.Items.Add(this.menu_filter);
 
+        this.menu_autoApplyFilter = new("&Auto-apply")
+        {
+            Checked = Program.AutoApplyFilter,
+            ToolTipText = "Automatically apply the filter",
+        };
+        this.menu_autoApplyFilter.Click += ToggleAutoApplyFilter;
+
         this.menu_hideOriginal = new("&Hide observed")
         {
+            Checked = Program.HideOriginalData,
             ToolTipText = "Hide the original data",
         };
         this.menu_hideOriginal.Click += ToggleHideOriginal;
@@ -678,6 +686,16 @@ internal sealed partial class MainWindow : Form
 
                     this.nud_time0.Value = (decimal)this.decays.Time0;
 
+                    if (Program.AutoApplyFilter)
+                    {
+                        var filter = FilterManager.DefaultFilter;
+                        if (filter is not null)
+                        {
+                            foreach (var decay in this.decays.Values)
+                                decay.Filter(filter);
+                        }
+                    }
+
                     MakeTable();
                     this.parametersTable.ClearUndoBuffer();
                     UpdatePreviewsUnits();
@@ -706,7 +724,7 @@ internal sealed partial class MainWindow : Form
     {
         this.menu_filter.DropDownItems.Clear();
         var filters = FilterManager.Filters;
-        foreach (var filter in filters)
+        foreach ((var guid, var filter) in filters)
         {
             var item = new ToolStripMenuItem(filter.Name)
             {
@@ -727,10 +745,17 @@ internal sealed partial class MainWindow : Form
             };
             applyAllRows.Click += ApplyFilterAllRows;
             item.DropDownItems.Add(applyAllRows);
+
+            if (guid == Program.DefaultFilter)
+            {
+                applySelectedRow.ShortcutKeys = Keys.Control | Keys.F;
+                applyAllRows.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F;
+            }
         }
 
         this.menu_filter.DropDownItems.Add(new ToolStripSeparator());
 
+        this.menu_filter.DropDownItems.Add(this.menu_autoApplyFilter);
         this.menu_filter.DropDownItems.Add(this.menu_hideOriginal);
         this.menu_filter.DropDownItems.Add(this.menu_unfilter);
 
@@ -793,9 +818,12 @@ internal sealed partial class MainWindow : Form
         }
     } // private void AddFilter (object?, EventArgs)
 
+    private void ToggleAutoApplyFilter(object? sender, EventArgs e)
+        => this.menu_autoApplyFilter.Checked = Program.AutoApplyFilter = !this.menu_autoApplyFilter.Checked;
+
     private void ToggleHideOriginal(object? sender, EventArgs e)
     {
-        this.menu_hideOriginal.Checked = !this.menu_hideOriginal.Checked;
+        this.menu_hideOriginal.Checked = Program.HideOriginalData = !this.menu_hideOriginal.Checked;
         ShowPlots();
     } // private void ToggleHideOriginal (object?, EventArgs)
 
