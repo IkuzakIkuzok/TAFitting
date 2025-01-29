@@ -1395,7 +1395,7 @@ internal sealed partial class MainWindow : Form
     private static IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row, IFittingModel model)
     {
         var decay = row.Decay.OnlyAfterT0;
-        var lma = new LevenbergMarquardt(model, decay.Times, decay.Signals, row.Parameters)
+        var lma = new LevenbergMarquardt(model, decay.Times, decay.Filtered.Signals, row.Parameters)
         {
             MaxIteration = Program.MaxIterations,
         };
