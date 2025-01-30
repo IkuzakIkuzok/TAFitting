@@ -5,7 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TAFitting.Filter;
 
-internal abstract class SavitzkyGolayFilterCubic : IFilter
+/// <summary>
+/// Represents a filter with convolution.
+/// </summary>
+internal abstract class ConvolutionFilter : IFilter
 {
     protected string name, description;
     protected double coefficient0;
@@ -18,12 +21,22 @@ internal abstract class SavitzkyGolayFilterCubic : IFilter
     /// <inheritdoc/>
     public string Description => this.description;
 
-    public SavitzkyGolayFilterCubic()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConvolutionFilter"/> class.
+    /// </summary>
+    public ConvolutionFilter()
     {
         Initialize();
         this.n = this.coefficients.Length;
     } // ctor ()
 
+    /// <summary>
+    /// Initializes the filter.
+    /// </summary>
+    /// <remarks>
+    /// This method must be overridden in a derived class,
+    /// and it must set the <see cref="name"/>, <see cref="description"/>, <see cref="coefficient0"/>, and <see cref="coefficients"/> fields.
+    /// </remarks>
     [MemberNotNull(nameof(name), nameof(description), nameof(coefficient0), nameof(coefficients))]
     abstract protected void Initialize();
 
@@ -55,4 +68,4 @@ internal abstract class SavitzkyGolayFilterCubic : IFilter
 
         return filtered;
     } // public IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
-} // internal abstract class SavitzkyGolayFilterCubic : IFilter
+} // internal abstract class ConvolutionFilter : IFilter
