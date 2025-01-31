@@ -206,6 +206,9 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to hide the original data.
+    /// </summary>
     internal static bool HideOriginalData
     {
         get => Config.FilterConfig.HideOriginal;
