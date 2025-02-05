@@ -104,7 +104,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         this.signals = signals;
         
         this.filtered = new double[times.Length];
-        RestoreOriginal();
+        RestoreOriginal(true);
     } // ctor (double[], double[])
 
     /// <summary>
@@ -234,10 +234,10 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Restores the original data.
     /// </summary>
-    internal void RestoreOriginal()
+    internal void RestoreOriginal(bool forceRestore = false)
     {
-        if (!this.HasFiltered) return;
+        if (!this.HasFiltered && !forceRestore) return;
         Array.Copy(this.signals, this.filtered, this.signals.Length);
         this.HasFiltered = false;
-    } // internal void RestoreOriginal ()
+    } // internal void RestoreOriginal ([bool])
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
