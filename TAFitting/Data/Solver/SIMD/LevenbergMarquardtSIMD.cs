@@ -112,7 +112,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             this.func = this.Model.GetVectorizedFunc(this.parameters);
             this.est_vals = this.func(this.x);
             chi2 = CalcChi2();
-            ComputeDerivatives();
+
+            this.Model.GetVectorizedDerivatives(this.parameters)(this.x, this.derivatives);
             CalcHessian();
             CalcGradient();
 
@@ -222,13 +223,6 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
             this.gradient[row] = this.temp_vector.Sum;
         }
     } // private void CalcGradient ()
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ComputeDerivatives()
-    {
-        var d = this.Model.GetVectorizedDerivatives(this.parameters);
-        d(this.x, this.derivatives);
-    } // private void ComputeDerivativesCacheAnalytically ()
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateParameters()
