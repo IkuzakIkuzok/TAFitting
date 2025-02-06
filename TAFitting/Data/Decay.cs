@@ -90,6 +90,23 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     }
 
     /// <summary>
+    /// Gets the signal at the specified time.
+    /// </summary>
+    /// <param name="time">The time.</param>
+    /// <returns>The signal at the specified time.</returns>
+    internal double this[double time]
+    {
+        get
+        {
+            var index = Array.BinarySearch(this.times, time);
+            if (index < 0) index = ~index;
+            if (index == 0) return this.signals[0];
+            if (index == this.times.Length) return this.signals[^1];
+            return this.signals[index];
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Decay"/> class.
     /// </summary>
     /// <param name="times">The times.</param>

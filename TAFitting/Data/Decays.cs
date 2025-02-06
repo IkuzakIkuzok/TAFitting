@@ -139,7 +139,13 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var decay_b = Decay.FromFile(file_b, 1.0 / timeUnit, 1.0 / signalUnit);
             decays.decays.Add(wavelength, decay_ab);
 
-            l_t0.Add(decay_b.FilndT0());
+            var b_t0 = decay_b.FilndT0();
+            var baseline = decay_b.OfRange(0, b_t0 * 0.5);  // Time enough earlier than the pulse
+            var noise = baseline.Signals.StandardDeviation();  // Noise level is estimated from the baseline
+            var signal = Math.Abs(decay_b[b_t0]);
+            var snr = signal / noise;
+            if (snr > 2) l_t0.Add(b_t0);  // S/N > 2
+            else Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {signal / noise}");
         }
 
         if (l_t0.Count == 0) throw new IOException($"No data found in {path}");
