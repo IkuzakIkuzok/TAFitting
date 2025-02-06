@@ -3,10 +3,19 @@
 
 namespace TAFitting.Stats;
 
+/// <summary>
+/// Provides extension methods for statistical calculations.
+/// </summary>
 internal static class StatsUtils
 {
     private static readonly TDist TDist = new();
 
+    /// <summary>
+    /// Calculates the variance of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The variance of the sequence of double-precision floating-point numbers.</returns>
     internal static double Variance(this IEnumerable<double> source, int ddof = 1)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -24,9 +33,21 @@ internal static class StatsUtils
         return s2 / n - avg * avg;
     } // internal static double Variance (this IEnumerable<double>, [int])
 
+    /// <summary>
+    /// Calculates the standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The standard deviation of the sequence of double-precision floating-point numbers.</returns>
     internal static double StandardDeviation(this IEnumerable<double> source, int ddof = 0)
         => Math.Sqrt(source.Variance(ddof));
 
+    /// <summary>
+    /// Removes the outliers from a sequence of double-precision floating-point numbers using the Smirnov-Grubbs test.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="alpha">The significance level.</param>
+    /// <returns>The sequence of double-precision floating-point numbers without outliers.</returns>
     internal static List<double> SmirnovGrubbs(this IEnumerable<double> source, double alpha = .05)
     {
         ArgumentNullException.ThrowIfNull(source);

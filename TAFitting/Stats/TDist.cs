@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace TAFitting.Stats;
 
+/// <summary>
+/// Represents a t-distribution.
+/// </summary>
 internal sealed class TDist : StatsDist
 {
     private const int CACHE_SIZE = 128;
