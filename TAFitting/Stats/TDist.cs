@@ -10,14 +10,23 @@ namespace TAFitting.Stats;
 /// </summary>
 internal sealed class TDist : StatsDist
 {
+    /*
+     * t-distribution becomes a standard normal distribution as the degree of freedom approaches infinity,
+     * which can be computed significantly faster than the t-distribution.
+     */
+    private const int DOF_THRESHOLD = 30;
     private const int CACHE_SIZE = 128;
 
     private static readonly double SqrtPi = Math.Sqrt(Math.PI);
+    private static readonly double SqrtTwoPi = Math.Sqrt(2 * Math.PI);
     private static readonly double[] gamma_cache = new double[CACHE_SIZE];
 
     /// <inheritdoc/>
     override public double ProbabilityDensityFunction(double x, int dof)
     {
+        if (dof >= DOF_THRESHOLD)
+            return Math.Exp(-x * x / 2) / SqrtTwoPi;  // Standard normal distribution N(0, 1)
+
         // Gamma(dof + 1) / Math.Sqrt(Math.PI * dof) / Gamma(dof) * Math.Pow(1 + x * x / dof, -(dof + 1) / 2.0);
 
         var g = Gamma(dof + 1) / Gamma(dof);
