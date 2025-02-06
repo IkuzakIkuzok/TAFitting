@@ -691,6 +691,9 @@ internal sealed partial class MainWindow : Form
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     this.rangeSelector.Signal.To = (decimal)(this.decays.MaxAbsSignal * 1.5);
 
+                    // The table rows must be cleared before the t0 is set.
+                    this.parametersTable.Rows.Clear();
+                    // The t0 must be set before the filter is applied.
                     this.nud_time0.Value = (decimal)this.decays.Time0;
 
                     if (Program.AutoApplyFilter)
