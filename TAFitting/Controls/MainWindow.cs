@@ -548,7 +548,7 @@ internal sealed partial class MainWindow : Form
     /// Gets the title of the window.
     /// </summary>
     /// <returns>The title of the window representing the current state.</returns>
-    private string GetTitle()
+    private string GetTitle(string? additional = null)
     {
         var sb = new StringBuilder(Program.AppName);
 
@@ -572,8 +572,14 @@ internal sealed partial class MainWindow : Form
             sb.Append(" nm)");
         }
 
+        if (!string.IsNullOrEmpty(additional))
+        {
+            sb.Append(" - ");
+            sb.Append(additional);
+        }
+
         return sb.ToString();
-    } // private string GetTitle ()
+    } // private string GetTitle ([string])
 
     #region Data loading
 
@@ -663,6 +669,7 @@ internal sealed partial class MainWindow : Form
     {
         this.row = null;
         this.sampleName = Path.GetFileName(path);
+        this.Text = GetTitle("Loading...");
         Task.Run(() =>
         {
             // Temporary change the negative sign to U+002D
