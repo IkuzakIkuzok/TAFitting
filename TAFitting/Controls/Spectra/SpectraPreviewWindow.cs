@@ -870,8 +870,6 @@ internal sealed partial class SpectraPreviewWindow : Form
         this.chart.Dispose();
         this.axisX.Dispose();
         this.axisY.Dispose();
-        foreach (var series in this.wavelengthHighlights)
-            series.Dispose();
         this.wavelengthHighlights.Clear();
     } // override protected void Dispose (bool)
 } // internal sealed partial class SpectraPreviewWindow : Form
