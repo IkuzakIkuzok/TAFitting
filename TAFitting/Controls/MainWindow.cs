@@ -667,6 +667,8 @@ internal sealed partial class MainWindow : Form
     /// <param name="decaysLoader">The function to load the decay data from the file or the folder.</param>
     private void LoadDecays(string path, Func<string, Decays> decaysLoader)
     {
+        var old_sample = this.sampleName;
+
         this.row = null;
         this.sampleName = Path.GetFileName(path);
         this.Text = GetTitle("Loading...");
@@ -713,6 +715,12 @@ internal sealed partial class MainWindow : Form
             }
             catch (Exception e)
             {
+                this.sampleName = old_sample;
+                Invoke(() =>
+                {
+                    this.Text = GetTitle();
+                });
+
                 MessageBox.Show(
                     e.Message,
                     "Error",
