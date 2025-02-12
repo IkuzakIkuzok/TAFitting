@@ -176,7 +176,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         {
             var parts = line.Split(',');
             if (!double.TryParse(parts[0], out var wl)) break;
-            var signals = parts[1..].Select(double.Parse).Select(s => s / signalUnit).ToArray();
+            var signals = parts[1..].Select(ParseDouble).Select(s => s / signalUnit).ToArray();
             var decay = new Decay(times, signals);
             decay.RemoveNaN();
             decays.decays.Add(wl, decay);
@@ -184,6 +184,15 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
         return decays;
     } // internal static Decays FemtosecondFromFile (string)
+
+    private static double ParseDouble(string s)
+    {
+        if (double.TryParse(s, out var d)) return d;
+        if (s == "NaN") return double.NaN;
+        if (s == "Inf") return double.PositiveInfinity;
+        if (s == "-Inf") return double.NegativeInfinity;
+        throw new FormatException($"Invalid double value: {s}");
+    } // private static double ParseDouble (string)
 
     private void ChangeTime0(double time0)
     {
