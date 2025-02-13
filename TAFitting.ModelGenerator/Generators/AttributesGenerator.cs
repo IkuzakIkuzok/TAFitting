@@ -17,6 +17,8 @@ internal sealed class AttributesGenerator : IIncrementalGenerator
 
     #region sources
 
+    internal const string Namespace = "TAFitting.Model";
+
     internal const string ExponentialModelName = "ExponentialModelAttribute";
 
     internal const string PolynomialModelName = "PolynomialModelAttribute";

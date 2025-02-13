@@ -9,7 +9,7 @@ namespace TAFitting.ModelGenerator.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class PolynomialGenerator : ModelGeneratorBase
 {
-    override protected string AttributeName => AttributesGenerator.PolynomialModelName;
+    override protected string AttributeName => AttributesGenerator.Namespace + "." + AttributesGenerator.PolynomialModelName;
 
     override protected string FileName => "GeneratedPolynomialModels.g.cs";
 

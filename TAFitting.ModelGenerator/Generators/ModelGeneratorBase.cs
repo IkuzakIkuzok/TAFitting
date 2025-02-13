@@ -59,7 +59,7 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
                 var nameSpace = typeSymbol.ContainingNamespace.ToDisplayString();
                 var className = typeSymbol.Name;
 
-                var attr = type.Attributes.First(attr => attr.AttributeClass?.Name == this.AttributeName);
+                var attr = type.Attributes.First(attr => GetFullName(attr.AttributeClass) == this.AttributeName);
                 var args = attr.ConstructorArguments;
                 if (args.Length == 0) continue;
                 var order = args[0].Value is int o ? o : throw new Exception("Failed to get the order parameter of the model.");
@@ -77,6 +77,9 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
 
         context.AddSource(this.FileName, builder.ToString().NormalizeNewLines());
     } // private void Execute (SourceProductionContext, GeneratorAttributeSyntaxContext)
+
+    private static string GetFullName(INamedTypeSymbol? symbol)
+        => symbol is null ? string.Empty : symbol.ContainingNamespace.ToDisplayString() + "." + symbol.Name;
 
     /// <summary>
     /// Generates the source code of the model.

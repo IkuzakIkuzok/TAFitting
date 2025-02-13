@@ -11,7 +11,7 @@ namespace TAFitting.ModelGenerator.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class ExponentialGenerator : ModelGeneratorBase
 {
-    override protected string AttributeName => AttributesGenerator.ExponentialModelName;
+    override protected string AttributeName => AttributesGenerator.Namespace + "." + AttributesGenerator.ExponentialModelName;
 
     override protected string FileName => "GeneratedExponentialModels.g.cs";
 
