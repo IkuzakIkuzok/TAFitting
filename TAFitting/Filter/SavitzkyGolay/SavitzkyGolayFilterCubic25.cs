@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-namespace TAFitting.Filter;
+namespace TAFitting.Filter.SavitzkyGolay;
 
 [EquivalentSIMD(null)]
 [Guid("C5AFD300-722D-485E-B176-2B9D44476C5A")]

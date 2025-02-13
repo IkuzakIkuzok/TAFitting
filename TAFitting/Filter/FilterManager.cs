@@ -22,8 +22,7 @@ internal static class FilterManager
     /// <summary>
     /// Gets the filters.
     /// </summary>
-    internal static IReadOnlyDictionary<Guid, IFilter> Filters
-        => filters.ToDictionary(pair => pair.Key, pair => pair.Value.Instance);
+    internal static IReadOnlyDictionary<Guid, FilterItem> Filters => filters;
 
     internal static IFilter? DefaultFilter
     {
@@ -94,7 +93,8 @@ internal static class FilterManager
 
         var simdType = simdAttr?.SIMDType;
         _ = TryGetFilterInstance(simdType, out var simdFilter);
-        filters.Add(guid, new FilterItem(filter, simdFilter));
+        var category = type.Namespace?.Split('.').Last() ?? string.Empty;
+        filters.Add(guid, new FilterItem(filter, simdFilter, category));
         FiltersChanged?.Invoke(null, EventArgs.Empty);
     } // private static void AddType (Type)
 

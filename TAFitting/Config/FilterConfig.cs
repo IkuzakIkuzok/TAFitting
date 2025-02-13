@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using TAFitting.Filter;
+using TAFitting.Filter.SavitzkyGolay;
 
 namespace TAFitting.Config;
 

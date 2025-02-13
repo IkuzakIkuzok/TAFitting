@@ -741,33 +741,44 @@ internal sealed partial class MainWindow : Form
     private void UpdateFilterList()
     {
         this.menu_filter.DropDownItems.Clear();
-        var filters = FilterManager.Filters;
-        foreach ((var guid, var filter) in filters)
+        var filters = FilterManager.Filters.GroupBy(f => f.Value.Category);
+        foreach (var category in filters)
         {
-            var item = new ToolStripMenuItem(filter.Name)
-            {
-                ToolTipText = filter.Description,
-            };
-            this.menu_filter.DropDownItems.Add(item);
+            var categoryName = category.Key;
+            if (string.IsNullOrEmpty(categoryName))
+                categoryName = "Other";
+            var categoryItem = new ToolStripMenuItem(categoryName);
+            this.menu_filter.DropDownItems.Add(categoryItem);
 
-            var applySelectedRow = new ToolStripMenuItem("Apply to selected row")
+            foreach ((var guid, var filterItem) in category)
             {
-                Tag = filter,
-            };
-            applySelectedRow.Click += ApplyFilterSelectedRow;
-            item.DropDownItems.Add(applySelectedRow);
+                var filter = filterItem.Instance;
 
-            var applyAllRows = new ToolStripMenuItem("Apply to all rows")
-            {
-                Tag = filter,
-            };
-            applyAllRows.Click += ApplyFilterAllRows;
-            item.DropDownItems.Add(applyAllRows);
+                var item = new ToolStripMenuItem(filter.Name)
+                {
+                    ToolTipText = filter.Description,
+                };
+                categoryItem.DropDownItems.Add(item);
 
-            if (guid == Program.DefaultFilter)
-            {
-                applySelectedRow.ShortcutKeys = Keys.Control | Keys.F;
-                applyAllRows.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F;
+                var applySelectedRow = new ToolStripMenuItem("Apply to selected row")
+                {
+                    Tag = filter,
+                };
+                applySelectedRow.Click += ApplyFilterSelectedRow;
+                item.DropDownItems.Add(applySelectedRow);
+
+                var applyAllRows = new ToolStripMenuItem("Apply to all rows")
+                {
+                    Tag = filter,
+                };
+                applyAllRows.Click += ApplyFilterAllRows;
+                item.DropDownItems.Add(applyAllRows);
+
+                if (guid == Program.DefaultFilter)
+                {
+                    applySelectedRow.ShortcutKeys = Keys.Control | Keys.F;
+                    applyAllRows.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F;
+                }
             }
         }
 
