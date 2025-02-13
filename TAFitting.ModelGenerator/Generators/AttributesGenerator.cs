@@ -4,15 +4,16 @@
 namespace TAFitting.ModelGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
-internal sealed class AttributesGenerator : ISourceGenerator
+internal sealed class AttributesGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.AddSource("ExponentialModelAttribute.g.cs", ExponentialModelSource);
-        context.AddSource("PolynomialModelAttribute.g.cs", PolynomialModelSource);
-    } // public void Execute (GeneratorExecutionContext)
+        context.RegisterPostInitializationOutput(static context =>
+        {
+            context.AddSource("ExponentialModelAttribute.g.cs", ExponentialModelSource);
+            context.AddSource("PolynomialModelAttribute.g.cs", PolynomialModelSource);
+        });
+    } // public void Initialize (IncrementalGeneratorInitializationContext)
 
     #region sources
 
@@ -95,4 +96,4 @@ internal sealed class PolynomialModelAttribute : Attribute
 } // internal sealed class PolynomialModelAttribute : Attribute
 ";
     #endregion sources
-} // internal sealed class AttributesGenerator : ModelGeneratorBase
+} // internal sealed class AttributesGenerator : IIncrementalGenerator

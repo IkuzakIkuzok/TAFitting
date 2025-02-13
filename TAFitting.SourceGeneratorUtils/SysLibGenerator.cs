@@ -3,15 +3,16 @@
 namespace TAFitting.SourceGeneratorUtils;
 
 [Generator(LanguageNames.CSharp)]
-internal sealed class SysLibGenerator : ISourceGenerator
+internal sealed class SysLibGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.AddSource("SysLib.Index.g.cs", IndexSource);
-        context.AddSource("SysLib.Range.g.cs", RangeSource);
-    } // public void Execute (GeneratorExecutionContext)
+        context.RegisterPostInitializationOutput(static context =>
+        {
+            context.AddSource("SysLib.Index.g.cs", IndexSource);
+            context.AddSource("SysLib.Range.g.cs", RangeSource);
+        });
+    } // public void Initialize (IncrementalGeneratorInitializationContext)
 
     #region sources
 
@@ -291,4 +292,4 @@ public readonly struct Range(Index start, Index end) : IEquatable<Range>
 ";
 
     #endregion sources
-} // internal sealed class SysLibGenerator : ISourceGenerator
+} // internal sealed class SysLibGenerator : IIncrementalGenerator

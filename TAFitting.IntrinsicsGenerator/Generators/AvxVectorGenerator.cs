@@ -1,37 +1,45 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.IntrinsicsGenerator.Generators;
 
 [Generator(LanguageNames.CSharp)]
-internal sealed class AvxVectorGenerator : ISourceGenerator
+internal sealed class AvxVectorGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new AttributeSyntaxReceiver(AvxVectorAttributesGenerator.AttributeName));
-    } // public void Initialize (GeneratorInitializationContext)
+        var sources = context.SyntaxProvider.ForAttributeWithMetadataName(
+            AvxVectorAttributesGenerator.Namespace + "." + AvxVectorAttributesGenerator.AttributeName,
+            static (node, token) => true,
+            static (context, token) => context
+        ).Collect();
+        context.RegisterSourceOutput(sources, Execute);
+    } // public void Initialize (IncrementalGeneratorInitializationContext)
 
-    public void Execute(GeneratorExecutionContext context)
+    public void Execute(SourceProductionContext context, ImmutableArray<GeneratorAttributeSyntaxContext> sources)
     {
-        if (context.SyntaxReceiver is not AttributeSyntaxReceiver receiver) return;
-
-        if (receiver.Vectors.Count == 0) return;
+        if (sources.Length == 0) return;
 
         var builder = new StringBuilder(AvxVectorSource);
-        foreach (var declaration in receiver.Vectors)
+        foreach (var type in sources)
         {
             try
             {
-                var klass = declaration.Target;
-                var attr = declaration.Attribute;
+                var typeSymbol = (INamedTypeSymbol)type.TargetSymbol;
+                var nameSpace = typeSymbol.ContainingNamespace.ToDisplayString();
+                var className = typeSymbol.Name;
 
-                (var nameSpace, var className) = GetFullyQualifiedName(context, klass);
-                var count = GetCount(context, attr);
-                var source = Generate(nameSpace, className, count);
-                builder.Append(source);
+                var attr = type.Attributes.First(attr => attr.AttributeClass?.Name == AvxVectorAttributesGenerator.AttributeName);
+                var args = attr.ConstructorArguments;
+                if (args.Length != 1) continue;
+                var count = args[0].Value is int c ? c : throw new InvalidOperationException("Invalid argument.");
+
+                var code = Generate(nameSpace, className, count);
+                builder.Append(code);
             }
             catch
             {
@@ -40,7 +48,7 @@ internal sealed class AvxVectorGenerator : ISourceGenerator
         }
 
         context.AddSource("AvxVectors.g.cs", builder.ToString().NormalizeNewLines());
-    } // public void Execute (GeneratorExecutionContext)
+    } // public void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
     private static ulong Mask64(int n) => (1UL << n) - 1;
 
@@ -533,34 +541,4 @@ namespace TAFitting.Data
         builder.AppendLine("\t\t\treturn ret;");
         builder.AppendLine($"\t\t}} // public static {className} operator {op}({className}, {className})");
     } // private static void AddOperator (string, string, int)
-
-    private static int GetCount(GeneratorExecutionContext context, AttributeSyntax attribute)
-    {
-        var args = attribute.ArgumentList?.Arguments.Cast<AttributeArgumentSyntax>();
-
-        var orderArg = args?.FirstOrDefault()?.Expression
-            ?? throw new Exception("Failed to get the order parameter of the model.");
-        if (context.Compilation.GetSemanticModel(attribute.SyntaxTree).GetConstantValue(orderArg).Value is not int c)
-            throw new Exception("Failed to get the order parameter of the model.");
-        return c;
-    } // private static int GetCount (GeneratorExecutionContext, AttributeSyntax)
-
-    /// <summary>
-    /// Gets the fully qualified name of the class.
-    /// </summary>
-    /// <param name="context">The context</param>
-    /// <param name="klass">The class declaration syntax.</param>
-    /// <returns>The fully qualified name of the class.</returns>
-    /// <exception cref="Exception">Failed to get the symbol of the class.</exception>
-    private static (string, string) GetFullyQualifiedName(GeneratorExecutionContext context, ClassDeclarationSyntax klass)
-    {
-        var typeSymbol =
-            context.Compilation
-                   .GetSemanticModel(klass.SyntaxTree)
-                   .GetDeclaredSymbol(klass)
-            ?? throw new Exception("Failed to get the symbol of the class.");
-        var nameSpace = typeSymbol.ContainingNamespace.ToDisplayString();
-        var className = typeSymbol.Name;
-        return (nameSpace, className);
-    } // protected virtual (string, string) GetFullyQualifiedName (GeneratorExecutionContext, ClassDeclarationSyntax)
-} // internal sealed class AvxVectorGenerator : ISourceGenerator
+} // internal sealed class AvxVectorGenerator : IIncrementalGenerator
