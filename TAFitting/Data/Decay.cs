@@ -281,7 +281,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     {
         try
         {
-            var filtered = filter.Filter(this.times, this.filtered).ToArray();
+            var filtered = filter.Filter(this.RawTimes, this.filtered).ToArray();
             Array.Copy(filtered, this.filtered, this.times.Length);
             this.HasFiltered = true;
         }
