@@ -11,7 +11,7 @@ internal class SavitzkyGolayFilterCubic15 : ConvolutionFilter
 
     override protected void Initialize()
     {
-        this.name = "Savitzky-Golay filter (cubic, 15 points)";
+        this.name = "Cubic, 15 points";
         this.description = "A Savitzky-Golay filter with a cubic polynomial and 15 points.";
         this.coefficient0 = 167 * h;
         this.coefficients = [
