@@ -6,7 +6,7 @@ namespace DisposalGenerator.Generators;
 [Generator(LanguageNames.CSharp)]
 internal sealed class AttributesGenerator : IIncrementalGenerator
 {
-    internal const string Namespaece = "DisposalGenerator";
+    internal const string Namespace = "DisposalGenerator";
     internal const string AutoDisposalAttributeName = "AutoDisposalAttribute";
     internal const string NotToBeDisposedAttributeName = "NotToBeDisposedAttribute";
     internal const string NotToBeDisposedAttributeShortName = "NotToBeDisposed";
