@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Diagnostics;
 using TAFitting.Filter;
+using Windows.Web.Http;
 
 namespace TAFitting.Data;
 
@@ -20,7 +21,17 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// An empty decay data.
     /// </summary>
-    internal static readonly Decay Empty = new([], []);
+    internal static readonly Decay Empty = new([], TimeUnit.Second, [], SignalUnit.OD);
+
+    /// <summary>
+    /// Gets the time unit.
+    /// </summary>
+    internal TimeUnit TimeUnit { get; }
+
+    /// <summary>
+    /// Gets the signal unit.
+    /// </summary>
+    internal SignalUnit SignalUnit { get; }
 
     /// <summary>
     /// Gets a value indicating whether the data has been filtered.
@@ -33,9 +44,33 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal IReadOnlyList<double> Times => this.times;
 
     /// <summary>
+    /// Gets the raw times.
+    /// </summary>
+    internal IReadOnlyList<double> RawTimes
+    {
+        get
+        {
+            if (this.TimeUnit == TimeUnit.Second) return this.times;
+            return this.times.Select(t => t * this.TimeUnit).ToArray();
+        }
+    }
+
+    /// <summary>
     /// Gets the signals.
     /// </summary>
     internal IReadOnlyList<double> Signals => this.signals;
+
+    /// <summary>
+    /// Gets the raw signals.
+    /// </summary>
+    internal IReadOnlyList<double> RawSignals
+    {
+        get
+        {
+            if (this.SignalUnit == SignalUnit.OD) return this.signals;
+            return this.signals.Select(s => s * this.SignalUnit).ToArray();
+        }
+    }
 
     /// <summary>
     /// Gets the minimum time.
@@ -65,17 +100,17 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the absolute decay data.
     /// </summary>
-    internal Decay Absolute => new(this.times, this.signals.Select(Math.Abs).ToArray());
+    internal Decay Absolute => new(this.times, this.TimeUnit, this.signals.Select(Math.Abs).ToArray(), this.SignalUnit);
 
     /// <summary>
     /// Gets the inverted decay data.
     /// </summary>
-    internal Decay Inverted => new(this.times, this.signals.Select(s => -s).ToArray());
+    internal Decay Inverted => new(this.times, this.TimeUnit, this.signals.Select(s => -s).ToArray(), this.SignalUnit);
 
     /// <summary>
     /// Gets the filtered decay data.
     /// </summary>
-    internal Decay Filtered => this.HasFiltered ? new(this.times, this.filtered) : this;
+    internal Decay Filtered => this.HasFiltered ? new(this.times, this.TimeUnit, this.filtered, this.SignalUnit) : this;
 
     /// <summary>
     /// Gets the decay data after t=0.
@@ -85,7 +120,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         get
         {
             var index_t0 = this.times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
-            return new(this.times[index_t0..], this.signals[index_t0..]);
+            return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit);
         }
     }
 
@@ -110,16 +145,21 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Initializes a new instance of the <see cref="Decay"/> class.
     /// </summary>
     /// <param name="times">The times.</param>
+    /// <param name="timeUnit">The time unit.</param>
     /// <param name="signals">The signals.</param>
+    /// <param name="signalUnit">The signal unit.</param>
     /// <exception cref="ArgumentException">times and signals must have the same length.</exception>
-    internal Decay(double[] times, double[] signals)
+    internal Decay(double[] times, TimeUnit timeUnit, double[] signals, SignalUnit signalUnit)
     {
         if (times.Length != signals.Length)
             throw new ArgumentException("times and signals must have the same length.");
 
         this.times = times;
         this.signals = signals;
-        
+
+        this.TimeUnit = timeUnit;
+        this.SignalUnit = signalUnit;
+
         this.filtered = new double[times.Length];
         RestoreOriginal(true);
     } // ctor (double[], double[])
@@ -128,12 +168,15 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Reads a decay data from a file.
     /// </summary>
     /// <param name="filename">The filename.</param>
-    /// <param name="timeScaling">The time scaling.</param>
-    /// <param name="signalScaling">The signal scaling.</param>
+    /// <param name="timeUnit">The time unit.</param>
+    /// <param name="signalUnit">The signal unit.</param>
     /// <returns>The decay data.</returns>
     /// <exception cref="IOException">Failed to read the file.</exception>
-    internal static Decay FromFile(string filename, double timeScaling = 1.0, double signalScaling = 1.0)
+    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit)
     {
+        var timeScaling = 1.0 / timeUnit;
+        var signalScaling = 1.0 / signalUnit;
+
         try
         {
             var lines = File.ReadAllLines(filename);
@@ -145,13 +188,13 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 times[i] = double.Parse(parts[0]) * timeScaling;
                 signals[i] = double.Parse(parts[1]) * signalScaling;
             }
-            return new(times, signals);
+            return new(times, timeUnit, signals, signalUnit);
         }
         catch (Exception ex)
         {
             throw new IOException($"Failed to read the file:\n{filename}", ex);
         }
-    } // internal static Decay FromFile (string, [int], [int])
+    } // internal static Decay FromFile (string, TimeUnit, SignalUnit)
 
     /// <inheritdoc/>
     public IEnumerator<(double Time, double Signal)> GetEnumerator()
@@ -175,7 +218,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         if (startIndex < 0) startIndex = ~startIndex;  // If not found, Array.BinarySearch returns the bitwise complement of the index of the next element.
         var endIndex = Array.BinarySearch(this.times, end);
         if (endIndex < 0) endIndex = ~endIndex;
-        return new(this.times[startIndex..endIndex], this.signals[startIndex..endIndex]);
+        return new(this.times[startIndex..endIndex], this.TimeUnit, this.signals[startIndex..endIndex], this.SignalUnit);
     } // internal Decay OfRange (double, double)
 
     /// <summary>
@@ -184,7 +227,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="time">The time</param>
     /// <returns>The decay data with the shifted time.</returns>
     internal Decay AddTime(double time)
-        => new(this.times.Select(t => t + time).ToArray(), this.signals);
+        => new(this.times.Select(t => t + time).ToArray(), this.TimeUnit, this.signals, this.SignalUnit);
 
     /// <summary>
     /// Gets the time at which the signal is minimum.

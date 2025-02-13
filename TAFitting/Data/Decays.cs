@@ -135,8 +135,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
             if (!File.Exists(file_ab) || !File.Exists(file_b)) continue;
 
-            var decay_ab = Decay.FromFile(file_ab, 1.0 / timeUnit, 1.0 / signalUnit);
-            var decay_b = Decay.FromFile(file_b, 1.0 / timeUnit, 1.0 / signalUnit);
+            var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit);
+            var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit);
             decays.decays.Add(wavelength, decay_ab);
 
             var b_t0 = decay_b.FilndT0();
@@ -177,7 +177,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var parts = line.Split(',');
             if (!double.TryParse(parts[0], out var wl)) break;
             var signals = parts[1..].Select(ParseDouble).Select(s => s / signalUnit).ToArray();
-            var decay = new Decay(times, signals);
+            var decay = new Decay(times, timeUnit, signals, signalUnit);
             decay.RemoveNaN();
             decays.decays.Add(wl, decay);
         }
