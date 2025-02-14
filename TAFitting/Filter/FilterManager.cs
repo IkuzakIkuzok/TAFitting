@@ -20,7 +20,7 @@ internal static class FilterManager
         { "Fourier", "Fourier denoising (specific)" },
         { "FourierAuto", "Fourier denoising (automatic)" },
         { "LinearCombination", "Linear combination" },
-        { "SavitzkyGolay", "Savitzky-Golay" },
+        { "SavitzkyGolay", "Savitzky\u2013Golay" },
     };
 
     private static readonly Dictionary<Guid, FilterItem> filters = [];
