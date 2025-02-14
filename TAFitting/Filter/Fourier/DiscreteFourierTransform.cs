@@ -6,6 +6,11 @@ using System.Numerics;
 
 namespace TAFitting.Filter.Fourier;
 
+/*
+ * Because the forward FFT is called twice in the inverse FFT, normalization is carried out in the inverse FFT.
+ * (Other options are to normalize in the forward FFT by N or to normalize in both FFTs by √N.)
+ */
+
 /// <summary>
 /// Provides methods for discrete Fourier transform.
 /// </summary>
@@ -15,6 +20,10 @@ internal static class DiscreteFourierTransform
     /// Performs a forward Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
     /// </summary>
     /// <param name="buffer">The buffer to transform.</param>
+    /// <remarks>
+    /// This is a transport of the C code by Takuya Ooura
+    /// (<see href="https://www.kurims.kyoto-u.ac.jp/~ooura/fftman/ftmn1_24.html"/>).
+    /// </remarks>
     internal static void Forward(Span<Complex> buffer)
     {
         var n = buffer.Length;
@@ -126,6 +135,13 @@ internal static class DiscreteFourierTransform
     /// <param name="buffer">The buffer to transform.</param>
     internal static void Inverse(Span<Complex> buffer)
     {
+        /*
+         * Inverse FFT:
+         * 1. Conjugate the input.
+         * 2. Forward FFT.
+         * 3. Conjugate the output (and normalize).
+         */
+
         for (var i = 0; i < buffer.Length; ++i)
             buffer[i] = Complex.Conjugate(buffer[i]);
 
@@ -135,6 +151,15 @@ internal static class DiscreteFourierTransform
             buffer[i] = Complex.Conjugate(buffer[i]) / buffer.Length;
     } // internal static void Inverse (Span<Complex>)
 
+    /// <summary>
+    /// Performs an inverse Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
+    /// </summary>
+    /// <param name="fft">The buffer to transform.</param>
+    /// <returns>The real part of the inverse Fourier transform.</returns>
+    /// <remarks>
+    /// The inverse FFT is performed on <paramref name="fft"/> in place,
+    /// and its elements are modified by calling this method.
+    /// </remarks>
     public static double[] InverseReal(Complex[] fft)
     {
         for (var i = 0; i < fft.Length; ++i)
@@ -151,6 +176,13 @@ internal static class DiscreteFourierTransform
         return result;
     } // public static double[] InverseReal (Complex[])
 
+    /// <summary>
+    /// Returns the frequency scale.
+    /// </summary>
+    /// <param name="length">The number of points.</param>
+    /// <param name="sampleRate">The sample rate.</param>
+    /// <param name="positiveOnly">A value indicating whether to return only positive frequencies.</param>
+    /// <returns>The frequency scale.</returns>
     internal static double[] FrequencyScale(int length, double sampleRate, bool positiveOnly)
     {
         var freq = new double[length];
