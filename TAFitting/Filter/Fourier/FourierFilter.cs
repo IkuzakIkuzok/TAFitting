@@ -13,14 +13,19 @@ internal abstract class FourierFilter : IFilter
     protected double cutoff = 1;
 
     /// <inheritdoc/>
-    public string Name => $"{GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")})";
+    public string Name => GetName();
 
     /// <inheritdoc/>
-    public string Description
+    public string Description => GetDescription();
+
+    protected virtual string GetName()
+        => $"{GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")})";
+
+    protected virtual string GetDescription()
         => $"A filter that uses Fourier transform with a cutoff frequency of {GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")}).";
 
     /// <inheritdoc/>
-    public IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
+    public virtual IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
     {
         if (time.Count != signal.Count)
             throw new ArgumentException("The number of time points and signal points must be the same.");
@@ -57,7 +62,7 @@ internal abstract class FourierFilter : IFilter
         Array.Copy(filtered, 0, result, offset, n);
 
         return result;
-    } // public IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
+    } // public virtual IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
 
     private static readonly string[] SI_PREFIXES = [
         "Q", "R", "Y", "Z", "E", "P", "T", "G", "M", "k", "", "m", "μ", "n", "p", "f", "a", "z", "y", "r", "q"
