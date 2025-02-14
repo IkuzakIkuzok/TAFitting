@@ -71,8 +71,14 @@ internal abstract class FourierFilter : IFilter
     private static string GetScaled(double value, string unit)
     {
         var o = (int)Math.Clamp(Math.Floor(Math.Log10(Math.Abs(value))) / 3, -10, 10);
-        var prefix = SI_PREFIXES[10 - o];
         var order = Math.Pow(10, 3 * o);
-        return (value / order).ToString("0.###") + " " + prefix + unit;
+        value /= order;
+        if (value < 0.1 && o > -10)
+        {
+            value *= 1000;
+            o -= 1;
+        }
+        var prefix = SI_PREFIXES[10 - o];
+        return value.ToString("0.###") + " " + prefix + unit;
     } // private static string GetScaled (double, string)
 } // internal abstract class FourierFilter : IFilter
