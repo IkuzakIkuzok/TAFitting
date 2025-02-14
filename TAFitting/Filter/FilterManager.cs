@@ -17,7 +17,8 @@ internal static class FilterManager
 {
     private static readonly Dictionary<string, string> category_map = new()
     {
-        { "Fourier", "Fourier denoising" },
+        { "Fourier", "Fourier denoising (specific)" },
+        { "FourierAuto", "Fourier denoising (automatic)" },
         { "LinearCombination", "Linear combination" },
         { "SavitzkyGolay", "Savitzky-Golay" },
     };

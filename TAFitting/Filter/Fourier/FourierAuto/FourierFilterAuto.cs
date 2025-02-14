@@ -1,15 +1,14 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-
-namespace TAFitting.Filter.Fourier;
+namespace TAFitting.Filter.Fourier.FourierAuto;
 
 internal abstract class FourierFilterAuto : FourierFilter
 {
     protected double ratio = 0.1;
 
     override protected string GetName()
-        => $"{this.ratio*100}%";
+        => $"{this.ratio * 100}%";
 
     override protected string GetDescription()
         => $"A filter that uses Fourier transform with a cutoff frequency of {this.ratio * 100}% of time bandwidth.";

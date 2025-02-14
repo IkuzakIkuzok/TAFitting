@@ -4,46 +4,6 @@
 namespace TAFitting.Filter.Fourier;
 
 [EquivalentSIMD(null)]
-[Guid("B7A04641-4CBC-4B6C-AA9B-FED215E06021")]
-internal sealed class FourierFilterAuto01 : FourierFilterAuto
-{
-    public FourierFilterAuto01()
-    {
-        this.ratio = 0.01;
-    } // ctor ()
-} // internal sealed class FourierFilterAuto01 : FourierFilterAuto
-
-[EquivalentSIMD(null)]
-[Guid("8C230AC9-0D06-49D9-A66A-64AEF5E28A9A")]
-internal sealed class FourierFilterAuto05 : FourierFilterAuto
-{
-    public FourierFilterAuto05()
-    {
-        this.ratio = 0.05;
-    } // ctor ()
-} // internal sealed class FourierFilterAuto05 : FourierFilterAuto
-
-[EquivalentSIMD(null)]
-[Guid("BCD6AB78-3DE5-4D9A-BDD4-FD118970401E")]
-internal sealed class FourierFilterAuto10 : FourierFilterAuto
-{
-    public FourierFilterAuto10()
-    {
-        this.ratio = 0.10;
-    } // ctor ()
-} // internal sealed class FourierFilterAuto10 : FourierFilterAuto
-
-[EquivalentSIMD(null)]
-[Guid("A8A0FDEB-2F11-40CD-8EBF-4B2F9AAA65CB")]
-internal sealed class FourierFilterAuto20 : FourierFilterAuto
-{
-    public FourierFilterAuto20()
-    {
-        this.ratio = 0.20;
-    } // ctor ()
-} // internal sealed class FourierFilterAuto20 : FourierFilterAuto
-
-[EquivalentSIMD(null)]
 [Guid("28E11BB0-83D5-424B-AB72-B3B257805471")]
 internal sealed class FourierFilter1e3 : FourierFilter
 {
