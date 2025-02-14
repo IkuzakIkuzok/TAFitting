@@ -15,6 +15,13 @@ namespace TAFitting.Filter;
 /// </summary>
 internal static class FilterManager
 {
+    private static readonly Dictionary<string, string> category_map = new()
+    {
+        { "Fourier", "Fourier denoising" },
+        { "LinearCombination", "Linear combination" },
+        { "SavitzkyGolay", "Savitzky-Golay" },
+    };
+
     private static readonly Dictionary<Guid, FilterItem> filters = [];
 
     internal static event EventHandler? FiltersChanged;
@@ -93,10 +100,17 @@ internal static class FilterManager
 
         var simdType = simdAttr?.SIMDType;
         _ = TryGetFilterInstance(simdType, out var simdFilter);
-        var category = type.Namespace?.Split('.').Last() ?? string.Empty;
+
+        var category = GetCategory(type);
         filters.Add(guid, new FilterItem(filter, simdFilter, category));
         FiltersChanged?.Invoke(null, EventArgs.Empty);
     } // private static void AddType (Type)
+
+    private static string GetCategory(Type type)
+    {
+        var category = type.Namespace?.Split('.').Last() ?? string.Empty;
+        return category_map.TryGetValue(category, out var value) ? value : category;
+    } // private static string GetCategory (Type)
 
     private static bool TryGetFilterInstance(Type? type, [NotNullWhen(true)] out IFilter? filter)
     {
