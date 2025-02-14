@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using System.Diagnostics;
 using System.Numerics;
 
 namespace TAFitting.Filter.Fourier;
@@ -32,6 +33,8 @@ internal abstract class FourierFilter : IFilter
 
         if (time.Count < 2)
             throw new ArgumentException($"The number of points must be greater than or equal to 2.");
+
+        Debug.Assert(DiscreteFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
 
         var arr = signal.ToArray();
 

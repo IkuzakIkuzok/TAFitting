@@ -203,4 +203,14 @@ internal static class DiscreteFourierTransform
             freq[i] = b * (i - length);
         return freq;
     } // internal static double[] FrequencyScale (int, double, bool)
+
+    internal static bool CheckEvenlySpaced(IReadOnlyList<double> values, double threshold = 1e-6)
+    {
+        var n = values.Count;
+        var dt = values[1] - values[0];
+        for (var i = 2; i < n; ++i)
+            if (Math.Abs(values[i] - values[i - 1] - dt) > threshold)
+                return false;
+        return true;
+    } // internal static bool CheckEvenlySpaced (IReadOnlyList<double>, [double])
 } // internal static class DiscreteFourierTransform
