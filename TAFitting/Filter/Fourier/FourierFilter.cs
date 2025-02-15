@@ -36,21 +36,18 @@ internal abstract class FourierFilter : IFilter
 
         Debug.Assert(DiscreteFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
 
-        var arr = signal.ToArray();
+        // FFT works only for the number of points that is a power of 2.
+        // Extend the number of points to the nearest power of 2.
+        var n = (int)Math.Pow(2, Math.Ceiling(Math.Log2(time.Count)));
+        var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
 
-        var n = (int)Math.Pow(2, Math.Floor(Math.Log2(time.Count)));  // FFT works only for the number of points that is a power of 2.
-        var sampleRate = n / (time[n] - time[0]);
+        // Pad before and after the signal with zeros.
+        // This reduces the discontinuity at the edges and improves the result especially at the edges.
+        var offset = (n - time.Count) >> 1;
+        var buffer = new Complex[n];
+        for (var i = 0; i < time.Count; ++i)
+            buffer[i + offset] = new(signal[i], 0);
 
-        var result = new double[time.Count];
-        Array.Copy(arr, 0, result, 0, time.Count);
-
-        // Take data points after the first non-negative time point if the number of positive time points is greater than `n`;
-        // otherwise, take the last `n` data points.
-        int offset;
-        for (offset = 0; offset < time.Count - n - 1; ++offset)
-            if (time[offset] >= 0) break;
-
-        var buffer = arr.Skip(offset).Take(n).Select(v => new Complex(v, 0)).ToArray();
         DiscreteFourierTransform.Forward(buffer);
         var freq = DiscreteFourierTransform.FrequencyScale(n, sampleRate, false);
 
@@ -62,7 +59,8 @@ internal abstract class FourierFilter : IFilter
         }
 
         var filtered = DiscreteFourierTransform.InverseReal(buffer);
-        Array.Copy(filtered, 0, result, offset, n);
+        var result = new double[time.Count];
+        Array.Copy(filtered, offset, result, 0, time.Count);
 
         return result;
     } // public virtual IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
