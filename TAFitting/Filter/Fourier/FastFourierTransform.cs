@@ -12,9 +12,9 @@ namespace TAFitting.Filter.Fourier;
  */
 
 /// <summary>
-/// Provides methods for discrete Fourier transform.
+/// Provides methods for fast Fourier transform.
 /// </summary>
-internal static class DiscreteFourierTransform
+internal static class FastFourierTransform
 {
     /// <summary>
     /// Performs a forward Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
@@ -213,4 +213,4 @@ internal static class DiscreteFourierTransform
                 return false;
         return true;
     } // internal static bool CheckEvenlySpaced (IReadOnlyList<double>, [double])
-} // internal static class DiscreteFourierTransform
+} // internal static class FastFourierTransform

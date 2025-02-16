@@ -34,7 +34,7 @@ internal abstract class FourierFilter : IFilter
         if (time.Count < 2)
             throw new ArgumentException($"The number of points must be greater than or equal to 2.");
 
-        Debug.Assert(DiscreteFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
+        Debug.Assert(FastFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
 
         // FFT works only for the number of points that is a power of 2.
         // Extend the number of points to the nearest power of 2.
@@ -48,8 +48,8 @@ internal abstract class FourierFilter : IFilter
         for (var i = 0; i < time.Count; ++i)
             buffer[i + offset] = new(signal[i], 0);
 
-        DiscreteFourierTransform.Forward(buffer);
-        var freq = DiscreteFourierTransform.FrequencyScale(n, sampleRate, false);
+        FastFourierTransform.Forward(buffer);
+        var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);
 
         for (var i = 0; i < n; ++i)
         {
@@ -58,7 +58,7 @@ internal abstract class FourierFilter : IFilter
                 buffer[i] = 0;
         }
 
-        var filtered = DiscreteFourierTransform.InverseReal(buffer);
+        var filtered = FastFourierTransform.InverseReal(buffer);
         var result = new double[time.Count];
         Array.Copy(filtered, offset, result, 0, time.Count);
 
