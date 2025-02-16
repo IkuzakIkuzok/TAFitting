@@ -294,35 +294,56 @@ internal sealed partial class MainWindow : Form
 
         #region menu.view
 
+        #region menu.view.plot
+
         var menu_view = new ToolStripMenuItem("&View");
         this.MainMenuStrip.Items.Add(menu_view);
 
-        var menu_viewColor = new ToolStripMenuItem("&Color")
-        {
-            ToolTipText = "Change the colors",
-        };
-        menu_view.DropDownItems.Add(menu_viewColor);
+        var menu_viewPlot = new ToolStripMenuItem("&Plot");
+        menu_view.DropDownItems.Add(menu_viewPlot);
 
-        var menu_viewColorObserved = new ToolStripMenuItem("&Observed")
+        var menu_viewObserved = new ToolStripMenuItem("&Observed")
+        {
+            ToolTipText = "Observed data",
+        };
+        menu_viewPlot.DropDownItems.Add(menu_viewObserved);
+
+        var menu_viewObservedColor = new ToolStripMenuItem("&Color")
         {
             ToolTipText = "Change the color of the observed data",
         };
-        menu_viewColorObserved.Click += SetObservedColor;
-        menu_viewColor.DropDownItems.Add(menu_viewColorObserved);
+        menu_viewObservedColor.Click += SetObservedColor;
+        menu_viewObserved.DropDownItems.Add(menu_viewObservedColor);
 
-        var menu_viewColorFiltered = new ToolStripMenuItem("&Filtered")
+        var menu_viewFiltered = new ToolStripMenuItem("&Filtered")
+        {
+            ToolTipText = "Filtered data",
+        };
+        menu_viewPlot.DropDownItems.Add(menu_viewFiltered);
+
+        var menu_viewFilteredColor = new ToolStripMenuItem("&Color")
         {
             ToolTipText = "Change the color of the filtered data",
         };
-        menu_viewColorFiltered.Click += SetFilteredColor;
-        menu_viewColor.DropDownItems.Add(menu_viewColorFiltered);
+        menu_viewFilteredColor.Click += SetFilteredColor;
+        menu_viewFiltered.DropDownItems.Add(menu_viewFilteredColor);
 
-        var menu_viewColorFit = new ToolStripMenuItem("&Fit")
+        var menu_viewFit = new ToolStripMenuItem("&Fit")
+        {
+            ToolTipText = "Fitting curve",
+        };
+        menu_viewPlot.DropDownItems.Add(menu_viewFit);
+
+        var menu_viewFitColor = new ToolStripMenuItem("&Color")
         {
             ToolTipText = "Change the color of the fitting curve",
         };
-        menu_viewColorFit.Click += SetFitColor;
-        menu_viewColor.DropDownItems.Add(menu_viewColorFit);
+        menu_viewFitColor.Click += SetFitColor;
+        menu_viewFit.DropDownItems.Add(menu_viewFitColor);
+
+        #endregion menu.view.plot
+
+        #region menu.view.font
 
         var menu_viewFont = new ToolStripMenuItem("&Font")
         {
@@ -343,6 +364,8 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFont.DropDownItems.Add(menu_viewFontAxisTitle);
         menu_viewFontAxisTitle.Click += SelectAxisTitleFont;
+
+        #endregion menu.view.font
 
         #endregion menu.view
 
