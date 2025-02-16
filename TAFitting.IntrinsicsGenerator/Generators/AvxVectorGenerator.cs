@@ -20,7 +20,7 @@ internal sealed class AvxVectorGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(sources, Execute);
     } // public void Initialize (IncrementalGeneratorInitializationContext)
 
-    public void Execute(SourceProductionContext context, ImmutableArray<GeneratorAttributeSyntaxContext> sources)
+    private static void Execute(SourceProductionContext context, ImmutableArray<GeneratorAttributeSyntaxContext> sources)
     {
         if (sources.Length == 0) return;
 
@@ -48,7 +48,7 @@ internal sealed class AvxVectorGenerator : IIncrementalGenerator
         }
 
         context.AddSource("AvxVectors.g.cs", builder.ToString().NormalizeNewLines());
-    } // public void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
+    } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
     private static ulong Mask64(int n) => (1UL << n) - 1;
 
