@@ -1171,6 +1171,8 @@ internal sealed partial class MainWindow : Form
 
     #endregion Models
 
+    #region table manipulation
+
     private void Undo(object? sender, EventArgs e)
         => this.parametersTable.Undo();
 
@@ -1260,6 +1262,8 @@ internal sealed partial class MainWindow : Form
         ShowPlots();
         UpdatePreviewsParameters();
     } // private void RemoveDecay (object?, DataGridViewRowEventArgs)
+
+    #endregion table manipulation
 
     #region Data manipulation
 
