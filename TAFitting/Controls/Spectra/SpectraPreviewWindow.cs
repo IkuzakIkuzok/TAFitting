@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024-2025 Kazuki Kohzuki
 
+using DisposalGenerator;
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Toast;
@@ -16,6 +17,7 @@ namespace TAFitting.Controls.Spectra;
 /// Represents a window for previewing spectra.
 /// </summary>
 [DesignerCategory("Code")]
+[AutoDisposal]
 internal sealed partial class SpectraPreviewWindow : Form
 {
     private static readonly Guid steadyStateDialog = new("AE0B2F4B-7A4E-425A-89DF-E81194032356");
@@ -856,20 +858,4 @@ internal sealed partial class SpectraPreviewWindow : Form
             ShowWavelengthHighlights();
         }
     } // private Bitmap CaptureSpectra ()
-
-    override protected void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-
-        if (!disposing) return;
-        this.mainContainer.Dispose();
-        this.optionsContainer.Dispose();
-        this.timeTable.Dispose();
-        this.lb_mask.Dispose();
-        this.maskingRangeBox.Dispose();
-        this.chart.Dispose();
-        this.axisX.Dispose();
-        this.axisY.Dispose();
-        this.wavelengthHighlights.Clear();
-    } // override protected void Dispose (bool)
 } // internal sealed partial class SpectraPreviewWindow : Form
