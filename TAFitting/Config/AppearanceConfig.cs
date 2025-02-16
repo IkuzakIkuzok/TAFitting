@@ -18,10 +18,22 @@ public sealed class AppearanceConfig
     public SerializableColor ObservedColor { get; set; } = Color.Gray;
 
     /// <summary>
+    /// Gets or sets the marker size of the observed data.
+    /// </summary>
+    [XmlElement("observed-size")]
+    public int ObservedSize { get; set; } = 2;
+
+    /// <summary>
     /// Gets or sets the color of the filtered data.
     /// </summary>
     [XmlElement("filtered-color")]
     public SerializableColor FilteredColor { get; set; } = Color.Blue;
+
+    /// <summary>
+    /// Gets or sets the line width of the filtered data.
+    /// </summary>
+    [XmlElement("filtered-width")]
+    public int FilteredWidth { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets the color of the fit lines.
@@ -33,7 +45,7 @@ public sealed class AppearanceConfig
     /// Gets or sets the line width of the fit lines.
     /// </summary>
     [XmlElement("fit-width")]
-    public int FitWidth { get; set; } = 3;
+    public int FitWidth { get; set; } = 2;
 
     /// <summary>
     /// Gets or sets the font of the axis labels.

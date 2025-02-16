@@ -99,6 +99,32 @@ internal static class Program
     }
 
     /// <summary>
+    /// Gets or sets the marker size of the observed data.
+    /// </summary>
+    internal static int ObservedSize
+    {
+        get => Config.AppearanceConfig.ObservedSize;
+        set
+        {
+            Config.AppearanceConfig.ObservedSize = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the line width of the filtered data.
+    /// </summary>
+    internal static int FilteredWidth
+    {
+        get => Config.AppearanceConfig.FilteredWidth;
+        set
+        {
+            Config.AppearanceConfig.FilteredWidth = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the line widdh of the fit lines.
     /// </summary>
     internal static int FitWidth

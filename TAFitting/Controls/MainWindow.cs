@@ -146,6 +146,7 @@ internal sealed partial class MainWindow : Form
         {
             Color = Program.ObservedColor,
             ChartType = SeriesChartType.Point,
+            MarkerSize = Program.ObservedSize,
             IsVisibleInLegend = false,
             IsXValueIndexed = false,
         };
@@ -155,6 +156,7 @@ internal sealed partial class MainWindow : Form
         {
             Color = Program.FilteredColor,
             ChartType = SeriesChartType.Line,
+            BorderWidth = Program.FilteredWidth,
             IsVisibleInLegend = false,
             IsXValueIndexed = false,
         };
@@ -164,6 +166,7 @@ internal sealed partial class MainWindow : Form
         {
             Color = Program.FitColor,
             ChartType = SeriesChartType.Line,
+            BorderWidth = Program.FitWidth,
             IsVisibleInLegend = false,
             IsXValueIndexed = false,
         };
@@ -315,6 +318,23 @@ internal sealed partial class MainWindow : Form
         menu_viewObservedColor.Click += SetObservedColor;
         menu_viewObserved.DropDownItems.Add(menu_viewObservedColor);
 
+        var menu_viewObservedSize = new ToolStripMenuItem("&Size")
+        {
+            ToolTipText = "Change the size of the observed data",
+        };
+        menu_viewObserved.DropDownItems.Add(menu_viewObservedSize);
+
+        for (var i = 1; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString())
+            {
+                Tag = i,
+            };
+            item.Click += ChangeObservedSize;
+            menu_viewObserved.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.ObservedSize;
+            menu_viewObservedSize.DropDownItems.Add(item);
+        }
+
         var menu_viewFiltered = new ToolStripMenuItem("&Filtered")
         {
             ToolTipText = "Filtered data",
@@ -328,6 +348,23 @@ internal sealed partial class MainWindow : Form
         menu_viewFilteredColor.Click += SetFilteredColor;
         menu_viewFiltered.DropDownItems.Add(menu_viewFilteredColor);
 
+        var menu_viewFilteredWidth = new ToolStripMenuItem("&Width")
+        {
+            ToolTipText = "Change the width of the filtered data",
+        };
+        menu_viewFiltered.DropDownItems.Add(menu_viewFilteredWidth);
+
+        for (var i = 1; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString())
+            {
+                Tag = i,
+            };
+            item.Click += ChangeFilteredWidth;
+            menu_viewFiltered.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.FilteredWidth;
+            menu_viewFilteredWidth.DropDownItems.Add(item);
+        }
+
         var menu_viewFit = new ToolStripMenuItem("&Fit")
         {
             ToolTipText = "Fitting curve",
@@ -340,6 +377,23 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFitColor.Click += SetFitColor;
         menu_viewFit.DropDownItems.Add(menu_viewFitColor);
+
+        var menu_viewFitWidth = new ToolStripMenuItem("&Width")
+        {
+            ToolTipText = "Change the width of the fitting curve",
+        };
+        menu_viewFit.DropDownItems.Add(menu_viewFitWidth);
+
+        for (var i = 1; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString())
+            {
+                Tag = i,
+            };
+            item.Click += ChangeFitWidth;
+            menu_viewFit.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.FitWidth;
+            menu_viewFitWidth.DropDownItems.Add(item);
+        }
 
         #endregion menu.view.plot
 
@@ -1642,6 +1696,8 @@ internal sealed partial class MainWindow : Form
 
     #region change appearance
 
+    #region change color
+
     private void SetObservedColor(object? sender, EventArgs e)
     {
         using var cd = new ColorDialog()
@@ -1672,6 +1728,35 @@ internal sealed partial class MainWindow : Form
         this.s_fit.Color = Program.FitColor = cd.Color;
     } // private void SetFitColor (object?, EventArgs)
 
+    #endregion change color
+
+    #region change width/size
+
+    private void ChangeObservedSize(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int size) return;
+        this.s_observed.MarkerSize = Program.ObservedSize = size;
+    } // private void ChangeObservedSize (object?, EventArgs)
+
+    private void ChangeFilteredWidth(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int size) return;
+        this.s_filtered.BorderWidth = Program.FilteredWidth = size;
+    } // private void ChangeFilteredWidth (object?, EventArgs)
+
+    private void ChangeFitWidth(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int size) return;
+        this.s_fit.BorderWidth = Program.FitWidth = size;
+    } // private void ChangeFitWidth (object?, EventArgs)
+
+    #endregion change width/size
+
+    #region change font
+
     private void SelectAxisLabelFont(object? sender, EventArgs e)
     {
         using var fd = new FontDialog()
@@ -1691,6 +1776,8 @@ internal sealed partial class MainWindow : Form
         if (fd.ShowDialog() != DialogResult.OK) return;
         this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont = fd.Font;
     } // private void SelectAxisTitleFont (object?, EventArgs)
+
+    #endregion change font
 
     #endregion change appearance
 } // internal sealed partial class MainWindow : Form
