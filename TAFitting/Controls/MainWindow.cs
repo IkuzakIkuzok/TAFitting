@@ -1089,7 +1089,7 @@ internal sealed partial class MainWindow : Form
         this.s_observed.Points.Clear();
         this.s_fit.Points.Clear();
 
-        ShowPlots();
+        ChangeRow(this.parametersTable.ParameterRows.FirstOrDefault(), true);
     } // private void MakeTable ()
 
     #endregion Models
@@ -1127,12 +1127,19 @@ internal sealed partial class MainWindow : Form
     private void ChangeRow(object? sender, ParametersTableSelectionChangedEventArgs e)
     {
         var movedToNewRow = (this.row?.Index ?? -1) != e.Row.Index;
-        this.row = e.Row;
+        ChangeRow(e.Row, movedToNewRow);
+    } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
+
+    private void ChangeRow(ParametersTableRow? row, bool movedToNewRow)
+    {
+        if (row is null) return;
+
+        this.row = row;
 
         if (movedToNewRow)
         {
             this.suppressAutoInvert = true;
-            this.cb_invert.Checked = e.Row.Inverted;
+            this.cb_invert.Checked = row.Inverted;
             this.suppressAutoInvert = false;
         }
 
@@ -1140,7 +1147,7 @@ internal sealed partial class MainWindow : Form
 
         ShowPlots();
         UpdatePreviewsSelectedWavelength();
-    } // private void ChangeRow (object?, ParametersTableSelectionChangedEventArgs)
+    } // private void ChangeRow (ParametersTableRow?, bool)
 
     /// <summary>
     /// Selects the decay data with the specified wavelength.
