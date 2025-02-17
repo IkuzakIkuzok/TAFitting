@@ -536,14 +536,6 @@ internal sealed partial class MainWindow : Form
         var menu_fit = new ToolStripMenuItem("&Fit");
         this.MainMenuStrip.Items.Add(menu_fit);
 
-        var menu_fitAverage = new ToolStripMenuItem("Take average")
-        {
-            ShortcutKeys = Keys.Control | Keys.M,
-            ToolTipText = "Fit the data using the average of the observed data",
-        };
-        menu_fitAverage.Click += TakeAverage;
-        menu_file.DropDownItems.Add(menu_fitAverage);
-
         var menu_fitLma = new ToolStripMenuItem("&Levenberg\u2013Marquardt")
         {
             ToolTipText = "Fit the data using the Levenberg\u2013Marquardt algorithm",
@@ -573,6 +565,16 @@ internal sealed partial class MainWindow : Form
         };
         menu_fitAuto.Click += ToggleAutoFit;
         menu_fit.DropDownItems.Add(menu_fitAuto);
+
+        menu_fit.DropDownItems.Add(new ToolStripSeparator());
+
+        var menu_fitAverage = new ToolStripMenuItem("Take average")
+        {
+            ShortcutKeys = Keys.Control | Keys.M,
+            ToolTipText = "Fit the data using the average of the observed data",
+        };
+        menu_fitAverage.Click += TakeAverage;
+        menu_fit.DropDownItems.Add(menu_fitAverage);
 
         #endregion menu.fit
 
