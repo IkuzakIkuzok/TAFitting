@@ -64,6 +64,9 @@ Followinf filters are available as built-in:
 Filters can be added by creating a new class that implements `TAFitting.Filter.IFilter` interface.
 See [Custom filters](#custom-filters) section for more details.
 
+Consider applying interpolation before filtering if the time spacing is not equal,
+since some filters may not work properly if the times are not equally spaced.
+
 #### Savitzky&ndash;Golay filter
 
 The Savitzky&ndash;Golay filter is a smoothing filter based on the least squares method.
