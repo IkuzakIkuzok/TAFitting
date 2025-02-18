@@ -25,6 +25,9 @@ internal static class FilterManager
 
     private static readonly Dictionary<Guid, FilterItem> filters = [];
 
+    /// <summary>
+    /// Occurs when the filters have changed.
+    /// </summary>
     internal static event EventHandler? FiltersChanged;
 
     /// <summary>
@@ -32,6 +35,12 @@ internal static class FilterManager
     /// </summary>
     internal static IReadOnlyDictionary<Guid, FilterItem> Filters => filters;
 
+    /// <summary>
+    /// Gets the default filter.
+    /// </summary>
+    /// <value>
+    /// An instance of the default filter, or <see langword="null"/> if not available.
+    /// </value>
     internal static IFilter? DefaultFilter
     {
         get
