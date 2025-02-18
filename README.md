@@ -152,6 +152,66 @@ Each filter other than SIMD filters must have a EquivalentSIMD to specify the SI
 If no SIMD filter is available, set the `SIMDType` to `null`.
 Required SIMD implementations can be specified by `SIMDRequirements` property.
 
+## Advanced configuration
+
+Some features cannot be configured from the GUI, and you need to edit the configuration file directly.
+The configuration file is named `TAFitting.config` and located in the same directory as the executable file.
+Inappropriate changes may cause the application to crash or undesired behavior, so be careful when editing the file.
+
+### Filters
+
+#### `appSettings/filter/default-filter`
+
+Specify the default filter to be applied to the data.
+The value should be the GUID of the filter.
+Do not specifiy the GUID of the SIMD filter.
+
+The default filter can be applied by Ctrl+F (selected row only) or Ctrl+Shift+F (all rows).
+It is also applied when the data is loaded iff Auto-fit is set to true.
+
+### Solver for Levenberg-Marquardt algorithm
+
+#### `appSettings/solver/parallel-threshold`
+
+Specify the threshold for parallelization.
+If the number of data is greater than or equal to this value, solving is parallelized.
+An integer value is acceptable. Meaning of the value is as follows:
+
+- Positive value: The threshold for parallelization.
+- 0: Always parallelize.
+- Negative value: Never parallelize.
+
+#### `appSettings/solver/maximum-iterations`
+
+Specify the maximum number of iterations for the solver.
+A positive integer value is acceptable.
+Too small value may cause the solver to converge to a local minimum,
+whereas too large value may cause the solver to take too long to converge.
+
+#### `appSettings/solver/use-simd`
+
+Specify whether to use SIMD to compute the values of the model.
+A boolean value with all lowercase (i.e., `true` or `false`) is acceptable.
+For many cases `true` is recommended as SIMD is much faster than scalar computation.
+
+Note that SIMD computation is not always used even if this value is set to `true`.
+
+#### `appSettings/solver/max-truncate-ratio`
+
+Specify the maximum ratio of the truncated data.
+SIMD computation is available only when the number of data points matches the lenghth of the SIMD vector (1024 or 2048).
+If the number of data points is greater than the length of the SIMD vector,
+the data is truncated, since the later time domain has less effect on the fitting.
+The trancation is performed by removing the data points from the end of the data,
+as long as the ratio of the truncated data is less than the specified value.
+(If the number of data points is less than the length of the SIMD vector, the data is extended by zero padding.)
+
+For example, if the number of data points is 2100, the last 52 points are removed to make the number of data points 2048.
+This trancation is valid only when the `max-truncate-ratio` is greater than 0.0254 (= 52 / 2048).
+Too small value prevents the SIMD computation, whereas too large value may cause the fitting to be inaccurate as many data points are removed.
+Note that the fitting is performed on the data only after the time zero,
+and the length of the data for fitting may not be the same as the original data.
+
 ## License
 
 TAFitting is licensed under the MIT License.
