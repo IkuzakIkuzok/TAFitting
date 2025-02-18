@@ -31,7 +31,7 @@ The folder should contain the following files:
 - 'B' signal data for determining the time zero
 
 File names of these files are decided based on the containing folder name.
-File name format can be changed from `Data` -> `Filename format`.
+File name format can be changed from `Data` -&gt; `Filename format`.
 
 In the file name format, following rules are available:
 
@@ -70,13 +70,13 @@ TAFitting provides a parameter estimation tool for any fitting model.
 It uses the Levenberg-Marquardt algorithm to minimize the sum of squared residuals.
 You can access the tool from `Fit` in the menu.
 
-Degree-of-freedom adjusted coefficients of determination R^2^ are shown in the parameter table.
-Generally, R^2^ > 0.5 is considered as a good fit, but this value should be used only as a reference.
-The R^2^ cells are colored based on the value.
+Degree-of-freedom adjusted coefficients of determination R<sup>2</sup> are shown in the parameter table.
+Generally, R<sup>2</sup> &gt; 0.5 is considered as a good fit, but this value should be used only as a reference.
+The R<sup>2</sup> cells are colored based on the value.
 
 ### Spectra preview
 
-Spectra preview window can be opend from `Data` -> `Preview spectra`.
+Spectra preview window can be opend from `Data` -&gt; `Preview spectra`.
 You can edit times on the right side of the window.
 The preview is updated automatically when you change the parameters on the main window.
 
