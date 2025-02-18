@@ -863,6 +863,28 @@ internal sealed partial class MainWindow : Form
 
         this.menu_filter.DropDownItems.Add(new ToolStripSeparator());
 
+        var menu_interpolate = new ToolStripMenuItem("&Interpolate")
+        {
+            ToolTipText = "Interpolate the data",
+        };
+        this.menu_filter.DropDownItems.Add(menu_interpolate);
+
+        var menu_interpolateSelectedRow = new ToolStripMenuItem("&Selected row")
+        {
+            ToolTipText = "Interpolate the selected row",
+        };
+        menu_interpolateSelectedRow.Click += InterpolateSelectedRow;
+        menu_interpolate.DropDownItems.Add(menu_interpolateSelectedRow);
+
+        var menu_interpolateAll = new ToolStripMenuItem("&All rows")
+        {
+            ToolTipText = "Interpolate all rows",
+        };
+        menu_interpolateAll.Click += InterpolateAll;
+        menu_interpolate.DropDownItems.Add(menu_interpolateAll);
+
+        this.menu_filter.DropDownItems.Add(new ToolStripSeparator());
+
         this.menu_filter.DropDownItems.Add(this.menu_autoApplyFilter);
         this.menu_filter.DropDownItems.Add(this.menu_hideOriginal);
         this.menu_filter.DropDownItems.Add(this.menu_unfilter);
@@ -950,6 +972,30 @@ internal sealed partial class MainWindow : Form
             row.Decay?.RestoreOriginal();
         ShowPlots();
     } // private void Unfilter (IEnumerable<ParametersTableRow>)
+
+    private void InterpolateSelectedRow(object? sender, EventArgs e)
+    {
+        if (this.row is null) return;
+        Interpolate([this.row]);
+    } // private void InterpolateSelectedRow (object?, EventArgs)
+
+    private void InterpolateAll(object? sender, EventArgs e)
+        => Interpolate(this.parametersTable.ParameterRows);
+
+    private void Interpolate(IEnumerable<ParametersTableRow> rows)
+    {
+        var filter = Program.AutoApplyFilter ? FilterManager.DefaultFilter : null;
+
+        foreach (var row in rows)
+        {
+            var decay = row.Decay;
+            if (decay is null) continue;
+            decay.Interpolate();
+            if (filter is not null)
+                decay.Filter(filter);
+        }
+        ShowPlots();
+    } // private void Interpolate (IEnumerable<ParametersTableRow>)
 
     #endregion filters
 

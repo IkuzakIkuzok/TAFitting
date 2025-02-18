@@ -210,6 +210,15 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     internal bool Remove(double wavelength)
         => this.decays.Remove(wavelength);
 
+    /// <summary>
+    /// Interpolates the decay data so that the time zero is the same.
+    /// </summary>
+    internal void Interpolate()
+    {
+        foreach (var decay in this.Values)
+            decay.Interpolate();
+    } // internal void Interpolate ()
+
     [GeneratedRegex(@"(\d+).*", RegexOptions.Compiled)]
     private static partial Regex RegexWavelength();
 

@@ -4,7 +4,6 @@
 using System.Collections;
 using System.Diagnostics;
 using TAFitting.Filter;
-using Windows.Web.Http;
 
 namespace TAFitting.Data;
 
@@ -300,4 +299,52 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         Array.Copy(this.signals, this.filtered, this.signals.Length);
         this.HasFiltered = false;
     } // internal void RestoreOriginal ([bool])
+
+    /// <summary>
+    /// Interpolates the decay data so that the time points are evenly spaced.
+    /// </summary>
+    internal void Interpolate()
+    {
+        var n = this.times.Length;
+        var new_times = new double[n];
+        var new_signals = new double[n];
+        var dt = (this.TimeMax - this.TimeMin) / (n - 1);
+
+        new_times[0] = this.TimeMin;
+        new_times[n - 1] = this.TimeMax;
+
+        new_signals[0] = this.signals[0];
+        new_signals[n - 1] = this.signals[^1];
+
+        for (var i = 1; i < n - 1; ++i)
+        {
+            var t = this.TimeMin + i * dt;
+            new_times[i] = t;
+
+            // linear interpolation
+            var index = Array.BinarySearch(this.times, t);
+            if (index < 0) index = ~index;
+
+            if (index == 0)
+            {
+                new_signals[i] = this.signals[0];
+                continue;
+            }
+            if (index == n)
+            {
+                new_signals[i] = this.signals[^1];
+                continue;
+            }
+
+            var t1 = this.times[index - 1];
+            var t2 = this.times[index];
+            var s1 = this.signals[index - 1];
+            var s2 = this.signals[index];
+            new_signals[i] = s1 + (s2 - s1) * (t - t1) / (t2 - t1);
+        }
+
+        Array.Copy(new_times, this.times, n);
+        Array.Copy(new_signals, this.signals, n);
+        RestoreOriginal(true);
+    } // internal void Interpolate ()
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
