@@ -693,14 +693,14 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     private void LoadMicrosecondDecays()
     {
-        var ofd = new OpenFolderDialog()
+        var dialog = new OpenFolderDialog()
         {
             Title = "Select a µs-TAS data folder",
             ClientGuid = Program.Config.SeparateFileDialogState ? usTasDialog : Program.FileDialogCommonId,
         };
-        if (!(ofd.ShowDialog() ?? false)) return;
+        if (!(dialog.ShowDialog() ?? false)) return;
 
-        LoadMicrosecondDecays(ofd.FolderName);
+        LoadMicrosecondDecays(dialog.FolderName);
     } // private void LoadMicrosecondDecays ()
 
     /// <summary>
@@ -721,15 +721,15 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     private void LoadFemtosecondDecays()
     {
-        using var ofd = new System.Windows.Forms.OpenFileDialog()
+        using var dialog = new System.Windows.Forms.OpenFileDialog()
         {
             Filter = ExtensionFilter.CsvFiles,
             Title = "Select a fs-TAS data file",
             ClientGuid = Program.Config.SeparateFileDialogState ? fsTasDialog : Program.FileDialogCommonId,
         };
-        if (ofd.ShowDialog() != DialogResult.OK) return;
+        if (dialog.ShowDialog() != DialogResult.OK) return;
 
-        LoadFemtosecondDecays(ofd.FileName);
+        LoadFemtosecondDecays(dialog.FileName);
     } // private void LoadFemtosecondDecays ()
 
     /// <summary>
@@ -1689,15 +1689,15 @@ internal sealed partial class MainWindow : Form
 
     private static void EditFilenameFormat(object? sender, EventArgs e)
     {
-        using var fnfd = new FileNameFormatDialog()
+        using var dialog = new FileNameFormatDialog()
         {
             AMinusBFormat = Program.AMinusBSignalFormat,
             BFormat = Program.BSignalFormat,
         };
-        if (fnfd.ShowDialog() != DialogResult.OK) return;
+        if (dialog.ShowDialog() != DialogResult.OK) return;
 
-        Program.AMinusBSignalFormat = fnfd.AMinusBFormat;
-        Program.BSignalFormat = fnfd.BFormat;
+        Program.AMinusBSignalFormat = dialog.AMinusBFormat;
+        Program.BSignalFormat = dialog.BFormat;
     } // private static void EditFilenameFormat (object?, EventArgs)
 
     #region change appearance

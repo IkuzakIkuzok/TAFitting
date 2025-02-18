@@ -589,16 +589,16 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
-        using var sfd = new SaveFileDialog
+        using var dialog = new SaveFileDialog
         {
             Title = "Save Spectra",
             Filter = ExtensionFilter.SpreadSheets,
             FileName = $"{Program.MainWindow.SampleName}_spectra.xlsx",
             ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };
-        if (sfd.ShowDialog() != DialogResult.OK) return;
+        if (dialog.ShowDialog() != DialogResult.OK) return;
 
-        var filename = sfd.FileName;
+        var filename = dialog.FileName;
         var extension = Path.GetExtension(filename);
         var writer = GetSpreadSheetWriter(extension);
 
@@ -645,15 +645,15 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
-        using var sfd = new SaveFileDialog
+        using var dialog = new SaveFileDialog
         {
             Title = "Export to Origin",
             Filter = ExtensionFilter.OriginProjects,
             FileName = $"{Program.MainWindow.SampleName}_spectra.opju",
             ClientGuid = Program.Config.SeparateFileDialogState ? Program.SaveDialogId : Program.FileDialogCommonId,
         };
-        if (sfd.ShowDialog() != DialogResult.OK) return;
-        var filename = sfd.FileName;
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+        var filename = dialog.FileName;
 
         try
         {
