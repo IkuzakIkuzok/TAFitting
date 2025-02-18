@@ -72,6 +72,7 @@ namespace TAFitting.Model;
 /// <summary>
 /// A polynomial model.
 /// </summary>
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 internal sealed class PolynomialModelAttribute : Attribute
 {
     /// <summary>
