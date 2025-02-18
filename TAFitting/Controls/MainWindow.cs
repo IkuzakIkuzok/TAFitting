@@ -1465,7 +1465,7 @@ internal sealed partial class MainWindow : Form
         {
             this.parametersTable.StopUpdateRSquared = true;
             this.stopDrawing = true;
-            if (source.Length >= Program.ParallelThreshold)
+            if (source.Length >= Program.ParallelThreshold && Program.ParallelThreshold >= 0)
             {
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
                 await Task.Run(() => Parallel.ForEach(source, (row) =>
