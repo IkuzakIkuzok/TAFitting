@@ -52,6 +52,37 @@ For fs-TAS data, the decay of each wavelength is stored in a single file.
 TAFitting only accepts the csv file exported from SurfaceXplorer.
 You can use [SXConverter](https://github.com/IkuzakIkuzok/SXConverter) to conver the Ultrafast System (UFS) file to the csv file.
 
+### Filtering
+
+Each dacay data can be filtered for smoothing and denoising.
+Followinf filters are available as built-in:
+
+- Savitzky&ndash;Golay filter (Cubic, 15 or 25 points)
+- Specific Fourier filter (1 kHz to 5 GHz)
+- Automatic Fourier filter (variable cutoff frequency based on the data)
+
+Filters can be added by creating a new class that implements `TAFitting.Filter.IFilter` interface.
+See [Custom filters](#custom-filters) section for more details.
+
+#### Savitzky&ndash;Golay filter
+
+The Savitzky&ndash;Golay filter is a smoothing filter based on the least squares method.
+The filter assumes that the times are equally spaced.
+No check is performed for the time spacing, so the filter may not work properly if the times are not equally spaced.
+See [<i>Anal. Chem.</i> <b>1964</b>, 36, 1627&ndash;1639](https://doi.org/10.1021/ac60214a047) for mathematical details.
+
+#### Fourier filter
+
+The Fourier filter is a low-pass filter based on the Fourier transform.
+The data is extended to the next power of 2 with appropriate padding before and after the data (e.g., 2500 points to 4096 points).
+The extended data is transformed to the frequency domain, and the high-frequency components are removed.
+The filtered data is obtained by the inverse Fourier transform.
+The filter assumes that the times are equally spaced.
+No check is performed for the time spacing, so the filter may not work properly if the times are not equally spaced.
+
+The automatic Fourier filter determines the cutoff frequency based on the time range of the data.
+For example, if the time range is 0 to 1 ms, "10%" means 100 µs, which is equivalent to 10 kHz.
+
 ### Fitting models
 
 TAFitting supports the following fitting models:
@@ -84,7 +115,9 @@ The preview is updated automatically when you change the parameters on the main 
 
 You can save the spectra data to a CSV or Excel file.
 
-## Custom models
+## Custom features
+
+### Custom models
 
 You can add custom fitting models by creating a new class that implements `TAFitting.Model.IFittingModel` interface.
 
@@ -102,6 +135,22 @@ Each model should have a GUID attribute, which is used to identify the model.
 
 It is strongly recommended that the model also implements `IAnalyticallyDifferentiable`,
 because built-in numerical differentiation is computationally expensive.
+
+### Custom filters
+
+You can add custom filters by creating a new class that implements `TAFitting.Filter.IFilter` interface.
+
+The interface has the following properties and method:
+
+- `string Name`: The name of the filter.
+- `string Description`: The description of the filter.
+- `double[] Apply(double[] data)`: The method to apply the filter to the data.
+
+Each filter should have a GUID attribute, which is used to identify the filter.
+
+Each filter other than SIMD filters must have a EquivalentSIMD to specify the SIMD filter.
+If no SIMD filter is available, set the `SIMDType` to `null`.
+Required SIMD implementations can be specified by `SIMDRequirements` property.
 
 ## License
 
