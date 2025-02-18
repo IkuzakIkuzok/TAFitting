@@ -115,6 +115,10 @@ The preview is updated automatically when you change the parameters on the main 
 
 You can save the spectra data to a CSV or Excel file.
 
+### Printing summary
+
+TA spectra and fitting parameters can be printed as a summary from spectra preview window.
+
 ## Custom features
 
 ### Custom models
