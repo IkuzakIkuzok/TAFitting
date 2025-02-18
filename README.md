@@ -98,7 +98,7 @@ See [Custom models](#custom-models) section for more details.
 ### Parameters estimation
 
 TAFitting provides a parameter estimation tool for any fitting model.
-It uses the Levenberg-Marquardt algorithm to minimize the sum of squared residuals.
+It uses the Levenberg&ndash;Marquardt algorithm to minimize the sum of squared residuals.
 You can access the tool from `Fit` in the menu.
 
 Degree-of-freedom adjusted coefficients of determination R<sup>2</sup> are shown in the parameter table.
@@ -169,7 +169,7 @@ Do not specifiy the GUID of the SIMD filter.
 The default filter can be applied by Ctrl+F (selected row only) or Ctrl+Shift+F (all rows).
 It is also applied when the data is loaded iff Auto-fit is set to true.
 
-### Solver for Levenberg-Marquardt algorithm
+### Solver for Levenberg&ndash;Marquardt algorithm
 
 #### `appSettings/solver/parallel-threshold`
 
