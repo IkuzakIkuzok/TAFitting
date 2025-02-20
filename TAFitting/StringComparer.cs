@@ -48,6 +48,6 @@ internal sealed partial class StringComparer : IComparer<string>
 
     private StringComparer() { }
 
-    [GeneratedRegex(@"(\D+|\d+(\.\d+)?)", RegexOptions.Compiled)]
+    [GeneratedRegex(@"(\D+|\d+(\.\d+)?)")]
     private static partial Regex NamePartsPattern();
 } // internal sealed partial class StringComparer : IComparer<string>

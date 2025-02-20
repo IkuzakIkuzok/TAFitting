@@ -219,7 +219,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             decay.Interpolate();
     } // internal void Interpolate ()
 
-    [GeneratedRegex(@"(\d+).*", RegexOptions.Compiled)]
+    [GeneratedRegex(@"(\d+).*")]
     private static partial Regex RegexWavelength();
 
 
