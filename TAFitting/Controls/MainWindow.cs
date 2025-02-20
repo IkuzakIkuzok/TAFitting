@@ -994,7 +994,7 @@ internal sealed partial class MainWindow : Form
             if (filter is not null)
                 decay.Filter(filter);
         }
-        ShowPlots();
+        ShowObserved();
     } // private void Interpolate (IEnumerable<ParametersTableRow>)
 
     #endregion filters
