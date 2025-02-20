@@ -118,6 +118,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     {
         get
         {
+            if (this.times[0] >= 0) return this;
             var index_t0 = this.times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
             return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit);
         }
