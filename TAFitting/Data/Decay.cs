@@ -50,7 +50,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         get
         {
             if (this.TimeUnit == TimeUnit.Second) return this.times;
-            return this.times.Select(t => t * this.TimeUnit).ToArray();
+            return [.. this.times.Select(t => t * this.TimeUnit)];
         }
     }
 
@@ -67,7 +67,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         get
         {
             if (this.SignalUnit == SignalUnit.OD) return this.signals;
-            return this.signals.Select(s => s * this.SignalUnit).ToArray();
+            return [.. this.signals.Select(s => s * this.SignalUnit)];
         }
     }
 
@@ -99,12 +99,12 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the absolute decay data.
     /// </summary>
-    internal Decay Absolute => new(this.times, this.TimeUnit, this.signals.Select(Math.Abs).ToArray(), this.SignalUnit);
+    internal Decay Absolute => new(this.times, this.TimeUnit, [.. this.signals.Select(Math.Abs)], this.SignalUnit);
 
     /// <summary>
     /// Gets the inverted decay data.
     /// </summary>
-    internal Decay Inverted => new(this.times, this.TimeUnit, this.signals.Select(s => -s).ToArray(), this.SignalUnit);
+    internal Decay Inverted => new(this.times, this.TimeUnit, [.. this.signals.Select(s => -s)], this.SignalUnit);
 
     /// <summary>
     /// Gets the filtered decay data.
@@ -227,7 +227,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="time">The time</param>
     /// <returns>The decay data with the shifted time.</returns>
     internal Decay AddTime(double time)
-        => new(this.times.Select(t => t + time).ToArray(), this.TimeUnit, this.signals, this.SignalUnit);
+        => new([.. this.times.Select(t => t + time)], this.TimeUnit, this.signals, this.SignalUnit);
 
     /// <summary>
     /// Gets the time at which the signal is minimum.
