@@ -307,6 +307,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal void Interpolate()
     {
         var n = this.times.Length;
+        if (n <= 2) return;
+
         var new_times = new double[n];
         var new_signals = new double[n];
         var dt = (this.TimeMax - this.TimeMin) / (n - 1);
