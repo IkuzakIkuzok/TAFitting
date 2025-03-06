@@ -680,7 +680,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             var col_wl = sheet.Columns[0];
             col_wl.LongName = "Wavelength";
             col_wl.Units = "nm";
-            col_wl.SetData(this.parameters.Keys.Cast<object>().ToArray());
+            col_wl.SetData([.. this.parameters.Keys.Cast<object>()]);
 
             var timeUnit = this.TimeUnit;
             var funcs = this.parameters.Values.Select(p => this.Model.GetFunction(p)).ToArray();

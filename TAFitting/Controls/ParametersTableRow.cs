@@ -154,7 +154,7 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
     /// </summary>
     /// <param name="indices">The indices of the magnitude columns.</param>
     internal void SetMagnitudeColumns(IEnumerable<int> indices)
-        => this.magnitudeColumns = indices.ToArray();
+        => this.magnitudeColumns = [.. indices];
 
     /// <summary>
     /// Inverts the magnitude columns.

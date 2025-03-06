@@ -19,7 +19,7 @@ internal partial class SteadyStateSpectrum : IEnumerable<(double Wavelength, dou
 
     protected SteadyStateSpectrum(IEnumerable<(double, double)> spectrum)
     {
-        this._spectrum = spectrum.ToList();
+        this._spectrum = [.. spectrum];
     } // ctor (IEnumerable<(double, double)>)
 
     /// <summary>

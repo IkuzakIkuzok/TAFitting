@@ -35,7 +35,7 @@ internal sealed class CsvWriter : ISpreadSheetWriter
         var rowData = new RowData
         {
             Wavelength = wavelength,
-            Values = this.Times.Select(func).ToArray(),
+            Values = [.. this.Times.Select(func)],
         };
         this.rows.Add(rowData);
     } // public void AddRow (double, IEnumerable<double>)

@@ -268,11 +268,12 @@ internal sealed partial class ParametersTable : DataGridView
             this.initialValues[i] = parameter.InitialValue;
         }
 
-        this.magnitudeColumns = parameters
+        this.magnitudeColumns = [..
+            parameters
             .Select((p, i) => (Parameter: p, Index: i))
             .Where(item => item.Parameter.IsMagnitude)
             .Select(item => item.Index)
-            .ToArray();
+        ];
 
         var col_r2 = new DataGridViewTextBoxColumn
         {

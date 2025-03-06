@@ -146,7 +146,7 @@ internal sealed class LevenbergMarquardt
 
         this.parameters = new double[this.numberOfParameters];
         Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
-        this.constraints = model.Parameters.Select(p => p.Constraints).ToArray();
+        this.constraints = [.. model.Parameters.Select(p => p.Constraints)];
         
         this.incrementedParameters = new double[this.numberOfParameters];
         this.est_vals = new double[this.numberOfDataPoints];

@@ -38,7 +38,7 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
     {
         if (models.Count < 2)
             throw new ArgumentException("More than 2 models are required.", nameof(models));
-        this.models = models.Select(id => ModelManager.Models[id].Model).OfType<IAnalyticallyDifferentiable>().ToList();
+        this.models = [.. models.Select(id => ModelManager.Models[id].Model).OfType<IAnalyticallyDifferentiable>()];
 
         this.Name = name;
         this.Description = "Linear combination of " + string.Join(", ", this.models.SkipLast(1).Select(m => m.Name)) + " and " + this.models[models.Count - 1].Name;
@@ -97,7 +97,7 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
             var n = model.Parameters.Count;
             var p = parameters.Take(n).ToArray();
             derivs[i] = model.GetDerivatives(p);
-            parameters = parameters.Skip(n).ToArray();
+            parameters = [.. parameters.Skip(n)];
         }
         return (x, res) =>
         {
