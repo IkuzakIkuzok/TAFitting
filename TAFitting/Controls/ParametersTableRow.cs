@@ -74,6 +74,9 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Gets or sets the R² value.
+    /// </summary>
     internal double RSquared
     {
         get => GetCellValue(this.Cells.Count - 1, 0.0);

@@ -208,12 +208,21 @@ internal sealed partial class ParametersTable : DataGridView
         CalculateRSquared(row);
     } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
 
+    /// <summary>
+    /// Undoes the last command.
+    /// </summary>
     internal void Undo()
         => this.undoBuffer.Undo();
 
+    /// <summary>
+    /// Redoes the last undone command.
+    /// </summary>
     internal void Redo()
         => this.undoBuffer.Redo();
 
+    /// <summary>
+    /// Clears the undo buffer.
+    /// </summary>
     internal void ClearUndoBuffer()
     {
         this.undoBuffer.Clear();
