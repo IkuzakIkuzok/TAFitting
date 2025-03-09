@@ -431,28 +431,25 @@ internal sealed partial class ParametersTable : DataGridView
         var scaler = this.Model.YLogScale ? Math.Log10 : (Func<double, double>)(x => x);
 
         var X = decay.Times.ToArray();
-        var Y = decay.Signals.Select(y => y * inverse).Select(scaler).ToArray();
+        var Y = decay.Signals.Select(y => scaler(y * inverse)).ToArray();
         var average = Y.Where(y => !double.IsNaN(y)).Average();
         var Se = 0.0;
         var St = 0.0;
         var N = 0;
-        foreach ((var x, var y) in X.Zip(Y))
+        if (X.Length != Y.Length) return;
+        for (var i = 0; i < X.Length; ++i)
         {
-            if (double.IsNaN(y))
-            {
-                continue;
-            }
+            var x = X[i];
+            var y = Y[i];
+            if (double.IsNaN(y)) continue;
 
             var y_fit = scaler(func(x) * inverse);
-            if (double.IsNaN(y_fit))
-            {
-                continue;
-            }
+            if (double.IsNaN(y_fit)) continue;
 
             var de = y - y_fit;
             var dt = y - average;
-            Se += Math.Pow(de, 2);
-            St += Math.Pow(dt, 2);
+            Se += de * de;
+            St += dt * dt;
             ++N;
         }
         var p = row.Parameters.Count;
