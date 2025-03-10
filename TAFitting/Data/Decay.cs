@@ -1,8 +1,13 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2025 Kazuki KOHZUKI
+
+// Use optimized code for Tekave outputs
+// The optimization is valid only if the maximum time is less than 10 s.
+#define Tekave
 
 using System.Collections;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using TAFitting.Filter;
 
 namespace TAFitting.Data;
@@ -164,6 +169,21 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         RestoreOriginal(true);
     } // ctor (double[], double[])
 
+#if Tekave
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe private static double FastParse(ReadOnlySpan<byte> span)
+    {
+        var neg = span[0] == '-';
+        var val = span[1] - (long)'0';
+        for (var i = 0; i < 12; i++)
+        {
+            var c = span[i + 3];
+            val = val * 10 + (c - (int)'0');
+        }
+        return val * (neg ? -1 : 1) / 1_000_000_000_000.0;
+    } // unsafe private static double FastParse (ReadOnlySpan<byte>)
+#endif
+
     /// <summary>
     /// Reads a decay data from a file.
     /// </summary>
@@ -179,6 +199,28 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         try
         {
+#if Tekave
+            /*
+             * Optimized parsing for Tekave outputs.
+             * 
+             * Each CSV file contains 2499 lines
+             * and each line has 43 bytes including trailing 0x0D and 0x0A.
+             */
+
+            using var reader = File.OpenRead(filename);
+            Span<byte> buffer = stackalloc byte[43];
+
+            var times = new double[2499];
+            var signals = new double[2499];
+            for (var i = 0; i < times.Length; ++i)
+            {
+                var read = reader.Read(buffer);
+                var t = buffer.Slice(5, 15);
+                var s = buffer.Slice(26, 15);
+                times[i] = FastParse(t) * timeScaling;
+                signals[i] = FastParse(s) * signalScaling;
+            }
+#else
             var lines = File.ReadAllLines(filename);
             var times = new double[lines.Length];
             var signals = new double[lines.Length];
@@ -188,7 +230,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 times[i] = double.Parse(parts[0]) * timeScaling;
                 signals[i] = double.Parse(parts[1]) * signalScaling;
             }
+#endif
             return new(times, timeUnit, signals, signalUnit);
+
         }
         catch (Exception ex)
         {
