@@ -11,6 +11,7 @@
 	<Copyright>(c) 2024 Kazuki Kohzuki</Copyright>
 	<Configurations>Debug;Release</Configurations>
 	<Platforms>AnyCPU;x86;x64</Platforms>
+	<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
 </Project>

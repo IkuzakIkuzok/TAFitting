@@ -1500,10 +1500,8 @@ internal sealed partial class MainWindow : Form
 
         Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation = LevenbergMarquardtEstimation;
         var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
-        if (model is IVectorizedModel<AvxVector1024> && LevenbergMarquardtSIMD<AvxVector1024>.CheckSupport(n))
-            estimation = LevenbergMarquardtEstimationSIMD<AvxVector1024>;
-        else if (model is IVectorizedModel<AvxVector2048> && LevenbergMarquardtSIMD<AvxVector2048>.CheckSupport(n))
-            estimation = LevenbergMarquardtEstimationSIMD<AvxVector2048>;
+        if (model is IVectorizedModel && AvxVector.IsSupported)
+            estimation = LevenbergMarquardtEstimationSIMD;
 
         var start = Stopwatch.GetTimestamp();
 
@@ -1574,16 +1572,16 @@ internal sealed partial class MainWindow : Form
     /// <param name="row">The row to fit.</param>
     /// <param name="model">The model to fit.</param>
     /// <returns>The estimated parameters.</returns>
-    private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD<TVector>(ParametersTableRow row, IFittingModel model) where TVector : IIntrinsicVector<TVector>
+    private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD(ParametersTableRow row, IFittingModel model)
     {
         var decay = row.Decay.OnlyAfterT0;
-        var lma = new LevenbergMarquardtSIMD<TVector>((IVectorizedModel<TVector>)model, decay.Times, decay.Signals, row.Parameters)
+        var lma = new LevenbergMarquardtSIMD((IVectorizedModel)model, decay.Times, decay.Signals, row.Parameters)
         {
             MaxIteration = Program.MaxIterations,
         };
         lma.Fit();
         return lma.Parameters;
-    } // private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD<TVector> (ParametersTableRow, IAnalyticallyDifferentiable) where TVector : IIntrinsicVector<TVector>
+    } // private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD (ParametersTableRow, IAnalyticallyDifferentiable)
 
     private void ToggleAutoFit(object? sender, EventArgs e)
     {

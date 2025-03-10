@@ -28,7 +28,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}-component exponential model.");
         builder.AppendLine($"\t/// </summary>");
-        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector1024>, IVectorizedModel<AvxVector2048>");
+        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel");
         builder.AppendLine("\t{");
 
         #region fields
@@ -97,8 +97,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
             + string.Concat(Enumerable.Range(1, n).Select(i => $" + a{i} * MathUtil.FastExp(x * t{i})")) + ";");
         builder.AppendLine("\t\t} // public Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
 
-        GenerateGetVectorizedFunc(builder, "AvxVector1024", n);
-        GenerateGetVectorizedFunc(builder, "AvxVector2048", n);
+        GenerateGetVectorizedFunc(builder, "AvxVector", n);
 
         #endregion GetFunction
 
@@ -134,14 +133,13 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\n\t\t\t};");
         builder.AppendLine("\t\t} // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)");
 
-        GenerateGetVectorizedDerivatives(builder, "AvxVector1024", n);
-        GenerateGetVectorizedDerivatives(builder, "AvxVector2048", n);
+        GenerateGetVectorizedDerivatives(builder, "AvxVector", n);
 
         #endregion GetDerivatives
 
         #endregion methods
 
-        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel<AvxVector1024>, IVectorizedModel<AvxVector2048>");
+        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel");
         builder.AppendLine("} // namespace " + nameSpace);
 
         return builder.ToString();
@@ -151,7 +149,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tFunc<{TVector}, {TVector}> IVectorizedModel<{TVector}>.GetVectorizedFunc(IReadOnlyList<double> parameters)");
+        builder.AppendLine($"\t\tFunc<{TVector}, {TVector}> IVectorizedModel.GetVectorizedFunc(IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> (x) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\tvar length = x.Length;");
@@ -176,7 +174,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tAction<{TVector}, {TVector}[]> IVectorizedModel<{TVector}>.GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine($"\t\tAction<{TVector}, {TVector}[]> IVectorizedModel.GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
 
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
@@ -258,7 +256,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
     private static readonly string MathUtil = @$"
 using System.Runtime.CompilerServices;
-using TAFitting.Data.Solver.SIMD;
+using TAFitting.Data;
 
 /// <summary>
 /// Provides mathematical utility functions.

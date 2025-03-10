@@ -10,19 +10,18 @@ namespace TAFitting.Data.Solver.SIMD;
 /// <summary>
 /// Represents the Levenberg-Marquardt algorithm with SIMD.
 /// </summary>
-/// <typeparam name="TVector">The type of the intrinsic vector.</typeparam>
-internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsicVector<TVector>
+internal sealed class LevenbergMarquardtSIMD
 {
     /// <summary>
     /// Gets a value indicating whether LMA with SIMD is supported.
     /// </summary>
     internal static bool IsSupported
-        => Program.Config.SolverConfig.UseSIMD && TVector.CheckSupported();
+        => Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported;
 
     /// <summary>
     /// Gets the fitting model.
     /// </summary>
-    internal IVectorizedModel<TVector> Model { get; }
+    internal IVectorizedModel Model { get; }
 
     /// <summary>
     /// Gets the lambda (damping parameter).
@@ -49,8 +48,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     /// </summary>
     internal Numbers Parameters => this.parameters;
 
-    private readonly TVector x, y;
-    private TVector est_vals;
+    private readonly AvxVector x, y;
+    private AvxVector est_vals;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
@@ -58,26 +57,26 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     private readonly int numberOfParameters, numberOfDataPoints;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
-    private readonly TVector temp_vector, temp_vector2;
-    private readonly TVector[] derivatives;  // Cache for the partial derivatives
-    private Func<TVector, TVector> func = null!;
+    private readonly AvxVector temp_vector, temp_vector2;
+    private readonly AvxVector[] derivatives;  // Cache for the partial derivatives
+    private Func<AvxVector, AvxVector> func = null!;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LevenbergMarquardtSIMD{TVector}"/> class.
+    /// Initializes a new instance of the <see cref="LevenbergMarquardtSIMD{AvxVector}"/> class.
     /// </summary>
     /// <param name="model">The fitting model.</param>
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
     /// <param name="parameters">The initial parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
-    internal LevenbergMarquardtSIMD(IVectorizedModel<TVector> model, Numbers x, Numbers y, Numbers parameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Numbers parameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
 
         this.Model = model;
-        this.x = TVector.CreateReadonly([.. x]);
-        this.y = TVector.CreateReadonly([.. y]);
+        this.x = AvxVector.CreateReadonly([.. x]);
+        this.y = AvxVector.CreateReadonly([.. y]);
 
         this.numberOfParameters = parameters.Count;
         this.numberOfDataPoints = x.Count;
@@ -87,17 +86,17 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         this.constraints = [.. model.Parameters.Select(p => p.Constraints)];
 
         this.incrementedParameters = new double[this.numberOfParameters];
-        this.est_vals = TVector.Create(this.numberOfDataPoints);
+        this.est_vals = AvxVector.Create(this.numberOfDataPoints);
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
 
-        this.temp_vector = TVector.Create(this.numberOfDataPoints);
-        this.temp_vector2 = TVector.Create(this.numberOfDataPoints);
+        this.temp_vector = AvxVector.Create(this.numberOfDataPoints);
+        this.temp_vector2 = AvxVector.Create(this.numberOfDataPoints);
 
-        this.derivatives = new TVector[this.numberOfParameters];
+        this.derivatives = new AvxVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
-            this.derivatives[i] = TVector.Create(this.numberOfDataPoints);
-    } // ctor (IVectorizedModel<TVector>, Numbers, Numbers, Numbers)
+            this.derivatives[i] = AvxVector.Create(this.numberOfDataPoints);
+    } // ctor (IVectorizedModel, Numbers, Numbers, Numbers)
 
     /// <summary>
     /// Fits the model to the data.
@@ -142,8 +141,8 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         var func = this.Model.GetVectorizedFunc(parameters);
         var v_e = func(this.x);
 
-        TVector.Subtract(this.y, v_e, this.temp_vector);
-        return TVector.InnerProduct(this.temp_vector, this.temp_vector);
+        AvxVector.Subtract(this.y, v_e, this.temp_vector);
+        return AvxVector.InnerProduct(this.temp_vector, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,7 +203,7 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         {
             for (var col = 0; col < this.numberOfParameters; ++col)
             {
-                var h = TVector.InnerProduct(this.derivatives[row], this.derivatives[col]);
+                var h = AvxVector.InnerProduct(this.derivatives[row], this.derivatives[col]);
                 this.hessian[row, col] = h;
                 this.hessian[col, row] = h;
             }
@@ -215,11 +214,11 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CalcGradient()
     {
-        TVector.Subtract(this.y, this.est_vals, this.temp_vector2);
+        AvxVector.Subtract(this.y, this.est_vals, this.temp_vector2);
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
-            //TVector.Subtract(this.y, this.est_vals, this.temp_vector);
-            TVector.Multiply(this.temp_vector2, this.derivatives[row], this.temp_vector);
+            //AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
+            AvxVector.Multiply(this.temp_vector2, this.derivatives[row], this.temp_vector);
             this.gradient[row] = this.temp_vector.Sum;
         }
     } // private void CalcGradient ()
@@ -248,15 +247,4 @@ internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsic
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
-
-    /// <summary>
-    /// Checks if the number of data points is supported.
-    /// </summary>
-    /// <param name="dataCount">The number of data points.</param>
-    /// <returns><see langword="true"/> if the number of data points is supported; otherwise, <see langword="false"/>.</returns>
-    internal static bool CheckSupport(int dataCount)
-    {
-        if (!IsSupported) return false;
-        return dataCount <= (int)(TVector.GetCapacity() * (1 + Program.Config.SolverConfig.MaxTruncateRatio));
-    } // internal static bool CheckSupport (int)
-} // internal sealed class LevenbergMarquardtSIMD<TVector> where TVector : IIntrinsicVector<TVector>
+} // internal sealed class LevenbergMarquardtSIMD<AvxVector> where AvxVector : IIntrinsicVector<AvxVector>
