@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2025 Kazuki KOHZUKI
 
 using System.Runtime.CompilerServices;
 
@@ -25,34 +25,15 @@ internal sealed class TDist : StatsDist
     override public double ProbabilityDensityFunction(double x, int dof)
     {
         if (dof >= DOF_THRESHOLD)
-            return Math.Exp(-x * x / 2) / SqrtTwoPi;  // Standard normal distribution N(0, 1)
+            return MathUtils.FastExp(-x * x / 2) / SqrtTwoPi;  // Standard normal distribution N(0, 1)
 
         // Gamma(dof + 1) / Math.Sqrt(Math.PI * dof) / Gamma(dof) * Math.Pow(1 + x * x / dof, -(dof + 1) / 2.0);
 
         var g = Gamma(dof + 1) / Gamma(dof);
-        var p = FastPower(1 / (1 + x * x / dof), dof + 1);
+        var p = MathUtils.FastPower(1 / (1 + x * x / dof), dof + 1);
         var s = Math.Sqrt(p / (Math.PI * dof));
         return g * s;
     } // override  public double ProbabilityDensityFunction (double, int)
-
-    /// <summary>
-    /// Computes a power of a number quickly.
-    /// </summary>
-    /// <param name="a">A double-precision floating-point number to be raised to a power.</param>
-    /// <param name="b">An integer number that specifies a power.</param>
-    /// <returns>The number <paramref name="a"/> raised to the power <paramref name="b"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static double FastPower(double a, int b)
-    {
-        var r = 1.0;
-        while (b > 0)
-        {
-            if ((b & 1) == 1) r *= a;
-            a *= a;
-            b >>= 1;
-        }
-        return r;
-    } // private static double FastPower (double, int)
 
     /// <summary>
     /// Computes gamma function for a half of a positive integer.
