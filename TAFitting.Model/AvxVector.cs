@@ -953,4 +953,35 @@ public sealed class AvxVector
         for (; i < s_vector.Length; i++)
             s_result[i] = MathUtils.FastExp(s_vector[i]);
     } // unsafe public static void Exp (AvxVector, AvxVector)
+
+    /// <summary>
+    /// Computes the natural logarithm for each element of the specified vector.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    unsafe public static void Sqrt(AvxVector vector, AvxVector result)
+    {
+        if (vector._array.Length != result._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (result.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        var s_vector = vector._array.AsSpan();
+        var s_result = result._array.AsSpan();
+        var i = 0;
+        fixed (double* p_vector = s_vector)
+        {
+            do
+            {
+                var v_vector = Avx.LoadVector256(p_vector + i);
+                var v_result = Avx.Sqrt(v_vector);
+                v_result.CopyTo(s_result[i..]);
+                i += Vector256<double>.Count;
+            } while (i <= s_vector.Length - Vector256<double>.Count);
+        }
+        for (; i < s_vector.Length; i++)
+            s_result[i] = Math.Sqrt(s_vector[i]);
+    } // unsafe public static void Sqrt (AvxVector, AvxVector)
 } // public sealed class AvxVector
