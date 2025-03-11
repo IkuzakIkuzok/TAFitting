@@ -36,6 +36,7 @@ internal sealed class TDist : StatsDist
     } // override public double ProbabilityDensityFunction (double, int)
 
     /// <inheritdoc/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     override public double CumulativeDistributionFunction(double x, int dof)
     {
         return 1 - SurvivalFunction(x, dof);
@@ -50,13 +51,12 @@ internal sealed class TDist : StatsDist
         // for C# implementation.
 
         double n = dof; // to sync with ACM parameter name
-        double a, b, y;
 
         x *= x;
-        y = x / n;
-        b = y + 1.0;
+        var y = x / n;
+        var b = y + 1.0;
         if (y > 1.0e-6) y = Math.Log(b);
-        a = n - 0.5;
+        var a = n - 0.5;
         b = 48.0 * a * a;
         y = a * y;
         y = (((((-0.4 * y - 3.3) * y - 24.0) * y - 85.5) /
