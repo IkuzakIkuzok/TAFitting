@@ -33,7 +33,38 @@ internal sealed class TDist : StatsDist
         var p = MathUtils.FastPower(1 / (1 + x * x / dof), dof + 1);
         var s = Math.Sqrt(p / (Math.PI * dof));
         return g * s;
-    } // override  public double ProbabilityDensityFunction (double, int)
+    } // override public double ProbabilityDensityFunction (double, int)
+
+    /// <inheritdoc/>
+    override public double CumulativeDistributionFunction(double x, int dof)
+    {
+        return 1 - SurvivalFunction(x, dof);
+    } // override public double CumulativeDistributionFunction (double, int)
+
+    /// <inheritdoc/>
+    override public double SurvivalFunction(double x, int dof)
+    {
+        // ACM Algorithm #395
+        // See
+        //     https://learn.microsoft.com/en-us/archive/msdn-magazine/2015/november/test-run-the-t-test-using-csharp
+        // for C# implementation.
+
+        double n = dof; // to sync with ACM parameter name
+        double a, b, y;
+
+        x *= x;
+        y = x / n;
+        b = y + 1.0;
+        if (y > 1.0e-6) y = Math.Log(b);
+        a = n - 0.5;
+        b = 48.0 * a * a;
+        y = a * y;
+        y = (((((-0.4 * y - 3.3) * y - 24.0) * y - 85.5) /
+          (0.8 * y * y + 100.0 + b) + y + 3.0) / b + 1.0) *
+          Math.Sqrt(y);
+
+        return StatsUtils.Gaussian(-y); // ACM algorithm 209
+    } // private static double Gamma (int)
 
     /// <summary>
     /// Computes gamma function for a half of a positive integer.
