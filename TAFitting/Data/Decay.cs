@@ -180,7 +180,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var c = span[i + 3];
             val = val * 10 + (c - (int)'0');
         }
-        return val * (neg ? -1 : 1) / 1_000_000_000_000.0;
+        return (neg ? -val : val) * 0.000_000_000_001;
     } // unsafe private static double FastParse (ReadOnlySpan<byte>)
 #endif
 
