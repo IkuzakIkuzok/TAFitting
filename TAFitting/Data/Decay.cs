@@ -228,11 +228,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                var t0 = buffer.Slice(5 + 43 * 0, 15);
+                var t0 = buffer.Slice( 5 + 43 * 0, 15);
                 var s0 = buffer.Slice(26 + 43 * 0, 15);
-                var t1 = buffer.Slice(5 + 43 * 1, 15);
+                var t1 = buffer.Slice( 5 + 43 * 1, 15);
                 var s1 = buffer.Slice(26 + 43 * 1, 15);
-                var t2 = buffer.Slice(5 + 43 * 2, 15);
+                var t2 = buffer.Slice( 5 + 43 * 2, 15);
                 var s2 = buffer.Slice(26 + 43 * 2, 15);
 
                 times[i + 0] = FastParse(t0) * timeScaling;
