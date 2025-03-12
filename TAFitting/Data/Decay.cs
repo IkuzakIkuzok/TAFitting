@@ -215,7 +215,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             const int LINES = 3;
 
-            using var reader = File.OpenRead(filename);
+            using var reader = new FileStream(
+                filename, FileMode.Open, FileAccess.Read, FileShare.Read,
+                bufferSize: 43 * 3 * 7 * 7,
+                false
+            );
             Span<byte> buffer = stackalloc byte[43 * LINES];
 
             var times = new double[2499];
