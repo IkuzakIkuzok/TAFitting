@@ -464,7 +464,7 @@ public sealed class AvxVector
 
         this.IsReadonly = isReadonly;
         this._array = new double[count];
-        var span = _array.AsSpan();
+        var span = this._array.AsSpan();
         span.Fill(value);
     } // ctor (int, double, bool)
 
@@ -507,7 +507,7 @@ public sealed class AvxVector
     {
         if (this.IsReadonly)
             throw new InvalidOperationException("The current vector is readonly.");
-        var span = _array.AsSpan();
+        var span = this._array.AsSpan();
         span.Fill(value);
     } // public void Load (double)
 
@@ -516,7 +516,7 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="values">The values of the vector.</param>
     /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
-    public static AvxVector Create(double[] values) => new AvxVector(values, false);
+    public static AvxVector Create(double[] values) => new(values, false);
 
     /// <summary>
     /// Creates a new instance of the <see cref="AvxVector"/> class with the specified count and value.
@@ -524,21 +524,21 @@ public sealed class AvxVector
     /// <param name="count">The number of elements in the vector.</param>
     /// <param name="value">The value of the vector.</param>
     /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
-    public static AvxVector Create(int count, double value) => new AvxVector(count, value, false);
+    public static AvxVector Create(int count, double value) => new(count, value, false);
 
     /// <summary>
     /// Creates a new instance of the <see cref="AvxVector"/> class with the specified count.
     /// </summary>
     /// <param name="count">The number of elements in the vector.</param>
     /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
-    public static AvxVector Create(int count) => new AvxVector(count);
+    public static AvxVector Create(int count) => new(count);
 
     /// <summary>
     /// Creates a new readonly instance of the <see cref="AvxVector"/> class with the specified values.
     /// </summary>
     /// <param name="values">The values of the vector.</param>
     /// <returns>A new readonly <see cref="AvxVector"/> instance that contains the specified values.</returns>
-    public static AvxVector CreateReadonly(double[] values) => new AvxVector(values, true);
+    public static AvxVector CreateReadonly(double[] values) => new(values, true);
 
     /// <summary>
     /// Creates a new readonly instance of the <see cref="AvxVector"/> class with the specified count and value.
@@ -546,7 +546,7 @@ public sealed class AvxVector
     /// <param name="count">The number of elements in the vector.</param>
     /// <param name="value">The value of the vector.</param>
     /// <returns>A new readonly <see cref="AvxVector"/> instance that contains the specified values.</returns>
-    public static AvxVector CreateReadonly(int count, double value) => new AvxVector(count, value, true);
+    public static AvxVector CreateReadonly(int count, double value) => new(count, value, true);
 
     /// <summary>
     /// Adds the specified vectors and stores the result in the specified vector.
