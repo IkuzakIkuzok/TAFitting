@@ -115,16 +115,16 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var l_t0 = new List<double>();
 
         var folders = Directory.EnumerateDirectories(path);
-        var wl_folders = new Dictionary<double, string>();
+        var loader = new FileLoader();
         foreach (var folder in folders)
         {
             var basename = Path.GetFileName(folder);
             var wl = re_wavelength.Match(basename).Groups[1].Value;
             if (!double.TryParse(wl, out var wavelength)) continue;
-            wl_folders.Add(wavelength, folder);
+            loader.Register(folder, wavelength);
         }
 
-        foreach ((var wavelength, var folder) in wl_folders.OrderBy(kv => kv.Key))
+        foreach ((var wavelength, var folder) in loader.OrderBy(kv => kv.Key))
         {
             var basename = Path.GetFileName(folder);
             var name_ab = FileNameHandler.GetFileName(basename, format_ab);
@@ -133,10 +133,12 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var file_ab = Path.Combine(folder, name_ab);
             var file_b = Path.Combine(folder, name_b);
 
-            if (!File.Exists(file_ab) || !File.Exists(file_b)) continue;
+            // If one of the files is missing, FileLoader.Register does not add the folder to the list
+            // and the wavelength is not iterated here.
+            // Therefore, checking the existence of the files is not necessary.
 
-            var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit);
-            var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit);
+            var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit, loader.GetAMinusBFileData(wavelength));
+            var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit, loader.GetBFileData(wavelength));
             decays.decays.Add(wavelength, decay_ab);
 
             var b_t0 = decay_b.FilndT0();

@@ -302,6 +302,57 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         }
     } // internal static Decay FromFile (string, TimeUnit, SignalUnit)
 
+    /// <summary>
+    /// Reads a decay data from a file and preloaded data.
+    /// </summary>
+    /// <param name="filename">The filename.</param>
+    /// <param name="timeUnit">The time unit.</param>
+    /// <param name="signalUnit">The signal unit.</param>
+    /// <param name="preLoadData">The preloaded data.</param>
+    /// <returns>The decay data.</returns>
+    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit, byte[]? preLoadData)
+    {
+        if (preLoadData is null) return FromFile(filename, timeUnit, signalUnit);
+
+#if Tekave
+        const int BUFF_LEN = 43;
+        var span = preLoadData.AsSpan();
+
+        var timeScaling = SCALING_FACTOR / timeUnit;
+        var signalScaling = 1.0 / signalUnit;
+
+        var times = new double[2499];
+        var signals = new double[2499];
+
+        var t = span.Slice(5 + BUFF_LEN * 0, 15);
+        var dt = FastParseFixedPoint(t);
+
+        for (var i = 0; i < times.Length; i++)
+        {
+            var s = span.Slice(26 + BUFF_LEN * i, 15);
+            times[i] = (dt * (i + 1)) * timeScaling;
+            signals[i] = FastParse(s) * signalScaling;
+        }
+#else
+        var timeScaling = 1.0 / timeUnit;
+        var signalScaling = 1.0 / signalUnit;
+
+        var text = preLoadData.GetText();
+        var lines = text.Split('\n');
+
+        var times = new double[lines.Length];
+        var signals = new double[lines.Length];
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var parts = lines[i].Split(',');
+            times[i] = double.Parse(parts[0]) * timeScaling;
+            signals[i] = double.Parse(parts[1]) * signalScaling;
+        }
+#endif
+
+        return new(times, timeUnit, signals, signalUnit);
+    } // internal static Decay FromFile (string, TimeUnit, SignalUnit, byte[])
+
     /// <inheritdoc/>
     public IEnumerator<(double Time, double Signal)> GetEnumerator()
     {
