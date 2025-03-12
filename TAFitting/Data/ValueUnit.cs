@@ -1,5 +1,7 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2025 Kazuki KOHZUKI
+
+using System.Diagnostics;
 
 namespace TAFitting.Data;
 
@@ -11,6 +13,7 @@ namespace TAFitting.Data;
 /// </remarks>
 /// <param name="label">The label.</param>
 /// <param name="scale">The scale.</param>
+[DebuggerDisplay("{Label}")]
 internal abstract class ValueUnit(string label, SIPrefix scale)
 {
     /// <summary>

@@ -15,7 +15,7 @@ namespace TAFitting.Data;
 /// <summary>
 /// Represents a decay data.
 /// </summary>
-[DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq}, {this.times.Length} points")]
+[DebuggerDisplay("{TimeMin.ToString(\"F2\"),nq}\u2013{TimeMax.ToString(\"F2\"),nq} {TimeUnit,nq}, {this.times.Length} points")]
 internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 {
     // Separately store the original data and the filtered data,
