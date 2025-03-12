@@ -5,13 +5,15 @@
 // The optimization is valid only if the maximum time is less than 10 s.
 #define Tekave
 
-using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Collections;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using TAFitting.Filter;
+#if Tekave
+// for MethodImplAttribute
+using System.Runtime.CompilerServices;
+#endif
 
 namespace TAFitting.Data;
 
@@ -173,18 +175,36 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     } // ctor (double[], double[])
 
 #if Tekave
+
+    private const double SCALING_FACTOR = 0.000_000_000_001;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe private static double FastParse(ReadOnlySpan<byte> span)
+    private static long FastParseFixedPoint(ReadOnlySpan<byte> span)
     {
         var neg = span[0] == '-';
         var val = span[1] - (long)'0';
-        for (var i = 0; i < 12; i++)
+
+        Debug.Assert(span.Length == 15);
+
+        /*
+         * Hardcoding the length is not recommended
+         * as it prevents the JIT-compiler from optimizing the code;
+         * i.e., the runtime checks the bounds of the span for each access.
+         * 
+         */
+        for (var i = 3; i < span.Length; i++)
         {
-            var c = span[i + 3];
-            val = val * 10 + (c - (int)'0');
+            var c = span[i];
+            val = val * 10 + (c - '0');
         }
-        return (neg ? -val : val) * 0.000_000_000_001;
-    } // unsafe private static double FastParse (ReadOnlySpan<byte>)
+
+        return neg ? -val : val;
+    } // private static long FastParseFixedPoint (ReadOnlySpan<byte>)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static double FastParse(ReadOnlySpan<byte> span)
+        => FastParseFixedPoint(span) * SCALING_FACTOR;
+
 #endif
 
     /// <summary>
@@ -213,31 +233,51 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
              * Read 3 lines at a time.
              */
 
+            const int BUFF_LEN = 43;
             const int LINES = 3;
 
-            using var reader = new FileStream(
-                filename, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: 43 * 3 * 7 * 7,
-                false
-            );
-            Span<byte> buffer = stackalloc byte[43 * LINES];
+            timeScaling *= SCALING_FACTOR;
 
             var times = new double[2499];
             var signals = new double[2499];
-            for (var i = 0; i < times.Length; i += LINES)
+
+            using var reader = new FileStream(
+                filename, FileMode.Open, FileAccess.Read, FileShare.Read,
+                bufferSize: BUFF_LEN * 3 * 7 * 7,
+                false
+            );
+            Span<byte> buffer = stackalloc byte[BUFF_LEN * LINES];
+
+            // Read the first line outside the loop to get the time step.
+            reader.Read(buffer);
+            var t = buffer.Slice(5 + BUFF_LEN * 0, 15);
+
+            // Calculating the time by some althmetic operations is significantly faster than parsing the string.
+            // Time spep is constant and is stored as long integer to keep the precision (like a fixed-point number).
+            var dt = FastParseFixedPoint(t);
+
+            var s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
+            var s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
+            var s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
+
+            times[0] = dt * timeScaling;
+            times[1] = (dt << 1) * timeScaling;
+            times[2] = (dt * 3) * timeScaling;
+            signals[0] = FastParse(s0) * signalScaling;
+            signals[1] = FastParse(s1) * signalScaling;
+            signals[2] = FastParse(s2) * signalScaling;
+
+            for (var i = LINES; i < times.Length; i += LINES)
             {
                 var read = reader.Read(buffer);
 
-                var t0 = buffer.Slice( 5 + 43 * 0, 15);
-                var s0 = buffer.Slice(26 + 43 * 0, 15);
-                var t1 = buffer.Slice( 5 + 43 * 1, 15);
-                var s1 = buffer.Slice(26 + 43 * 1, 15);
-                var t2 = buffer.Slice( 5 + 43 * 2, 15);
-                var s2 = buffer.Slice(26 + 43 * 2, 15);
+                s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
+                s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
+                s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
 
-                times[i + 0] = FastParse(t0) * timeScaling;
-                times[i + 1] = FastParse(t1) * timeScaling;
-                times[i + 2] = FastParse(t2) * timeScaling;
+                times[i + 0] = (dt * (i + 1)) * timeScaling;
+                times[i + 1] = (dt * (i + 2)) * timeScaling;
+                times[i + 2] = (dt * (i + 3)) * timeScaling;
                 signals[i + 0] = FastParse(s0) * signalScaling;
                 signals[i + 1] = FastParse(s1) * signalScaling;
                 signals[i + 2] = FastParse(s2) * signalScaling;
