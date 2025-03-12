@@ -198,8 +198,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     {
         var diff = time0 - this.time0;
         this.time0 = time0;
-        foreach ((var wavelength, var decay) in this)
-            this.decays[wavelength] = decay.AddTime(-diff);
+        foreach (var decay in this.Values)
+            decay.AddTime(-diff);
     } // private void ChangeTime0 (double)
 
     /// <summary>

@@ -5,9 +5,12 @@
 // The optimization is valid only if the maximum time is less than 10 s.
 #define Tekave
 
+using DocumentFormat.OpenXml.Drawing.Charts;
 using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using TAFitting.Filter;
 
 namespace TAFitting.Data;
@@ -269,9 +272,25 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Adds the time.
     /// </summary>
     /// <param name="time">The time</param>
-    /// <returns>The decay data with the shifted time.</returns>
-    internal Decay AddTime(double time)
-        => new([.. this.times.Select(t => t + time)], this.TimeUnit, this.signals, this.SignalUnit);
+    unsafe internal void AddTime(double time)
+    {
+        var i = 0;
+        if (Avx.IsSupported)
+        {
+            var t = stackalloc double[] { time, time, time, time };
+            var v = Avx.LoadVector256(t);
+            fixed (double* p = this.times)
+            {
+                do
+                {
+                    Avx.Store(p + i, Avx.Add(Avx.LoadVector256(p + i), v));
+                    i += Vector256<double>.Count;
+                } while (i <= this.times.Length - Vector256<double>.Count);
+            }
+        }
+        for (; i < this.times.Length; i++)
+            this.times[i] += time;
+    } // unsafe internal Decay AddTime (double)
 
     /// <summary>
     /// Gets the time at which the signal is minimum.

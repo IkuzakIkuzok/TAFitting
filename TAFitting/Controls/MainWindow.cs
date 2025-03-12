@@ -1338,8 +1338,6 @@ internal sealed partial class MainWindow : Form
         if (this.decays is null) return;
         var t0 = (double)this.nud_time0.Value;
         this.decays.Time0 = t0;
-        foreach (var row in this.parametersTable.ParameterRows)
-            row.Decay = this.decays[row.Wavelength];
         ShowPlots();
     } // private void ChangeTime0 ()
 
