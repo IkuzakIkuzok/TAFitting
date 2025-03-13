@@ -99,6 +99,30 @@ internal static class StatsUtils
         => Math.Sqrt(source.Variance(ddof));
 
     /// <summary>
+    /// Calculates the average and standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The average and standard deviation of the sequence of double-precision floating-point numbers.</returns>
+    internal static (double, double) AverageAndStandardDeviation(this IEnumerable<double> source, int ddof = 0)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var s1 = .0;
+        var s2 = .0;
+        var n = -ddof;
+        foreach (var x in source)
+        {
+            s1 += x;
+            s2 += x * x;
+            ++n;
+        }
+        var avg = s1 / n;
+        var var = s2 / n - avg * avg;
+        return (avg, Math.Sqrt(var));
+    } // internal static (double, double) AverageAndStandardDeviation (this IEnumerable<double>, [int])
+
+    /// <summary>
     /// Removes the outliers from a sequence of double-precision floating-point numbers using the Smirnov-Grubbs test.
     /// </summary>
     /// <param name="source">The sequence of double-precision floating-point numbers.</param>
@@ -115,8 +139,7 @@ internal static class StatsUtils
             if (n <= 2) break;
             var t = TDist.InverseSurvivalFunction(alpha / (n << 1), n - 2);
             var tau = (n - 1) * t / Math.Sqrt(n * (n - 2) + n * t * t);
-            var mu = list.Average();
-            var std = list.StandardDeviation();
+            var (mu, std) = list.AverageAndStandardDeviation();
             var i_far = Math.Abs(list[n - 1] - mu) > Math.Abs(list[0] - mu) ? n - 1 : 0;
             var tau_far = Math.Abs((list[i_far] - mu) / std);
             if (tau_far < tau) break;
