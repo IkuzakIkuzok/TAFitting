@@ -70,6 +70,11 @@ internal sealed partial class ParametersTable : DataGridView
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to stop selection changed event.
+    /// </summary>
+    internal bool StopSelectionChanged { get; set; } = false;
+
+    /// <summary>
     /// Gets a value indicating whether the undo operation can be performed.
     /// </summary>
     /// <value><see langword="true"/> if the undo operation can be performed; otherwise, <see langword="false"/>.</value>
@@ -399,6 +404,8 @@ internal sealed partial class ParametersTable : DataGridView
     override protected void OnSelectionChanged(EventArgs e)
     {
         base.OnSelectionChanged(e);
+
+        if (this.StopSelectionChanged) return;
 
         var cell = this.SelectedCells.Cast<DataGridViewCell>().FirstOrDefault();
         if (cell is null) return;

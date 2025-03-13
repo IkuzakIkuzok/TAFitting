@@ -1192,7 +1192,11 @@ internal sealed partial class MainWindow : Form
 
         try
         {
+            // Adding row raises the SelectionChanged event,
+            // whch is computationally expensive.
+            this.parametersTable.StopSelectionChanged = true;
             this.parametersTable.StopUpdateRSquared = true;
+
             this.parametersTable.Rows.Clear();
             foreach (var wl in this.decays.Keys)
             {
@@ -1206,6 +1210,7 @@ internal sealed partial class MainWindow : Form
         }
         finally
         {
+            this.parametersTable.StopSelectionChanged = false;
             this.parametersTable.StopUpdateRSquared = false;
         }
 
