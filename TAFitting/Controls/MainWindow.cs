@@ -1508,7 +1508,6 @@ internal sealed partial class MainWindow : Form
 
         var start = Stopwatch.GetTimestamp();
 
-        var stopUpdateRSquared = this.parametersTable.StopUpdateRSquared;
         try
         {
             this.parametersTable.StopUpdateRSquared = true;
@@ -1538,7 +1537,7 @@ internal sealed partial class MainWindow : Form
         }
         finally
         {
-            this.parametersTable.StopUpdateRSquared = stopUpdateRSquared;
+            this.parametersTable.StopUpdateRSquared = false;
             this.stopDrawing = false;
         }
 
