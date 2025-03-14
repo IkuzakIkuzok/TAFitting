@@ -55,12 +55,32 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw times.
     /// </summary>
-    internal IReadOnlyList<double> RawTimes
+    unsafe internal IReadOnlyList<double> RawTimes
     {
         get
         {
             if (this.TimeUnit == TimeUnit.Second) return this.times;
-            return [.. this.times.Select(t => t * this.TimeUnit)];
+
+            var times = new double[this.times.Length];
+            var i = 0;
+            var tu = (double)this.TimeUnit;
+            if (Avx.IsSupported)
+            {
+                var a = stackalloc double[] { tu, tu, tu, tu };
+                var v = Avx.LoadVector256(a);
+                fixed (double* s = this.times, d = times)
+                {
+                    do
+                    {
+                        Avx.Store(d + i, Avx.Multiply(Avx.LoadVector256(s + i), v));
+                        i += Vector256<double>.Count;
+                    } while (i <= this.times.Length - Vector256<double>.Count);
+                }
+            }
+            for (; i < this.times.Length; i++)
+                times[i] = this.times[i] * tu;
+
+            return times;
         }
     }
 
@@ -72,12 +92,31 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw signals.
     /// </summary>
-    internal IReadOnlyList<double> RawSignals
+    unsafe internal IReadOnlyList<double> RawSignals
     {
         get
         {
             if (this.SignalUnit == SignalUnit.OD) return this.signals;
-            return [.. this.signals.Select(s => s * this.SignalUnit)];
+
+            var signals = new double[this.signals.Length];
+            var i = 0;
+            var su = (double)this.SignalUnit;
+            if (Avx.IsSupported)
+            {
+                var a = stackalloc double[] { su, su, su, su };
+                var v = Avx.LoadVector256(a);
+                fixed (double* s = this.signals, d = signals)
+                {
+                    do
+                    {
+                        Avx.Store(d + i, Avx.Multiply(Avx.LoadVector256(s + i), v));
+                        i += Vector256<double>.Count;
+                    } while (i <= this.signals.Length - Vector256<double>.Count);
+                }
+            }
+            for (; i < this.signals.Length; i++)
+                signals[i] = this.signals[i] * su;
+            return signals;
         }
     }
 
