@@ -477,7 +477,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal double FilndT0()
     {
         var len = this.times.Length >> 1;
-        var min = this.signals.Take(len).Min();
+        var min = this.signals.AsSpan().Slice(0, len).Min();
         var index = Array.IndexOf(this.signals, min);
         return this.times[index];
     } // internal double FilndT0 ()
