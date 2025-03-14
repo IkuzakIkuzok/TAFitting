@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
 using TAFitting.Controls.Charting;
@@ -760,7 +761,7 @@ internal sealed partial class MainWindow : Form
             try
             {
                 this.decays = decaysLoader(path);
-                Invoke(() =>
+                Invoke(async () =>
                 {
                     this.Text = GetTitle();
 
@@ -787,7 +788,7 @@ internal sealed partial class MainWindow : Form
                         }
                     }
 
-                    MakeTable();
+                    await MakeTable();
                     this.parametersTable.ClearUndoBuffer();
                     UpdatePreviewsUnits();
                 });
@@ -1185,7 +1186,7 @@ internal sealed partial class MainWindow : Form
         "IDISP001:Dispose created",
         Justification = "The newly created row must NOT be disposed.")]
 #pragma warning restore
-    private void MakeTable()
+    async private Task MakeTable()
     {
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
@@ -1206,7 +1207,7 @@ internal sealed partial class MainWindow : Form
             }
 
             if (Program.AutoFit)
-                LevenbergMarquardtEstimationAllRows();
+                await LevenbergMarquardtEstimationAllRows();
         }
         finally
         {
@@ -1220,7 +1221,7 @@ internal sealed partial class MainWindow : Form
         this.s_fit.Points.Clear();
 
         ChangeRow(this.parametersTable.ParameterRows.FirstOrDefault(), true);
-    } // private void MakeTable ()
+    } // async private Task MakeTable ()
 
     #endregion Models
 
@@ -1481,18 +1482,18 @@ internal sealed partial class MainWindow : Form
     /// <summary>
     /// Fits all rows using the Levenberg-Marquardt algorithm.
     /// </summary>
-    private void LevenbergMarquardtEstimationAllRows()
+    async private Task LevenbergMarquardtEstimationAllRows()
     {
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
-        LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
-    } // private void LevenbergMarquardtEstimationAllRows ()
+        await LevenbergMarquardtEstimation(this.parametersTable.ParameterRows);
+    } // async private Task LevenbergMarquardtEstimationAllRows ()
 
     /// <summary>
     /// Fits the specified rows using the Levenberg-Marquardt algorithm.
     /// </summary>
     /// <param name="rows">The rows to fit.</param>
-    private async void LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
+    private async Task LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
     {
         var text = this.Text;
         this.Text += " - Fitting...";
@@ -1508,6 +1509,7 @@ internal sealed partial class MainWindow : Form
 
         var start = Stopwatch.GetTimestamp();
 
+        var stopRSquared = this.parametersTable.StopUpdateRSquared;
         try
         {
             this.parametersTable.StopUpdateRSquared = true;
@@ -1537,7 +1539,7 @@ internal sealed partial class MainWindow : Form
         }
         finally
         {
-            this.parametersTable.StopUpdateRSquared = false;
+            this.parametersTable.StopUpdateRSquared = stopRSquared;
             this.stopDrawing = false;
         }
 
@@ -1550,7 +1552,7 @@ internal sealed partial class MainWindow : Form
             $"Fitting completed in {elapsed.TotalSeconds:F1} seconds.",
             0.8, 1000, 75, 0.1
         );
-    } // private void LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
+    } // private async Task LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
 
     /// <summary>
     /// Fits the specified row using the Levenberg-Marquardt algorithm.
