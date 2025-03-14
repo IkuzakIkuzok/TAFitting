@@ -142,6 +142,22 @@ internal static class StatsUtils
         return (avg, Math.Sqrt(var));
     } // internal static (double, double) AverageAndStandardDeviation (this IEnumerable<double>, [int])
 
+    internal static (double, double) AverageAndStandardDeviation(this Span<double> source, int ddof = 0)
+    {
+        var s1 = .0;
+        var s2 = .0;
+        var n = -ddof;
+        foreach (var x in source)
+        {
+            s1 += x;
+            s2 += x * x;
+            ++n;
+        }
+        var avg = s1 / n;
+        var var = s2 / n - avg * avg;
+        return (avg, Math.Sqrt(var));
+    } // internal static (double, double) AverageAndStandardDeviation (this Span<double>, [int])
+
     /// <summary>
     /// Removes the outliers from a sequence of double-precision floating-point numbers using the Smirnov-Grubbs test.
     /// </summary>
@@ -168,4 +184,22 @@ internal static class StatsUtils
 
         return list;
     } // internal static List<double> SmirnovGrubbs (IEnumerable<double>, [double])
+
+    internal static Span<double> SmirnovGrubbs(this Span<double> source, double alpha = .05)
+    {
+        MemoryExtensions.Sort(source);
+        while (true)
+        {
+            var n = source.Length;
+            if (n <= 2) break;
+            var t = TDist.InverseSurvivalFunction(alpha / (n << 1), n - 2);
+            var tau = (n - 1) * t / Math.Sqrt(n * (n - 2) + n * t * t);
+            var (mu, std) = source.AverageAndStandardDeviation();
+            var tail_is_far = Math.Abs(source[n - 1] - mu) > Math.Abs(source[0] - mu);
+            var tau_far = Math.Abs((tail_is_far ? source[n - 1] : source[0]) - mu) / std;
+            if (tau_far < tau) break;
+            source = tail_is_far ? source[..^1] : source[1..];
+        }
+        return source;
+    } // internal static Span<double> SmirnovGrubbs<T> (Span<T>, [double])
 } // internal static class StatsUtils

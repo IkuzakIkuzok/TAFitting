@@ -152,7 +152,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
         if (l_t0.Count == 0) throw new IOException($"No data found in {path}");
 
-        var t0 = l_t0.SmirnovGrubbs().Average();
+        //var t0 = l_t0.SmirnovGrubbs().Average();
+        var t0 = CollectionsMarshal.AsSpan(l_t0).SmirnovGrubbs().Average();
         decays.Time0 = t0;
 
         return decays;

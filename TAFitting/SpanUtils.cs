@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using DocumentFormat.OpenXml.Wordprocessing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -37,6 +38,83 @@ internal static class SpanUtils
         span = default;
         return false;
     } // internal static bool TryGetSpan<T> (this IEnumerable<T>, out Span<T>)
+
+    /// <summary>
+    /// Computes the sum of the elements in the source.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="source">The source.</param>
+    /// <returns>The sum of the elements in the source.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static T Sum<T>(this Span<T> source) where T : struct, INumber<T>
+        => ((ReadOnlySpan<T>)source).Sum();
+
+    /// <summary>
+    /// Computes the sum of the elements in the source.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="source">The source.</param>
+    /// <returns>The sum of the elements in the source.</returns>
+    internal static T Sum<T>(this ReadOnlySpan<T> source) where T : struct, INumber<T>
+    {
+        if (!Vector256.IsHardwareAccelerated)
+        {
+            var sum = source[0];
+            for (var i = 1; i < source.Length; i++)
+            {
+                sum += source[i];
+            }
+            return sum;
+        }
+        else
+        {
+            var sum = T.Zero;
+
+            ref var begin = ref MemoryMarshal.GetReference(source);
+            ref var last = ref Unsafe.Add(ref begin, source.Length);
+            ref var current = ref begin;
+            var vectorSum = Vector256<T>.Zero;
+
+            ref var to = ref Unsafe.Add(ref begin, source.Length - Vector256<T>.Count);
+            while (Unsafe.IsAddressLessThan(ref current, ref to))
+            {
+                vectorSum += Vector256.LoadUnsafe(ref current);
+                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+            }
+            while (Unsafe.IsAddressLessThan(ref current, ref last))
+            {
+                unchecked // SIMD operation is unchecked so keep same behaviour
+                {
+                    sum += current;
+                }
+                current = ref Unsafe.Add(ref current, 1);
+            }
+
+            sum += Vector256.Sum(vectorSum);
+            return sum;
+        }
+    } // internal static T Sum<T> (this ReadOnlySpan<T>) where T : struct, INumber<T>
+
+    /// <summary>
+    /// Computes the average of the elements in the source.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The average of the elements in the source.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static double Average(this Span<double> source)
+        => ((ReadOnlySpan<double>)source).Average();
+
+    /// <summary>
+    /// Computes the average of the elements in the source.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The average of the elements in the source.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static double Average(this ReadOnlySpan<double> source)
+    {
+        var sum = source.Sum();
+        return sum / source.Length;
+    } // internal static double Average (this ReadOnlySpan<double>)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T Min<T>(this Span<T> source) where T : struct, INumber<T>
@@ -75,7 +153,7 @@ internal static class SpanUtils
             v_min = Vector256.Min(v_min, Vector256.LoadUnsafe(ref to));
 
             var min = v_min[0];
-            for (int i = 1; i < Vector256<T>.Count; i++)
+            for (var i = 1; i < Vector256<T>.Count; i++)
             {
                 if (v_min[i] < min)
                 {
@@ -123,7 +201,7 @@ internal static class SpanUtils
             v_max = Vector256.Max(v_max, Vector256.LoadUnsafe(ref to));
 
             var max = v_max[0];
-            for (int i = 1; i < Vector256<T>.Count; i++)
+            for (var i = 1; i < Vector256<T>.Count; i++)
             {
                 if (v_max[i] > max)
                 {
