@@ -752,7 +752,7 @@ internal sealed partial class MainWindow : Form
         this.row = null;
         this.sampleName = Path.GetFileName(path);
         this.Text = GetTitle("Loading...");
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             // Temporary change the negative sign to U+002D
             // because double.Parse throws an exception with U+2212.
@@ -761,7 +761,7 @@ internal sealed partial class MainWindow : Form
             try
             {
                 this.decays = decaysLoader(path);
-                Invoke(async () =>
+                await Invoke(async () =>
                 {
                     this.Text = GetTitle();
 
