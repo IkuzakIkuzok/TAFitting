@@ -67,6 +67,26 @@ internal static class StatsUtils
     } // internal static double Gaussian (double)
 
     /// <summary>
+    /// Calculates the average of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <returns>The average of the sequence of double-precision floating-point numbers.</returns>
+    internal static double AverageNumbers(this IEnumerable<double> source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+
+        var sum = .0;
+        var count = 0;
+        foreach (var value in source)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value)) continue;
+            sum += value;
+            ++count;
+        }
+        return sum / count;
+    } // internal static double AverageNumbers (IEnumerable<double>)
+
+    /// <summary>
     /// Calculates the variance of a sequence of double-precision floating-point numbers.
     /// </summary>
     /// <param name="source">The sequence of double-precision floating-point numbers.</param>

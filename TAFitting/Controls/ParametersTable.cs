@@ -3,6 +3,7 @@
 
 using TAFitting.Data;
 using TAFitting.Model;
+using TAFitting.Stats;
 
 namespace TAFitting.Controls;
 
@@ -439,7 +440,7 @@ internal sealed partial class ParametersTable : DataGridView
 
         var X = decay.Times.ToArray();
         var Y = decay.Signals.Select(y => scaler(y * inverse)).ToArray();
-        var average = Y.Where(y => !double.IsNaN(y)).Average();
+        var average = Y.AverageNumbers();
         var Se = 0.0;
         var St = 0.0;
         var N = 0;
