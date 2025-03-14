@@ -61,32 +61,4 @@ internal static class IterUtils
             sum += span[i];
         return sum / span.Length;
     } // internal static double FastAverage (this IEnumerable<double>)
-
-    /// <summary>
-    /// Validates that source is not null and then tries to extract a span from the source.
-    /// </summary>
-    /// <typeparam name="TSource">The type of the elements.</typeparam>
-    /// <param name="source">The source.</param>
-    /// <param name="span">The span.</param>
-    /// <returns><see langword="true"/> if the span is extracted successfully; otherwise, <see langword="false"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool TryGetSpan<TSource>(this IEnumerable<TSource> source, out ReadOnlySpan<TSource> span) where TSource : struct
-    {
-        ArgumentNullException.ThrowIfNull(source);
-
-        if (source.GetType() == typeof(TSource[]))
-        {
-            span = Unsafe.As<TSource[]>(source);
-            return true;
-        }
-
-        if (source.GetType() == typeof(List<TSource>))
-        {
-            span = CollectionsMarshal.AsSpan(Unsafe.As<List<TSource>>(source));
-            return true;
-        }
-
-        span = default;
-        return false;
-    } // internal static bool TryGetSpan<TSource> (this IEnumerable<TSource>, out ReadOnlySpan<TSource>)
 } // internal static class IterUtils
