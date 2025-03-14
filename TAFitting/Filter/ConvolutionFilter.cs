@@ -49,20 +49,22 @@ internal abstract class ConvolutionFilter : IFilter
         if (time.Count < this.n)
             throw new ArgumentException($"The number of points must be greater than or equal to {this.n}.");
 
+        // Handling the signal as a span improves the performance of indexing.
+        var span = CollectionsMarshal.AsSpan<double>(signal.ToList());
         var filtered = new double[time.Count];
-        for (var i = 0; i < time.Count; ++i)
+        for (var i = 0; i < filtered.Length; ++i)
         {
             if (i < this.n || i >= time.Count - this.n)
             {
-                filtered[i] = signal[i];
+                filtered[i] = span[i];
                 continue;
             }
 
-            filtered[i] = signal[i] * this.coefficient0;
-            for (var j = 0; j < this.n; ++j)
+            filtered[i] = span[i] * this.coefficient0;
+            for (var j = 0; j < this.coefficients.Length; ++j)
             {
-                filtered[i] += signal[i - this.n + j] * this.coefficients[j];
-                filtered[i] += signal[i + this.n - j] * this.coefficients[j];
+                filtered[i] += span[i - this.n + j] * this.coefficients[j];
+                filtered[i] += span[i + this.n - j] * this.coefficients[j];
             }
         }
 
