@@ -109,12 +109,31 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the absolute decay data.
     /// </summary>
-    internal Decay Absolute => new(this.times, this.TimeUnit, [.. this.signals.Select(Math.Abs)], this.SignalUnit);
+    internal Decay Absolute
+    {
+       get
+        {
+            var abs = new double[this.signals.Length];
+            for (var i = 0; i < this.signals.Length; i++)
+                abs[i] = Math.Abs(this.signals[i]);
+            return new(this.times, this.TimeUnit, abs, this.SignalUnit);
+        }
+    }
+
 
     /// <summary>
     /// Gets the inverted decay data.
     /// </summary>
-    internal Decay Inverted => new(this.times, this.TimeUnit, [.. this.signals.Select(s => -s)], this.SignalUnit);
+    internal Decay Inverted
+    {
+        get
+        {
+            var inv = new double[this.signals.Length];
+            for (var i = 0; i < this.signals.Length; i++)
+                inv[i] = -this.signals[i];
+            return new(this.times, this.TimeUnit, inv, this.SignalUnit);
+        }
+    }
 
     /// <summary>
     /// Gets the filtered decay data.
