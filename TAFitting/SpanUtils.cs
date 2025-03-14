@@ -12,6 +12,32 @@ namespace TAFitting;
 /// </summary>
 internal static class SpanUtils
 {
+    /// <summary>
+    /// Tries to extract the <see cref="Span{T}"/> from the source.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="source">The source.</param>
+    /// <param name="span">The extracted span.</param>
+    /// <returns><see langword="true"/> if the span is extracted successfully; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool TryGetSpan<T>(this IEnumerable<T> source, out Span<T> span)
+    {
+        if (source.GetType() == typeof(T[]))
+        {
+            span = Unsafe.As<T[]>(source);
+            return true;
+        }
+
+        if (source.GetType() == typeof(List<T>))
+        {
+            span = CollectionsMarshal.AsSpan(Unsafe.As<List<T>>(source));
+            return true;
+        }
+
+        span = default;
+        return false;
+    } // internal static bool TryGetSpan<T> (this IEnumerable<T>, out Span<T>)
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T Min<T>(this Span<T> source) where T : struct, INumber<T>
         => ((ReadOnlySpan<T>)source).Min();
