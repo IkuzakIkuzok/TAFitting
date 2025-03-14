@@ -123,12 +123,12 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the minimum time.
     /// </summary>
-    internal double TimeMin => this.times.Min();
+    internal double TimeMin => this.times.AsSpan().Min();
 
     /// <summary>
     /// Gets the maximum time.
     /// </summary>
-    internal double TimeMax => this.times.Max();
+    internal double TimeMax => this.times.AsSpan().Max();
 
     /// <summary>
     /// Gets the time step.
@@ -138,12 +138,12 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the minimum signal.
     /// </summary>
-    internal double SignalMin => this.signals.Min();
+    internal double SignalMin => this.signals.AsSpan().Min();
 
     /// <summary>
     /// Gets the maximum signal.
     /// </summary>
-    internal double SignalMax => this.signals.Max();
+    internal double SignalMax => this.signals.AsSpan().Max();
 
     /// <summary>
     /// Gets the absolute decay data.
