@@ -244,13 +244,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         Debug.Assert(span.Length == 15);
 
-        /*
-         * Hardcoding the length is not recommended
-         * as it prevents the JIT-compiler from optimizing the code;
-         * i.e., the runtime checks the bounds of the span for each access.
-         * 
-         */
-        for (var i = 3; i < span.Length; i++)
+        span = span.Slice(3);
+        for (var i = 0; i < span.Length; i++)
         {
             var c = span[i];
             val = val * 10 + (c - '0');
