@@ -415,7 +415,7 @@ public sealed class AvxVector
                     i += Vector256<double>.Count;
                 } while (i <= this._array.Length - Vector256<double>.Count);
             }
-            var sum = sums.GetElement(0) + sums.GetElement(1) + sums.GetElement(2) + sums.GetElement(3);
+            var sum = Vector256.Sum(sums);
             for (; i < this._array.Length; i++)
                 sum += this._array[i];
             return sum;
@@ -915,7 +915,8 @@ public sealed class AvxVector
                 i += Vector256<double>.Count;
             } while (i <= s_left.Length - Vector256<double>.Count);
         }
-        var sum = sums.GetElement(0) + sums.GetElement(1) + sums.GetElement(2) + sums.GetElement(3);
+        
+        var sum = Vector256.Sum(sums);
         for (; i < s_left.Length; i++)
             sum += s_left[i] * s_right[i];
         return sum;
