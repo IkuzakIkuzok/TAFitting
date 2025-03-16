@@ -989,6 +989,47 @@ public sealed class AvxVector
     } // public static void Exp (AvxVector, AvxVector)
 
     /// <summary>
+    /// Computes the exponential decay for each element of the specified vector.
+    /// </summary>
+    /// <param name="time">The time vector.</param>
+    /// <param name="amplitude">The amplitude.</param>
+    /// <param name="timeConstant">The time constant.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    /// <remarks>
+    /// This method is slightly faster than the combination of the <see cref="Exp"/> and <see cref="Multiply"/> methods
+    /// because the memory access is sequential.
+    /// </remarks>
+    public static void ExpDecay(AvxVector time, double amplitude, double timeConstant, AvxVector result)
+    {
+        if (time._array.Length != result._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (result.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_time = ref MemoryMarshal.GetArrayDataReference(time._array);
+        ref var to_time = ref Unsafe.Add(ref begin_time, time._array.Length - Vector256<double>.Count);
+
+        ref var current_time = ref begin_time;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var t = -1.0 / timeConstant;
+        while (Unsafe.IsAddressLessThan(ref current_time, ref to_time))
+        {
+            var v_time = Vector256.LoadUnsafe(ref current_time);
+            var v_result = amplitude * MathUtils.Exp(t * v_time);
+            v_result.StoreUnsafe(ref current_result);
+            current_time = ref Unsafe.Add(ref current_time, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
+        }
+
+        var offset = GetAddress(ref current_time) - GetAddress(ref begin_time);
+        for (var i = offset / sizeof(double); i < (ulong)time._array.Length; i++)
+            result._array[i] = amplitude * MathUtils.FastExp(time._array[i] * t);
+    } // public static void ExpDecay (AvxVector, double, double, AvxVector)
+
+    /// <summary>
     /// Computes the natural logarithm for each element of the specified vector.
     /// </summary>
     /// <param name="vector">The vector.</param>

@@ -159,11 +159,9 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         {
             builder.AppendLine();
             builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"\t\t\t\tvar t{i} = -1.0 / parameters[{2 * i}];");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(x, t{i}, temp);     // temp = -x / t{i}");
-            builder.AppendLine($"\t\t\t\t{TVector}.Exp(temp, temp);           // temp = exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(temp, a{i}, temp);  // temp = a{i} * exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Add(a0, temp, a0);         // a0 += a{i} * exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\tvar t{i} = parameters[{2 * i}];");
+            builder.AppendLine($"\t\t\t\t{TVector}.ExpDecay(x, a{i}, t{i}, temp);  // temp = a{i} * exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Add(a0, temp, a0);          // a0 += a{i} * exp(-x / t{i})");
         }
         builder.AppendLine();
         builder.AppendLine("\t\t\t\treturn a0;");
@@ -184,15 +182,14 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         {
             builder.AppendLine();
             builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"\t\t\t\tvar t{i} = -1.0 / parameters[{2 * i - 0}];");
+            builder.AppendLine($"\t\t\t\tvar t{i} = parameters[{2 * i - 0}];");
 
             builder.AppendLine($"\t\t\t\t// res[{2 * i - 1}] = exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(x, t{i}, res[{2 * i - 1}]);  // -x / t{i}");
-            builder.AppendLine($"\t\t\t\t{TVector}.Exp(res[{2 * i - 1}], res[{2 * i - 1}]);      // exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.ExpDecay(x, 1.0, t{i}, res[{2 * i - 1}]);              // exp(-x / t{i})");
 
             builder.AppendLine($"\t\t\t\t// res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 1}], a{i} * t{i} * t{i}, res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 0}], x, res[{2 * i - 0}]);             // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 1}], a{i} / (t{i} * t{i}), res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 0}], x, res[{2 * i - 0}]);               // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
         }
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
