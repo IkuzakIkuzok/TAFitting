@@ -317,7 +317,7 @@ file static class MathUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe public static Vector256<double> Exp(Vector256<double> v)
     {
-        if (Avx2.IsSupported)
+        if (Avx.IsSupported && Avx2.IsSupported)
         {
             v = Avx.Min(v, ExpMax);
             v = Avx.Max(v, ExpMin);
