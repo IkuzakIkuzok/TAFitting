@@ -941,7 +941,7 @@ public sealed class AvxVector
         {
             var v_left = Vector256.LoadUnsafe(ref current_left);
             var v_right = Vector256.LoadUnsafe(ref current_right);
-            sums += Avx.Multiply(v_left, v_right);
+            sums += Vector256.Multiply(v_left, v_right);
             current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
             current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
         }
