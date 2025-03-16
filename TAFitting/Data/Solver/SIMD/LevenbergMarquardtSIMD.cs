@@ -201,7 +201,7 @@ internal sealed class LevenbergMarquardtSIMD
     {
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
-            for (var col = 0; col < this.numberOfParameters; ++col)
+            for (var col = 0; col <= row; ++col)
             {
                 var h = AvxVector.InnerProduct(this.derivatives[row], this.derivatives[col]);
                 this.hessian[row, col] = h;
