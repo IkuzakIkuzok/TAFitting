@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -386,7 +387,7 @@ public sealed class AvxVector
     /// <summary>
     /// Gets a value indicating whether the <see cref="AvxVector"/> is supported on the current system.
     /// </summary>
-    public static bool IsSupported => Avx.IsSupported && Vector256<double>.IsSupported;
+    public static bool IsSupported => Avx.IsSupported && Avx2.IsSupported && Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported;
 
     /// <summary>
     /// Gets the length of the vector.
@@ -556,32 +557,35 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Add(AvxVector left, AvxVector right, AvxVector result)
+    public static void Add(AvxVector left, AvxVector right, AvxVector result)
     {
         if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left, p_right = s_right)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Add(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            var v_result = Vector256.Add(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        for (; i < left._array.Length; i++)
-            s_result[i] = s_left[i] + s_right[i];
-    } // unsafe public static void Add (AvxVector, AvxVector, AvxVector)
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] + right._array[i];
+    } // public static void Add (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
     /// Adds the specified value to the specified vector and stores the result in the specified vector.
@@ -593,28 +597,27 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     unsafe public static void Add(AvxVector left, double right, AvxVector result)
     {
-        if (left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
 
-        var s_left = left._array.AsSpan();
-        var arr = stackalloc double[] { right, right, right, right };
-        var v_right = Avx.LoadVector256(arr);
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left)
+        ref var current_l = ref begin_l;
+        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var p = stackalloc double[4] { right, right, right, right };
+        var v_right = Vector256.Load(p);
+
+        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_result = Avx.Add(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_result = Vector256.Add(v_left, v_right);
+            v_result.StoreUnsafe(ref current_r);
+            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] + right;
+
+        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] + right;
     } // unsafe public static void Add (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -625,31 +628,35 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Subtract(AvxVector left, AvxVector right, AvxVector result)
+    public static void Subtract(AvxVector left, AvxVector right, AvxVector result)
     {
         if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left, p_right = s_right)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Subtract(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            var v_result = Vector256.Subtract(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] - s_right[i];
-    } // unsafe public static void Subtract (AvxVector, AvxVector, AvxVector)
+
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] - right._array[i];
+    } // public static void Subtract (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
     /// Subtracts the specified value from the specified vector and stores the result in the specified vector.
@@ -666,23 +673,27 @@ public sealed class AvxVector
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var arr = stackalloc double[] { right, right, right, right };
-        var v_right = Avx.LoadVector256(arr);
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left)
+        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+
+        ref var current_l = ref begin_l;
+        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var p = stackalloc double[4] { right, right, right, right };
+        var v_right = Vector256.Load(p);
+
+        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_result = Avx.Subtract(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_result = Vector256.Subtract(v_left, v_right);
+            v_result.StoreUnsafe(ref current_r);
+            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] - right;
+
+        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] - right;
     } // unsafe public static void Subtract (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -700,23 +711,27 @@ public sealed class AvxVector
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var arr = stackalloc double[] { left, left, left, left };
-        var v_left = Avx.LoadVector256(arr);
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_right = s_right)
+        var p = stackalloc double[] { left, left, left, left };
+        var v_left = Vector256.Load(p);
+
+        ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
+
+        ref var current_r = ref begin_r;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_r, ref to_r))
         {
-            do
-            {
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Subtract(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_right.Length - Vector256<double>.Count);
+            var v_right = Vector256.LoadUnsafe(ref current_r);
+            var v_result = Vector256.Subtract(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_right.Length; i++)
-            s_result[i] = left - s_right[i];
+
+        var offset = GetAddress(ref current_r) - GetAddress(ref begin_r);
+        for (var i = offset / sizeof(double); i < (ulong)right._array.Length; i++)
+            result._array[i] = left - right._array[i];
     } // fixed public static void Subtract (double, AvxVector, AvxVector)
 
     /// <summary>
@@ -727,31 +742,35 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Multiply(AvxVector left, AvxVector right, AvxVector result)
+    public static void Multiply(AvxVector left, AvxVector right, AvxVector result)
     {
         if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left, p_right = s_right)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Multiply(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            var v_result = Vector256.Multiply(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] * s_right[i];
-    } // unsafe public static void Multiply (AvxVector, AvxVector, AvxVector)
+
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] * right._array[i];
+    } // public static void Multiply (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
     /// The specified value to the specified vector and stores the result in the specified vector.
@@ -761,31 +780,32 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Multiply(AvxVector left, double right, AvxVector result)
+    public static void Multiply(AvxVector left, double right, AvxVector result)
     {
         if (left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var arr = stackalloc double[] { right, right, right, right };
-        var v_right = Avx.LoadVector256(arr);
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left)
+        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+
+        ref var current_l = ref begin_l;
+        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_result = Avx.Multiply(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_result = Vector256.Multiply(v_left, right);
+            v_result.StoreUnsafe(ref current_r);
+            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] * right;
-    } // unsafe public static void Multiply (AvxVector, double, AvxVector)
+
+        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] * right;
+    } // public static void Multiply (AvxVector, double, AvxVector)
 
     /// <summary>
     /// Divides the specified vectors and stores the result in the specified vector.
@@ -795,31 +815,35 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Divide(AvxVector left, AvxVector right, AvxVector result)
+    public static void Divide(AvxVector left, AvxVector right, AvxVector result)
     {
         if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left, p_right = s_right)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Divide(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            var v_result = Vector256.Divide(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] / s_right[i];
-    } // unsafe public static void Divide (AvxVector, AvxVector, AvxVector)
+
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] / right._array[i];
+    } // public static void Divide (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
     /// Divides the specified vector by the specified value and stores the result in the specified vector.
@@ -829,31 +853,32 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Divide(AvxVector left, double right, AvxVector result)
+    public static void Divide(AvxVector left, double right, AvxVector result)
     {
         if (left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_left = left._array.AsSpan();
-        var arr = stackalloc double[] { right, right, right, right };
-        var v_right = Avx.LoadVector256(arr);
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_left = s_left)
+        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+
+        ref var current_l = ref begin_l;
+        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_result = Avx.Divide(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_result = Vector256.Divide(v_left, right);
+            v_result.StoreUnsafe(ref current_r);
+            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
-        for (; i < s_left.Length; i++)
-            s_result[i] = s_left[i] / right;
-    } // unsafe public static void Divide (AvxVector, double, AvxVector)
+
+        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            result._array[i] = left._array[i] / right;
+    } // public static void Divide (AvxVector, double, AvxVector)
 
     /// <summary>
     /// Divides the specified value by the specified vector and stores the result in the specified vector.
@@ -870,23 +895,27 @@ public sealed class AvxVector
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var arr = stackalloc double[] { left, left, left, left };
-        var v_left = Avx.LoadVector256(arr);
-        var s_right = right._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_right = s_right)
+        var p = stackalloc double[] { left, left, left, left };
+        var v_left = Vector256.Load(p);
+
+        ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
+
+        ref var current_r = ref begin_r;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_r, ref to_r))
         {
-            do
-            {
-                var v_right = Avx.LoadVector256(p_right + i);
-                var v_result = Avx.Divide(v_left, v_right);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_right.Length - Vector256<double>.Count);
+            var v_right = Vector256.LoadUnsafe(ref current_r);
+            var v_result = Vector256.Divide(v_left, v_right);
+            v_result.StoreUnsafe(ref current_result);
+            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_right.Length; i++)
-            s_result[i] = left / s_right[i];
+
+        var offset = GetAddress(ref current_r) - GetAddress(ref begin_r);
+        for (var i = offset / sizeof(double); i < (ulong)right._array.Length; i++)
+            result._array[i] = left / right._array[i];
     } // unsafe public static void Divide (double, AvxVector, AvxVector)
 
     /// <summary>
@@ -896,31 +925,34 @@ public sealed class AvxVector
     /// <param name="right">The right vector.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
-    unsafe public static double InnerProduct(AvxVector left, AvxVector right)
+    public static double InnerProduct(AvxVector left, AvxVector right)
     {
         if (left._array.Length != right._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
 
-        var s_left = left._array.AsSpan();
-        var s_right = right._array.AsSpan();
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+
         var sums = Vector256<double>.Zero;
-        var i = 0;
-        fixed (double* p_left = s_left, p_right = s_right)
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_left = Avx.LoadVector256(p_left + i);
-                var v_right = Avx.LoadVector256(p_right + i);
-                sums += Avx.Multiply(v_left, v_right);
-                i += Vector256<double>.Count;
-            } while (i <= s_left.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            sums += Avx.Multiply(v_left, v_right);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
         }
-        
+
         var sum = Vector256.Sum(sums);
-        for (; i < s_left.Length; i++)
-            sum += s_left[i] * s_right[i];
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+            sum += left._array[i] * right._array[i];
+
         return sum;
-    } // unsafe public static double InnerProduct (AvxVector, AvxVector)
+    } // public static double InnerProduct (AvxVector, AvxVector)
 
     /// <summary>
     /// Computes the exponential function for each element of the specified vector.
@@ -929,29 +961,32 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Exp(AvxVector vector, AvxVector result)
+    public static void Exp(AvxVector vector, AvxVector result)
     {
         if (vector._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_vector = vector._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_vector = s_vector)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_vector = Avx.LoadVector256(p_vector + i);
-                var v_result = MathUtils.Exp(v_vector);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_vector.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_result = MathUtils.Exp(v_left);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_vector.Length; i++)
-            s_result[i] = MathUtils.FastExp(s_vector[i]);
-    } // unsafe public static void Exp (AvxVector, AvxVector)
+
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)vector._array.Length; i++)
+            result._array[i] = Math.Exp(vector._array[i]);
+    } // public static void Exp (AvxVector, AvxVector)
 
     /// <summary>
     /// Computes the natural logarithm for each element of the specified vector.
@@ -983,4 +1018,8 @@ public sealed class AvxVector
         for (; i < s_vector.Length; i++)
             s_result[i] = Math.Sqrt(s_vector[i]);
     } // unsafe public static void Sqrt (AvxVector, AvxVector)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe private static ulong GetAddress(ref double value)
+        => (ulong)Unsafe.AsPointer(ref value);
 } // public sealed class AvxVector
