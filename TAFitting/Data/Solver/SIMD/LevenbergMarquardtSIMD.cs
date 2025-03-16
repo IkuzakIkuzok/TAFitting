@@ -147,7 +147,10 @@ internal sealed class LevenbergMarquardtSIMD
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcChi2()
-        => CalcChi2(this.parameters);
+    {
+        AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
+        return AvxVector.InnerProduct(this.temp_vector, this.temp_vector);
+    } // private double CalcChi2 ()
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcIncrementedChi2()
