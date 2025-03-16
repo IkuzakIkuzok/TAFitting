@@ -142,14 +142,14 @@ internal sealed class LevenbergMarquardtSIMD
         var v_e = func(this.x);
 
         AvxVector.Subtract(this.y, v_e, this.temp_vector);
-        return AvxVector.InnerProduct(this.temp_vector, this.temp_vector);
+        return this.temp_vector.Norm2;
     } // private double CalcChi2 (Numbers)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcChi2()
     {
         AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
-        return AvxVector.InnerProduct(this.temp_vector, this.temp_vector);
+        return this.temp_vector.Norm2;
     } // private double CalcChi2 ()
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

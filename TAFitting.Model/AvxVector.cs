@@ -424,6 +424,37 @@ public sealed class AvxVector
     }
 
     /// <summary>
+    /// Computes the square of the Euclidean norm of the vector.
+    /// </summary>
+    public double Norm2
+    {
+        get
+        {
+            ref var begin = ref MemoryMarshal.GetArrayDataReference(this._array);
+            ref var to = ref Unsafe.Add(ref begin, this._array.Length - Vector256<double>.Count);
+            ref var current = ref begin;
+
+            var sums = Vector256<double>.Zero;
+            while (Unsafe.IsAddressLessThan(ref current, ref to))
+            {
+                var v = Vector256.LoadUnsafe(ref current);
+                sums += Vector256.Multiply(v, v);
+                current = ref Unsafe.Add(ref current, Vector256<double>.Count);
+            }
+
+            var sum = Vector256.Sum(sums);
+            var offset = GetAddress(ref current) - GetAddress(ref current);
+            for (var i = offset / sizeof(double); i < (ulong)this._array.Length; i++)
+            {
+                var v = this._array[i];
+                sum += v * v;
+            }
+
+            return sum;
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AvxVector"/> class
     /// with the specified values.
     /// </summary>
