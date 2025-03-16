@@ -443,8 +443,8 @@ public sealed class AvxVector
             }
 
             var sum = Vector256.Sum(sums);
-            var offset = GetAddress(ref current) - GetAddress(ref current);
-            for (var i = offset / sizeof(double); i < (ulong)this._array.Length; i++)
+            var offset = GetRemainingOffset(this);
+            for (var i = offset; i < this._array.Length; i++)
             {
                 var v = this._array[i];
                 sum += v * v;
@@ -613,8 +613,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] + right._array[i];
     } // public static void Add (AvxVector, AvxVector, AvxVector)
 
@@ -646,8 +646,8 @@ public sealed class AvxVector
             current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] + right;
     } // unsafe public static void Add (AvxVector, double, AvxVector)
 
@@ -684,8 +684,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] - right._array[i];
     } // public static void Subtract (AvxVector, AvxVector, AvxVector)
 
@@ -722,8 +722,8 @@ public sealed class AvxVector
             current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] - right;
     } // unsafe public static void Subtract (AvxVector, double, AvxVector)
 
@@ -760,8 +760,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_r) - GetAddress(ref begin_r);
-        for (var i = offset / sizeof(double); i < (ulong)right._array.Length; i++)
+        var offset = GetRemainingOffset(right);
+        for (var i = offset; i < right._array.Length; i++)
             result._array[i] = left - right._array[i];
     } // fixed public static void Subtract (double, AvxVector, AvxVector)
 
@@ -798,8 +798,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] * right._array[i];
     } // public static void Multiply (AvxVector, AvxVector, AvxVector)
 
@@ -833,8 +833,8 @@ public sealed class AvxVector
             current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] * right;
     } // public static void Multiply (AvxVector, double, AvxVector)
 
@@ -871,8 +871,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] / right._array[i];
     } // public static void Divide (AvxVector, AvxVector, AvxVector)
 
@@ -906,8 +906,8 @@ public sealed class AvxVector
             current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_l) - GetAddress(ref begin_l);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] / right;
     } // public static void Divide (AvxVector, double, AvxVector)
 
@@ -944,8 +944,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_r) - GetAddress(ref begin_r);
-        for (var i = offset / sizeof(double); i < (ulong)right._array.Length; i++)
+        var offset = GetRemainingOffset(right);
+        for (var i = offset; i < right._array.Length; i++)
             result._array[i] = left / right._array[i];
     } // unsafe public static void Divide (double, AvxVector, AvxVector)
 
@@ -978,8 +978,8 @@ public sealed class AvxVector
         }
 
         var sum = Vector256.Sum(sums);
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)left._array.Length; i++)
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._array.Length; i++)
             sum += left._array[i] * right._array[i];
 
         return sum;
@@ -1014,8 +1014,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)vector._array.Length; i++)
+        var offset = GetRemainingOffset(vector);
+        for (var i = offset; i < vector._array.Length; i++)
             result._array[i] = MathUtils.FastExp(vector._array[i]);
     } // public static void Exp (AvxVector, AvxVector)
 
@@ -1055,8 +1055,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_time) - GetAddress(ref begin_time);
-        for (var i = offset / sizeof(double); i < (ulong)time._array.Length; i++)
+        var offset = GetRemainingOffset(time);
+        for (var i = offset; i < time._array.Length; i++)
             result._array[i] = amplitude * MathUtils.FastExp(time._array[i] * t);
     } // public static void ExpDecay (AvxVector, double, double, AvxVector)
 
@@ -1089,12 +1089,17 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
-        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
-        for (var i = offset / sizeof(double); i < (ulong)vector._array.Length; i++)
+        var offset = GetRemainingOffset(vector);
+        for (var i = offset; i < vector._array.Length; i++)
             result._array[i] = Math.Sqrt(vector._array[i]);
     } // public static void Sqrt (AvxVector, AvxVector)
 
+    /// <summary>
+    /// Gets the remaining offset after the vectorized operations.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <returns>The remaining offset after the vectorized operations.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe private static ulong GetAddress(ref double value)
-        => (ulong)Unsafe.AsPointer(ref value);
+    private static int GetRemainingOffset(AvxVector vector)
+        => (vector._array.Length / Vector256<double>.Count) * Vector256<double>.Count;
 } // public sealed class AvxVector
