@@ -995,29 +995,32 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Sqrt(AvxVector vector, AvxVector result)
+    public static void Sqrt(AvxVector vector, AvxVector result)
     {
         if (vector._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var s_vector = vector._array.AsSpan();
-        var s_result = result._array.AsSpan();
-        var i = 0;
-        fixed (double* p_vector = s_vector)
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            do
-            {
-                var v_vector = Avx.LoadVector256(p_vector + i);
-                var v_result = Avx.Sqrt(v_vector);
-                v_result.CopyTo(s_result[i..]);
-                i += Vector256<double>.Count;
-            } while (i <= s_vector.Length - Vector256<double>.Count);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_result = Vector256.Sqrt(v_left);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
-        for (; i < s_vector.Length; i++)
-            s_result[i] = Math.Sqrt(s_vector[i]);
-    } // unsafe public static void Sqrt (AvxVector, AvxVector)
+
+        var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
+        for (var i = offset / sizeof(double); i < (ulong)vector._array.Length; i++)
+            result._array[i] = Math.Sqrt(vector._array[i]);
+    } // public static void Sqrt (AvxVector, AvxVector)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe private static ulong GetAddress(ref double value)
