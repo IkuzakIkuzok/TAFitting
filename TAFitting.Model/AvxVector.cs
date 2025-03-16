@@ -985,7 +985,7 @@ public sealed class AvxVector
 
         var offset = GetAddress(ref current_left) - GetAddress(ref begin_left);
         for (var i = offset / sizeof(double); i < (ulong)vector._array.Length; i++)
-            result._array[i] = Math.Exp(vector._array[i]);
+            result._array[i] = MathUtils.FastExp(vector._array[i]);
     } // public static void Exp (AvxVector, AvxVector)
 
     /// <summary>
