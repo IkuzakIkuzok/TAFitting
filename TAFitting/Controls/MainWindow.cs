@@ -253,7 +253,7 @@ internal sealed partial class MainWindow : Form
 
         var defaultModel = Program.DefaultModel;
         if (ModelManager.Models.ContainsKey(defaultModel))
-            SelectModel(defaultModel);
+            _ = SelectModel(defaultModel);
 
         #region menu
 
@@ -1139,14 +1139,14 @@ internal sealed partial class MainWindow : Form
         }
 
         item.Checked = true;
-        SelectModel(guid);
+        _ = SelectModel(guid);
     } // private void SelectModel (object?, EventArgs)
 
     /// <summary>
     /// Changes the selected model.
     /// </summary>
     /// <param name="guid">The GUID of the model to select.</param>
-    private void SelectModel(Guid guid)
+    async private Task SelectModel(Guid guid)
     {
         this.selectedModel = Program.DefaultModel = guid;
         this.Text = GetTitle();
@@ -1156,11 +1156,11 @@ internal sealed partial class MainWindow : Form
 
         this.rangeSelector.Time.Logarithmic = model.XLogScale;
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
-        MakeTable();
+        await MakeTable();
         this.parametersTable.ClearUndoBuffer();
         foreach (var preview in this.previewWindows)
             preview.ModelId = guid;
-    } // private void SelectModel (Guid)
+    } // async private Task SelectModel (Guid)
 
     private void AddLinearCombination(object? sender, EventArgs e)
     {
@@ -1168,14 +1168,14 @@ internal sealed partial class MainWindow : Form
         dialog.ShowDialog();
     } // private void AddLinearCombination (object?, EventArgs)
 
-    private void RemoveLinearCombination(object? sender, EventArgs e)
+    async private void RemoveLinearCombination(object? sender, EventArgs e)
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not Guid guid) return;
         if (this.selectedModel == guid)
-            SelectModel(Guid.Empty);
+            await SelectModel(Guid.Empty);
         Program.RemoveLinearCombination(guid);
-    } // private void RemoveLinearCombination (object?, EventArgs)
+    } // async private void RemoveLinearCombination (object?, EventArgs)
 
     /// <summary>
     /// Makes the table of the parameters.
@@ -1468,16 +1468,16 @@ internal sealed partial class MainWindow : Form
 
     #region Levenberg-Marquardt estimation
 
-    private void LevenbergMarquardtEstimationSelectedRow(object? sender, EventArgs e)
+    async private void LevenbergMarquardtEstimationSelectedRow(object? sender, EventArgs e)
     {
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
         if (this.row is null) return;
-        LevenbergMarquardtEstimation([this.row]);
-    } // private void LevenbergMarquardtEstimationSelectedRow (object?, EventArgs)
+         await LevenbergMarquardtEstimation([this.row]);
+    } // async private void LevenbergMarquardtEstimationSelectedRow (object?, EventArgs)
 
-    private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
-        => LevenbergMarquardtEstimationAllRows();
+    async private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
+        => await LevenbergMarquardtEstimationAllRows();
 
     /// <summary>
     /// Fits all rows using the Levenberg-Marquardt algorithm.
@@ -1545,6 +1545,13 @@ internal sealed partial class MainWindow : Form
 
         var elapsed = Stopwatch.GetElapsedTime(start);
 
+        var selected = this.parametersTable.SelectedCells;
+        if (selected.Count > 0)
+        {
+            var cell = selected[0];
+            if (cell.OwningRow is ParametersTableRow row)
+                this.row = row;
+        }
         ShowPlots();
 
         this.Text = text;
