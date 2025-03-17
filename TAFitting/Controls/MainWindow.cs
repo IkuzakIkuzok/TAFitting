@@ -771,7 +771,9 @@ internal sealed partial class MainWindow : Form
                     this.rangeSelector.Signal.Text = $"{this.decays.SignalUnit}:";
 
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
-                    this.rangeSelector.Signal.To = Math.Min((decimal)Math.Min(this.decays.MaxAbsSignal * 1.5, +7.9e28), this.rangeSelector.Signal.ToMaximum);
+                    var maxAbsSignal = this.decays.MaxAbsSignal;
+                    this.rangeSelector.Signal.To = Math.Min((decimal)Math.Min(maxAbsSignal * 1.5, +7.9e28), this.rangeSelector.Signal.ToMaximum);
+                    this.rangeSelector.Signal.From = Math.Max((decimal)(maxAbsSignal * 0.01), this.rangeSelector.Signal.FromMinimum);
 
                     // The table rows must be cleared before the t0 is set.
                     this.parametersTable.Rows.Clear();
