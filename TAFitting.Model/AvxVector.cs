@@ -285,29 +285,17 @@ file static class MathUtils
 
     static MathUtils()
     {
-        ExpMin = Create(-708.396418532264);
-        ExpMax = Create(709.782712893384);
-        Alpha = Create(2954.6394437406);
-        AlphaInv = Create(0.000338450771757786);
-        C3 = Create(3.0000000027955394);
-        C2 = Create(0.16666666685227835);
-        C1 = Create(1.0);
-        Round = Create(6755399441055744.0);
-        Mask11 = Create(2047UL);
-        Adj = Create(2095104);
+        ExpMin = Vector256.Create(-708.396418532264);
+        ExpMax = Vector256.Create(709.782712893384);
+        Alpha = Vector256.Create(2954.6394437406);
+        AlphaInv = Vector256.Create(0.000338450771757786);
+        C3 = Vector256.Create(3.0000000027955394);
+        C2 = Vector256.Create(0.16666666685227835);
+        C1 = Vector256.Create(1.0);
+        Round = Vector256.Create(6755399441055744.0);
+        Mask11 = Vector256.Create(2047UL);
+        Adj = Vector256.Create(2095104UL);
     } // cctor ()
-
-    unsafe private static Vector256<double> Create(double value)
-    {
-        var arr = stackalloc double[4] { value, value, value, value };
-        return Avx.LoadVector256(arr);
-    } // unsafe private static Vector256<double> Create (double)
-
-    unsafe private static Vector256<ulong> Create(ulong value)
-    {
-        var arr = stackalloc ulong[4] { value, value, value, value };
-        return Avx.LoadVector256(arr);
-    } // private static Vector256<ulong> Create (ulong)
 
     /// <summary>
     /// Computes the exponential function for each element of the specified vector.
@@ -630,7 +618,7 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Add(AvxVector left, double right, AvxVector result)
+    public static void Add(AvxVector left, double right, AvxVector result)
     {
         ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
@@ -638,8 +626,7 @@ public sealed class AvxVector
         ref var current_l = ref begin_l;
         ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
 
-        var p = stackalloc double[4] { right, right, right, right };
-        var v_right = Vector256.Load(p);
+        var v_right = Vector256.Create(right);
 
         while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
@@ -653,7 +640,7 @@ public sealed class AvxVector
         var offset = GetRemainingOffset(left);
         for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] + right;
-    } // unsafe public static void Add (AvxVector, double, AvxVector)
+    } // public static void Add (AvxVector, double, AvxVector)
 
     /// <summary>
     /// Subtracts the specified vectors and stores the result in the specified vector.
@@ -701,7 +688,7 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Subtract(AvxVector left, double right, AvxVector result)
+    public static void Subtract(AvxVector left, double right, AvxVector result)
     {
         if (left._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
@@ -714,8 +701,7 @@ public sealed class AvxVector
         ref var current_l = ref begin_l;
         ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
 
-        var p = stackalloc double[4] { right, right, right, right };
-        var v_right = Vector256.Load(p);
+        var v_right = Vector256.Create(right);
 
         while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
         {
@@ -729,7 +715,7 @@ public sealed class AvxVector
         var offset = GetRemainingOffset(left);
         for (var i = offset; i < left._array.Length; i++)
             result._array[i] = left._array[i] - right;
-    } // unsafe public static void Subtract (AvxVector, double, AvxVector)
+    } // public static void Subtract (AvxVector, double, AvxVector)
 
     /// <summary>
     /// Subtracts the specified vector from the specified value and stores the result in the specified vector.
@@ -739,15 +725,14 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Subtract(double left, AvxVector right, AvxVector result)
+    public static void Subtract(double left, AvxVector right, AvxVector result)
     {
         if (right._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var p = stackalloc double[] { left, left, left, left };
-        var v_left = Vector256.Load(p);
+        var v_left = Vector256.Create(left);
 
         ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
         ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
@@ -767,7 +752,7 @@ public sealed class AvxVector
         var offset = GetRemainingOffset(right);
         for (var i = offset; i < right._array.Length; i++)
             result._array[i] = left - right._array[i];
-    } // fixed public static void Subtract (double, AvxVector, AvxVector)
+    } // public static void Subtract (double, AvxVector, AvxVector)
 
     /// <summary>
     /// Multiplies the specified vectors and stores the result in the specified vector.
@@ -923,15 +908,14 @@ public sealed class AvxVector
     /// <param name="result">The vector to store the result.</param>
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
-    unsafe public static void Divide(double left, AvxVector right, AvxVector result)
+    public static void Divide(double left, AvxVector right, AvxVector result)
     {
         if (right._array.Length != result._array.Length)
             throw new ArgumentException("The count of the vectors must be the same.");
         if (result.IsReadonly)
             throw new InvalidOperationException("The result vector is readonly.");
 
-        var p = stackalloc double[] { left, left, left, left };
-        var v_left = Vector256.Load(p);
+        var v_left = Vector256.Create(left);
 
         ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
         ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
@@ -951,7 +935,7 @@ public sealed class AvxVector
         var offset = GetRemainingOffset(right);
         for (var i = offset; i < right._array.Length; i++)
             result._array[i] = left / right._array[i];
-    } // unsafe public static void Divide (double, AvxVector, AvxVector)
+    } // public static void Divide (double, AvxVector, AvxVector)
 
     /// <summary>
     /// Computes the inner product of the specified vectors.
