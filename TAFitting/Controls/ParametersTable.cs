@@ -43,6 +43,20 @@ internal sealed partial class ParametersTable : DataGridView
         => this.ParameterRows.Where(row => !row.Edited);
 
     /// <summary>
+    /// Gets the selected row.
+    /// </summary>
+    internal ParametersTableRow? SelectedRow
+    {
+        get
+        {
+            var selected = this.SelectedCells;
+            if (selected.Count == 0) return null;
+            var cell = selected[0];
+            return cell.OwningRow as ParametersTableRow;
+        }
+    }
+
+    /// <summary>
     /// Gets a value indicating whether the parameters are edited.
     /// </summary>
     internal bool Edited

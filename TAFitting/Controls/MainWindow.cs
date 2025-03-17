@@ -1545,14 +1545,11 @@ internal sealed partial class MainWindow : Form
 
         var elapsed = Stopwatch.GetElapsedTime(start);
 
-        var selected = this.parametersTable.SelectedCells;
-        if (selected.Count > 0)
-        {
-            var cell = selected[0];
-            if (cell.OwningRow is ParametersTableRow row)
-                this.row = row;
-        }
-        ShowPlots();
+        var selected = this.parametersTable.SelectedRow;
+        if (selected is not null)
+            this.row = selected;
+        else
+            ShowPlots();
 
         this.Text = text;
         FadingMessageBox.Show(
