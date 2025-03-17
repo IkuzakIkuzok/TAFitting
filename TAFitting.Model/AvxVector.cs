@@ -402,23 +402,27 @@ public sealed class AvxVector
     /// <summary>
     /// Computes the sum of the elements in the vector.
     /// </summary>
-    unsafe public double Sum
+    public double Sum
     {
         get
         {
+            ref var begin = ref MemoryMarshal.GetArrayDataReference(this._array);
+            ref var to = ref Unsafe.Add(ref begin, this._array.Length - Vector256<double>.Count);
+            ref var current = ref begin;
+
             var sums = Vector256<double>.Zero;
-            var i = 0;
-            fixed (double* p = this._array)
+            while (Unsafe.IsAddressLessThan(ref current, ref to))
             {
-                do
-                {
-                    sums += Avx.LoadVector256(p + i);
-                    i += Vector256<double>.Count;
-                } while (i <= this._array.Length - Vector256<double>.Count);
+                var v = Vector256.LoadUnsafe(ref current);
+                sums += v;
+                current = ref Unsafe.Add(ref current, Vector256<double>.Count);
             }
+
             var sum = Vector256.Sum(sums);
-            for (; i < this._array.Length; i++)
+            var offset = GetRemainingOffset(this);
+            for (var i = offset; i < this._array.Length; i++)
                 sum += this._array[i];
+
             return sum;
         }
     }
