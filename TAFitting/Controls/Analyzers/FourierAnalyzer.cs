@@ -169,6 +169,7 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
             var a = CalcYValue(this.spectrumType, buffer[i], f);
             if (this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel && a <= 0) continue;
             if (double.IsNaN(a) || double.IsInfinity(a)) continue;
+            a = Math.Clamp(a, -1e28, 1e28);
             series.Points.AddXY(f, a);
             amp_min = Math.Min(amp_min, a);
             amp_max = Math.Max(amp_max, a);
