@@ -6,9 +6,9 @@ using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
+using TAFitting.Controls.Analyzers;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.LinearCombination;
 using TAFitting.Controls.Spectra;
@@ -17,6 +17,7 @@ using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
 using TAFitting.Filter;
 using TAFitting.Model;
+using Windows.ApplicationModel.Appointments.DataProvider;
 
 namespace TAFitting.Controls;
 
@@ -52,6 +53,9 @@ internal sealed partial class MainWindow : Form
     private readonly CustomNumericUpDown nud_time0;
     private readonly Label lb_t0, lb_timeUnit;
 
+    private readonly List<SpectraPreviewWindow> previewWindows = [];
+    private readonly List<IAnalyzer> analyzers = [];
+
     /// <summary>
     /// Gets the sample name.
     /// </summary>
@@ -76,8 +80,6 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     /// <value>The selected model if is valid; otherwise, <see langword="null"/>.</value>
     private IFittingModel? SelectedModel => ModelManager.Models.TryGetValue(this.selectedModel, out var model) ? model.Model : null;
-
-    private readonly List<SpectraPreviewWindow> previewWindows = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -129,7 +131,7 @@ internal sealed partial class MainWindow : Form
         };
 
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
-        //this.axisX.MinorGrid.Interval = this.axisY.MinorGrid.Interval = 1;
+        //this.axisX_freq.MinorGrid.Interval = this.axisY.MinorGrid.Interval = 1;
         this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
 
         this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
@@ -480,8 +482,22 @@ internal sealed partial class MainWindow : Form
 
         #endregion menu.data
 
+        #region menu.analyze
+
+        var menu_analyze = new ToolStripMenuItem("&Analyze");
+        this.MainMenuStrip.Items.Add(menu_analyze);
+
+        var menu_analyzeFourier = new ToolStripMenuItem("&Fourier transform")
+        {
+            ToolTipText = "Perform the Fourier transform",
+        };
+        menu_analyzeFourier.Click += ShowFourierAnalyzer;
+        menu_analyze.DropDownItems.Add(menu_analyzeFourier);
+
+        #endregion menu.analyze
+
         #region menu.filter
-		 
+
         this.menu_filter = new("&Filter");
         this.MainMenuStrip.Items.Add(this.menu_filter);
 
@@ -925,6 +941,7 @@ internal sealed partial class MainWindow : Form
         } // foreach (var row in rows)
 
         ShowPlots();
+        UpdateAnalyzers();
     } // private void ApplyFilter (IFilter, IEnumerable<ParametersTableRow>)
 
     private void AddFilter(object? sender, EventArgs e)
@@ -974,6 +991,7 @@ internal sealed partial class MainWindow : Form
         foreach (var row in rows)
             row.Decay?.RestoreOriginal();
         ShowPlots();
+        UpdateAnalyzers();
     } // private void Unfilter (IEnumerable<ParametersTableRow>)
 
     private void InterpolateSelectedRow(object? sender, EventArgs e)
@@ -998,6 +1016,7 @@ internal sealed partial class MainWindow : Form
                 decay.Filter(filter);
         }
         ShowObserved();
+        UpdateAnalyzers();
     } // private void Interpolate (IEnumerable<ParametersTableRow>)
 
     #endregion filters
@@ -1282,6 +1301,7 @@ internal sealed partial class MainWindow : Form
 
         ShowPlots();
         UpdatePreviewsSelectedWavelength();
+        UpdateAnalyzers();
     } // private void ChangeRow (ParametersTableRow?, bool)
 
     /// <summary>
@@ -1741,6 +1761,32 @@ internal sealed partial class MainWindow : Form
     } // private void UpdatePreviewsUnits ()
 
     #endregion Spectra preview
+
+    #region analyzers
+
+    private void ShowFourierAnalyzer(object? sender, EventArgs e)
+    {
+        var analyzer = new FourierAnalyzer();
+        if (this.row is not null)
+            analyzer.SetDecay(this.row.Decay, this.row.Wavelength);
+        this.analyzers.Add(analyzer);
+        analyzer.FormClosed += (s, e) => this.analyzers.Remove(analyzer);
+        analyzer.Show();
+    } // private void ShowFourierAnalyzer (object?, EventArgs)
+
+    private void UpdateAnalyzers(object? sender, EventArgs e)
+        => UpdateAnalyzers();
+
+    private void UpdateAnalyzers()
+    {
+        if (this.row is null) return;
+        var decay = this.row.Decay;
+        var wavelength = this.row.Wavelength;
+        foreach (var analyzer in this.analyzers)
+            analyzer.SetDecay(decay, wavelength);
+    } // private void UpdateAnalyzers ()
+
+    #endregion analyzers
 
     private static void EditFilenameFormat(object? sender, EventArgs e)
     {
