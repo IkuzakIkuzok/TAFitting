@@ -304,6 +304,12 @@ internal static class FastFourierTransform
         return freq;
     } // internal static double[] FrequencyScale (int, double, bool)
 
+    /// <summary>
+    /// Checks whether the specified values are evenly spaced.
+    /// </summary>
+    /// <param name="values">The values to check.</param>
+    /// <param name="threshold">The threshold for the difference between the values.</param>
+    /// <returns><see langword="true"/> if the values are evenly spaced; otherwise, <see langword="false"/>.</returns>
     internal static bool CheckEvenlySpaced(IReadOnlyList<double> values, double threshold = 1e-6)
     {
         var n = values.Count;
@@ -319,6 +325,7 @@ internal static class FastFourierTransform
     /// </summary>
     /// <param name="n">The number to check.</param>
     /// <returns><see langword="true"/> if the number is a power of two; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool CheckPowerOfTwo(int n)
         => ((n & (n - 1)) == 0) && (n > 0);
 } // internal static class FastFourierTransform
