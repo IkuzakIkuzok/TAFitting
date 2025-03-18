@@ -99,13 +99,18 @@ internal static class FastFourierTransform
             }
         }
 
-        for (var r = 0; r < n; r += n_radix)
-            ForwardCooleyTukey(
-                n     : n_radix,
-                buffer: temp[r..],
-                theta : theta * radix,
-                temp  : buffer
-            );
+        if (n_radix > 1)
+        {
+            for (var r = 0; r < n; r += n_radix)
+            {
+                ForwardCooleyTukey(
+                    n     : n_radix,
+                    buffer: temp[r..],
+                    theta : theta * radix,
+                    temp  : buffer
+                );
+            }
+        }
 
         for (var j = 0; j < n_radix; ++ j)
         {
