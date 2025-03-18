@@ -368,6 +368,9 @@ file static class MathUtils
 /// <summary>
 /// Represents a vector of double values that can be processed using AVX instructions.
 /// </summary>
+/// <remarks>
+/// It is recommended to use this class when the number of elements is greater than or equal to 4.
+/// </remarks>
 public sealed class AvxVector
 {
     private readonly double[] _array;
