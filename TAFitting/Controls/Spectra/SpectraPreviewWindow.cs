@@ -607,7 +607,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         try
         {
             using var _ = new NegativeSignHandler();
-            writer.Parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
+            writer.Parameters = [.. this.Model.Parameters.Select(p => p.Name)];
             writer.Times = [.. this.timeTable.Times];
 
             foreach ((var wavelength, var parameters) in this.parameters)
