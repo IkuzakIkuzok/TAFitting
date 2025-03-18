@@ -138,13 +138,16 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         var time = this.decay.RawTimes;
         var signal = this.decay.Filtered.RawSignals;
 
-        var n = (int)Math.Pow(2, Math.Ceiling(Math.Log2(time.Count)));
+        var n = time.Count;
         var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
 
-        var offset = (n - time.Count) >> 1;
-        var buffer = new Complex[n];
-        for (var i = 0; i < time.Count; ++i)
-            buffer[i + offset] = new(signal[i], 0);
+        /*
+         * The stack size is 1 MiB by default.
+         * A complex number consists of two double values, which requires 16 bytes.
+         * 16384 elements require 256 KiB, which is far less than 1 MiB.
+         */
+        var buffer = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
+        for (var i = 0; i < n; ++i) buffer[i] = new(signal[i], 0);
 
         FastFourierTransform.Forward(buffer);
         var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);

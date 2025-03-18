@@ -36,7 +36,7 @@ internal abstract class FourierFilter : IFilter
 
         Debug.Assert(FastFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
 
-        // FFT works only for the number of points that is a power of 2.
+        // FFT works only significantly fast when the number of points that is a power of 2.
         // Extend the number of points to the nearest power of 2.
         var n = (int)Math.Pow(2, Math.Ceiling(Math.Log2(time.Count)));
         var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
@@ -44,11 +44,12 @@ internal abstract class FourierFilter : IFilter
         // Pad before and after the signal with zeros.
         // This reduces the discontinuity at the edges and improves the result especially at the edges.
         var offset = (n - time.Count) >> 1;
-        var buffer = new Complex[n];
+        // Max stackalloc size is 256 KiB.
+        var buffer = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
         for (var i = 0; i < time.Count; ++i)
             buffer[i + offset] = new(signal[i], 0);
 
-        FastFourierTransform.Forward(buffer);
+        FastFourierTransform.ForwardSplitRadix(buffer);
         var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);
 
         for (var i = 0; i < n; ++i)

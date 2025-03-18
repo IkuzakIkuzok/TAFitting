@@ -1,8 +1,8 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace TAFitting.Filter.Fourier;
 
@@ -17,18 +17,118 @@ namespace TAFitting.Filter.Fourier;
 internal static class FastFourierTransform
 {
     /// <summary>
+    /// Performs a forward Fourier transform on the specified buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer to transform.</param>
+    /// <remarks>
+    /// This method uses the Cooley-Tukey FFT algorithm for the number of points that is not a power of 2;
+    /// otherwise, it uses the Split-Radix FFT algorithm.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Forward(Span<Complex> buffer)
+    {
+        var n = buffer.Length;
+        if (CheckPowerOfTwo(n))
+        {
+            // Split-Radix FFT is significanly faster than Cooley-Tukey FFT for n = 2^k.
+            ForwardSplitRadix(buffer);
+            return;
+        }
+
+        ForwardCooleyTukey(buffer);
+    } // internal static void Forward (Span<Complex>)
+
+    /// <summary>
+    /// Performs a forward Fourier transform on the specified buffer using the Cooley-Tukey FFT algorithm.
+    /// </summary>
+    /// <param name="buffer">The buffer to transform.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void ForwardCooleyTukey(Span<Complex> buffer)
+    {
+        var n = buffer.Length;
+        var theta = -2 * Math.PI / n;
+
+        // Max stackalloc size is limited to 256 KiB, which is far less than the stack size (1 MiB).
+        var temp = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
+
+        ForwardCooleyTukey(n, buffer, theta, temp);
+    } // internal static void ForwardCooleyTukey (Span<Complex>)
+
+    /// <summary>
+    /// Performs a forward Fourier transform on the specified buffer using the Cooley-Tukey FFT algorithm.
+    /// </summary>
+    /// <param name="n">The number of points.</param>
+    /// <param name="buffer">The buffer to transform.</param>
+    /// <param name="theta">The angle increment.</param>
+    /// <param name="temp">The temporary buffer.</param>
+    /// <remarks>
+    /// This is a transport of the C code by Takuya Ooura
+    /// (<see href="https://www.kurims.kyoto-u.ac.jp/~ooura/fftman/ftmn1_23.html"/>).
+    /// </remarks>
+    private static void ForwardCooleyTukey(int n, Span<Complex> buffer, double theta, Span<Complex> temp)
+    {
+        if (n <= 1) return;
+
+        int radix;
+        Complex w;
+
+        // factorization
+        for (radix = 2; radix * radix <= n; ++radix)
+            if (n % radix == 0) break;
+        if (n % radix != 0) radix = n;
+        var n_radix = n / radix;
+
+        // butterflies
+        for (var j = 0; j < n_radix; ++j)
+        {
+            for (var m = 0; m < radix; ++m)
+            {
+                var xr = buffer[j].Real;
+                var xi = buffer[j].Imaginary;
+                for (var r = n_radix; r < n; r += n_radix)
+                {
+                    w = Complex.FromPolarCoordinates(1, theta * m * r);
+                    var y = buffer[r + j];
+                    xr += w.Real * y.Real - w.Imaginary * y.Imaginary;
+                    xi += w.Real * y.Imaginary + w.Imaginary * y.Real;
+                }
+                w = Complex.FromPolarCoordinates(1, theta * m * j);
+                var tr = xr * w.Real - xi * w.Imaginary;
+                var ti = xi * w.Real + xr * w.Imaginary;
+                temp[m * n_radix + j] = new(tr, ti);
+            }
+        }
+
+        for (var r = 0; r < n; r += n_radix)
+            ForwardCooleyTukey(
+                n     : n_radix,
+                buffer: temp[r..],
+                theta : theta * radix,
+                temp  : buffer
+            );
+
+        for (var j = 0; j < n_radix; ++ j)
+        {
+            for (var m = 0; m < radix; ++m)
+                buffer[radix * j + m] = temp[m * n_radix + j];
+        }
+    } // private static void ForwardCooleyTukey (Span<Complex>, double, Span<Complex>)
+
+    /// <summary>
     /// Performs a forward Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
     /// </summary>
     /// <param name="buffer">The buffer to transform.</param>
+    /// <exception cref="ArgumentException">The number of points must be a power of 2.</exception>
     /// <remarks>
     /// This is a transport of the C code by Takuya Ooura
     /// (<see href="https://www.kurims.kyoto-u.ac.jp/~ooura/fftman/ftmn1_24.html"/>).
     /// </remarks>
-    internal static void Forward(Span<Complex> buffer)
+    internal static void ForwardSplitRadix(Span<Complex> buffer)
     {
         var n = buffer.Length;
 
-        Debug.Assert(((n & (n - 1)) == 0) && (n > 0), "The number of points must be a power of 2.");
+        if (!CheckPowerOfTwo(n))
+            throw new ArgumentException("The number of points must be a power of 2.");
 
         // scrambler
         var l = 0;
@@ -127,10 +227,10 @@ internal static class FastFourierTransform
                 buffer[j1] = x0;
             }
         }
-    } // internal static void Forward (Span<Complex>)
+    } // internal static void ForwardSplitRadix (Span<Complex>)
 
     /// <summary>
-    /// Performs an inverse Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
+    /// Performs an inverse Fourier transform on the specified buffer.
     /// </summary>
     /// <param name="buffer">The buffer to transform.</param>
     internal static void Inverse(Span<Complex> buffer)
@@ -138,7 +238,7 @@ internal static class FastFourierTransform
         /*
          * Inverse FFT:
          * 1. Conjugate the input.
-         * 2. Forward FFT.
+         * 2. ForwardSplitRadix FFT.
          * 3. Conjugate the output (and normalize).
          */
 
@@ -152,7 +252,7 @@ internal static class FastFourierTransform
     } // internal static void Inverse (Span<Complex>)
 
     /// <summary>
-    /// Performs an inverse Fourier transform on the specified buffer using the Split-Radix FFT algorithm.
+    /// Performs an inverse Fourier transform on the specified buffer.
     /// </summary>
     /// <param name="fft">The buffer to transform.</param>
     /// <returns>The real part of the inverse Fourier transform.</returns>
@@ -160,7 +260,7 @@ internal static class FastFourierTransform
     /// The inverse FFT is performed on <paramref name="fft"/> in place,
     /// and its elements are modified by calling this method.
     /// </remarks>
-    public static double[] InverseReal(Complex[] fft)
+    public static double[] InverseReal(Span<Complex> fft)
     {
         for (var i = 0; i < fft.Length; ++i)
             fft[i] = Complex.Conjugate(fft[i]);
@@ -174,7 +274,7 @@ internal static class FastFourierTransform
         for (var i = 0; i < fft.Length; ++i)
             result[i] = fft[i].Real / fft.Length;
         return result;
-    } // public static double[] InverseReal (Complex[])
+    } // public static double[] InverseReal (Span<Complex>)
 
     /// <summary>
     /// Returns the frequency scale.
@@ -213,4 +313,12 @@ internal static class FastFourierTransform
                 return false;
         return true;
     } // internal static bool CheckEvenlySpaced (IReadOnlyList<double>, [double])
+
+    /// <summary>
+    /// Checks whether the specified number is a power of two.
+    /// </summary>
+    /// <param name="n">The number to check.</param>
+    /// <returns><see langword="true"/> if the number is a power of two; otherwise, <see langword="false"/>.</returns>
+    internal static bool CheckPowerOfTwo(int n)
+        => ((n & (n - 1)) == 0) && (n > 0);
 } // internal static class FastFourierTransform
