@@ -21,7 +21,7 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
     private readonly Axis axisX_freq, axisX_time, axisY;
 
     private Decay? decay;
-    private FourierSpectrumType spectrumType = FourierSpectrumType.AmplitudeSpectrum;
+    private FourierSpectrumType spectrumType = Program.FourierSpectrumType;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FourierAnalyzer"/> class.
@@ -87,7 +87,8 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         });
 
         AddDummySeries();
-        this.axisX_freq.IsLogarithmic = this.axisX_time.IsLogarithmic = this.axisY.IsLogarithmic = true;
+        this.axisX_freq.IsLogarithmic = this.axisX_time.IsLogarithmic = true;
+        this.axisY.IsLogarithmic = this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel;
         SetTimeLabels(3, 6, 1.0);  // as minimum and maximum values are set to 1e3 and 1e6, respectively
 
         #region menu
@@ -287,7 +288,7 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not FourierSpectrumType type) return;
-        this.spectrumType = type;
+        this.spectrumType = Program.FourierSpectrumType = type;
         SetSpectrum();
     } // private void ChangeSpectrumType (object, EventArgs)
 

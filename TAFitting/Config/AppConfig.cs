@@ -51,6 +51,14 @@ public sealed class AppConfig
     public SolverConfig SolverConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the analyzer configuration.
+    /// 
+    /// 
+    /// </summary>
+    [XmlElement("analyzer")]
+    public AnalyzerConfig AnalyzerConfig { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the decay loading configuration.
     /// </summary>
     [XmlElement("decay-loading")]

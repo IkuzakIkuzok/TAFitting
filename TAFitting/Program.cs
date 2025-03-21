@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Resources;
 using TAFitting.Config;
 using TAFitting.Controls;
+using TAFitting.Controls.Analyzers;
 using TAFitting.Controls.Toast;
 using TAFitting.Model;
 using TAFitting.Properties;
@@ -293,6 +294,19 @@ internal static class Program
         set
         {
             Config.SolverConfig.MaxIterations = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the Fourier spectrum type.
+    /// </summary>
+    internal static FourierSpectrumType FourierSpectrumType
+    {
+        get => Config.AnalyzerConfig.DefaultFourierSpectrum;
+        set
+        {
+            Config.AnalyzerConfig.DefaultFourierSpectrum = value;
             SaveConfig();
         }
     }
