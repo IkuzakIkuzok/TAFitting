@@ -24,6 +24,15 @@ file static class MathUtils
     private static readonly Vector256<ulong> Mask11;
     private static readonly Vector256<ulong> Adj;
 
+    /*
+     * To calculate the i-th element of the table, use the following formula:
+     * 
+     *  1. Calculate x = Math.Pow(2, i * (1.0 / s)) where s is the number of elements in the table (2048).
+     *  2. Interpret x as a 64-bit unsigned integer.
+     *  3. Take lower 52 bits of x.
+     * 
+     * These calculations are done ahead-of-time and hardcoded to improve performance.
+     */
     private static readonly ulong[] exp_table = [
         0UL, 1524504739922UL, 3049525536975UL, 4575062565848UL, 6101116001290UL, 7627686018109UL, 9154772791171UL, 10682376495403UL,
         12210497305791UL, 13739135397378UL, 15268290945269UL, 16797964124627UL, 18328155110673UL, 19858864078691UL, 21390091204021UL, 22921836662063UL,
@@ -285,16 +294,17 @@ file static class MathUtils
 
     static MathUtils()
     {
-        ExpMin = Vector256.Create(-708.396418532264);
-        ExpMax = Vector256.Create(709.782712893384);
-        Alpha = Vector256.Create(2954.6394437406);
-        AlphaInv = Vector256.Create(0.000338450771757786);
+        ExpMin = Vector256.Create(-708.396418532264);       // Math.Log(Math.Pow(2, -1022)) where -1022 is the minimum exponent of a double-precision floating-point number (IEEE 754)
+        ExpMax = Vector256.Create(709.782712893384);        // Math.Log(double.MaxValue) = Math.Log(1.7976931348623157E+308)
+        Alpha = Vector256.Create(2954.6394437406);          // 2048 / Math.Log(2)
+        AlphaInv = Vector256.Create(0.000338450771757786);  // 1 / Alpha = Math.Log(2) / 2048
+        // Optimized coefficients for the rational approximation of the exponential function
         C3 = Vector256.Create(3.0000000027955394);
         C2 = Vector256.Create(0.16666666685227835);
         C1 = Vector256.Create(1.0);
-        Round = Vector256.Create(6755399441055744.0);
+        Round = Vector256.Create(6755399441055744.0);       // 3UL << 51 as double
         Mask11 = Vector256.Create(2047UL);
-        Adj = Vector256.Create(2095104UL);
+        Adj = Vector256.Create(2095104UL);                  // (1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE) where TABLE_SIZE = 11
     } // cctor ()
 
     /// <summary>
