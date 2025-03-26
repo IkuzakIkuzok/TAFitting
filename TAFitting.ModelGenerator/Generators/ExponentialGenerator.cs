@@ -1,8 +1,6 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using System.Runtime.InteropServices;
-
 namespace TAFitting.ModelGenerator.Generators;
 
 /// <summary>

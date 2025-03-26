@@ -1,7 +1,6 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using DocumentFormat.OpenXml.Wordprocessing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;

@@ -17,7 +17,6 @@ using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
 using TAFitting.Filter;
 using TAFitting.Model;
-using Windows.ApplicationModel.Appointments.DataProvider;
 
 namespace TAFitting.Controls;
 
