@@ -312,6 +312,45 @@ internal static class Program
     }
 
     /// <summary>
+    /// Gets or sets the line color of the analyzer.
+    /// </summary>
+    internal static Color AnalyzerLineColor
+    {
+        get => Config.AnalyzerConfig.LineColor;
+        set
+        {
+            Config.AnalyzerConfig.LineColor = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the line width of the analyzer.
+    /// </summary>
+    internal static int AnalyzerLineWidth
+    {
+        get => Config.AnalyzerConfig.LineWidth;
+        set
+        {
+            Config.AnalyzerConfig.LineWidth = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the marker size of the analyzer.
+    /// </summary>
+    internal static int AnalyzerMarkerSize
+    {
+        get => Config.AnalyzerConfig.MarkerSize;
+        set
+        {
+            Config.AnalyzerConfig.MarkerSize = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the filename format of the A-B signal.
     /// </summary>
     internal static string AMinusBSignalFormat

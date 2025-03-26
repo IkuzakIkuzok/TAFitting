@@ -22,6 +22,7 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
 
     private Decay? decay;
     private FourierSpectrumType spectrumType = Program.FourierSpectrumType;
+    private readonly Series series;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FourierAnalyzer"/> class.
@@ -86,7 +87,19 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
             AxisY = this.axisY,
         });
 
-        AddDummySeries();
+        this.series = new()
+        {
+            ChartType = SeriesChartType.Line,
+            MarkerStyle = MarkerStyle.Circle,
+            Color = Program.AnalyzerLineColor,
+            MarkerSize = Program.AnalyzerMarkerSize,
+            BorderWidth = Program.AnalyzerLineWidth,
+            ChartArea = this.chart.ChartAreas[0].Name,
+            XAxisType = AxisType.Primary,
+        };
+        this.series.Points.AddXY(1e4, 1e-10);
+        this.chart.Series.Add(this.series);
+
         this.axisX_freq.IsLogarithmic = this.axisX_time.IsLogarithmic = true;
         this.axisY.IsLogarithmic = this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel;
         SetTimeLabels(3, 6, 1.0);  // as minimum and maximum values are set to 1e3 and 1e6, respectively
@@ -97,6 +110,42 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         {
             Parent = this,
         };
+
+        #region menu.view
+
+        var menu_view = new ToolStripMenuItem("&View");
+        this.MainMenuStrip.Items.Add(menu_view);
+
+        var menu_viewColor = new ToolStripMenuItem("Line &color", null, ChangeLineColor);
+        menu_view.DropDownItems.Add(menu_viewColor);
+
+        var menu_viewWidth = new ToolStripMenuItem("Line &width");
+        menu_view.DropDownItems.Add(menu_viewWidth);
+
+        for (var i = 0; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString(), null, ChangeLineWidth)
+            {
+                Tag = i,
+            };
+            menu_viewWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.AnalyzerLineWidth;
+            menu_viewWidth.DropDownItems.Add(item);
+        }
+
+        var menu_viewMarker = new ToolStripMenuItem("Marker &size");
+        menu_view.DropDownItems.Add(menu_viewMarker);
+
+        for (var i = 0; i <= 10; i++)
+        {
+            var item = new ToolStripMenuItem(i.ToString(), null, ChangeMarkerSize)
+            {
+                Tag = i,
+            };
+            menu_viewMarker.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.AnalyzerMarkerSize;
+            menu_viewMarker.DropDownItems.Add(item);
+        }
+
+        #endregion  menu.view
 
         #region menu.axis
 
@@ -134,7 +183,7 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
     {
         if (this.decay is null) return;
 
-        this.chart.Series.Clear();
+        this.series.Points.Clear();
 
         var time = this.decay.RawTimes;
         var signal = this.decay.Filtered.RawSignals;
@@ -153,14 +202,6 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         FastFourierTransform.Forward(buffer);
         var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);
 
-        var series = new Series()
-        {
-            ChartType = SeriesChartType.Line,
-            BorderWidth = 2,
-            ChartArea = this.chart.ChartAreas[0].Name,
-            XAxisType = AxisType.Primary,
-        };
-
         n >>= 1;  // Only positive frequencies, i.e., the half of the spectrum, have physical meanings.
         freq = freq[..n];
         buffer = buffer[..n];
@@ -174,12 +215,10 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
             if (this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel && a <= 0) continue;
             if (double.IsNaN(a) || double.IsInfinity(a)) continue;
             a = Math.Clamp(a, -1e28, 1e28);
-            series.Points.AddXY(f, a);
+            this.series.Points.AddXY(f, a);
             amp_min = Math.Min(amp_min, a);
             amp_max = Math.Max(amp_max, a);
         }
-        this.chart.Series.Add(series);
-
         this.axisY.Title = GetYAxisLabel(this.spectrumType);
 
         var freq_min = freq[1];  // exclude DC component
@@ -292,22 +331,33 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         SetSpectrum();
     } // private void ChangeSpectrumType (object, EventArgs)
 
-    private void AddDummySeries()
-    {
-        var dummy = new Series()
-        {
-            ChartType = SeriesChartType.Point,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-            XAxisType = AxisType.Primary,
-        };
-        dummy.Points.AddXY(1e4, 1e-10);
-        this.chart.Series.Add(dummy);
-    } // private void AddDummySeries ()
-
     private void SetAxisTitleFont(object? sender, EventArgs e)
         => this.axisX_freq.TitleFont = this.axisX_time.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
 
     private void SetAxisLabelFont(object? sender, EventArgs e)
         => this.axisX_freq.LabelStyle.Font = this.axisX_time.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
+
+    private void ChangeLineColor(object? sender, EventArgs e)
+    {
+        using var colorDialog = new ColorDialog()
+        {
+            Color = this.series.Color,
+        };
+        if (colorDialog.ShowDialog() != DialogResult.OK) return;
+        this.series.Color = Program.AnalyzerLineColor = colorDialog.Color;
+    } // private void ChangeLineColor (object, EventArgs)
+
+    private void ChangeLineWidth(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int width) return;
+        this.series.BorderWidth = Program.SpectraLineWidth = width;
+    } // private void ChangeLineWidth (object, EventArgs)
+
+    private void ChangeMarkerSize(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not int size) return;
+        this.series.MarkerSize = Program.SpectraMarkerSize = size;
+    } // private void ChangeMarkerSize (object, EventArgs)
 } // internal sealed partial class FourierAnalyzer : Form
