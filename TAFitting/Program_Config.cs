@@ -106,7 +106,7 @@ internal static partial class Program
     }
 
     /// <summary>
-    /// Gets or sets the line widdh of the fit lines.
+    /// Gets or sets the line width of the fit lines.
     /// </summary>
     internal static int FitWidth
     {
