@@ -1096,6 +1096,135 @@ public sealed class AvxVector
     } // public static void Sqrt (AvxVector, AvxVector)
 
     /// <summary>
+    /// Applies the specified function to each element of the specified vector.
+    /// </summary>
+    /// <param name="x">The source vector.</param>
+    /// <param name="y">The target vector.</param>
+    /// <param name="func_v">The vectorized function to apply.</param>
+    /// <param name="func_s">The scalar function to apply.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="y"/> vector is readonly.</exception>
+    public static void Map(AvxVector x, AvxVector y,
+        Func<Vector256<double>, Vector256<double>> func_v, Func<double, double> func_s
+    )
+    {
+        if (x._array.Length != y._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (y.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_x = ref MemoryMarshal.GetArrayDataReference(x._array);
+        ref var to_x = ref Unsafe.Add(ref begin_x, x._array.Length - Vector256<double>.Count);
+
+        ref var current_x = ref begin_x;
+        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_x, ref to_x))
+        {
+            var v_x = Vector256.LoadUnsafe(ref current_x);
+            var v_y = func_v(v_x);
+            v_y.StoreUnsafe(ref current_y);
+            current_x = ref Unsafe.Add(ref current_x, Vector256<double>.Count);
+            current_y = ref Unsafe.Add(ref current_y, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(x);
+        for (var i = offset; i < x._array.Length; i++)
+            y._array[i] = func_s(x._array[i]);
+    } // public static void Map (AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>>, Func<double, double>)
+
+    /// <summary>
+    /// Applies the specified function to each element of the specified vectors.
+    /// </summary>
+    /// <param name="x1">The first source vector.</param>
+    /// <param name="x2">The second source vector.</param>
+    /// <param name="y">The target vector.</param>
+    /// <param name="func_v">The vectorized function to apply.</param>
+    /// <param name="func_s">The scalar function to apply.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="y"/> vector is readonly.</exception>
+    public static void Map(
+        AvxVector x1, AvxVector x2, AvxVector y,
+        Func<Vector256<double>, Vector256<double>, Vector256<double>> func_v, Func<double, double, double> func_s
+    )
+    {
+        if (x1._array.Length != x2._array.Length || x1._array.Length != y._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (y.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
+        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
+
+        ref var current_x1 = ref begin_x1;
+        ref var current_x2 = ref MemoryMarshal.GetArrayDataReference(x2._array);
+        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_x1, ref to_x1))
+        {
+            var v_x1 = Vector256.LoadUnsafe(ref current_x1);
+            var v_x2 = Vector256.LoadUnsafe(ref current_x2);
+            var v_y = func_v(v_x1, v_x2);
+            v_y.StoreUnsafe(ref current_y);
+            current_x1 = ref Unsafe.Add(ref current_x1, Vector256<double>.Count);
+            current_x2 = ref Unsafe.Add(ref current_x2, Vector256<double>.Count);
+            current_y = ref Unsafe.Add(ref current_y, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(x1);
+        for (var i = offset; i < x1._array.Length; i++)
+            y._array[i] = func_s(x1._array[i], x2._array[i]);
+    } // public static void Map (AvxVector, AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>, Vector256<double>>, Func<double, double, double>)
+
+    /// <summary>
+    /// Applies the specified function to each element of the specified vectors.
+    /// </summary>
+    /// <param name="x1">The first source vector.</param>
+    /// <param name="x2">The second source vector.</param>
+    /// <param name="x3">The third source vector.</param>
+    /// <param name="y">The target vector.</param>
+    /// <param name="func_v">The vectorized function to apply.</param>
+    /// <param name="func_s">The scalar function to apply.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="y"/> vector is readonly.</exception>
+    public static void Map(
+        AvxVector x1, AvxVector x2, AvxVector x3, AvxVector y,
+        Func<Vector256<double>, Vector256<double>, Vector256<double>, Vector256<double>> func_v,
+        Func<double, double, double, double> func_s
+    )
+    {
+        if (x1._array.Length != x2._array.Length || x1._array.Length != x3._array.Length || x1._array.Length != y._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (y.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
+        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
+
+        ref var current_x1 = ref begin_x1;
+        ref var current_x2 = ref MemoryMarshal.GetArrayDataReference(x2._array);
+        ref var current_x3 = ref MemoryMarshal.GetArrayDataReference(x3._array);
+        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_x1, ref to_x1))
+        {
+            var v_x1 = Vector256.LoadUnsafe(ref current_x1);
+            var v_x2 = Vector256.LoadUnsafe(ref current_x2);
+            var v_x3 = Vector256.LoadUnsafe(ref current_x3);
+            var v_y = func_v(v_x1, v_x2, v_x3);
+            v_y.StoreUnsafe(ref current_y);
+            current_x1 = ref Unsafe.Add(ref current_x1, Vector256<double>.Count);
+            current_x2 = ref Unsafe.Add(ref current_x2, Vector256<double>.Count);
+            current_x3 = ref Unsafe.Add(ref current_x3, Vector256<double>.Count);
+            current_y = ref Unsafe.Add(ref current_y, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(x1);
+        for (var i = offset; i < x1._array.Length; i++)
+            y._array[i] = func_s(x1._array[i], x2._array[i], x3._array[i]);
+    } // public static void Map (AvxVector, AvxVector, AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>, Vector256<double>, Vector256<double>>, Func<double, double, double, double>)
+
+    /// <summary>
     /// Gets the remaining offset after the vectorized operations.
     /// </summary>
     /// <param name="vector">The vector.</param>
