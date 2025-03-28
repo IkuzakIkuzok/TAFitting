@@ -460,6 +460,23 @@ public sealed class AvxVector
     }
 
     /// <summary>
+    /// Gets or sets the element at the specified index.
+    /// </summary>
+    /// <param name="index">The zero-based index of the element to get or set.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
+    public double this[int index]
+    {
+        get => this._array[index];
+        set
+        {
+            if (this.IsReadonly)
+                throw new InvalidOperationException("The current vector is readonly.");
+            this._array[index] = value;
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AvxVector"/> class
     /// with the specified values.
     /// </summary>
