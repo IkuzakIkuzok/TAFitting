@@ -17,12 +17,19 @@ namespace TAFitting.Data;
 /// </summary>
 file static class MathUtils
 {
+    private static readonly Vector256<double> NaNs;
+
     private static readonly Vector256<double> ExpMin, ExpMax;
     private static readonly Vector256<double> Alpha, AlphaInv;
     private static readonly Vector256<double> C1, C2, C3;
     private static readonly Vector256<double> Round;
     private static readonly Vector256<ulong> Mask11;
     private static readonly Vector256<ulong> Adj;
+
+    private static readonly Vector256<ulong> MaskE, BiasE;
+    private static readonly Vector256<ulong> MaskM;
+    private static readonly Vector256<ulong> BiasM;
+    private static readonly Vector256<double> D1, D2, D3;
 
     /*
      * To calculate the i-th element of the table, use the following formula:
@@ -294,6 +301,8 @@ file static class MathUtils
 
     static MathUtils()
     {
+        NaNs = Vector256.Create(double.NaN);
+
         ExpMin = Vector256.Create(-708.396418532264);       // Math.Log(Math.Pow(2, -1022)) where -1022 is the minimum exponent of a double-precision floating-point number (IEEE 754)
         ExpMax = Vector256.Create(709.782712893384);        // Math.Log(double.MaxValue) = Math.Log(1.7976931348623157E+308)
         Alpha = Vector256.Create(2954.6394437406);          // 2048 / Math.Log(2)
@@ -305,6 +314,14 @@ file static class MathUtils
         Round = Vector256.Create(6755399441055744.0);       // 3UL << 51 as double
         Mask11 = Vector256.Create(2047UL);
         Adj = Vector256.Create(2095104UL);                  // (1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE) where TABLE_SIZE = 11
+
+        MaskE = Vector256.Create(0x7FFUL);
+        BiasE = Vector256.Create(1023UL);
+        MaskM = Vector256.Create(0xFFFFFFFFFFFFFUL);        // (1UL << 52) - 1
+        BiasM = Vector256.Create(0x3FF0000000000000UL);     // 1023UL << 52
+        D3 = Vector256.Create(-0.34484843);
+        D2 = Vector256.Create(2.02466578);
+        D1 = Vector256.Create(-1.67487759);
     } // cctor ()
 
     /// <summary>
@@ -373,6 +390,60 @@ file static class MathUtils
 
         return d * y;
     } // public static double FastExp (double)
+
+    /// <summary>
+    /// Computes the logarithm of the specified vector to the base 2.
+    /// </summary>
+    /// <param name="v">The vector.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe public static Vector256<double> Log2(Vector256<double> v)
+    {
+        if (Avx.IsSupported && Avx2.IsSupported)
+        {
+            var negatives = Avx.Compare(v, Vector256<double>.Zero, FloatComparisonMode.OrderedLessThanOrEqualNonSignaling);
+            var l = v.AsUInt64();
+
+            var e = Avx2.ShiftRightLogical(l, 52);
+            e = Avx2.And(e, MaskE);
+            e = Avx2.Subtract(e, BiasE);
+            
+            var m = Avx2.And(l, MaskM);
+            m = Avx2.Or(m, BiasM);
+
+            var b = m.AsDouble();
+            b = Avx.Add(Avx.Multiply(Avx.Add(Avx.Multiply(b, D3), D2), b), D1);
+            b = Avx.Add(b, Vector256.ConvertToDouble(e));
+
+            return Avx.BlendVariable(b, NaNs, negatives);
+        }
+        else
+        {
+            var arr = stackalloc double[4];
+            arr[0] = FastLog2(v.GetElement(0));
+            arr[1] = FastLog2(v.GetElement(1));
+            arr[2] = FastLog2(v.GetElement(2));
+            arr[3] = FastLog2(v.GetElement(3));
+            return Avx.LoadVector256(arr);
+        }
+    } // unsafe public static Vector256<double> Log2 (Vector256<double>)
+
+    /// <summary>
+    /// Computes the logarithm of the specified value to the base 2.
+    /// </summary>
+    /// <param name="x">The value.</param>
+    /// <returns>The logarithm of the specified value to the base 2.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double FastLog2(double x)
+    {
+        if (x <= 0) return double.NaN;
+        if (double.IsInfinity(x)) return double.PositiveInfinity;
+        var l = BitConverter.DoubleToUInt64Bits(x);
+        var e = (int)((l >> 52) & 0x7FF) - 1023;
+        var m = (l & ((1UL << 52) - 1) | (1023UL << 52));
+        var b = BitConverter.UInt64BitsToDouble(m);
+        return e + ((-0.34484843) * b + 2.02466578) * b - 1.67487759;
+    }
 } // file static class MathUtils
 
 /// <summary>
@@ -1111,6 +1182,85 @@ public sealed class AvxVector
         for (var i = offset; i < vector._array.Length; i++)
             result._array[i] = Math.Sqrt(vector._array[i]);
     } // public static void Sqrt (AvxVector, AvxVector)
+
+    /// <summary>
+    /// Computes the logarithm to the base 2 for each element of the specified vector.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    public static void Log2(AvxVector vector, AvxVector result)
+    {
+        if (vector._array.Length != result._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (result.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
+        {
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_result = MathUtils.Log2(v_left);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(vector);
+        for (var i = offset; i < vector._array.Length; i++)
+            result._array[i] = MathUtils.FastLog2(vector._array[i]);
+    } // public static void Log2 (AvxVector, AvxVector)
+
+    /// <summary>
+    /// Computes the logarithm to the specified base for each element of the specified vector.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <param name="baseValue">The base value.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    public static void Log(AvxVector vector, double baseValue, AvxVector result)
+    {
+        if (vector._array.Length != result._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (result.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var current_left = ref begin_left;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var logBase = 1.0 / Math.Log2(baseValue);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
+        {
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_result = MathUtils.Log2(v_left) * logBase;
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
+        }
+        var offset = GetRemainingOffset(vector);
+        for (var i = offset; i < vector._array.Length; i++)
+            result._array[i] = MathUtils.FastLog2(vector._array[i]) * logBase;
+    } // public static void Log (AvxVector, double, AvxVector)
+
+    /// <summary>
+    /// Computes the natural logarithm for each element of the specified vector.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    public static void Ln(AvxVector vector, AvxVector result)
+        => Log(vector, Math.E, result);
 
     /// <summary>
     /// Applies the specified function to each element of the specified vector.
