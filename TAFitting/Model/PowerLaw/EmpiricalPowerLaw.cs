@@ -49,7 +49,7 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
             var ax = a * x;
             var pow = Math.Pow(1 + ax, -alpha);
 
-            var d_a0 = 1 / pow;
+            var d_a0 = pow;
             var d_a = -a0 * x * Math.Pow(1 + ax, -1 - alpha) * alpha;
             var d_alpha = -a0 * Math.Log(1 + ax) * pow;
 
