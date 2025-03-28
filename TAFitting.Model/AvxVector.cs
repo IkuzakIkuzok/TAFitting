@@ -1263,6 +1263,44 @@ public sealed class AvxVector
         => Log(vector, Math.E, result);
 
     /// <summary>
+    /// Computes the power of the specified vector and stores the result in the specified vector.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <param name="exponent">The exponent.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    public static void Power(AvxVector vector, double exponent, AvxVector result)
+    {
+        if (vector._array.Length != result._array.Length)
+            throw new ArgumentException("The count of the vectors must be the same.");
+        if (result.IsReadonly)
+            throw new InvalidOperationException("The result vector is readonly.");
+
+        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var exp = exponent / Math.Log2(Math.E);
+
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
+        {
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var log = MathUtils.Log2(v_left) * exp;
+            var v_result = MathUtils.Exp(log);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(vector);
+        for (var i = offset; i < vector._array.Length; i++)
+            result._array[i] = Math.Pow(vector._array[i], exponent);
+    } // public static void Power (AvxVector, double, AvxVector)
+
+    /// <summary>
     /// Applies the specified function to each element of the specified vector.
     /// </summary>
     /// <param name="x">The source vector.</param>
