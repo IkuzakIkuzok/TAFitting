@@ -1523,10 +1523,10 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation = LevenbergMarquardtEstimation;
-        var n = this.decays?.Values.Select(d => d.OnlyAfterT0.Times.Count).Max() ?? 0;
-        if (model is IVectorizedModel && AvxVector.IsSupported)
-            estimation = LevenbergMarquardtEstimationSIMD;
+        Func<ParametersTableRow, IFittingModel, IReadOnlyList<double>> estimation
+            = Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel
+            ? LevenbergMarquardtEstimationSIMD
+            : LevenbergMarquardtEstimation;
 
         var start = Stopwatch.GetTimestamp();
 
