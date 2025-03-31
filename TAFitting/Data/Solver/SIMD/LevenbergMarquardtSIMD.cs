@@ -53,6 +53,7 @@ internal sealed class LevenbergMarquardtSIMD
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
+    private readonly IReadOnlyList<int> fixedParameters;
 
     private readonly int numberOfParameters, numberOfDataPoints;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
@@ -68,8 +69,9 @@ internal sealed class LevenbergMarquardtSIMD
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
     /// <param name="parameters">The initial parameters.</param>
+    /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
-    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Numbers parameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Numbers parameters, IReadOnlyList<int> fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
@@ -80,6 +82,7 @@ internal sealed class LevenbergMarquardtSIMD
 
         this.numberOfParameters = parameters.Count;
         this.numberOfDataPoints = x.Count;
+        this.fixedParameters = fixedParameters;
 
         this.parameters = new double[this.numberOfParameters];
         Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
@@ -96,7 +99,8 @@ internal sealed class LevenbergMarquardtSIMD
         this.derivatives = new AvxVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
             this.derivatives[i] = AvxVector.Create(this.numberOfDataPoints);
-    } // ctor (IVectorizedModel, Numbers, Numbers, Numbers)
+        this.fixedParameters = fixedParameters;
+    } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
 
     /// <summary>
     /// Fits the model to the data.
@@ -113,6 +117,9 @@ internal sealed class LevenbergMarquardtSIMD
             chi2 = CalcChi2();
 
             this.Model.GetVectorizedDerivatives(this.parameters)(this.x, this.derivatives);
+            for (var i = 0; i < this.fixedParameters.Count; ++i)
+                this.derivatives[this.fixedParameters[i]].Load(0);
+
             CalcHessian();
             CalcGradient();
 

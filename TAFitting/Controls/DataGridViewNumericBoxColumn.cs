@@ -94,6 +94,11 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the values of the cells in the column are fixed.
+    /// </summary>
+    internal bool Fixed { get; set; } = false;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DataGridViewNumericBoxColumn"/> class.
     /// </summary>
     internal DataGridViewNumericBoxColumn() : this(0.0) { }

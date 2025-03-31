@@ -331,6 +331,19 @@ internal sealed partial class ParametersTable : DataGridView
         batchInputNotEdited.Click += BatchInputNotEditedRowsOnly;
         batchInput.DropDownItems.Add(batchInputNotEdited);
 
+        if (column is DataGridViewNumericBoxColumn numeric)
+        {
+            menu.Items.Add(new ToolStripSeparator());
+
+            var fixedColumn = new ToolStripMenuItem("Fixed")
+            {
+                Tag = numeric,
+            };
+            fixedColumn.Click += ToggleFixed;
+            menu.Opening += (sender, e) => fixedColumn.Checked = numeric.Fixed;
+            menu.Items.Add(fixedColumn);
+        }
+
         return menu;
     } // private ContextMenuStrip GetColumnContextMenu (DataGridViewColumn)
 
@@ -381,6 +394,13 @@ internal sealed partial class ParametersTable : DataGridView
             row.Cells[index].Value = value;
         SetFreezeEditedState(false);
     } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, IEnumerable<ParametersTableRow>)
+
+    private static void ToggleFixed(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem menuItem) return;
+        if (menuItem.Tag is not DataGridViewNumericBoxColumn column) return;
+        column.Fixed = !column.Fixed;
+    } // private static void ToggleFixed (object?, EventArgs)
 
     /// <summary>
     /// Sets the freeze edited state of the rows.
