@@ -338,7 +338,7 @@ file static class MathUtils
             v = Avx.Max(v, ExpMin);
 
             var d = Avx.Add(Avx.Multiply(v, Alpha), Round);
-            var i = d.AsUInt64<double>();
+            var i = d.AsUInt64();
 
             var u = Avx2.Add(i, Adj);
             u = Avx2.ShiftRightLogical(u, 11);
