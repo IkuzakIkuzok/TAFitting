@@ -276,6 +276,19 @@ internal static partial class Program
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether to use SIMD.
+    /// </summary>
+    internal static bool UseSIMD
+    {
+        get => Config.SolverConfig.UseSIMD;
+        set
+        {
+            Config.SolverConfig.UseSIMD = value;
+            SaveConfig();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the Fourier spectrum type.
     /// </summary>
     internal static FourierSpectrumType FourierSpectrumType

@@ -581,6 +581,14 @@ internal sealed partial class MainWindow : Form
         };
         menu_fitAuto.Click += ToggleAutoFit;
         menu_fit.DropDownItems.Add(menu_fitAuto);
+        
+        var menu_fitSIMD = new ToolStripMenuItem("Use &SIMD")
+        {
+            Checked = Program.UseSIMD,
+            ToolTipText = "Fit the data using SIMD instructions",
+        };
+        menu_fitSIMD.Click += ToggleUseSIMD;
+        menu_fit.DropDownItems.Add(menu_fitSIMD);
 
         menu_fit.DropDownItems.Add(new ToolStripSeparator());
 
@@ -1638,6 +1646,12 @@ internal sealed partial class MainWindow : Form
         if (sender is not ToolStripMenuItem item) return;
         Program.AutoFit = item.Checked = !item.Checked;
     } // private void ToggleAutoFit (object?, EventArgs)
+
+    private void ToggleUseSIMD(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        Program.UseSIMD = item.Checked = !item.Checked;
+    } // private void ToggleUseSIMD (object?, EventArgs)
 
     #endregion Levenberg-Marquardt estimation
 
