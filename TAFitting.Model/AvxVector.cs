@@ -401,6 +401,8 @@ file static class MathUtils
     {
         if (Avx.IsSupported && Avx2.IsSupported)
         {
+            // See FastLog2(double) for computation details
+
             var negatives = Avx.Compare(v, Vector256<double>.Zero, FloatComparisonMode.OrderedLessThanOrEqualNonSignaling);
             var l = v.AsUInt64();
 
@@ -436,13 +438,23 @@ file static class MathUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double FastLog2(double x)
     {
+        /*
+         * Floating-point numbers are represented as follows (IEEE 754):
+         *   x = m * 2^e
+         * The logarithm of x to the base 2 is:
+         *   lg(x) = lg(m) + e
+         * The `e` is stored in the bits 52-62 of the double-precision floating-point number with bias 1023,
+         * and the `m` in the bits 0-51.
+         * The lg(m) is approximated by Taylor series.
+         */
+
         if (x <= 0) return double.NaN;
         if (double.IsInfinity(x)) return double.PositiveInfinity;
         var l = BitConverter.DoubleToUInt64Bits(x);
-        var e = (int)((l >> 52) & 0x7FF) - 1023;
-        var m = (l & ((1UL << 52) - 1) | (1023UL << 52));
+        var e = (int)((l >> 52) & 0x7FF) - 1023;  // Extracts the exponent part and subtracts the bias
+        var m = (l & ((1UL << 52) - 1) | (1023UL << 52));  // Extracts the mantissa part and sets the exponent to 1023 (bias)
         var b = BitConverter.UInt64BitsToDouble(m);
-        return e + ((-0.34484843) * b + 2.02466578) * b - 1.67487759;
+        return e + ((-0.34484843) * b + 2.02466578) * b - 1.67487759;  // Taylor series approximation
     }
 } // file static class MathUtils
 
