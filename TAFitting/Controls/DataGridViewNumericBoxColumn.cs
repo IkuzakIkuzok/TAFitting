@@ -9,6 +9,8 @@ namespace TAFitting.Controls;
 /// </summary>
 internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
 {
+    private bool isFixed = false;
+
     /// <summary>
     /// Gets or sets the bias of the digit order for incrementing.
     /// </summary>
@@ -96,7 +98,20 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     /// <summary>
     /// Gets or sets a value indicating whether the values of the cells in the column are fixed.
     /// </summary>
-    internal bool Fixed { get; set; } = false;
+    internal bool Fixed
+    {
+        get => this.isFixed;
+        set
+        {
+            if (this.isFixed == value) return;
+            this.isFixed = value;
+            if (value)
+                this.HeaderText += "*";
+            else
+                this.HeaderText = this.HeaderText[..^1];  // Do not use this.HeaderText.TrimEnd('*') since the header text may contain '*'.
+            this.DataGridView?.Refresh();
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataGridViewNumericBoxColumn"/> class.
