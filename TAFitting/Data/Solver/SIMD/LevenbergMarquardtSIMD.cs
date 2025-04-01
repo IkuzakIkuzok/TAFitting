@@ -118,7 +118,7 @@ internal sealed class LevenbergMarquardtSIMD
 
             this.Model.GetVectorizedDerivatives(this.parameters)(this.x, this.derivatives);
             for (var i = 0; i < this.fixedParameters.Count; ++i)
-                this.derivatives[this.fixedParameters[i]].Load(0);
+                this.derivatives[this.fixedParameters[i]].Clear();
 
             CalcHessian();
             CalcGradient();

@@ -637,6 +637,21 @@ public sealed class AvxVector
     } // public void Load (double)
 
     /// <summary>
+    /// Clears the current vector.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
+    /// <remarks>This method is preferred over Load(0.0) for performance reasons.</remarks>
+    public void Clear()
+    {
+        if (this.IsReadonly)
+            throw new InvalidOperationException("The current vector is readonly.");
+
+        // Span<T>.Clear is faster than Array.Clear for this case
+        var span = this._array.AsSpan();
+        span.Clear();
+    } // public void Clear ()
+
+    /// <summary>
     /// Creates a new instance of the <see cref="AvxVector"/> class with the specified values.
     /// </summary>
     /// <param name="values">The values of the vector.</param>
