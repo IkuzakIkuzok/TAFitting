@@ -286,8 +286,6 @@ internal static class MathUtils
         i = u | iax;
         d = BitConverter.UInt64BitsToDouble(i);
 
-        var e = d * y;
-        var l = Math.Exp(x);
         return d * y;
     } // internal static double FastExp (double)
 
