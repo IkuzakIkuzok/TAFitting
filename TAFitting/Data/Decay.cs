@@ -5,11 +5,15 @@
 // The optimization is valid only if the maximum time is less than 10 s.
 #define Tekave
 
+// Accept partial preloaded data, which is rarely appears for actual data.
+//#define AcceptPartialPreload
+
 using System.Collections;
 using System.Diagnostics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using TAFitting.Filter;
+
 #if Tekave
 // for MethodImplAttribute
 using System.Runtime.CompilerServices;
@@ -234,6 +238,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
 #if Tekave
 
+    private const int FILE_SIZE = 107_457;
     private const double SCALING_FACTOR = 0.000_000_000_001;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -299,7 +304,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 bufferSize: BUFF_LEN * 3 * 7 * 7,
                 false
             );
-            Span<byte> buffer = stackalloc byte[BUFF_LEN * LINES];
+            var buffer = (stackalloc byte[BUFF_LEN * LINES]);
 
             // Read the first line outside the loop to get the time step.
             reader.Read(buffer);
@@ -363,13 +368,26 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="signalUnit">The signal unit.</param>
     /// <param name="preLoadData">The preloaded data.</param>
     /// <returns>The decay data.</returns>
-    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit, byte[]? preLoadData)
+    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit, FileCache? preLoadData)
     {
         if (preLoadData is null) return FromFile(filename, timeUnit, signalUnit);
+
+#if AcceptPartialPreload
+        if (preLoadData.Length < (FILE_SIZE >> 1)) return FromFile(filename, timeUnit, signalUnit);
+#else
+        // If the data is not fully loaded, return the data from the file.
+        if (preLoadData.Length < FILE_SIZE) return FromFile(filename, timeUnit, signalUnit);
+#endif
+
 
 #if Tekave
         const int BUFF_LEN = 43;
         var span = preLoadData.AsSpan();
+        /*
+         * Do NOT use `preLoadData.Length` after this line,
+         * because the property may change after span creation due to background loading
+         * whereas the length of the span is fixed.
+         */
 
         var timeScaling = SCALING_FACTOR / timeUnit;
         var signalScaling = 1.0 / signalUnit;
@@ -380,13 +398,46 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var t = span.Slice(5 + BUFF_LEN * 0, 15);
         var dt = FastParseFixedPoint(t);
 
-        for (var i = 0; i < times.Length; i++)
+        var l = span.Length / BUFF_LEN;
+        var i = 0;
+        for (; i < l; ++i)
         {
             var s = span.Slice(26 + BUFF_LEN * i, 15);
             times[i] = (dt * (i + 1)) * timeScaling;
             signals[i] = FastParse(s) * signalScaling;
         }
-#else
+
+#if AcceptPartialPreload
+        if (l < times.Length)
+        {
+            const int LINES = 3;
+
+            using var reader = new FileStream(
+                filename, FileMode.Open, FileAccess.Read, FileShare.Read,
+                bufferSize: BUFF_LEN * 3 * 7 * 7,
+                false
+            );
+            var buffer = (stackalloc byte[BUFF_LEN * LINES]);
+
+            reader.Seek(span.Length, SeekOrigin.Begin);
+            for (; i < times.Length; i += LINES)
+            {
+                var read = reader.Read(buffer);
+
+                var s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
+                var s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
+                var s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
+
+                times[i + 0] = (dt * (i + 1)) * timeScaling;
+                times[i + 1] = (dt * (i + 2)) * timeScaling;
+                times[i + 2] = (dt * (i + 3)) * timeScaling;
+                signals[i + 0] = FastParse(s0) * signalScaling;
+                signals[i + 1] = FastParse(s1) * signalScaling;
+                signals[i + 2] = FastParse(s2) * signalScaling;
+            }
+        }
+#endif  // AcceptPartialPreload
+#else  // Tekave
         var timeScaling = 1.0 / timeUnit;
         var signalScaling = 1.0 / signalUnit;
 
@@ -401,7 +452,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             times[i] = double.Parse(parts[0]) * timeScaling;
             signals[i] = double.Parse(parts[1]) * signalScaling;
         }
-#endif
+#endif  // Tekave
 
         return new(times, timeUnit, signals, signalUnit);
     } // internal static Decay FromFile (string, TimeUnit, SignalUnit, byte[])

@@ -15,9 +15,9 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     private readonly string format_ab = Program.AMinusBSignalFormat;
     private readonly string format_b = Program.BSignalFormat;
 
-    private readonly Dictionary<double, string> folders = new();
-    private readonly ConcurrentDictionary<double, byte[]> cache_ab = new();
-    private readonly ConcurrentDictionary<double, byte[]> cache_b = new();
+    private readonly Dictionary<double, string> folders = [];
+    private readonly ConcurrentDictionary<double, FileCache> cache_ab = new();
+    private readonly ConcurrentDictionary<double, FileCache> cache_b = new();
 
     /// <summary>
     /// Registers the specified folder and starts loading the data.
@@ -44,10 +44,27 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     } // internal void Register (string)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Load(string path, ConcurrentDictionary<double, byte[]> cache, double wavelength)
+    private static void Load(string path, ConcurrentDictionary<double, FileCache> cache, double wavelength)
     {
-        var data = File.ReadAllBytes(path);
+        const int BUFF_LEN = 43;
+        const int LINES = 3;
+
+        var data = new FileCache();
         cache[wavelength] = data;
+
+        using var reader = new FileStream(
+            path, FileMode.Open, FileAccess.Read, FileShare.Read,
+            bufferSize: BUFF_LEN * 3 * 7 * 7,
+            false
+        );
+
+        var buffer = (stackalloc byte[BUFF_LEN * LINES]);
+        for (var i = 0; i < 2499; i += LINES)
+        {
+            reader.ReadExactly(buffer);
+            data.Append(buffer);
+        }
+        
     } // private static void Load (string, ConcurrentDictionary<double, byte[]>, double)
 
     /// <summary>
@@ -55,7 +72,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     /// </summary>
     /// <param name="wavelength">The wavelength to get the data.</param>
     /// <returns>The A-B file data if loading is completed; otherwise, <see langword="null"/>.</returns>
-    internal byte[]? GetAMinusBFileData(double wavelength)
+    internal FileCache? GetAMinusBFileData(double wavelength)
         => GetFileData(wavelength, this.cache_ab);
 
 
@@ -64,11 +81,11 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     /// </summary>
     /// <param name="wavelength">The wavelength to get the data.</param>
     /// <returns>The B file data if loading is completed; otherwise, <see langword="null"/>.</returns>
-    internal byte[]? GetBFileData(double wavelength)
+    internal FileCache? GetBFileData(double wavelength)
         => GetFileData(wavelength, this.cache_b);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private byte[]? GetFileData(double wavelength, ConcurrentDictionary<double, byte[]> cache)
+    private static FileCache? GetFileData(double wavelength, ConcurrentDictionary<double, FileCache> cache)
         => cache.TryGetValue(wavelength, out var data) ? data : null;
 
     /// <inheritdoc/>
