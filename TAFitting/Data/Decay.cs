@@ -244,7 +244,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         Debug.Assert(span.Length == 15);
 
-        span = span.Slice(3);
+        span = span[3..];
         for (var i = 0; i < span.Length; i++)
         {
             var c = span[i];
@@ -477,7 +477,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal double FilndT0()
     {
         var len = this.times.Length >> 1;
-        var min = this.signals.AsSpan().Slice(0, len).Min();
+        var min = this.signals.AsSpan()[..len].Min();
         var index = Array.IndexOf(this.signals, min);
         return this.times[index];
     } // internal double FilndT0 ()
