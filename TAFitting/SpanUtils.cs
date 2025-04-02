@@ -115,6 +115,12 @@ internal static class SpanUtils
         return sum / source.Length;
     } // internal static double Average (this ReadOnlySpan<double>)
 
+    /// <summary>
+    /// Returns the minimum value in the source.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="source">The source.</param>
+    /// <returns>The minimum value in the source.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T Min<T>(this Span<T> source) where T : struct, INumber<T>
         => ((ReadOnlySpan<T>)source).Min();
@@ -163,6 +169,12 @@ internal static class SpanUtils
         }
     } // internal static T Min<T> (this ReadOnlySpan<T>) where T : struct, INumber<T>
 
+    /// <summary>
+    /// Returns the maximum value in the source.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    /// <param name="source">The source.</param>
+    /// <returns>The maximum value in the source.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T Max<T>(this Span<T> source) where T : struct, INumber<T>
         => ((ReadOnlySpan<T>)source).Max();

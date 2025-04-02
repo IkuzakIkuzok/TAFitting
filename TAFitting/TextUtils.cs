@@ -23,13 +23,23 @@ internal static class TextUtils
 
         CP932 = Encoding.GetEncoding(932);
     } // cctor ()
-    
+
+    /// <summary>
+    /// Gets the text from the specified byte array.
+    /// </summary>
+    /// <param name="bytes">The byte array to get the text from.</param>
+    /// <returns>The text decoded from the byte array.</returns>
     internal static string GetText(this byte[] bytes)
     {
         var encoding = bytes.GetEncoding() ?? DefaultEncoding;
         return encoding.GetString(bytes);
     } // internal static string GetText (this byte[])
 
+    /// <summary>
+    /// Gets the encoding of the specified byte array.
+    /// </summary>
+    /// <param name="bytes">The byte array to get the encoding of.</param>
+    /// <returns>The encoding of the byte array if it can be determined; otherwise, <see langword="null"/>.</returns>
     internal static Encoding? GetEncoding(this byte[] bytes)
     {
         /*
