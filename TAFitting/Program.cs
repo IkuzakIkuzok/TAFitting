@@ -18,7 +18,7 @@ internal static partial class Program
 {
     internal const string AppName = "TA Fitting";
 
-    internal static readonly string GitHub = @"https://github.com/IkuzakIkuzok/TAFitting";
+    internal const string GitHub = @"https://github.com/IkuzakIkuzok/TAFitting";
 
     internal static readonly string AppLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
