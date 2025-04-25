@@ -175,26 +175,42 @@ internal sealed class LevenbergMarquardtSIMD
         // Gaussian elimination
         for (var row = 0; row < this.numberOfParameters; ++row)
         {
-            var pivot = this.hessian[row, row];
-            if (pivot == 0)
+            // Find the pivot row
+            var p_max = Math.Abs(this.hessian[row, row]);
+            var i_max = row;
+            for (var i = row + 1; i < this.numberOfParameters; ++i)
             {
-                this.gradient[row] = 0;
-            }
-            else
-            {
-                for (var otherRow = row + 1; otherRow < this.numberOfParameters; ++otherRow)
+                var p = Math.Abs(this.hessian[i, row]);
+                if (p > p_max)
                 {
-                    var ratio = this.hessian[otherRow, row] / pivot;
-                    for (var col = 0; col < this.numberOfParameters; ++col)
-                        this.hessian[otherRow, col] -= ratio * this.hessian[row, col];
-                    this.gradient[otherRow] -= ratio * this.gradient[row];
+                    p_max = p;
+                    i_max = i;
                 }
-                for (var col = 0; col < this.numberOfParameters; ++col)
-                    this.hessian[row, col] /= pivot;
-                this.gradient[row] /= pivot;
             }
+            if (p_max == 0) break;
+            if (i_max != row)
+            {
+                for (var col = 0; col < this.numberOfParameters; ++col)
+                    (this.hessian[i_max, col], this.hessian[row, col]) = (this.hessian[row, col], this.hessian[i_max, col]);
+                (this.gradient[i_max], this.gradient[row]) = (this.gradient[row], this.gradient[i_max]);
+            }
+
+            var pivot = this.hessian[row, row]; // pivot must not be zero here
+
+            // Forward elimination
+            for (var otherRow = row + 1; otherRow < this.numberOfParameters; ++otherRow)
+            {
+                var ratio = this.hessian[otherRow, row] / pivot;
+                for (var col = 0; col < this.numberOfParameters; ++col)
+                    this.hessian[otherRow, col] -= ratio * this.hessian[row, col];
+                this.gradient[otherRow] -= ratio * this.gradient[row];
+            }
+            for (var col = 0; col < this.numberOfParameters; ++col)
+                this.hessian[row, col] /= pivot;
+            this.gradient[row] /= pivot;
         }
 
+        // Back substitution
         for (var i = this.numberOfParameters - 1; i > 0; --i)
         {
             var b = this.gradient[i];
