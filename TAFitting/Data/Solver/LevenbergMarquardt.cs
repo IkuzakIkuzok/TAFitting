@@ -249,7 +249,7 @@ internal sealed class LevenbergMarquardt
             if (p_max == 0) break;
             if (i_max != row)
             {
-                for (var col = 0; col < this.numberOfParameters; ++col)
+                for (var col = row; col < this.numberOfParameters; ++col)
                     (this.hessian[i_max, col], this.hessian[row, col]) = (this.hessian[row, col], this.hessian[i_max, col]);
                 (this.gradient[i_max], this.gradient[row]) = (this.gradient[row], this.gradient[i_max]);
             }
