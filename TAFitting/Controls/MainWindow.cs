@@ -868,6 +868,7 @@ internal sealed partial class MainWindow : Form
                 var applySelectedRow = new ToolStripMenuItem("Apply to selected row")
                 {
                     Tag = filter,
+                    ToolTipText = "Apply this filter to the selected row",
                 };
                 applySelectedRow.Click += ApplyFilterSelectedRow;
                 item.DropDownItems.Add(applySelectedRow);
@@ -875,14 +876,27 @@ internal sealed partial class MainWindow : Form
                 var applyAllRows = new ToolStripMenuItem("Apply to all rows")
                 {
                     Tag = filter,
+                    ToolTipText = "Apply this filter to all rows",
                 };
                 applyAllRows.Click += ApplyFilterAllRows;
                 item.DropDownItems.Add(applyAllRows);
 
+                item.DropDownItems.Add(new ToolStripSeparator());
+
+                var setDefault = new ToolStripMenuItem("Set as default")
+                {
+                    Tag = guid,
+                    ToolTipText = "Set this filter as the default filter",
+                };
+                setDefault.Click += SetDefaultFilter;
+                item.DropDownItems.Add(setDefault);
+
                 if (guid == Program.DefaultFilter)
                 {
+                    item.Text += " (default)";
                     applySelectedRow.ShortcutKeys = Keys.Control | Keys.F;
                     applyAllRows.ShortcutKeys = Keys.Control | Keys.Shift | Keys.F;
+                    setDefault.Enabled = false;
                 }
             }
         }
@@ -923,6 +937,14 @@ internal sealed partial class MainWindow : Form
         add_filter.Click += AddFilter;
         this.menu_filter.DropDownItems.Add(add_filter);
     } // private void UpdateFilterList ()
+
+    private void SetDefaultFilter(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not Guid guid) return;
+        Program.DefaultFilter = guid;
+        UpdateFilterList();
+    } // private void SetDefaultFilter (object?, EventArgs)
 
     private void ApplyFilterSelectedRow(object? sender, EventArgs e)
     {

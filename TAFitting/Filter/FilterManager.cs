@@ -45,7 +45,7 @@ internal static class FilterManager
     {
         get
         {
-            var id = Program.Config.FilterConfig.DefaultFilter;
+            var id = Program.DefaultFilter;
             return filters.TryGetValue(id, out var filter) ? filter.Instance : null;
         }
     }
@@ -53,9 +53,6 @@ internal static class FilterManager
     static FilterManager()
     {
         Load(Assembly.GetExecutingAssembly());
-
-        foreach (var item in Program.Config.ModelConfig.LinearCombinations)
-            item.Register();
 
         var modelsDirectory = Path.Combine(Program.AppLocation, "filters");
         if (!Directory.Exists(modelsDirectory)) return;
