@@ -291,7 +291,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
              * Read 3 lines at a time.
              */
 
-            const int BUFF_LEN = 43;
+            const int BUFF_LEN = FileCache.LINE_LENGTH;
             const int LINES = 3;
 
             timeScaling *= SCALING_FACTOR;
@@ -381,7 +381,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
 
 #if Tekave
-        const int BUFF_LEN = 43;
+        const int BUFF_LEN = FileCache.LINE_LENGTH;
         var span = preLoadData.AsSpan();
         /*
          * Do NOT use `preLoadData.Length` after this line,

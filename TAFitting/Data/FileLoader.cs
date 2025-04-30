@@ -46,7 +46,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Load(string path, ConcurrentDictionary<double, FileCache> cache, double wavelength)
     {
-        const int BUFF_LEN = 43;
+        const int BUFF_LEN = FileCache.LINE_LENGTH;
         const int LINES = 3;
 
         var data = new FileCache();

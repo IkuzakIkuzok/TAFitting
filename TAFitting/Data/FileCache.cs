@@ -8,6 +8,9 @@ namespace TAFitting.Data;
 /// </summary>
 internal sealed class FileCache
 {
+    internal const int LINE_LENGTH = 43;
+    internal const int LINE_COUNT = 2499;
+
     private readonly byte[] _buffer;
 
     /// <summary>
@@ -18,7 +21,7 @@ internal sealed class FileCache
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
     /// </summary>
-    internal FileCache() : this(43 * 2499) { }
+    internal FileCache() : this(LINE_LENGTH * LINE_COUNT) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class with the specified length.
