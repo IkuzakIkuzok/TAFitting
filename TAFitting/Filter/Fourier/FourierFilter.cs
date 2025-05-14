@@ -11,6 +11,9 @@ namespace TAFitting.Filter.Fourier;
 /// </summary>
 internal abstract class FourierFilter : IFilter
 {
+    /// <summary>
+    /// The cutoff frequency of the filter.
+    /// </summary>
     protected double cutoff = 1;
 
     /// <inheritdoc/>
@@ -19,9 +22,17 @@ internal abstract class FourierFilter : IFilter
     /// <inheritdoc/>
     public string Description => GetDescription();
 
+    /// <summary>
+    /// Gets the name of the current filter.
+    /// </summary>
+    /// <returns>The name of the current filter.</returns>
     protected virtual string GetName()
         => $"{GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")})";
 
+    /// <summary>
+    /// Gets the description of the current filter.
+    /// </summary>
+    /// <returns>The description of the current filter.</returns>
     protected virtual string GetDescription()
         => $"A filter that uses Fourier transform with a cutoff frequency of {GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")}).";
 
