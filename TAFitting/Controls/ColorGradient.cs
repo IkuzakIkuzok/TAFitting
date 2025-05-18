@@ -162,7 +162,7 @@ internal class ColorGradient
             paintHandlers.Remove(control.Handle);
         }
 
-        var handler = new PaintEventHandler((object? sender, PaintEventArgs e) =>
+        var handler = new PaintEventHandler((sender, e) =>
         {
             var rect = new RectangleF(0, 0, control.Width, control.Height);
             using var brush = GetBrush(rect, gradientMode);
