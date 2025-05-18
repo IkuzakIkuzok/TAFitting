@@ -24,9 +24,10 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
 
     public IReadOnlyList<string> Parameters
     {
-        get => this.worksheet.Range(1, 2, 1, this.parametersCount + 1).Cells()
+        get => [
+            .. this.worksheet.Range(1, 2, 1, this.parametersCount + 1).Cells()
             .Select(cell => cell.GetString())
-            .ToArray();
+        ];
         set
         {
             this.parametersCount = value.Count;
@@ -43,9 +44,10 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
 
     public IReadOnlyList<double> Times
     {
-        get => this.worksheet.Range(1, this.parametersCount + 2, 1, this.parametersCount + this.timesCount + 2).Cells()
+        get => [
+            .. this.worksheet.Range(1, this.parametersCount + 2, 1, this.parametersCount + this.timesCount + 2).Cells()
             .Select(cell => cell.GetDouble())
-            .ToArray();
+        ];
         set
         {
             this.timesCount = value.Count;

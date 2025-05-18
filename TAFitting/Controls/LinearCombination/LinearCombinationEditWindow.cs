@@ -138,7 +138,7 @@ internal sealed partial class LinearCombinationEditWindow : Form
         var models = category.IsDefined
             ? ModelManager.Models.Where(item => item.Value.Category == category.Category)
             : ModelManager.Models;
-        this.cb_model.Items.AddRange(models.Select(m => m.Value).Where(m => m.Model is IAnalyticallyDifferentiable).ToArray());
+        this.cb_model.Items.AddRange([.. models.Select(m => m.Value).Where(m => m.Model is IAnalyticallyDifferentiable)]);
         this.btn_addModel.Enabled = false;
     } // private void UpdateModelsList ()
 
