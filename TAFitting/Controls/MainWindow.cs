@@ -53,7 +53,7 @@ internal sealed partial class MainWindow : Form
     private readonly Label lb_t0, lb_timeUnit;
 
     private readonly List<SpectraPreviewWindow> previewWindows = [];
-    private readonly List<IAnalyzer> analyzers = [];
+    private readonly List<IDecayAnalyzer> analyzers = [];
 
     /// <summary>
     /// Gets the sample name.

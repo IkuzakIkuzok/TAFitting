@@ -8,7 +8,7 @@ namespace TAFitting.Controls.Analyzers;
 /// <summary>
 /// Interface for analyzers.
 /// </summary>
-internal interface IAnalyzer
+internal interface IDecayAnalyzer
 {
     /// <summary>
     /// Sets the decay to analyze.
@@ -16,4 +16,4 @@ internal interface IAnalyzer
     /// <param name="decay">The decay to analyze</param>
     /// <param name="wavelength">The wavelength of the decay</param>
     void SetDecay(Decay decay, double wavelength);
-} // internal interface IAnalyzer
+} // internal interface IDecayAnalyzer

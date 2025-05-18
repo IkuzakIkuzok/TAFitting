@@ -15,7 +15,7 @@ namespace TAFitting.Controls.Analyzers;
 /// </summary>
 [DesignerCategory("Code")]
 [AutoDisposal]
-internal sealed partial class FourierAnalyzer : Form, IAnalyzer
+internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 {
     private readonly Chart chart;
     private readonly Axis axisX_freq, axisX_time, axisY;
@@ -360,4 +360,4 @@ internal sealed partial class FourierAnalyzer : Form, IAnalyzer
         if (item.Tag is not int size) return;
         this.series.MarkerSize = Program.SpectraMarkerSize = size;
     } // private void ChangeMarkerSize (object, EventArgs)
-} // internal sealed partial class FourierAnalyzer : Form
+} // internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
