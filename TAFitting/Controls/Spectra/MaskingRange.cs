@@ -37,8 +37,8 @@ internal readonly record struct MaskingRange(double Start, double End)
     /// <summary>
     /// Checks whether the specified value is included in this masking range.
     /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="value">The value to check.</param>
+    /// <returns><see langword="true"/> if the <paramref name="value"/> is included in this masking range; otherwise, <see langword="false"/>.</returns>
     internal bool Includes(double value)
         => this.Start <= value && value <= this.End;
 
