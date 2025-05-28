@@ -72,7 +72,7 @@ namespace TAFitting.Model;
 internal sealed class PolynomialModelAttribute : global::System.Attribute
 {
     /// <summary>
-    /// 
+    /// The order of the polynomial.
     /// </summary>
     internal int Order { get; }
 
