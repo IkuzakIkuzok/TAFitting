@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
@@ -112,7 +113,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var format_b = Program.BSignalFormat;
 
         var decays = new Decays(timeUnit, signalUnit);
-        var l_t0 = new List<double>();
+        var l_t0 = new ConcurrentStack<double>();
 
         var folders = Directory.EnumerateDirectories(path);
         var loader = new FileLoader();
@@ -124,8 +125,10 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             loader.Register(folder, wavelength);
         }
 
-        foreach ((var wavelength, var folder) in loader.OrderBy(kv => kv.Key))
+        var dict = new ConcurrentDictionary<double, Decay>();
+        Parallel.ForEach(loader, (l) =>
         {
+            var (wavelength, folder) = l;
             var basename = Path.GetFileName(folder);
             var name_ab = FileNameHandler.GetFileName(basename, format_ab);
             var name_b = FileNameHandler.GetFileName(basename, format_b);
@@ -139,21 +142,23 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
             var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit, loader.GetAMinusBFileData(wavelength));
             var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit, loader.GetBFileData(wavelength));
-            decays.decays.Add(wavelength, decay_ab);
+            dict.TryAdd(wavelength, decay_ab);
 
             var b_t0 = decay_b.FilndT0();
             var baseline = decay_b.OfRange(0, b_t0 * 0.5);  // Time enough earlier than the pulse
             var noise = baseline.Signals.StandardDeviation();  // Noise level is estimated from the baseline
             var signal = Math.Abs(decay_b[b_t0]);
             var snr = signal / noise;
-            if (snr > 2) l_t0.Add(b_t0);  // S/N > 2
-            else Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {signal / noise}");
-        }
+            if (snr > 2) l_t0.Push(b_t0);  // S/N > 2
+            else Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {snr}");
+        });
+        foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
+            decays.decays.Add(wavelength, decay);
 
-        if (l_t0.Count == 0) throw new IOException($"No data found in {path}");
+        if (l_t0.IsEmpty) throw new IOException($"No data found in {path}");
 
         //var t0 = l_t0.SmirnovGrubbs().Average();
-        var t0 = CollectionsMarshal.AsSpan(l_t0).SmirnovGrubbs().Average();
+        var t0 = l_t0.ToArray().AsSpan().SmirnovGrubbs().Average();
         decays.Time0 = t0;
 
         return decays;
