@@ -89,7 +89,8 @@ internal static class ModelManager
         {
             if (TryGetModelInstance(type, out var model))
             {
-                AddModel(guid, model);
+                if (ValidateModel(model))
+                    AddModel(guid, model);
             }
         }
 
@@ -143,6 +144,51 @@ internal static class ModelManager
             return false;
         }
     } // private static bool TryGetEstimateProviderInstance (Type, out IEstimateProvider?)
+
+    /// <summary>
+    /// Validates the specified model.
+    /// </summary>
+    /// <param name="model">The model to validate.</param>
+    /// <returns><see langword="true"/> if the model is valid; otherwise, <see langword="false"/>.</returns>
+    private static bool ValidateModel(IFittingModel model)
+    {
+        if (string.IsNullOrEmpty(model.Name))
+        {
+            Debug.WriteLine($"Model {model.GetType().Name} does not have a name.");
+            return false;
+        }
+
+        if (model.Parameters.Count == 0)
+        {
+            Debug.WriteLine($"Model {model.Name} has no parameters. This is not allowed.");
+            return false;
+        }
+
+        foreach (var parameter in model.Parameters)
+        {
+            if (parameter.Name.StartsWith('$'))
+            {
+                Debug.WriteLine($"Model {model.Name} has a parameter {parameter.Name} that starts with '$'. This is reserved for internal use.");
+                return false;
+            }
+            if (parameter.Name.StartsWith('[') || parameter.Name.EndsWith(']'))
+            {
+                Debug.WriteLine($"Model {model.Name} has a parameter {parameter.Name} that contains square brackets. This is reserved for Excel formula parameters.");
+                return false;
+            }
+            if (string.IsNullOrEmpty(parameter.Name))
+            {
+                Debug.WriteLine($"Model {model.Name} has a parameter with an empty name.");
+                return false;
+            }
+            if (!double.IsFinite(parameter.InitialValue))
+            {
+                Debug.WriteLine($"Model {model.Name} has a parameter {parameter.Name} with an invalid initial value: {parameter.InitialValue}.");
+                return false;
+            }
+        }
+        return true;
+    } // private static bool ValidateModel (IFittingModel)
 
     private static void AddModel(Guid guid, IFittingModel model)
     {
