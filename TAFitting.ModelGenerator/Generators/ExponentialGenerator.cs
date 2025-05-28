@@ -13,8 +13,6 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
     override protected string FileName => "GeneratedExponentialModels.g.cs";
 
-    override protected string AdditionalCode => @"using TAFitting.Data;";
-
     override protected string Generate(string nameSpace, string className, int n, string? name)
     {
         var builder = new StringBuilder();
@@ -26,12 +24,12 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t/// <summary>");
         builder.AppendLine($"\t/// Represents a {n}-component exponential model.");
         builder.AppendLine($"\t/// </summary>");
-        builder.AppendLine($"\tinternal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel");
+        builder.AppendLine($"\tinternal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
         builder.AppendLine("\t{");
 
         #region fields
 
-        builder.AppendLine("\t\tprivate static readonly Parameter[] parameters = [");
+        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameter[] parameters = [");
         builder.AppendLine("\t\t\tnew() { Name = \"A0\", IsMagnitude = true },");
         for (var i = 1; i <= n; i++)
         {
@@ -64,7 +62,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic IReadOnlyList<Parameter> Parameters => parameters;");
+        builder.AppendLine("\t\tpublic global::System.Collections.Generic.IReadOnlyList<global::TAFitting.Model.Parameter> Parameters => parameters;");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
@@ -82,7 +80,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\tpublic global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t{");
         builder.AppendLine("\t\t\tvar a0 = parameters[0];");
         for (var i = 1; i <= n; i++)
@@ -93,9 +91,9 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine();
         builder.AppendLine("\t\t\treturn x => a0"
             + string.Concat(Enumerable.Range(1, n).Select(i => $" + a{i} * MathUtils.FastExp(x * t{i})")) + ";");
-        builder.AppendLine("\t\t} // public Func<double, double> GetFunction(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t} // public global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
 
-        GenerateGetVectorizedFunc(builder, "AvxVector", n);
+        GenerateGetVectorizedFunc(builder, "global::TAFitting.Data.AvxVector", n);
 
         #endregion GetFunction
 
@@ -103,7 +101,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic Action<double, double[]> GetDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\tpublic global::System.Action<double, double[]> GetDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t{");
         for (var i = 1; i <= n; i++)
         {
@@ -129,15 +127,15 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\t\t\t\tres[0] = d_a0;");
         builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\t\t\tres[{2 * i - 1}] = d_a{i};\n\t\t\t\tres[{2 * i}] = d_t{i};")));
         builder.AppendLine("\n\t\t\t};");
-        builder.AppendLine("\t\t} // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)");
+        builder.AppendLine("\t\t} // public global::System.Action<double, double[]> GetDerivatives (global::System.Collections.Generic.IReadOnlyList<double>)");
 
-        GenerateGetVectorizedDerivatives(builder, "AvxVector", n);
+        GenerateGetVectorizedDerivatives(builder, "global::TAFitting.Data.AvxVector", n);
 
         #endregion GetDerivatives
 
         #endregion methods
 
-        builder.AppendLine($"\t}} // internal partial class {className} : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel");
+        builder.AppendLine($"\t}} // internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
         builder.AppendLine("} // namespace " + nameSpace);
 
         return builder.ToString();
@@ -147,7 +145,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tFunc<{TVector}, {TVector}> IVectorizedModel.GetVectorizedFunc(IReadOnlyList<double> parameters)");
+        builder.AppendLine($"\t\tglobal::System.Func<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> (x) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\tvar length = x.Length;");
@@ -170,7 +168,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tAction<{TVector}, {TVector}[]> IVectorizedModel.GetVectorizedDerivatives(IReadOnlyList<double> parameters)");
+        builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
 
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
