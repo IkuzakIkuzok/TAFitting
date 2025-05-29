@@ -17,6 +17,7 @@ using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
 using TAFitting.Filter;
 using TAFitting.Model;
+using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
 
@@ -38,6 +39,7 @@ internal sealed partial class MainWindow : Form
     private readonly CheckBox cb_invert;
     private bool suppressAutoInvert = false;
 
+    private readonly Timer timeRangeChangedEventTimer;
     private readonly ParametersTable parametersTable;
 
     private readonly ToolStripMenuItem menu_filter, menu_model;
@@ -206,6 +208,9 @@ internal sealed partial class MainWindow : Form
             Left = 10,
             Parent = this.paramsContainer.Panel2,
         };
+        this.rangeSelector.Time.FromChanged += ChangeTimeRangeWithDelay;
+        this.rangeSelector.Time.ToChanged += ChangeTimeRangeWithDelay;
+
         this.chart.AxisXMaximum = (double)this.rangeSelector.Time.FromMinimum;
         this.chart.AxisXMinimum = (double)this.rangeSelector.Time.ToMaximum;
         this.chart.AxisYMaximum = (double)this.rangeSelector.Signal.FromMinimum;
@@ -623,6 +628,12 @@ internal sealed partial class MainWindow : Form
 
         this.paramsContainer.SplitterDistance = 600;
         this.paramsContainer.Panel2MinSize = 120;
+
+        this.timeRangeChangedEventTimer = new()
+        {
+            Interval = 50
+        };
+        this.timeRangeChangedEventTimer.Tick += SetTimeRangeToTable;
     } // ctor ()
 
     override protected void OnShown(EventArgs e)
@@ -1367,6 +1378,35 @@ internal sealed partial class MainWindow : Form
         ShowPlots();
         UpdatePreviewsParameters();
     } // private void RemoveDecay (object?, DataGridViewRowEventArgs)
+
+    /// <summary>
+    /// Handles the time range change with a delay.
+    /// </summary>
+    /// <remarks>
+    /// Add callbck to the <see cref="Timer.Tick"/> event of the <see cref="timeRangeChangedEventTimer"/> timer
+    /// to handle the time range change with a delay.
+    /// </remarks>
+    private void ChangeTimeRangeWithDelay(object? sender, EventArgs e)
+    {
+        this.timeRangeChangedEventTimer.Stop();
+        this.timeRangeChangedEventTimer.Start();
+    } // private void ChangeTimeRangeWithDelay (object?, EventArgs)
+
+    private void SetTimeRangeToTable(object? sender, EventArgs e)
+    {
+        this.timeRangeChangedEventTimer.Stop();
+        var range = this.rangeSelector.Time;
+        this.parametersTable.StopUpdateRSquared = true;
+        try
+        {
+            this.parametersTable.TimeMin = (double)range.From;
+            this.parametersTable.TimeMax = (double)range.To;
+        }
+        finally
+        {
+            this.parametersTable.StopUpdateRSquared = false;
+        }
+    } // private void SetTimeRangeToTable (object?, EventArgs)
 
     #endregion table manipulation
 

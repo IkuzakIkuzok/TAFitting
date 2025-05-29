@@ -16,6 +16,7 @@ internal sealed partial class ParametersTable : DataGridView
     private ParameterConstraints[] constraints = [];
     private double[] initialValues = [];
     private int[] magnitudeColumns = [];
+    private double time_min, time_max;
     private bool stopUpdateRSquared = false;
 
     private readonly UndoBuffer<ParamsEditCommand> undoBuffer = new();
@@ -61,6 +62,36 @@ internal sealed partial class ParametersTable : DataGridView
     /// </summary>
     internal bool Edited
         => this.ParameterRows.Any(row => row.Edited);
+
+    /// <summary>
+    /// Gets or sets the minimum time value.
+    /// </summary>
+    internal double TimeMin
+    {
+        get => this.time_min;
+        set
+        {
+            if (this.time_min == value) return;
+            this.time_min = value;
+            if (this.StopUpdateRSquared) return;
+            RecalculateRSquared();
+        }
+    } // internal double TimeMin
+
+    /// <summary>
+    /// Gets or sets the maximum time value.
+    /// </summary>
+    internal double TimeMax
+    {
+        get => this.time_max;
+        set
+        {
+            if (this.time_max == value) return;
+            this.time_max = value;
+            if (this.StopUpdateRSquared) return;
+            RecalculateRSquared();
+        }
+    } // internal double TimeMax
 
     /// <summary>
     /// Gets or sets a value indicating whether to stop updating R-squared values.
@@ -466,7 +497,8 @@ internal sealed partial class ParametersTable : DataGridView
     {
         if (this.Model is null) return;
 
-        var decay = row.Decay.OnlyAfterT0;
+        // var decay = row.Decay.OnlyAfterT0;
+        var decay = row.Decay.OfRange(this.TimeMin, this.TimeMax);
 
         var func = this.Model.GetFunction(row.Parameters);
         var inverse = row.Inverted ? -1 : 1;
