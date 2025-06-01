@@ -317,20 +317,6 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         #endregion menu.view
 
-        #region menu.tools
-
-        var menu_tools = new ToolStripMenuItem("&Tools");
-        this.MainMenuStrip.Items.Add(menu_tools);
-
-        var menu_toolsCopyPlotArea = new ToolStripMenuItem("&Copy plot area")
-        {
-            ShortcutKeys = Keys.Control | Keys.Shift | Keys.C,
-        };
-        menu_toolsCopyPlotArea.Click += CopyPlotAreaToClipboard;
-        menu_tools.DropDownItems.Add(menu_toolsCopyPlotArea);
-
-        #endregion menu.tools
-
         #region menu.sync
 
         var menu_sync = new ToolStripMenuItem("&Sync");
@@ -984,13 +970,6 @@ internal sealed partial class SpectraPreviewWindow : Form
     } // private static void ShowMyId (object?, EventArgs)
 
     #endregion Sync
-
-    private void CopyPlotAreaToClipboard(object? sender, EventArgs e)
-    {
-        using var image = this.chart.CaptureControl();
-        if (image is null) return;
-        System.Windows.Forms.Clipboard.SetImage(image);
-    } // private void CopyPlotAreaToClipboard (object?, EventArgs)
 
     #region preference
 
