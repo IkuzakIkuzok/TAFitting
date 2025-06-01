@@ -65,6 +65,12 @@ public sealed class AppConfig
     public DecayLoadingConfig DecayLoadingConfig { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the sync configuration.
+    /// </summary>
+    [XmlElement("sync")]
+    public SyncConfig SyncConfig { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets a value indicating whether to use different state for file dialog.
     /// </summary>
     [XmlElement("separate-file-dialog-state")]

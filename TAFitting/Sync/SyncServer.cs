@@ -78,13 +78,13 @@ internal static class SyncServer
         if (!sessions.Contains(session))
             sessions.Add(session);
 
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < Program.Config.SyncConfig.ConnectionRetryCount; i++)
         {
             try
             {
                 var pipeName = GetPipeName(session.HostName);
                 using var client = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-                await client.ConnectAsync(100);
+                await client.ConnectAsync(Program.Config.SyncConfig.Timeout);
                 using var writer = new StreamWriter(client, Encoding.UTF8);
                 var packet = new Packet(myName, session.HostName, message);
                 await writer.WriteLineAsync(packet.ToString());
