@@ -7,6 +7,9 @@ using System.Text;
 
 namespace TAFitting.Sync;
 
+/// <summary>
+/// Handles synchronization of messages between instances of the application.
+/// </summary>
 internal static class SyncServer
 {
     private static string myName = string.Empty;
@@ -14,13 +17,25 @@ internal static class SyncServer
     private static bool receiving = false;
     private static readonly List<Session> sessions = [];
 
+    /// <summary>
+    /// Gets the list of connected hosts.
+    /// </summary>
     internal static IEnumerable<string> ConnectedHosts
         => sessions.Select(s => s.HostName);
 
+    /// <summary>
+    /// Gets or sets the function to create a response message based on the received session and message.
+    /// </summary>
     internal static Func<Session, string, string>? CreateResponseMessage { get; set; }
 
+    /// <summary>
+    /// Gets the name of this instance.
+    /// </summary>
     internal static string MyName => myName;
 
+    /// <summary>
+    /// Starts listening for incoming messages from other instances of the application.
+    /// </summary>
     internal static void StartListening()
     {
         if (receiving) return;
@@ -29,6 +44,9 @@ internal static class SyncServer
         _ = Listen(name);
     } // internal static void StartListening ()
 
+    /// <summary>
+    /// Stops listening for incoming messages and clears the session list.
+    /// </summary>
     internal static void StopListening()
     {
         receiving = false;
@@ -73,6 +91,12 @@ internal static class SyncServer
         });
     } // private static Task Listen (string hostName)
 
+    /// <summary>
+    /// Sends a message to the specified session and waits for a response.
+    /// </summary>
+    /// <param name="session">The session to which the message will be sent.</param>
+    /// <param name="message">The message to send.</param>
+    /// <returns>The response message received from the session, or an empty string if no response is received.</returns>
     internal static async Task<string> SendMessage(Session session, string message)
     {
         if (!sessions.Contains(session))
@@ -114,6 +138,11 @@ internal static class SyncServer
         return string.Empty;
     } // internal static Task<string> SendMessage (Session, string)
 
+    /// <summary>
+    /// Gets or creates a session for the specified host name.
+    /// </summary>
+    /// <param name="hostName">The host name of the session to retrieve or create.</param>
+    /// <returns>The session associated with the specified host name.</returns>
     internal static Session GetSession(string hostName)
     {
         var session = sessions.FirstOrDefault(s => s.HostName == hostName);
@@ -128,6 +157,10 @@ internal static class SyncServer
     private static string GetPipeName(string hostName)
         => $"TAFitting.Sync.{hostName}";
 
+    /// <summary>
+    /// Disconnects the specified session from the server.
+    /// </summary>
+    /// <param name="session"></param>
     internal static void Disconnect(Session session)
     {
         sessions.Remove(session);
