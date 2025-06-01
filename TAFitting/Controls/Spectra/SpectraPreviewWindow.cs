@@ -373,6 +373,8 @@ internal sealed partial class SpectraPreviewWindow : Form
         DrawSpectra();
     } // override protected void OnShown (EventArgs)
 
+    #region Drawing
+
     private void AdjustAxesIntervals(object? sender, EventArgs e)
         => AdjustAxesIntervals();
 
@@ -598,8 +600,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         Program.MainWindow.SelectWavelength(point.XValue);
     } // private void SelectWavelength (object?, MouseEventArgs)
 
-    private void SaveToFile(object? sender, EventArgs e)
-        => SaveToFile();
+    #endregion Drawing
 
     private void LoadUH4150Spectrum(object? sender, EventArgs e)
         => LoadSteadyStateSpectrum<UH4150>("UH4150", ExtensionFilter.TextFiles);
@@ -631,6 +632,11 @@ internal sealed partial class SpectraPreviewWindow : Form
             );
         }
     } // private void LoadSteadyStateSpectrum<T> (string)
+
+    #region Save/export
+
+    private void SaveToFile(object? sender, EventArgs e)
+        => SaveToFile();
 
 #pragma warning disable IDE0079
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -792,6 +798,8 @@ internal sealed partial class SpectraPreviewWindow : Form
             _ => throw new NotSupportedException($"The extension '{extension}' is not supported."),
         }; // private static ISpreadSheetWriter GetSpreadSheetWriter (string
 
+    #endregion Save/export
+
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {
         this.parameters = parameters.ToDictionary();
@@ -799,13 +807,6 @@ internal sealed partial class SpectraPreviewWindow : Form
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToString("F1")));
         DrawSpectra();
     } // internal void SetParameters (IDictionary<double, double[]>)
-
-    internal void SetTimeTable(double maxTime)
-    {
-        if (this.timeEdited) return;
-        this.timeTable.SetTimes(maxTime);
-        this.timeEdited = false;  // Reset the flag because the time table is updated by calling `SetTimeTable` method
-    } // internal void SetTimeTable (double)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {
@@ -823,6 +824,13 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
         return [];
     } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
+
+    internal void SetTimeTable(double maxTime)
+    {
+        if (this.timeEdited) return;
+        this.timeTable.SetTimes(maxTime);
+        this.timeEdited = false;  // Reset the flag because the time table is updated by calling `SetTimeTable` method
+    } // internal void SetTimeTable (double)
 
     #region Sync
 
