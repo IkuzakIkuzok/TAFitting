@@ -77,7 +77,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         {
             if (this.selectedWavelength == value) return;
             this.selectedWavelength = value;
-            DrawSpectra();
+            DrawSpectra(sync: false);  // Only the highlights are updated, no need to synchronize
         }
     }
 
@@ -813,11 +813,35 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {
+        if (CheckParametersMatching(parameters)) return;
         this.parameters = parameters.ToDictionary();
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToString("F1")));
         DrawSpectra();
     } // internal void SetParameters (IDictionary<double, double[]>)
+
+    /// <summary>
+    /// Checks if the new parameters match the existing parameters.
+    /// </summary>
+    /// <param name="newParameters">The new parameters to check.</param>
+    /// <returns><see langword="true"/> if the parameters match; otherwise, <see langword="false"/>.</returns>
+    private bool CheckParametersMatching(IReadOnlyDictionary<double, double[]> newParameters)
+    {
+        if (this.parameters.Count != newParameters.Count) return false;
+
+        foreach ((var wavelength, var parameters) in newParameters)
+        {
+            if (!this.parameters.TryGetValue(wavelength, out var existingParameters)) return false;
+
+            //Length check can be skipped since the `SequenceEqual` method will handle it
+            // if (parameters.Length != existingParameters.Length) return false;
+            var e = MemoryMarshal.AsBytes(existingParameters.AsSpan());
+            var n = MemoryMarshal.AsBytes(parameters.AsSpan());
+            if (!e.SequenceEqual(n)) return false;
+        }
+
+        return true;
+    } // private bool CheckParametersMatching (IReadOnlyDictionary<double, double[]>)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {
