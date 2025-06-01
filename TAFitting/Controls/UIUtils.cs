@@ -109,6 +109,28 @@ internal static partial class UIUtils
     } // private static void AddDecay (this DataPointCollection, IEnumerable<(double, double)>)
 
     /// <summary>
+    /// Gets the range of the specified series.
+    /// </summary>
+    /// <param name="series">The series.</param>
+    /// <returns>The minimum and maximum values of the series.</returns>
+    internal static (double Min, double Max) GetRange(this Series series)
+    {
+        if (series.Points.Count == 0) return (0, 0);
+        var min = double.MaxValue;
+        var max = double.MinValue;
+        foreach (var point in series.Points)
+        {
+            if (point.IsEmpty) continue;
+            if (point.YValues.Length == 0) continue;
+            var y = point.YValues[0];
+            if (!double.IsFinite(y)) continue; // Skip non-finite values
+            if (y < min) min = y;
+            if (y > max) max = y;
+        }
+        return (min, max);
+    } // internal static (double, double) GetRange (this Series)
+
+    /// <summary>
     /// Calculates the inverted color of the specified color.
     /// </summary>
     /// <param name="color">The color.</param>

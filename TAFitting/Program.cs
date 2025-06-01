@@ -9,6 +9,7 @@ using TAFitting.Controls;
 using TAFitting.Controls.Toast;
 using TAFitting.Model;
 using TAFitting.Properties;
+using TAFitting.Sync;
 
 [assembly: NeutralResourcesLanguage("en-US")]
 
@@ -36,6 +37,7 @@ internal static partial class Program
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
         Config = AppConfig.Load();
+        SyncManager.Start();
         MainWindow = new();
     } // cctor ()
 

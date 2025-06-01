@@ -10,6 +10,7 @@ using TAFitting.Excel;
 using TAFitting.Model;
 using TAFitting.Origin;
 using TAFitting.Print;
+using TAFitting.Sync;
 
 namespace TAFitting.Controls.Spectra;
 
@@ -21,8 +22,12 @@ namespace TAFitting.Controls.Spectra;
 internal sealed partial class SpectraPreviewWindow : Form
 {
     private static readonly Guid steadyStateDialog = new("AE0B2F4B-7A4E-425A-89DF-E81194032356");
+    private static int serialNumber = 0;
+    private static int seriesCount;
 
     private readonly SplitContainer mainContainer, optionsContainer;
+
+    private readonly ToolStripMenuItem menu_syncSamples;
 
     private readonly TimeTable timeTable;
     private bool timeEdited = false;
@@ -38,6 +43,14 @@ internal sealed partial class SpectraPreviewWindow : Form
     private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
     private double selectedWavelength = double.NaN;
+
+    private SpectraSyncObject? spectraSyncObject = null;
+    private readonly Dictionary<SyncSpectraSource, List<Series>> syncSpectraSeries = [];
+
+    /// <summary>
+    /// Gets the serial number of the window.
+    /// </summary>
+    internal int SerialNumber { get; }
 
     /// <summary>
     /// Gets or sets the ID of the model.
@@ -84,12 +97,15 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     private IFittingModel Model => ModelManager.Models[this.modelId].Model;
 
+    internal SpectraSyncObject? SpectraSyncObject => this.spectraSyncObject;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class.
     /// </summary>
     internal SpectraPreviewWindow()
     {
-        this.Text = "Spectra Preview";
+        this.SerialNumber = ++serialNumber;
+        this.Text = $"Spectra Preview (#{this.SerialNumber})";
         this.Size = new(900, 500);
 
         this.mainContainer = new()
@@ -315,6 +331,27 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         #endregion menu.tools
 
+        #region menu.sync
+
+        var menu_sync = new ToolStripMenuItem("&Sync");
+        this.MainMenuStrip.Items.Add(menu_sync);
+
+        this.menu_syncSamples = new ToolStripMenuItem("&Samples")
+        {
+            ToolTipText = "Samples",
+        };
+        menu_sync.DropDownItems.Add(this.menu_syncSamples);
+        menu_sync.DropDownOpening += UpdateApps;
+
+        var menu_syncMyId = new ToolStripMenuItem("&My ID")
+        {
+            ToolTipText = "Show my ID",
+        };
+        menu_syncMyId.Click += ShowMyId;
+        menu_sync.DropDownItems.Add(menu_syncMyId);
+
+        #endregion menu.sync
+
         #endregion menu
 
         this.mainContainer.SplitterDistance = 700;
@@ -323,6 +360,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         Program.GradientChanged += DrawSpectra;
         Program.SpectraLineWidthChanged += DrawSpectra;
         Program.SpectraMarkerSizeChanged += DrawSpectra;
+        SyncManager.SpectraReceived += ReceiveSpectra;
     } // ctor ()
 
     internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
@@ -336,6 +374,10 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         Program.AxisTitleFontChanged -= SetAxisTitleFont;
         Program.AxisLabelFontChanged -= SetAxisLabelFont;
+        SyncManager.SpectraReceived -= ReceiveSpectra;
+
+        foreach (var source in this.syncSpectraSeries.Keys)
+            _ = SyncManager.StopSyncSpectra(source.HostName, source.SpectraId);
     } // override protected void OnClosing (CancelEventArgs)
 
     override protected void OnShown(EventArgs e)
@@ -368,14 +410,14 @@ internal sealed partial class SpectraPreviewWindow : Form
     private void DrawSpectra(object? sender, EventArgs e)
         => DrawSpectra();
 
-    private void DrawSpectra()
+    private void DrawSpectra(bool sync = true)
     {
         if (this.modelId == Guid.Empty) return;
         if (this.timeTable.Updating) return;
         var model = this.Model;
 
         this.chart.Series.Clear();
-        this.timeTable.SetColors();
+        if (sync) this.timeTable.SetColors();
         this.wavelengthHighlights.Clear();
 
         if (this.parameters.Count == 0)
@@ -386,6 +428,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         try
         {
+            // using var _ = new ControlDrawingSuspender(this.chart);
+
             var wlMin = this.parameters.Keys.Min();
             var wlMax = this.parameters.Keys.Max();
 
@@ -401,10 +445,28 @@ internal sealed partial class SpectraPreviewWindow : Form
                 kv => kv.Key,
                 kv => model.GetFunction(kv.Value)
             );
-            var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
-            var index = 0;
+
+            this.spectraSyncObject = new SpectraSyncObject(
+                this.SerialNumber,
+                SyncServer.MyName,
+                wavelengths,
+                this.maskingRangeBox.Text,
+                new Dictionary<double, IList<double>>()
+            );
+
             var sigMin = double.MaxValue;
             var sigMax = double.MinValue;
+            // Add sync spectra series before drawing the main spectra
+            foreach (var syncSeries in this.syncSpectraSeries.SelectMany(s => s.Value))
+            {
+                this.chart.Series.Add(syncSeries);
+                (var min, var max) = syncSeries.GetRange();
+                sigMin = Math.Min(sigMin, min);
+                sigMax = Math.Max(sigMax, max);
+            }
+
+            var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
+            var index = 0;
             foreach (var time in times)
             {
                 (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
@@ -445,6 +507,9 @@ internal sealed partial class SpectraPreviewWindow : Form
             this.axisY.Maximum = sigMax * 1.1;
 
             AdjustAxesIntervals();
+
+            if (sync)
+                SyncManager.UpdateSpectra(this.spectraSyncObject);
         }
         catch (Exception e)
         {
@@ -455,7 +520,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
         var count = 0;
-        Series MakeSeries() => new()
+        Series MakeSeries() => new((++seriesCount).ToString())
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Circle,
@@ -467,11 +532,17 @@ internal sealed partial class SpectraPreviewWindow : Form
         };
 
         var series = MakeSeries();
+        var syncSpectra = new List<double>();
+        this.spectraSyncObject?.Spectra.Add(time, syncSpectra);
 
         var min = double.MaxValue;
         var max = double.MinValue;
         foreach (var wavelength in this.parameters.Keys.Order())
         {
+            var func = funcs[wavelength];
+            var signal = func(time);
+            syncSpectra.Add(signal);  // Must be added before checking masked ranges
+
             if (nextOfMasked.Contains(wavelength) && series.Points.Count > 0)
             {
                 this.chart.Series.Add(series);
@@ -479,8 +550,6 @@ internal sealed partial class SpectraPreviewWindow : Form
             }
             if (masked.Contains(wavelength)) continue;
 
-            var func = funcs[wavelength];
-            var signal = func(time);
             min = Math.Min(min, signal);
             max = Math.Max(max, signal);
             series.Points.AddXY(wavelength, signal);
@@ -769,12 +838,161 @@ internal sealed partial class SpectraPreviewWindow : Form
         return [];
     } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
 
+    #region Sync
+
+    private async void UpdateApps(object? sender, EventArgs e)
+    {
+        this.menu_syncSamples.DropDownItems.Clear();
+        foreach (var app in await SyncManager.GetApps())
+        {
+            var item = new ToolStripMenuItem($"{app.Value} ({app.Key})")
+            {
+                Tag = app.Key,
+            };
+            this.menu_syncSamples.DropDownItems.Add(item);
+
+            var spectra = await SyncManager.GetSpectra(app.Key);
+            foreach (var id in spectra)
+            {
+                var source = new SyncSpectraSource(app.Key, id);
+                var syncItem = new ToolStripMenuItem($"#{id}")
+                {
+                    Tag = source,
+                    Checked = this.syncSpectraSeries.ContainsKey(source),
+                };
+                syncItem.Click += ToggleSync;
+                item.DropDownItems.Add(syncItem);
+            }
+        }
+    } // private async void UpdateApps (object?, EventArgs)
+
+    private void ReceiveSpectra(object? sender, SpectraReceivedEventArgs e)
+        => ReceiveSpectra(e.HostName, e.SpectraId, e.Wavelengths, new(e.MaskRanges), e.Spectra);
+
+    private void ReceiveSpectra(string hostName, int spectraId, IList<double> wavelengths, MaskingRanges maskingRanges, IDictionary<double, IList<double>> spectra)
+    {
+        var source = new SyncSpectraSource(hostName, spectraId);
+        if (!this.syncSpectraSeries.TryGetValue(source, out var seriesList)) return; // Not syncing this spectra
+
+        RemoveSyncSeries(source);
+        seriesList.Clear();
+
+        var masked = maskingRanges.GetMaskedPoints(wavelengths);
+        var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
+
+        var gradient = new ColorGradient(Color.Black, Color.Gray, spectra.Count);
+        var index = 0;
+
+        foreach ((var time, var spectrum) in spectra)
+            AddSyncSeries(time, wavelengths, spectrum, gradient[index++], masked, nextOfMasked, seriesList);
+
+        Invoke(() => DrawSpectra(sync: false));  // Prevent recursive syncing
+    } // private void ReceiveSpectra (string, int, IList<double>, IDictionary<double, IList<double>>)
+
+    private void AddSyncSeries(double time, IList<double> wavelengths, IList<double> spectrum, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked, List<Series> seriesList)
+    {
+        color = Color.FromArgb(192, color);
+
+        Series MakeSeries() => new((++seriesCount).ToString())
+        {
+            ChartType = SeriesChartType.Line,
+            MarkerStyle = MarkerStyle.Circle,
+            BorderDashStyle = ChartDashStyle.Dash,
+            MarkerSize = Program.SpectraMarkerSize,
+            Color = color,
+            BorderWidth = Program.SpectraLineWidth,
+            LegendText = $"{time:F2} {this.TimeUnit}",
+            IsVisibleInLegend = false,
+        };
+
+        var series = MakeSeries();
+
+        for (var i = 0; i < wavelengths.Count; i++)
+        {
+            var wavelength = wavelengths[i];
+            var signal = spectrum[i];
+            if (nextOfMasked.Contains(wavelength) && series.Points.Count > 0)
+            {
+                seriesList.Add(series);
+                series = MakeSeries();
+            }
+            if (masked.Contains(wavelength)) continue;
+
+            series.Points.AddXY(wavelength, signal);
+        }
+        seriesList.Add(series);
+    } // private void AddSyncSeries (double, IList<double>, IList<double>, Color, IEnumerable<double>, IEnumerable<double>, List<Series>)
+
+    private void ToggleSync(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not SyncSpectraSource source) return;
+        if (this.syncSpectraSeries.ContainsKey(source))
+        {
+            StopSync(source.HostName, source.SpectraId);
+            item.Checked = false;
+        }
+        else
+        {
+            StartSync(source.HostName, source.SpectraId);
+            item.Checked = true;
+        }
+    } // private void ToggleSync (object?, EventArgs)
+
+    private async void StartSync(string hostName, int spectraId)
+    {
+        var source = new SyncSpectraSource(hostName, spectraId);
+        if (this.syncSpectraSeries.ContainsKey(source)) return;  // Already syncing
+        
+
+        var spectra = await SyncManager.RequestSyncSpectra(hostName, spectraId);
+        if (spectra is null)
+        {
+            FadingMessageBox.Show("Failed to sync spectra.", 0.8, 1000, 75, 0.1);
+            return;
+        }
+
+        this.syncSpectraSeries[source] = [];
+        ReceiveSpectra(hostName, spectraId, spectra.Wavelengths, new(spectra.MaskRanges), spectra.Spectra);
+    } // private async void StartSync (string, int)
+
+    private void StopSync(string hostName, int spectraId)
+    {
+        var source = new SyncSpectraSource(hostName, spectraId);
+        if (!this.syncSpectraSeries.ContainsKey(source)) return;
+        RemoveSyncSeries(source);
+        this.syncSpectraSeries.Remove(source);
+        _ = SyncManager.StopSyncSpectra(hostName, spectraId);
+    } // private void StopSync (string, int)
+
+    private void RemoveSyncSeries(SyncSpectraSource source)
+    {
+        if (!this.syncSpectraSeries.TryGetValue(source, out var seriesList)) return;
+        foreach (var series in seriesList)
+            this.chart.Series.Remove(series);
+    } // private void RemoveSyncSeries (SyncSpectraSource)
+
+    private static void ShowMyId(object? sender, EventArgs e)
+    {
+        var myId = SyncServer.MyName;
+        MessageBox.Show(
+            $"My ID: {myId}",
+            "My ID",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information
+        );
+    } // private static void ShowMyId (object?, EventArgs)
+
+    #endregion Sync
+
     private void CopyPlotAreaToClipboard(object? sender, EventArgs e)
     {
         using var image = this.chart.CaptureControl();
         if (image is null) return;
         System.Windows.Forms.Clipboard.SetImage(image);
     } // private void CopyPlotAreaToClipboard (object?, EventArgs)
+
+    #region preference
 
     private void SelectColorGradient(object? sender, EventArgs e)
     {
@@ -806,6 +1024,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void SetAxisLabelFont(object? sender, EventArgs e)
         => this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
+
+    #endregion preference
 
     private void CopyPlotsToClipboard(object? sender, EventArgs e)
         => CopyPlotsToClipboard();

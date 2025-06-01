@@ -17,6 +17,7 @@ using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
 using TAFitting.Filter;
 using TAFitting.Model;
+using TAFitting.Sync;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
@@ -81,6 +82,8 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     /// <value>The selected model if is valid; otherwise, <see langword="null"/>.</value>
     private IFittingModel? SelectedModel => ModelManager.Models.TryGetValue(this.selectedModel, out var model) ? model.Model : null;
+
+    internal IEnumerable<int> SpectraIds => this.previewWindows.Select(w => w.SerialNumber);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -1854,6 +1857,13 @@ internal sealed partial class MainWindow : Form
         foreach (var preview in this.previewWindows)
             preview.SignalUnit = unit;
     } // private void UpdatePreviewsUnits ()
+
+    internal SpectraSyncObject? GetSyncSpectra(int spectraId)
+    {
+        var window = this.previewWindows.FirstOrDefault(w => w.SerialNumber == spectraId);
+        if (window is null) return null;
+        return window.SpectraSyncObject;
+    } // internal SpectraSyncObject? GetSyncSpectra (int)
 
     #endregion Spectra preview
 
