@@ -119,6 +119,9 @@ internal sealed partial class SpectraPreviewWindow : Form
         this.chart = new()
         {
             Dock = DockStyle.Fill,
+#if RELEASE
+            SuppressExceptions = true,
+#endif
             Parent = this.mainContainer.Panel1,
         };
 
