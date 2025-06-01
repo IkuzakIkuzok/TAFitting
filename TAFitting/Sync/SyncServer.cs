@@ -102,6 +102,10 @@ internal static class SyncServer
                 Debug.WriteLine($"Received response from {session.HostName}: {responseMessage}");
                 return responseMessage;
             }
+            catch (TimeoutException)
+            {
+                Debug.WriteLine($"Timeout while sending message to {session.HostName}.");
+            }
             catch (Exception e)
             {
                 Debug.WriteLine($"Error sending message to {session.HostName}: {e.Message}");
