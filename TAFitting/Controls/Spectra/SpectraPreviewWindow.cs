@@ -906,14 +906,17 @@ internal sealed partial class SpectraPreviewWindow : Form
         RemoveSyncSeries(source);
         seriesList.Clear();
 
-        var masked = maskingRanges.GetMaskedPoints(wavelengths);
-        var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
+        if (wavelengths.Count > 0 && spectra.Count > 0)
+        {
+            var masked = maskingRanges.GetMaskedPoints(wavelengths);
+            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
 
-        var gradient = new ColorGradient(Color.Black, Color.Gray, spectra.Count);
-        var index = 0;
+            var gradient = new ColorGradient(Color.Black, Color.Gray, spectra.Count);
+            var index = 0;
 
-        foreach ((var time, var spectrum) in spectra)
-            AddSyncSeries(time, wavelengths, spectrum, gradient[index++], masked, nextOfMasked, seriesList);
+            foreach ((var time, var spectrum) in spectra)
+                AddSyncSeries(time, wavelengths, spectrum, gradient[index++], masked, nextOfMasked, seriesList);
+        }
 
         Invoke(() => DrawSpectra(sync: false));  // Prevent recursive syncing
     } // private void ReceiveSpectra (string, int, IList<double>, IDictionary<double, IList<double>>)
