@@ -37,7 +37,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
     private readonly List<Series> wavelengthHighlights = [];
-    private readonly object chartLock = new object();
+    private readonly object chartLock = new();
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
