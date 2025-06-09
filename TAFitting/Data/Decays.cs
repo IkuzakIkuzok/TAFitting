@@ -141,7 +141,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             // Therefore, checking the existence of the files is not necessary.
 
             var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit, loader.GetAMinusBFileData(wavelength));
-            var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit, loader.GetBFileData(wavelength));
+            var decay_b = Decay.FromFile(file_b, timeUnit, signalUnit, loader.GetBFileData(wavelength), (2499 >> 1));  // Only the first half of the data is used
             dict.TryAdd(wavelength, decay_ab);
 
             var b_t0 = decay_b.FilndT0();

@@ -403,16 +403,17 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="timeUnit">The time unit.</param>
     /// <param name="signalUnit">The signal unit.</param>
     /// <param name="preLoadData">The preloaded data.</param>
+    /// <param name="lines">The number of lines to read.</param>
     /// <returns>The decay data.</returns>
-    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit, FileCache? preLoadData)
+    internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit, FileCache? preLoadData, int lines = 2499)
     {
         if (preLoadData is null) return FromFile(filename, timeUnit, signalUnit);
 
 #if AcceptPartialPreload
-        if (preLoadData.Length < (FILE_SIZE >> 1)) return FromFile(filename, timeUnit, signalUnit);
+        if (preLoadData.Length < (lines >> 1)) return FromFile(filename, timeUnit, signalUnit);
 #else
         // If the data is not fully loaded, return the data from the file.
-        if (preLoadData.Length < FILE_SIZE) return FromFile(filename, timeUnit, signalUnit);
+        if (preLoadData.Length < lines * 43) return FromFile(filename, timeUnit, signalUnit);
 #endif
 
 
@@ -428,13 +429,13 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var timeScaling = SCALING_FACTOR / timeUnit;
         var signalScaling = 1.0 / signalUnit;
 
-        var times = new double[2499];
-        var signals = new double[2499];
+        var times = new double[lines];
+        var signals = new double[lines];
 
-        var t = span.Slice(5 + BUFF_LEN * 0, 15);
+        var t = span.Slice(5, 15);
         var dt = FastParseFixedPoint(t);
 
-        var l = span.Length / BUFF_LEN;
+        var l = Math.Min(span.Length / BUFF_LEN, lines);
         var i = 0;
         for (; i < l; ++i)
         {
@@ -444,7 +445,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         }
 
 #if AcceptPartialPreload
-        if (l < times.Length)
+        if (l < lines)
         {
             const int LINES = 3;
 
@@ -558,13 +559,10 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     /// <returns>The time origin.</returns>
     /// <remarks>
-    /// The time origin is the time at which the signal is minimum,
-    /// and it is in the first half of the decay data.
-    /// </remarks>
+    /// The time origin is the time at which the signal is minimum.</remarks>
     internal double FilndT0()
     {
-        var len = this.times.Length >> 1;
-        var min = this.signals.AsSpan()[..len].Min();
+        var min = this.signals.AsSpan().Min();
         var index = Array.IndexOf(this.signals, min);
         return this.times[index];
     } // internal double FilndT0 ()
