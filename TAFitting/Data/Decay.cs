@@ -154,7 +154,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     internal Decay Absolute
     {
-       get
+        get
         {
             var abs = new double[this.signals.Length];
             for (var i = 0; i < this.signals.Length; i++)
@@ -242,25 +242,61 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     private const double SCALING_FACTOR = 0.000_000_000_001;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long FastParseFixedPoint(ReadOnlySpan<byte> span)
+    unsafe private static long FastParseFixedPoint(Span<byte> span)
     {
-        var neg = span[0] == '-';
-        var val = span[1] - (long)'0';
-
         Debug.Assert(span.Length == 15);
+        /*
+         * 0: sign or whitespace
+         * 1: 1st digit of the integer part
+         * 2: floating point sign ('.')
+         * 3-14: 12 digits of the fractional part
+         */
 
-        span = span[3..];
-        for (var i = 0; i < span.Length; i++)
-        {
-            var c = span[i];
-            val = val * 10 + (c - '0');
-        }
+        var neg = span[0] == '-';
+        var val = (span[1] - (long)'0') * 1_000_000_000_000;
+
+        var p = (byte*)Unsafe.AsPointer(ref span.GetPinnableReference());
+
+        /*
+         * Parse the factorial part of the floating point number by splitting the 12 digits into 8 + 4 digits.
+         * See
+         *  https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html#the-divide-and-conquer-insight
+         * for the details of the algorithm.
+         */
+
+        // Parse the first 8 bytes after the floating point sign
+        var f64 = *(ulong*)(p + 3);
+
+        var l64 = (f64 & 0x0f000f000f000f00) >> 8;
+        var u64 = (f64 & 0x000f000f000f000f) * 10;
+        f64 = l64 + u64;
+
+        l64 = (f64 & 0x00ff000000ff0000) >> 16;
+        u64 = (f64 & 0x000000ff000000ff) * 100;
+        f64 = l64 + u64;
+
+        l64 = (f64 & 0x0000ffff0000ffff) >> 32;
+        u64 = (f64 & 0x000000000000ffff) * 10000;
+        f64 = l64 + u64;
+        val += (long)f64 * 10_000;
+
+        // Parse the next 4 bytes
+        var f32 = *(uint*)(p + 11);
+
+        var l32 = (f32 & 0x00ff0000) >> 8;
+        var u32 = (f32 & 0x0000ff00) * 10;
+        f32 = l32 + u32;
+
+        l32 = (f32 & 0x0000ff00) >> 16;
+        u64 = (f32 & 0x000000ff) * 100;
+        f32 = l32 + u32;
+        val += (int)f32;
 
         return neg ? -val : val;
-    } // private static long FastParseFixedPoint (ReadOnlySpan<byte>)
+    } // unsafe private static long FastParseFixedPoint (Span<byte>)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static double FastParse(ReadOnlySpan<byte> span)
+    private static double FastParse(Span<byte> span)
         => FastParseFixedPoint(span) * SCALING_FACTOR;
 
 #endif
