@@ -267,28 +267,28 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         // Parse the first 8 bytes after the floating point sign
         var f64 = *(ulong*)(p + 3);
 
-        var l64 = (f64 & 0x0f000f000f000f00) >> 8;
-        var u64 = (f64 & 0x000f000f000f000f) * 10;
+        var l64 = (f64 & 0x0f_00_0f_00_0f_00_0f_00) >> 8;
+        var u64 = (f64 & 0x00_0f_00_0f_00_0f_00_0f) * 10;
         f64 = l64 + u64;
 
-        l64 = (f64 & 0x00ff000000ff0000) >> 16;
-        u64 = (f64 & 0x000000ff000000ff) * 100;
+        l64 = (f64 & 0x00ff_0000_00ff_0000) >> 16;
+        u64 = (f64 & 0x0000_00ff_0000_00ff) * 100;
         f64 = l64 + u64;
 
-        l64 = (f64 & 0x0000ffff0000ffff) >> 32;
-        u64 = (f64 & 0x000000000000ffff) * 10000;
+        l64 = (f64 & 0x0000ffff_00000000) >> 32;
+        u64 = (f64 & 0x00000000_0000ffff) * 10000;
         f64 = l64 + u64;
         val += (long)f64 * 10_000;
 
         // Parse the next 4 bytes
         var f32 = *(uint*)(p + 11);
 
-        var l32 = (f32 & 0x00ff0000) >> 8;
-        var u32 = (f32 & 0x0000ff00) * 10;
+        var l32 = (f32 & 0x0f_00_0f_00) >> 8;
+        var u32 = (f32 & 0x00_0f_00_0f) * 10;
         f32 = l32 + u32;
 
-        l32 = (f32 & 0x0000ff00) >> 16;
-        u64 = (f32 & 0x000000ff) * 100;
+        l32 = (f32 & 0x00ff_0000) >> 16;
+        u32 = (f32 & 0x0000_00ff) * 100;
         f32 = l32 + u32;
         val += (int)f32;
 
