@@ -710,14 +710,17 @@ internal sealed partial class MainWindow : Form
     {
         if (!this.parametersTable.Edited) return true;
 
-        var dr = MessageBox.Show(
-            "The current data will be lost. Do you want to continue?",
-            "Warning",
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Warning,
-            MessageBoxDefaultButton.Button2
-        );
-        return dr == DialogResult.Yes;
+        var page = new TaskDialogPage()
+        {
+            Heading = "Do you want to open new data?",
+            Text = "The current data will be lost.",
+            Caption = Program.AppName,
+            Icon = TaskDialogIcon.Warning,
+            Buttons = { TaskDialogButton.Yes, TaskDialogButton.No },
+            DefaultButton = TaskDialogButton.No,
+        };
+        var result = TaskDialog.ShowDialog(page);
+        return result == TaskDialogButton.Yes;
     } // private bool CheckOverwriteDecays ()
 
     private void LoadMicrosecondDecays(object? sender, EventArgs e)
