@@ -366,6 +366,16 @@ internal static partial class Program
         }
     }
 
+    internal static bool WarnBeforeChangeModel
+    {
+        get => Config.WarnBeforeChangeModel;
+        set
+        {
+            Config.WarnBeforeChangeModel = value;
+            SaveConfig();
+        }
+    }
+
     #endregion properties
 
     /// <summary>

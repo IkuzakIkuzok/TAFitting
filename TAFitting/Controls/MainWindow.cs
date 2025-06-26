@@ -1181,15 +1181,24 @@ internal sealed partial class MainWindow : Form
 
         if (guid == this.selectedModel) return;
 
-        if (this.parametersTable.Edited)
+        if (this.parametersTable.Edited && Program.WarnBeforeChangeModel)
         {
-            var dr = MessageBox.Show(
-                "Changing the model will clear the current fitting parameters. Do you want to continue?",
-                "Warning",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
-            );
-            if (dr != DialogResult.Yes) return;
+            var page = new TaskDialogPage()
+            {
+                Heading = "Do you want to change the model?",
+                Text = "Changing the model will clear the current fitting parameters.",
+                Caption = Program.AppName,
+                Icon = TaskDialogIcon.Warning,
+                AllowCancel = true,
+                Verification = new TaskDialogVerificationCheckBox()
+                {
+                    Text = "Do not show this message again",
+                },
+                Buttons = { TaskDialogButton.Yes, TaskDialogButton.No },
+            };
+            var resultButton = TaskDialog.ShowDialog(page);
+            if (resultButton != TaskDialogButton.Yes) return;
+            Program.WarnBeforeChangeModel = !page.Verification.Checked;
         }
 
         foreach (var child in this.menu_model.DropDownItems)

@@ -77,6 +77,12 @@ public sealed class AppConfig
     public bool SeparateFileDialogState { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to warn before changing the model.
+    /// </summary>
+    [XmlElement("warn-before-change-model")]
+    public bool WarnBeforeChangeModel { get; set; } = true;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// </summary>
     public AppConfig() { }
