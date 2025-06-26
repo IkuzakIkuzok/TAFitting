@@ -81,12 +81,18 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
     }
 
+    /// <summary>
+    /// Gets or sets the time unit for the spectra.
+    /// </summary>
     internal string TimeUnit
     {
         get => this.timeTable.Unit;
         set => this.timeTable.Unit = value;
     }
 
+    /// <summary>
+    /// Gets or sets the signal unit for the spectra.
+    /// </summary>
     internal string SignalUnit
     {
         get => this.axisY.Title;
@@ -98,6 +104,9 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     private IFittingModel Model => ModelManager.Models[this.modelId].Model;
 
+    /// <summary>
+    /// Gets the spectra sync object.
+    /// </summary>
     internal SpectraSyncObject? SpectraSyncObject => this.spectraSyncObject;
 
     /// <summary>
@@ -353,6 +362,10 @@ internal sealed partial class SpectraPreviewWindow : Form
         SyncManager.SpectraReceived += ReceiveSpectra;
     } // ctor ()
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class with specified parameters.
+    /// </summary>
+    /// <param name="parameters">The parameters to set.</param>
     internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
     {
         SetParameters(parameters);
@@ -811,6 +824,10 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     #endregion Save/export
 
+    /// <summary>
+    /// Sets the parameters for the spectra preview.
+    /// </summary>
+    /// <param name="parameters"></param>
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {
         if (CheckParametersMatching(parameters)) return;
@@ -860,6 +877,10 @@ internal sealed partial class SpectraPreviewWindow : Form
         return [];
     } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
 
+    /// <summary>
+    /// Sets the time table with the specified maximum time.
+    /// </summary>
+    /// <param name="maxTime">The maximum time to set in the time table.</param>
     internal void SetTimeTable(double maxTime)
     {
         if (this.timeEdited) return;
