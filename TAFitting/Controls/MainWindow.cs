@@ -83,6 +83,9 @@ internal sealed partial class MainWindow : Form
     /// <value>The selected model if is valid; otherwise, <see langword="null"/>.</value>
     private IFittingModel? SelectedModel => ModelManager.Models.TryGetValue(this.selectedModel, out var model) ? model.Model : null;
 
+    /// <summary>
+    /// Gets the list of preview windows for the spectra.
+    /// </summary>
     internal IEnumerable<int> SpectraIds => this.previewWindows.Select(w => w.SerialNumber);
 
     /// <summary>
