@@ -254,6 +254,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         var neg = span[0] == '-';
         var val = (span[1] - (long)'0') * 1_000_000_000_000;
+        Debug.Assert(span[2] == '.');
 
         var p = (byte*)Unsafe.AsPointer(ref span.GetPinnableReference());
 
