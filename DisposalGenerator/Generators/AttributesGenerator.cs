@@ -29,7 +29,7 @@ namespace DisposalGenerator;
 /// <summary>
 /// Specifies that the class is automatically disposed.
 /// </summary>
-[global::System.AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[global::System.AttributeUsage(global::System.AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 internal sealed class AutoDisposalAttribute : global::System.Attribute
 {
     /// <summary>
@@ -53,7 +53,7 @@ namespace DisposalGenerator;
 /// <summary>
 /// Specifies that the field must not be disposed automatically.
 /// </summary>
-[global::System.AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+[global::System.AttributeUsage(global::System.AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 internal sealed class NotToBeDisposedAttribute : global::System.Attribute
 {
     /// <summary>
