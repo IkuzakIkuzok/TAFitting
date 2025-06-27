@@ -90,7 +90,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         if (hasDisposeBool)
             builder.AppendLine($"\tpartial class {className} : {baseNames}");
         else
-            builder.AppendLine($"\tpartial class {className} : IDisposable");
+            builder.AppendLine($"\tpartial class {className} : global::System.IDisposable");
         builder.AppendLine("\t{");
 
         builder.AppendLine("\t\tprivate bool disposed = false;");
@@ -101,7 +101,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine("\t\tpublic void Dispose()");
             builder.AppendLine("\t\t{");
             builder.AppendLine("\t\t\tDispose(true);");
-            builder.AppendLine("\t\t\tGC.SuppressFinalize(this);");
+            builder.AppendLine("\t\t\tglobal::System.GC.SuppressFinalize(this);");
             builder.AppendLine("\t\t} // public void Dispose()");
             builder.AppendLine();
         }
@@ -143,7 +143,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         if (hasDispose)
             builder.AppendLine($"\t}} // partial class {className} : {baseNames}");
         else
-            builder.AppendLine($"\t}} // partial class {className} : IDisposable");
+            builder.AppendLine($"\t}} // partial class {className} : global::.System.IDisposable");
         builder.AppendLine("} // namespace " + nameSpace);
 
         return builder.ToString();
