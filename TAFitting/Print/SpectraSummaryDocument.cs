@@ -125,7 +125,7 @@ internal sealed partial class SpectraSummaryDocument : Document
         foreach ((var w, var v) in this.values)
         {
             x = leftMargin + xOffset;
-            var wl = w.ToString();
+            var wl = w.ToInvariantString();
             var offset = size.Width - e.Graphics.MeasureString(wl, font).Width - MARGIN_CELL;
             e.Graphics.DrawString(wl, font, brush, x + offset, y);
             foreach ((var i, var p) in this.parameters.Enumerate())
@@ -155,12 +155,12 @@ internal sealed partial class SpectraSummaryDocument : Document
         var n = 3;
         while (n > 0)
         {
-            var s = value.ToString($"F{n}");
+            var s = value.ToInvariantString($"F{n}");
             if (checkWidth(s)) return s;
             n--;
         }
 
-        return value.ToString("F");
+        return value.ToInvariantString("F");
     } // private static string FormatValue (double, Func<string, bool>)
 
     private static string ExpFormatValue(double value, Func<string, bool> checkWidth)
@@ -171,12 +171,12 @@ internal sealed partial class SpectraSummaryDocument : Document
             var s = ExpFormatValue(value, n--);
             if (checkWidth(s)) return s;
         }
-        return value.ToString("E2");
+        return value.ToInvariantString("E2");
     } // private static string ExpFormatValue (double, Func<string, bool>)
 
     private static string ExpFormatValue(double value, int n)
     {
-        var s = value.ToString($"E{n}");
+        var s = value.ToInvariantString($"E{n}");
 
         Match? match;
         try
@@ -195,7 +195,7 @@ internal sealed partial class SpectraSummaryDocument : Document
 
         var sb = new StringBuilder(mantissa);
         sb.Append("×10");
-        if (exponent.StartsWith(NegativeSignHandler.NegativeSign))
+        if (exponent.StartsWith(NegativeSignHandler.NegativeSign, StringComparison.Ordinal))
             sb.Append('⁻');  // U+207B
 
         var e = exponent[1..].TrimStart('0');

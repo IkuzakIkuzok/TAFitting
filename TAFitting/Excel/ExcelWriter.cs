@@ -94,11 +94,11 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
     private string GetFormula(string template, int row, int column)
     {
         var time = GetColumnLetter(column) + "$1";
-        template = template.Replace("$X", time);
+        template = template.Replace("$X", time, StringComparison.Ordinal);
         foreach ((var name, var index) in this.parametersindices)
         {
             var cell = "$" + GetColumnLetter(index) + row;
-            template = template.Replace($"[{name}]", cell);
+            template = template.Replace($"[{name}]", cell, StringComparison.Ordinal);
         }
         return template;
     } // private string GetFormula (string, int, int)

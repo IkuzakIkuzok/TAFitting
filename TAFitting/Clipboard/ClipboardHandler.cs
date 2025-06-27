@@ -27,8 +27,8 @@ internal static class ClipboardHandler
         foreach (var content in contents)
         {
             if (string.IsNullOrWhiteSpace(content[0])) continue;
-            var wavelength = double.Parse(content[0]);
-            var values = parameterIndices.Select(i => double.Parse(content[i])).ToArray();
+            var wavelength = content[0].ParseDoubleInvariant();
+            var values = parameterIndices.Select(i => content[i].ParseDoubleInvariant()).ToArray();
             yield return new ClipboardRow(wavelength, values);
         }
     } // internal static IEnumerable<ClipboardRow> GetRowsFromClipboard (IEnumerable<string>)

@@ -138,7 +138,7 @@ internal sealed partial class SummaryPreviewWindow : Form
     {
         var content = this.document.AdditionalContents[AdditionalContentPosition.UpperRight].FirstOrDefault();
         if (content is null) return;
-        content.Text = this.datetime.Checked ? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") : string.Empty;
+        content.Text = this.datetime.Checked ? DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
         this.preview.InvalidatePreview();
     } // private void SetDateTime (object?, EventArgs)
 

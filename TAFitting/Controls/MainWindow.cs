@@ -339,7 +339,7 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString())
+            var item = new ToolStripMenuItem(i.ToInvariantString())
             {
                 Tag = i,
             };
@@ -369,7 +369,7 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString())
+            var item = new ToolStripMenuItem(i.ToInvariantString())
             {
                 Tag = i,
             };
@@ -399,7 +399,7 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString())
+            var item = new ToolStripMenuItem(i.ToInvariantString())
             {
                 Tag = i,
             };

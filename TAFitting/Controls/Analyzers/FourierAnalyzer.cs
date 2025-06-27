@@ -124,7 +124,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString(), null, ChangeLineWidth)
+            var item = new ToolStripMenuItem(i.ToInvariantString(), null, ChangeLineWidth)
             {
                 Tag = i,
             };
@@ -137,7 +137,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString(), null, ChangeMarkerSize)
+            var item = new ToolStripMenuItem(i.ToInvariantString(), null, ChangeMarkerSize)
             {
                 Tag = i,
             };

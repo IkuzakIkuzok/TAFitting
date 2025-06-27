@@ -16,10 +16,10 @@ internal sealed  partial class UH4150 : SteadyStateSpectrum
         var abs = false;
         while ((line = reader.ReadLine()) is not null)
         {
-            if (!line.StartsWith("nm")) continue;
+            if (!line.StartsWith("nm", StringComparison.Ordinal)) continue;
             var fields = line.Split('\t');
             if (fields.Length < 2) continue;
-            abs = fields[1].Contains("Abs");
+            abs = fields[1].Contains("Abs", StringComparison.Ordinal);
             break;
         }
 

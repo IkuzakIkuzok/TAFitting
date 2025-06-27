@@ -61,7 +61,7 @@ internal sealed class SpectraSyncObject
         sb.Append(this.HostName);
         sb.Append('|');
 
-        sb.Append(string.Join(',', this.Wavelengths.Select(w => w.ToString())));
+        sb.Append(string.Join(',', this.Wavelengths.Select(w => w.ToInvariantString())));
         sb.Append('|');
 
         sb.Append(this.MaskRanges);
@@ -71,7 +71,7 @@ internal sealed class SpectraSyncObject
         {
             sb.Append(wavelength);
             sb.Append('=');
-            sb.Append(string.Join(',', values.Select(v => v.ToString())));
+            sb.Append(string.Join(',', values.Select(v => v.ToInvariantString())));
             sb.Append(';');
         }
 
@@ -89,7 +89,7 @@ internal sealed class SpectraSyncObject
 
         var parts = data.Split('|');
         if (parts.Length < 4) return null; // Invalid format
-        var spectraId = int.Parse(parts[0]);
+        var spectraId = parts[0].ParseIntInvariant();
         var hostName = parts[1];
         var wavelengths = parts[2].Split(',').Select(double.Parse).ToList();
         var maskingRanges = parts[3]; // Assuming this is a string representation of masking ranges
@@ -99,7 +99,7 @@ internal sealed class SpectraSyncObject
         {
             var kvp = part.Split('=');
             if (kvp.Length != 2) continue; // Invalid format
-            var wavelength = double.Parse(kvp[0]);
+            var wavelength = kvp[0].ParseDoubleInvariant();
             var values = kvp[1].Split(',').Select(double.Parse).ToList();
             spectra[wavelength] = values;
         } // foreach (var part in spectraParts)

@@ -91,7 +91,7 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <param name="text">The text to be converted.</param>
     /// <returns>The converted text.</returns>
     internal static string ToHyphenMinus(string text)
-        => text.Replace(MinusSign, HyphenMinus);
+        => text.Replace(MinusSign, HyphenMinus, StringComparison.Ordinal);
 
     /// <summary>
     /// Converts the text to use the minus sign.
@@ -99,5 +99,5 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <param name="text">The text to be converted.</param>
     /// <returns>The converted text.</returns>
     internal static string ToMinusSign(string text)
-        => text.Replace(HyphenMinus, MinusSign);
+        => text.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
 } // internal sealed partial class NegativeSignHandler : IDisposable

@@ -80,7 +80,7 @@ internal class AppLauncher
     /// <returns>The command to run the associated application with the specified file.</returns>
     protected virtual string GetRunCommand(string filename)
     {
-        var command = this.appCommand.Replace("%1", filename);
+        var command = this.appCommand.Replace("%1", filename, StringComparison.Ordinal);
         if (command.StartsWith('"')) return command;
         var parts = command.Split(' ', 2);
         var app = Path.GetFullPath(parts[0]);

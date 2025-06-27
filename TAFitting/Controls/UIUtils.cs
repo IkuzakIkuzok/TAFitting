@@ -30,7 +30,7 @@ internal static partial class UIUtils
     // ExceptionAdjustment: M:System.Decimal.ToString(System.String) -T:System.FormatException
     internal static string ExpFormatter(decimal value)
     {
-        var s = value.ToString("E2");
+        var s = value.ToInvariantString("E2");
 
         Match? match;
         try
@@ -49,7 +49,7 @@ internal static partial class UIUtils
 
         var sb = new StringBuilder(mantissa);
         sb.Append("×10");
-        if (exponent.StartsWith(NegativeSignHandler.NegativeSign))
+        if (exponent.StartsWith(NegativeSignHandler.NegativeSign, StringComparison.Ordinal))
             sb.Append('⁻');  // U+207B
 
         var e = exponent[1..].TrimStart('0');

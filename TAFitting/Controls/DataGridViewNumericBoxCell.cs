@@ -28,7 +28,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal int DecimalPlaces
     {
-        get => int.Parse(this.Style.Format[1..]);
+        get => this.Style.Format[1..].ParseIntInvariant();
         set => this.Style.Format = $"N{value}";
     }
 
@@ -88,7 +88,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     override protected object GetFormattedValue(object value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter valueTypeConverter, TypeConverter formattedValueTypeConverter, DataGridViewDataErrorContexts context)
     {
         if (value is double d)
-            return d.ToString("N2");
+            return d.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
         return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
     } // override protected object GetFormattedValue (object, int, ref DataGridViewCellStyle, TypeConverter, TypeConverter, DataGridViewDataErrorContexts)
 

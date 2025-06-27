@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Globalization;
 using System.Text;
 
 namespace TAFitting;
@@ -226,4 +227,27 @@ internal static class TextUtils
 
         return null;
     } // internal static Encoding? GetEncoding (this byte[])
+
+    #region Parse
+
+    internal static int ParseIntInvariant(this string s)
+        => int.Parse(s, CultureInfo.InvariantCulture);
+
+    internal static double ParseDoubleInvariant(this string s)
+        => double.Parse(s, CultureInfo.InvariantCulture);
+
+    #endregion Parse
+
+    #region ToString
+
+    internal static string ToInvariantString(this int value, string? format = null)
+        => value.ToString(format, CultureInfo.InvariantCulture);
+
+    internal static string ToInvariantString(this decimal value, string? format = null)
+        => value.ToString(format, CultureInfo.InvariantCulture);
+
+    internal static string ToInvariantString(this double value, string? format = null)
+        => value.ToString(format, CultureInfo.InvariantCulture);
+
+    #endregion ToString
 } // internal static class TextUtils

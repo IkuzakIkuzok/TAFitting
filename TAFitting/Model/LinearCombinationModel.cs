@@ -54,7 +54,7 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
             {
                 var oldName = parameter.Name;
                 var newName = $"({i + 1}){oldName}";
-                f = f.Replace($"[{oldName}]", $"[{newName}]");
+                f = f.Replace($"[{oldName}]", $"[{newName}]", StringComparison.Ordinal);
 
                 var p = new Parameter()
                 {

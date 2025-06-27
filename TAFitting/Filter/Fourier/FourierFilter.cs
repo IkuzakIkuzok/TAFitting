@@ -92,6 +92,6 @@ internal abstract class FourierFilter : IFilter
             o -= 1;
         }
         var prefix = SI_PREFIXES[10 - o];
-        return value.ToString("0.###") + " " + prefix + unit;
+        return value.ToInvariantString("0.###") + " " + prefix + unit;
     } // private static string GetScaled (double, string)
 } // internal abstract class FourierFilter : IFilter

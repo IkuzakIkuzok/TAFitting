@@ -58,7 +58,7 @@ internal static partial class FileNameHandler
                     var replaces = pattern[10..^1].Split('|');
                     foreach (var replace in replaces)
                     {
-                        if (replace.StartsWith("r:"))
+                        if (replace.StartsWith("r:", StringComparison.Ordinal))
                         {
                             var kv = replace[2..].Split('/');
 
@@ -70,18 +70,18 @@ internal static partial class FileNameHandler
                             }
                             catch (RegexMatchTimeoutException)
                             {
-                                s_basename = s_basename.Replace(kv[0], kv[1]);
+                                s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
                             }
                         }
                         else
                         {
                             var kv = replace.Split('/');
-                            s_basename = s_basename.Replace(kv[0], kv[1]);
+                            s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
                         }
                     }
                 }
 
-                filename = filename.Replace(pattern, s_basename);
+                filename = filename.Replace(pattern, s_basename, StringComparison.Ordinal);
             }
 
             return filename;

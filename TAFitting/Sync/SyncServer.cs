@@ -40,7 +40,7 @@ internal static class SyncServer
     {
         if (receiving) return;
         receiving = true;
-        var name = Environment.ProcessId.ToString("X");
+        var name = Environment.ProcessId.ToInvariantString("X");
         _ = Listen(name);
     } // internal static void StartListening ()
 

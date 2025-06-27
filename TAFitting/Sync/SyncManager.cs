@@ -82,7 +82,7 @@ internal static class SyncManager
         apps.Clear();
         foreach (var proc in Process.GetProcessesByName("TAFitting"))
         {
-            var id = proc.Id.ToString("X");
+            var id = proc.Id.ToInvariantString("X");
             if (id == SyncServer.MyName) continue;  // Skip self
             if (string.IsNullOrEmpty(id) || apps.Contains(id)) continue;
             apps.Add(id);
@@ -254,7 +254,7 @@ internal static class SyncManager
         var message = new MessageObject
         {
             Type = "q:spectraSync",
-            Content = spectraId.ToString(),
+            Content = spectraId.ToInvariantString(),
         }.ToString();
         var session = SyncServer.GetSession(hostName);
         var response = await SyncServer.SendMessage(session, message);
@@ -275,7 +275,7 @@ internal static class SyncManager
         var message = new MessageObject
         {
             Type = "q:stopSpectraSync",
-            Content = spectraId.ToString(),
+            Content = spectraId.ToInvariantString(),
         }.ToString();
         var session = SyncServer.GetSession(hostName);
         var response = await SyncServer.SendMessage(session, message);

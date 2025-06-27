@@ -3,6 +3,7 @@
 
 using DisposalGenerator;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Toast;
 using TAFitting.Data.SteadyState;
@@ -299,7 +300,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString())
+            var item = new ToolStripMenuItem(i.ToInvariantString())
             {
                 Tag = i,
             };
@@ -317,7 +318,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToString())
+            var item = new ToolStripMenuItem(i.ToInvariantString())
             {
                 Tag = i,
             };
@@ -532,7 +533,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
         var count = 0;
-        Series MakeSeries() => new((++seriesCount).ToString())
+        Series MakeSeries() => new((++seriesCount).ToString(CultureInfo.InvariantCulture))
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Circle,
@@ -815,7 +816,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     } // private static void ShowSavedNotification (string)
 
     private ISpreadSheetWriter GetSpreadSheetWriter(string extension)
-        => extension.ToUpper() switch
+        => extension.ToUpperInvariant() switch
         {
             ".CSV" => new CsvWriter(this.Model),
             ".XLSX" => new ExcelWriter(this.Model),
@@ -833,7 +834,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (CheckParametersMatching(parameters)) return;
         this.parameters = parameters.ToDictionary();
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
-            this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToString("F1")));
+            this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
         DrawSpectra();
     } // internal void SetParameters (IDictionary<double, double[]>)
 
@@ -946,7 +947,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         color = Color.FromArgb(192, color);
 
-        Series MakeSeries() => new((++seriesCount).ToString())
+        Series MakeSeries() => new((++seriesCount).ToString(CultureInfo.InvariantCulture))
         {
             ChartType = SeriesChartType.Line,
             MarkerStyle = MarkerStyle.Circle,
@@ -1099,7 +1100,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             DocumentName = Program.MainWindow.SampleName,
             AdditionalContents = [
                 new(Program.MainWindow.SampleName, AdditionalContentPosition.UpperLeft),
-                new(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), AdditionalContentPosition.UpperRight),
+                new(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), AdditionalContentPosition.UpperRight),
             ],
         };
 
