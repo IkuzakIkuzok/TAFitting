@@ -59,7 +59,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw times.
     /// </summary>
-    unsafe internal IReadOnlyList<double> RawTimes
+    internal IReadOnlyList<double> RawTimes
     {
         get
         {
@@ -68,19 +68,27 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var times = new double[this.times.Length];
             var i = 0;
             var tu = (double)this.TimeUnit;
-            if (Avx.IsSupported)
+
+            if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
             {
-                var a = stackalloc double[] { tu, tu, tu, tu };
-                var v = Avx.LoadVector256(a);
-                fixed (double* s = this.times, d = times)
+                var v_tu = Vector256.Create(tu);
+                
+                ref var begin = ref MemoryMarshal.GetArrayDataReference(this.times);
+                ref var to = ref Unsafe.Add(ref begin, this.times.Length - Vector256<double>.Count);
+
+                ref var current = ref begin;
+                ref var current_raw = ref MemoryMarshal.GetArrayDataReference(times);
+
+                while (Unsafe.IsAddressLessThan(ref current, ref to))
                 {
-                    do
-                    {
-                        Avx.Store(d + i, Avx.Multiply(Avx.LoadVector256(s + i), v));
-                        i += Vector256<double>.Count;
-                    } while (i <= this.times.Length - Vector256<double>.Count);
+                    var v_current = Vector256.LoadUnsafe(ref current);
+                    Vector256.Multiply(v_current, v_tu).StoreUnsafe(ref current_raw);
+                    current = ref Unsafe.Add(ref current, Vector256<double>.Count);
+                    current_raw = ref Unsafe.Add(ref current_raw, Vector256<double>.Count);
+                    i += Vector256<double>.Count;
                 }
             }
+
             for (; i < this.times.Length; i++)
                 times[i] = this.times[i] * tu;
 
@@ -96,7 +104,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw signals.
     /// </summary>
-    unsafe internal IReadOnlyList<double> RawSignals
+    internal IReadOnlyList<double> RawSignals
     {
         get
         {
@@ -105,19 +113,25 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var signals = new double[this.signals.Length];
             var i = 0;
             var su = (double)this.SignalUnit;
-            if (Avx.IsSupported)
+
+            if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
             {
-                var a = stackalloc double[] { su, su, su, su };
-                var v = Avx.LoadVector256(a);
-                fixed (double* s = this.signals, d = signals)
+                var v_su = Vector256.Create(su);
+                
+                ref var begin = ref MemoryMarshal.GetArrayDataReference(this.signals);
+                ref var to = ref Unsafe.Add(ref begin, this.signals.Length - Vector256<double>.Count);
+                ref var current = ref begin;
+                ref var current_raw = ref MemoryMarshal.GetArrayDataReference(signals);
+                while (Unsafe.IsAddressLessThan(ref current, ref to))
                 {
-                    do
-                    {
-                        Avx.Store(d + i, Avx.Multiply(Avx.LoadVector256(s + i), v));
-                        i += Vector256<double>.Count;
-                    } while (i <= this.signals.Length - Vector256<double>.Count);
+                    var v_current = Vector256.LoadUnsafe(ref current);
+                    Vector256.Multiply(v_current, v_su).StoreUnsafe(ref current_raw);
+                    current = ref Unsafe.Add(ref current, Vector256<double>.Count);
+                    current_raw = ref Unsafe.Add(ref current_raw, Vector256<double>.Count);
+                    i += Vector256<double>.Count;
                 }
             }
+
             for (; i < this.signals.Length; i++)
                 signals[i] = this.signals[i] * su;
             return signals;
@@ -524,25 +538,28 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Adds the time.
     /// </summary>
     /// <param name="time">The time</param>
-    unsafe internal void AddTime(double time)
+    internal void AddTime(double time)
     {
         var i = 0;
-        if (Avx.IsSupported)
+        if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
         {
-            var t = stackalloc double[] { time, time, time, time };
-            var v = Avx.LoadVector256(t);
-            fixed (double* p = this.times)
+            var v_time = Vector256.Create(time);
+            ref var begin = ref MemoryMarshal.GetArrayDataReference(this.times);
+            ref var to = ref Unsafe.Add(ref begin, this.times.Length - Vector128<double>.Count);
+
+            ref var current = ref begin;
+            while (Unsafe.IsAddressLessThan(ref current, ref to))
             {
-                do
-                {
-                    Avx.Store(p + i, Avx.Add(Avx.LoadVector256(p + i), v));
-                    i += Vector256<double>.Count;
-                } while (i <= this.times.Length - Vector256<double>.Count);
+                var v_current = Vector256.LoadUnsafe(ref current);
+                Vector256.Add(v_current, v_time).StoreUnsafe(ref current);
+                current = ref Unsafe.Add(ref current, Vector256<double>.Count);
+                i += Vector256<double>.Count;
             }
         }
+
         for (; i < this.times.Length; i++)
             this.times[i] += time;
-    } // unsafe internal Decay AddTime (double)
+    } // internal Decay AddTime (double)
 
     /// <summary>
     /// Gets the time at which the signal is minimum.
