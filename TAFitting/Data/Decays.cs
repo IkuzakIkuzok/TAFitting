@@ -215,8 +215,9 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         using var reader = new UfsReader(stream, leaveOpen: true);
 
         var versionStr = reader.ReadString();
-        if (!versionStr.StartsWith("Version", StringComparison.InvariantCulture)) throw new IOException("Invalid version string.");
-        if (!int.TryParse(versionStr.AsSpan(7), out var version)) throw new IOException("Invalid version number.");
+        const string versionPrefix = "Version";
+        if (!versionStr.StartsWith(versionPrefix, StringComparison.InvariantCulture)) throw new IOException("Invalid version string.");
+        if (!int.TryParse(versionStr.AsSpan(versionPrefix.Length), out var version)) throw new IOException("Invalid version number.");
         if (version > UfsIOHelper.Version) throw new IOException("Unsupported version.");
 
         reader.SkipString();  // wavelength name
