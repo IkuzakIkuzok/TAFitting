@@ -165,11 +165,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     } // internal static Decays MicrosecondFromFolder (string)
 
     /// <summary>
-    /// Loads the decay data from the file.
+    /// Loads the decay data from the CSV file.
     /// </summary>
-    /// <param name="path">The path to the file.</param>
+    /// <param name="path">The path to the CSV file.</param>
     /// <returns>The decay data.</returns>
-    internal static Decays FemtosecondFromFile(string path)
+    internal static Decays FemtosecondFromCsvFile(string path)
     {
         var timeUnit = TimeUnit.Picosecond;
         var signalUnit = SignalUnit.MilliOD;
@@ -191,7 +191,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         }
 
         return decays;
-    } // internal static Decays FemtosecondFromFile (string)
+    } // internal static Decays FemtosecondFromCsvFile (string)
 
     private static double ParseDouble(string s)
     {

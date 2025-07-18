@@ -781,7 +781,7 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     /// <param name="path">The path to the file from which the decay data is loaded.</param>
     internal void LoadFemtosecondDecays(string path)
-        => LoadDecays(path, Decays.FemtosecondFromFile);
+        => LoadDecays(path, Decays.FemtosecondFromCsvFile);
 
     /// <summary>
     /// Loads the decay data from the specified path.
