@@ -49,7 +49,7 @@ internal abstract class FourierFilter : IFilter
 
         // FFT works only significantly fast when the number of points that is a power of 2.
         // Extend the number of points to the nearest power of 2.
-        var n = (int)Math.Pow(2, Math.Ceiling(Math.Log2(time.Count)));
+        var n = 1 << (int)Math.Ceiling(Math.Log2(time.Count));
         var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
 
         // Pad before and after the signal with zeros.
