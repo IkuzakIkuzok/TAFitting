@@ -102,7 +102,7 @@ internal static partial class UIUtils
         foreach (var (time, signal) in signals)
         {
             if (time <= 0) continue;
-            if (double.IsNaN(signal)) continue;
+            if (!double.IsFinite(signal)) continue;
             var y = Math.Clamp(signal, DecimalMin, DecimalMax);
             points.AddXY(time, y);
         }
