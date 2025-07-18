@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using System.Threading;
 using TAFitting.Stats;
 
 namespace TAFitting.Data;
@@ -201,6 +202,70 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         if (s == "-Inf") return double.NegativeInfinity;
         throw new FormatException($"Invalid double value: {s}");
     } // private static double ParseDouble (string)
+
+    /// <summary>
+    /// Loads the decay data from the UFS file.
+    /// </summary>
+    /// <param name="path">The path to the UFS file.</param>
+    /// <returns>The decay data.</returns>
+    /// <exception cref="IOException">The file is not a valid UFS file or the version is unsupported.</exception>
+    internal static Decays FemtosecondFromUfsFile(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        using var reader = new UfsReader(stream, leaveOpen: true);
+
+        var versionStr = reader.ReadString();
+        if (!versionStr.StartsWith("Version", StringComparison.InvariantCulture)) throw new IOException("Invalid version string.");
+        if (!int.TryParse(versionStr.AsSpan(7), out var version)) throw new IOException("Invalid version number.");
+        if (version > UfsIOHelper.Version) throw new IOException("Unsupported version.");
+
+        reader.SkipString();  // wavelength name
+        reader.SkipString();  // wavelength unit
+
+        var wavelengthCount = reader.ReadInt32();
+        var wavelengths = reader.ReadDoubles(wavelengthCount);
+
+        reader.SkipString();  // "Time"
+        var tu = reader.ReadString();
+        var timeUnit = tu switch
+        {
+            "fs" => TimeUnit.Femtosecond,
+            "ps" => TimeUnit.Picosecond,
+            "ns" => TimeUnit.Nanosecond,
+            "us" => TimeUnit.Microsecond,
+            "ms" => TimeUnit.Millisecond,
+            "s"  => TimeUnit.Second,
+            _ => throw new IOException($"Unsupported time unit: {tu}")
+        };
+
+        var timeCount = reader.ReadInt32();
+        var times = reader.ReadDoubles(timeCount);
+
+        var dataLabel = reader.ReadString();
+        if (dataLabel != "DA") throw new IOException("Invalid data label.");
+
+        var padding = reader.ReadInt32();
+        if (padding != 0) throw new IOException("Invalid padding.");
+
+        var wc = reader.ReadInt32();  // wavelength count
+        if (wc != wavelengthCount) throw new IOException("Invalid wavelength count.");
+        var tc = reader.ReadInt32();  // time count
+        if (tc != timeCount) throw new IOException("Invalid time count.");
+
+        var signalUnit = SignalUnit.MilliOD;
+        var decays = new Decays(timeUnit, signalUnit);
+
+        for (var i = 0; i < wavelengthCount; i++)
+        {
+            var wavelength = wavelengths[i];
+            var signals = reader.ReadDoubles(timeCount).Select(s => s / signalUnit).ToArray();
+            var decay = new Decay(times, timeUnit, signals, signalUnit);
+            decay.RemoveNaN();
+            decays.decays.Add(wavelength, decay);
+        }
+
+        return decays;
+    } // internal static Decays FemtosecondFromUfsFile (string)
 
     private void ChangeTime0(double time0)
     {

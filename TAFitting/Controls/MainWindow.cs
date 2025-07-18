@@ -767,7 +767,7 @@ internal sealed partial class MainWindow : Form
     {
         using var dialog = new System.Windows.Forms.OpenFileDialog()
         {
-            Filter = ExtensionFilter.CsvFiles,
+            Filter = ExtensionFilter.FsTasFiles,
             Title = "Select a fs-TAS data file",
             ClientGuid = Program.Config.SeparateFileDialogState ? fsTasDialog : Program.FileDialogCommonId,
         };
@@ -781,7 +781,23 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     /// <param name="path">The path to the file from which the decay data is loaded.</param>
     internal void LoadFemtosecondDecays(string path)
-        => LoadDecays(path, Decays.FemtosecondFromCsvFile);
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is not ".csv" and not ".ufs")
+        {
+            MessageBox.Show(
+                "The selected file is not a valid fs-TAS data file.",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+            return;
+        }
+        if (ext == ".csv")
+            LoadDecays(path, Decays.FemtosecondFromCsvFile);
+        else
+            LoadDecays(path, Decays.FemtosecondFromUfsFile);
+    } // internal void LoadFemtosecondDecays (string)
 
     /// <summary>
     /// Loads the decay data from the specified path.

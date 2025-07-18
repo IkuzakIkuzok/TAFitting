@@ -16,6 +16,7 @@ internal sealed partial class ExtensionFilter : IEnumerable<ExtensionItem>
 
     internal static ExtensionFilter Assemblies => [ExtensionItem.AssemblyFiles, ExtensionItem.AllFiles];
     internal static ExtensionFilter CsvFiles => [ExtensionItem.CsvFiles, ExtensionItem.AllFiles];
+    internal static ExtensionFilter FsTasFiles => [ExtensionItem.FsTasFiles, ExtensionItem.UfsFiles, ExtensionItem.CsvFiles, ExtensionItem.AllFiles];
     internal static ExtensionFilter OriginProjects => [ExtensionItem.OriginProject, ExtensionItem.AllFiles];
     internal static ExtensionFilter SpreadSheets => [ExtensionItem.ExcelFiles, ExtensionItem.CsvFiles, ExtensionItem.AllFiles];
     internal static ExtensionFilter TextFiles => [ExtensionItem.TextFiles, ExtensionItem.AllFiles];
