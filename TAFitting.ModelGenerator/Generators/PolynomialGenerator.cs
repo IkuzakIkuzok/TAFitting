@@ -13,10 +13,8 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
     override protected string FileName => "GeneratedPolynomialModels.g.cs";
 
-    override protected string Generate(string nameSpace, string className, int n, string? name)
+    override protected void Generate(StringBuilder builder, string nameSpace, string className, int n, string? name)
     {
-        var builder = new StringBuilder();
-
         builder.AppendLine();
         builder.AppendLine($"namespace {nameSpace}");
         builder.AppendLine("{");
@@ -144,9 +142,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         builder.AppendLine($"\t}} // internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
         builder.AppendLine("} // namespace" + nameSpace);
-
-        return builder.ToString();
-    } // override protected string Generate (string, string, int, string?)
+    } // override protected void Generate (StringBuilder, string, string, int n, string?)
 
     private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
     {

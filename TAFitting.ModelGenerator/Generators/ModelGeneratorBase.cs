@@ -54,8 +54,7 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
                 var namedArgs = attr.NamedArguments;
                 var name = namedArgs.FirstOrDefault(arg => arg.Key == "Name").Value.Value as string;
 
-                var code = Generate(nameSpace, className, order, name);
-                builder.AppendLine(code);
+                Generate(builder, nameSpace, className, order, name);
             }
             catch
             {
@@ -72,12 +71,12 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
     /// <summary>
     /// Generates the source code of the model.
     /// </summary>
+    /// <param name="builder"><see cref="StringBuilder"/> to append the generated code.</param>
     /// <param name="nameSpace">The namespace of the model.</param>
     /// <param name="className">The class name of the model.</param>
     /// <param name="n">The order parameter of the model.</param>
     /// <param name="name">The name of the model.</param>
-    /// <returns>The source code of the model.</returns>
-    abstract protected string Generate(string nameSpace, string className, int n, string? name);
+    abstract protected void Generate(StringBuilder builder, string nameSpace, string className, int n, string? name);
 
     /// <summary>
     /// Gets the suffix of the number.
