@@ -34,7 +34,7 @@ internal sealed partial class OriginProject
     /// <see langword="true"/> if the project is modified; otherwise, <see langword="false"/>.
     /// </value>
     /// <remarks>
-    /// Setting this property to <see langword="false"/> doen NOT save the project.
+    /// Setting this property to <see langword="false"/> does NOT save the project.
     /// Call <see cref="Save(string)"/> method to save the project.
     /// </remarks>
     internal bool IsModified
