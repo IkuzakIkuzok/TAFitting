@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using System.Threading;
 using TAFitting.Stats;
 
 namespace TAFitting.Data;

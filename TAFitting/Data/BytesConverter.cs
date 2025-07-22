@@ -1,7 +1,6 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace TAFitting.Data;
