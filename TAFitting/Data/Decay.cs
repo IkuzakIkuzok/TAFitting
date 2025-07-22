@@ -11,7 +11,6 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 using TAFitting.Filter;
 
 #if Tekave
