@@ -1,10 +1,10 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
-using TAFitting.Data;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Data;
 
 namespace TAFitting.Controls;
 
@@ -49,7 +49,7 @@ internal static partial class UIUtils
 
         var sb = new StringBuilder(mantissa);
         sb.Append("×10");
-        if (exponent.StartsWith(NegativeSignHandler.NegativeSign, StringComparison.Ordinal))
+        if (exponent.StartsWith('\u2212') || exponent.StartsWith('-'))
             sb.Append('⁻');  // U+207B
 
         var e = exponent[1..].TrimStart('0');
