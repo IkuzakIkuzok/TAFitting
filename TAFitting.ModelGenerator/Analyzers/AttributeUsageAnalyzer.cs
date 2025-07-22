@@ -130,9 +130,8 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         if (isStatic)
             context.ReportDiagnostic(Diagnostic.Create(StaticErr, syntax.Identifier.GetLocation(), attrName));
 
-        var nameArg = attr.ArgumentList?.Arguments.FirstOrDefault(a => a.NameEquals?.Name.Identifier.Text == "Name");
+        var hasNameArg = attr.ArgumentList?.Arguments.Any(a => a.NameEquals?.Name.Identifier.Text == "Name") ?? false;
         var nameProp = syntax.Members.OfType<PropertyDeclarationSyntax>().FirstOrDefault(p => p.Identifier.Text == "Name");
-        var hasNameArg = nameArg is not null;
         var hasNameProp = nameProp is not null;
         if (!hasNameArg && !hasNameProp)
             context.ReportDiagnostic(Diagnostic.Create(NoNameErr, attr.GetLocation(), attrName));
