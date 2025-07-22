@@ -36,7 +36,7 @@ namespace TAFitting.Model;
 internal sealed class ExponentialModelAttribute : global::System.Attribute
 {
     /// <summary>
-    /// Gets the number of components.
+    /// Gets the number of exponential components.
     /// </summary>
     internal int ComponentsCount { get; }
 
@@ -48,8 +48,8 @@ internal sealed class ExponentialModelAttribute : global::System.Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref=""ExponentialModelAttribute""/> class.
     /// </summary>
-    /// <param name=""componentsCount""></param>
-    /// <exception cref=""global::System.ArgumentOutOfRangeException""></exception>
+    /// <param name=""componentsCount"">The number of exponential components.</param>
+    /// <exception cref=""global::System.ArgumentOutOfRangeException"">Components count must be greater than or equal to 1.</exception>
     internal ExponentialModelAttribute(int componentsCount)
     {
         if (componentsCount < 1)
