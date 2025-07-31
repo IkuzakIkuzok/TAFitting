@@ -37,17 +37,6 @@ public sealed class SolverConfig
     public bool UseSIMD { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the maximum ratio of data points to truncate when using SIMD.
-    /// </summary>
-    /// <remarks>
-    /// The SIMD implementations can handle the specified number of data points, e.g., 2048.
-    /// In actual data, the last data in a time series is almost meaningless, so truncation often has no effect on the analysis.
-    /// This property specifies how much percentage truncation is allowed.
-    /// </remarks>
-    [XmlElement("max-truncate-ratio")]
-    public double MaxTruncateRatio { get; set; } = 0.1;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="SolverConfig"/> class.
     /// </summary>
     public SolverConfig() { }

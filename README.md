@@ -203,22 +203,6 @@ For many cases `true` is recommended as SIMD is much faster than scalar computat
 
 Note that SIMD computation is not always used even if this value is set to `true`.
 
-#### `appSettings/solver/max-truncate-ratio`
-
-Specify the maximum ratio of the truncated data.
-SIMD computation is available only when the number of data points matches the lenghth of the SIMD vector (1024 or 2048).
-If the number of data points is greater than the length of the SIMD vector,
-the data is truncated, since the later time domain has less effect on the fitting.
-The trancation is performed by removing the data points from the end of the data,
-as long as the ratio of the truncated data is less than the specified value.
-(If the number of data points is less than the length of the SIMD vector, the data is extended by zero padding.)
-
-For example, if the number of data points is 2100, the last 52 points are removed to make the number of data points 2048.
-This trancation is valid only when the `max-truncate-ratio` is greater than 0.0254 (= 52 / 2048).
-Too small value prevents the SIMD computation, whereas too large value may cause the fitting to be inaccurate as many data points are removed.
-Note that the fitting is performed on the data only after the time zero,
-and the length of the data for fitting may not be the same as the original data.
-
 ## License
 
 TAFitting is licensed under the MIT License.
