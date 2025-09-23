@@ -342,8 +342,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <exception cref="IOException">Failed to read the file.</exception>
     internal static Decay FromFile(string filename, TimeUnit timeUnit, SignalUnit signalUnit)
     {
-        var timeScaling = 1.0 / timeUnit;
-        var signalScaling = 1.0 / signalUnit;
+        var timeScaling = SCALING_FACTOR / timeUnit;
+        var signalScaling = SCALING_FACTOR / signalUnit;
 
         try
         {
@@ -361,8 +361,6 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             const int LINE_LEN = FileCache.LINE_LENGTH;
             const int LINES = 3;
             const int SIGNAL_POS = 26; // The position of the signal in a line.
-
-            timeScaling *= SCALING_FACTOR;
 
             var times = new double[2499];
             var signals = new double[2499];
@@ -389,9 +387,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             times[0] = dt * timeScaling;
             times[1] = (dt << 1) * timeScaling;
             times[2] = (dt * 3) * timeScaling;
-            signals[0] = FastParse(s0) * signalScaling;
-            signals[1] = FastParse(s1) * signalScaling;
-            signals[2] = FastParse(s2) * signalScaling;
+            signals[0] = FastParseFixedPoint(s0) * signalScaling;
+            signals[1] = FastParseFixedPoint(s1) * signalScaling;
+            signals[2] = FastParseFixedPoint(s2) * signalScaling;
 
             for (var i = LINES; i < times.Length; i += LINES)
             {
@@ -404,9 +402,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
                 times[i + 2] = (dt * (i + 3)) * timeScaling;
-                signals[i + 0] = FastParse(s0) * signalScaling;
-                signals[i + 1] = FastParse(s1) * signalScaling;
-                signals[i + 2] = FastParse(s2) * signalScaling;
+                signals[i + 0] = FastParseFixedPoint(s0) * signalScaling;
+                signals[i + 1] = FastParseFixedPoint(s1) * signalScaling;
+                signals[i + 2] = FastParseFixedPoint(s2) * signalScaling;
             }
 #else
             var lines = File.ReadAllLines(filename);
@@ -460,7 +458,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
          */
 
         var timeScaling = SCALING_FACTOR / timeUnit;
-        var signalScaling = 1.0 / signalUnit;
+        var signalScaling = SCALING_FACTOR / signalUnit;
 
         var times = new double[lines];
         var signals = new double[lines];
@@ -474,7 +472,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         {
             var s = span.Slice(LINE_LEN * i + SIGNAL_POS, 15);
             times[i] = (dt * (i + 1)) * timeScaling;
-            signals[i] = FastParse(s) * signalScaling;
+            signals[i] = FastParseFixedPoint(s) * signalScaling;
         }
 
 #if AcceptPartialPreload
@@ -501,9 +499,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
                 times[i + 2] = (dt * (i + 3)) * timeScaling;
-                signals[i + 0] = FastParse(s0) * signalScaling;
-                signals[i + 1] = FastParse(s1) * signalScaling;
-                signals[i + 2] = FastParse(s2) * signalScaling;
+                signals[i + 0] = FastParseFixedPoint(s0) * signalScaling;
+                signals[i + 1] = FastParseFixedPoint(s1) * signalScaling;
+                signals[i + 2] = FastParseFixedPoint(s2) * signalScaling;
             }
         }
 #endif  // AcceptPartialPreload
