@@ -360,6 +360,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             const int LINE_LEN = FileCache.LINE_LENGTH;
             const int LINES = 3;
+            const int SIGNAL_POS = 26; // The position of the signal in a line.
 
             timeScaling *= SCALING_FACTOR;
 
@@ -381,9 +382,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             // Time spep is constant and is stored as long integer to keep the precision (like a fixed-point number).
             var dt = FastParseFixedPoint(t);
 
-            var s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
-            var s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
-            var s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
+            var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
+            var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
+            var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
 
             times[0] = dt * timeScaling;
             times[1] = (dt << 1) * timeScaling;
@@ -396,9 +397,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
-                s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
-                s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
+                s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
+                s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
+                s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
@@ -450,6 +451,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
 #if Tekave
         const int LINE_LEN = FileCache.LINE_LENGTH;
+        const int SIGNAL_POS = 26; // The position of the signal in a line.
         var span = preLoadData.AsSpan();
         /*
          * Do NOT use `preLoadData.Length` after this line,
@@ -470,7 +472,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var i = 0;
         for (; i < l; ++i)
         {
-            var s = span.Slice(26 + LINE_LEN * i, 15);
+            var s = span.Slice(LINE_LEN * i + SIGNAL_POS, 15);
             times[i] = (dt * (i + 1)) * timeScaling;
             signals[i] = FastParse(s) * signalScaling;
         }
@@ -492,9 +494,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                var s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
-                var s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
-                var s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
+                var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
+                var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
+                var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
