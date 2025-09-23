@@ -358,7 +358,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
              * Read 3 lines at a time.
              */
 
-            const int BUFF_LEN = FileCache.LINE_LENGTH;
+            const int LINE_LEN = FileCache.LINE_LENGTH;
             const int LINES = 3;
 
             timeScaling *= SCALING_FACTOR;
@@ -368,22 +368,22 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             using var reader = new FileStream(
                 filename, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: BUFF_LEN * 3 * 7 * 7,
+                bufferSize: LINE_LEN * 3 * 7 * 7,
                 false
             );
-            var buffer = (stackalloc byte[BUFF_LEN * LINES]);
+            var buffer = (stackalloc byte[LINE_LEN * LINES]);
 
             // Read the first line outside the loop to get the time step.
             reader.Read(buffer);
-            var t = buffer.Slice(5 + BUFF_LEN * 0, 15);
+            var t = buffer.Slice(5 + LINE_LEN * 0, 15);
 
             // Calculating the time by some althmetic operations is significantly faster than parsing the string.
             // Time spep is constant and is stored as long integer to keep the precision (like a fixed-point number).
             var dt = FastParseFixedPoint(t);
 
-            var s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
-            var s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
-            var s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
+            var s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
+            var s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
+            var s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
 
             times[0] = dt * timeScaling;
             times[1] = (dt << 1) * timeScaling;
@@ -396,9 +396,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
-                s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
-                s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
+                s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
+                s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
+                s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
@@ -449,7 +449,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
 
 #if Tekave
-        const int BUFF_LEN = FileCache.LINE_LENGTH;
+        const int LINE_LEN = FileCache.LINE_LENGTH;
         var span = preLoadData.AsSpan();
         /*
          * Do NOT use `preLoadData.Length` after this line,
@@ -466,11 +466,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var t = span.Slice(5, 15);
         var dt = FastParseFixedPoint(t);
 
-        var l = Math.Min(span.Length / BUFF_LEN, lines);
+        var l = Math.Min(span.Length / LINE_LEN, lines);
         var i = 0;
         for (; i < l; ++i)
         {
-            var s = span.Slice(26 + BUFF_LEN * i, 15);
+            var s = span.Slice(26 + LINE_LEN * i, 15);
             times[i] = (dt * (i + 1)) * timeScaling;
             signals[i] = FastParse(s) * signalScaling;
         }
@@ -482,19 +482,19 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             using var reader = new FileStream(
                 filename, FileMode.Open, FileAccess.Read, FileShare.Read,
-                bufferSize: BUFF_LEN * 3 * 7 * 7,
+                bufferSize: LINE_LEN * 3 * 7 * 7,
                 false
             );
-            var buffer = (stackalloc byte[BUFF_LEN * LINES]);
+            var buffer = (stackalloc byte[LINE_LEN * LINES]);
 
             reader.Seek(span.Length, SeekOrigin.Begin);
             for (; i < times.Length; i += LINES)
             {
                 var read = reader.Read(buffer);
 
-                var s0 = buffer.Slice(26 + BUFF_LEN * 0, 15);
-                var s1 = buffer.Slice(26 + BUFF_LEN * 1, 15);
-                var s2 = buffer.Slice(26 + BUFF_LEN * 2, 15);
+                var s0 = buffer.Slice(26 + LINE_LEN * 0, 15);
+                var s1 = buffer.Slice(26 + LINE_LEN * 1, 15);
+                var s2 = buffer.Slice(26 + LINE_LEN * 2, 15);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
