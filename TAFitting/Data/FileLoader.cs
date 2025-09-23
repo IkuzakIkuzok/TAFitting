@@ -15,7 +15,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     private readonly string format_ab = Program.AMinusBSignalFormat;
     private readonly string format_b = Program.BSignalFormat;
 
-    private readonly Dictionary<double, string> folders = [];
+    private readonly ConcurrentDictionary<double, string> folders = [];
     private readonly ConcurrentDictionary<double, FileCache> cache_ab = new();
     private readonly ConcurrentDictionary<double, FileCache> cache_b = new();
 
@@ -35,7 +35,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
 
         if (!File.Exists(file_ab) || !File.Exists(file_b)) return;
 
-        this.folders.Add(wavelength, folder);
+        if (!this.folders.TryAdd(wavelength, folder)) return;
         Task.Run(() =>
         {
             Load(file_ab, this.cache_ab, wavelength);

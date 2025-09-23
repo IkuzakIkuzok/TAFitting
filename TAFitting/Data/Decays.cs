@@ -117,13 +117,13 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
         var folders = Directory.EnumerateDirectories(path);
         var loader = new FileLoader();
-        foreach (var folder in folders)
+        Parallel.ForEach(folders, (folder) =>
         {
             var basename = Path.GetFileName(folder);
             var wl = re_wavelength.Match(basename).Groups[1].Value;
-            if (!double.TryParse(wl, out var wavelength)) continue;
+            if (!double.TryParse(wl, out var wavelength)) return;
             loader.Register(folder, wavelength);
-        }
+        });
 
         var dict = new ConcurrentDictionary<double, Decay>();
         Parallel.ForEach(loader, (l) =>
