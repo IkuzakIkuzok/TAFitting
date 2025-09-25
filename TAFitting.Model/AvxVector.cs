@@ -639,6 +639,10 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="value">The value to load into the current vector.</param>
     /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
+    /// <remarks>
+    /// Do not call this method with <paramref name="value"/> equal to zero.
+    /// Consider using the <see cref="Clear"/> method instead for performance reasons.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Load(double value)
     {
