@@ -42,6 +42,10 @@ internal sealed class FileCache
     /// Appends the specified data to the buffer.
     /// </summary>
     /// <param name="data">The data to append.</param>
+    /// <remarks>
+    /// This method is NOT thread-safe.
+    /// Ensure that calls to this method are synchronized if accessed from multiple threads.
+    /// </remarks>
     internal void Append(ReadOnlySpan<byte> data)
     {
         data.CopyTo(this._buffer.AsSpan(this.Length));
