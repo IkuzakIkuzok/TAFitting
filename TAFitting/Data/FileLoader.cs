@@ -15,6 +15,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     private readonly string format_ab = Program.AMinusBSignalFormat;
     private readonly string format_b = Program.BSignalFormat;
 
+    // Concurrent collections are required because loading is done in parallel.
     private readonly ConcurrentDictionary<double, string> folders = [];
     private readonly ConcurrentDictionary<double, FileCache> cache_ab = new();
     private readonly ConcurrentDictionary<double, FileCache> cache_b = new();
@@ -24,6 +25,9 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     /// </summary>
     /// <param name="folder">The folder to register.</param>
     /// <param name="wavelength">The wavelength corresponding to the <paramref name="folder"/>.</param>
+    /// <remarks>
+    /// This method is thread-safe and can be called from multiple threads concurrently.
+    /// </remarks>
     internal void Register(string folder, double wavelength)
     {
         var basename = Path.GetFileName(folder);
