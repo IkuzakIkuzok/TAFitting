@@ -553,8 +553,7 @@ public sealed class AvxVector
         get => this._array[index];
         set
         {
-            if (this.IsReadonly)
-                throw new InvalidOperationException("The current vector is readonly.");
+            ThrowHelper.ThrowIfReadonly(this);
             this._array[index] = value;
         }
     }
@@ -626,12 +625,12 @@ public sealed class AvxVector
     /// <param name="values">The values to load into the current vector.</param>
     /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
     /// <exception cref="ArgumentException">The length of the specified values does not match the length of the current vector.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Load(double[] values)
     {
-        if (this.IsReadonly)
-            throw new InvalidOperationException("The current vector is readonly.");
-        if (this._array.Length != values.Length)
-            throw new ArgumentException("The length of the specified values does not match the length of the current vector.");
+        ThrowHelper.ThrowIfReadonly(this);
+        ThrowHelper.ThrowIfCountMismatch(this, values);
+
         values.CopyTo(this._array, 0);
     } // public void Load (double[])
 
@@ -640,10 +639,11 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="value">The value to load into the current vector.</param>
     /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Load(double value)
     {
-        if (this.IsReadonly)
-            throw new InvalidOperationException("The current vector is readonly.");
+        ThrowHelper.ThrowIfReadonly(this);
+
         var span = this._array.AsSpan();
         span.Fill(value);
     } // public void Load (double)
@@ -653,10 +653,10 @@ public sealed class AvxVector
     /// </summary>
     /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
     /// <remarks>This method is preferred over Load(0.0) for performance reasons.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        if (this.IsReadonly)
-            throw new InvalidOperationException("The current vector is readonly.");
+        ThrowHelper.ThrowIfReadonly(this);
 
         // Span<T>.Clear is faster than Array.Clear for this case
         var span = this._array.AsSpan();
@@ -675,7 +675,7 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="count">The number of elements in the vector.</param>
     /// <param name="value">The value of the vector.</param>
-    /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
+    /// <returns>A new <see cref="AvxVector"/> instance that contains the specified value.</returns>
     public static AvxVector Create(int count, double value) => new(count, value, false);
 
     /// <summary>
@@ -697,7 +697,7 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="count">The number of elements in the vector.</param>
     /// <param name="value">The value of the vector.</param>
-    /// <returns>A new readonly <see cref="AvxVector"/> instance that contains the specified values.</returns>
+    /// <returns>A new readonly <see cref="AvxVector"/> instance that contains the specified value.</returns>
     public static AvxVector CreateReadonly(int count, double value) => new(count, value, true);
 
     /// <summary>
@@ -710,10 +710,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Add(AvxVector left, AvxVector right, AvxVector result)
     {
-        if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
@@ -748,6 +746,9 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Add(AvxVector left, double right, AvxVector result)
     {
+        ThrowHelper.ThrowIfCountMismatch(left, result);
+        ThrowHelper.ThrowIfReadonly(result);
+
         ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
 
@@ -780,10 +781,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Subtract(AvxVector left, AvxVector right, AvxVector result)
     {
-        if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
@@ -818,10 +817,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Subtract(AvxVector left, double right, AvxVector result)
     {
-        if (left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
@@ -855,10 +852,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Subtract(double left, AvxVector right, AvxVector result)
     {
-        if (right._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         var v_left = Vector256.Create(left);
 
@@ -892,10 +887,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Multiply(AvxVector left, AvxVector right, AvxVector result)
     {
-        if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
@@ -930,10 +923,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Multiply(AvxVector left, double right, AvxVector result)
     {
-        if (left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
@@ -965,10 +956,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Divide(AvxVector left, AvxVector right, AvxVector result)
     {
-        if (left._array.Length != right._array.Length || left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
@@ -1003,10 +992,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Divide(AvxVector left, double right, AvxVector result)
     {
-        if (left._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(left, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
@@ -1038,10 +1025,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Divide(double left, AvxVector right, AvxVector result)
     {
-        if (right._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(right, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         var v_left = Vector256.Create(left);
 
@@ -1074,8 +1059,7 @@ public sealed class AvxVector
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     public static double InnerProduct(AvxVector left, AvxVector right)
     {
-        if (left._array.Length != right._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
+        ThrowHelper.ThrowIfCountMismatch(left, right);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
@@ -1110,10 +1094,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Exp(AvxVector vector, AvxVector result)
     {
-        if (vector._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(vector, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
@@ -1150,10 +1132,8 @@ public sealed class AvxVector
     /// </remarks>
     public static void ExpDecay(AvxVector time, double amplitude, double timeConstant, AvxVector result)
     {
-        if (time._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(time, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_time = ref MemoryMarshal.GetArrayDataReference(time._array);
         ref var to_time = ref Unsafe.Add(ref begin_time, time._array.Length - Vector256<double>.Count);
@@ -1185,10 +1165,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Sqrt(AvxVector vector, AvxVector result)
     {
-        if (vector._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(vector, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
@@ -1219,10 +1197,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Log2(AvxVector vector, AvxVector result)
     {
-        if (vector._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(vector, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
@@ -1254,10 +1230,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Log(AvxVector vector, double baseValue, AvxVector result)
     {
-        if (vector._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(vector, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
@@ -1299,10 +1273,8 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
     public static void Power(AvxVector vector, double exponent, AvxVector result)
     {
-        if (vector._array.Length != result._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (result.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(vector, result);
+        ThrowHelper.ThrowIfReadonly(result);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
         ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
@@ -1340,10 +1312,8 @@ public sealed class AvxVector
         Func<Vector256<double>, Vector256<double>> func_v, Func<double, double> func_s
     )
     {
-        if (x._array.Length != y._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (y.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(x, y);
+        ThrowHelper.ThrowIfReadonly(y);
 
         ref var begin_x = ref MemoryMarshal.GetArrayDataReference(x._array);
         ref var to_x = ref Unsafe.Add(ref begin_x, x._array.Length - Vector256<double>.Count);
@@ -1380,10 +1350,8 @@ public sealed class AvxVector
         Func<Vector256<double>, Vector256<double>, Vector256<double>> func_v, Func<double, double, double> func_s
     )
     {
-        if (x1._array.Length != x2._array.Length || x1._array.Length != y._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (y.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(x1, x2, y);
+        ThrowHelper.ThrowIfReadonly(y);
 
         ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
         ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
@@ -1425,10 +1393,8 @@ public sealed class AvxVector
         Func<double, double, double, double> func_s
     )
     {
-        if (x1._array.Length != x2._array.Length || x1._array.Length != x3._array.Length || x1._array.Length != y._array.Length)
-            throw new ArgumentException("The count of the vectors must be the same.");
-        if (y.IsReadonly)
-            throw new InvalidOperationException("The result vector is readonly.");
+        ThrowHelper.ThrowIfCountMismatch(x1, x2, x3, y);
+        ThrowHelper.ThrowIfReadonly(y);
 
         ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
         ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
@@ -1464,4 +1430,75 @@ public sealed class AvxVector
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetRemainingOffset(AvxVector vector)
         => (vector._array.Length / Vector256<double>.Count) * Vector256<double>.Count;
+
+    /// <summary>
+    /// Helper class for throwing exceptions.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="throw"/> statements suppress inlining and should be placed outside of method.
+    /// </remarks>
+    private static class ThrowHelper
+    {
+        /// <summary>
+        /// Throws an <see cref="InvalidOperationException"/> if the specified vector is readonly.
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal static void ThrowIfReadonly(AvxVector vector)
+        {
+            if (vector.IsReadonly)
+                throw new InvalidOperationException("The vector is readonly.");
+        } // internal static void ThrowIfReadonly (AvxVector)
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentException"/> if the count of the specified vectors is different.
+        /// </summary>
+        /// <param name="v1">The first vector.</param>
+        /// <param name="v2">The second vector.</param>
+        /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+        internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2)
+        {
+            if (v1._array.Length != v2._array.Length)
+                throw new ArgumentException("The count of the vectors must be the same.");
+        } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector)
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentException"/> if the count of the specified vectors is different.
+        /// </summary>
+        /// <param name="v1">The first vector.</param>
+        /// <param name="v2">The second vector.</param>
+        /// <param name="v3">The third vector.</param>
+        /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+        internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2, AvxVector v3)
+        {
+            if (v1._array.Length != v2._array.Length || v1._array.Length != v3._array.Length)
+                throw new ArgumentException("The count of the vectors must be the same.");
+        } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector, AvxVector)
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentException"/> if the count of the specified vectors is different.
+        /// </summary>
+        /// <param name="v1">The first vector.</param>
+        /// <param name="v2">The second vector.</param>
+        /// <param name="v3">The third vector.</param>
+        /// <param name="v4">The fourth vector.</param>
+        /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+        internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2, AvxVector v3, AvxVector v4)
+        {
+            if (v1._array.Length != v2._array.Length || v1._array.Length != v3._array.Length || v1._array.Length != v4._array.Length)
+                throw new ArgumentException("The count of the vectors must be the same.");
+        } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector, AvxVector, AvxVector)
+
+        /// <summary>
+        /// Throws an <see cref="ArgumentException"/> if the count of the specified vector and array is different.
+        /// </summary>
+        /// <param name="vector">The vector.</param>
+        /// <param name="array">The array.</param>
+        /// <exception cref="ArgumentException">The count of the vector and the array must be the same.</exception>
+        internal static void ThrowIfCountMismatch(AvxVector vector, double[] array)
+        {
+            if (vector._array.Length != array.Length)
+                throw new ArgumentException("The count of the vector and the array must be the same.");
+        } // internal static void ThrowIfCountMismatch (AvxVector, double[])
+    } // private static class ThrowHelper
 } // public sealed class AvxVector
