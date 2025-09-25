@@ -42,9 +42,9 @@ internal sealed class FileCache
     /// Appends the specified data to the buffer.
     /// </summary>
     /// <param name="data">The data to append.</param>
-    internal void Append(Span<byte> data)
+    internal void Append(ReadOnlySpan<byte> data)
     {
         data.CopyTo(this._buffer.AsSpan(this.Length));
         this.Length += data.Length;
-    } // internal void Append (Span<byte>)
+    } // internal void Append (ReadOnlySpan<byte>)
 } // internal sealed class FileCache
