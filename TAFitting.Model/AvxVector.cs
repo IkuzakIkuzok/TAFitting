@@ -524,8 +524,9 @@ public sealed class AvxVector
 
             var sum = Vector256.Sum(sums);
             var offset = GetRemainingOffset(this);
-            for (var i = offset; i < this._array.Length; i++)
-                sum += this._array[i];
+            var remaining = this._array.AsSpan(offset);
+            foreach (var v in remaining)
+                sum += v;
 
             return sum;
         }
@@ -552,11 +553,9 @@ public sealed class AvxVector
 
             var sum = Vector256.Sum(sums);
             var offset = GetRemainingOffset(this);
-            for (var i = offset; i < this._array.Length; i++)
-            {
-                var v = this._array[i];
+            var remaining = this._array.AsSpan(offset);
+            foreach (var v in remaining)
                 sum += v * v;
-            }
 
             return sum;
         }
