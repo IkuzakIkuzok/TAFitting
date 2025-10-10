@@ -299,21 +299,41 @@ file static class MathUtils
         4479244665758681UL, 4482285430887897UL, 4485327225340595UL, 4488370049465210UL, 4491413903610294UL, 4494458788124517UL, 4497504703356668UL, 4500551649655653UL
     ];
 
+    #region FastExp consts
+
+    private const int TABLE_SIZE = 11;                      // 2^11 = 2048 entries in the exp_table
+    private const double EXP_MIN = -708.396418532264;       // Math.Log(Math.Pow(2, -1022)) where -1022 is the minimum exponent of a double-precision floating-point number (IEEE 754)
+    private const double EXP_MAX =  709.782712893384;       // Math.Log(double.MaxValue) = Math.Log(1.7976931348623157E+308)
+
+    private const double ALPHA = 2954.6394437406;           // 2048 / Math.Log(2)
+    private const double ALPHA_INV = 0.000338450771757786;  // Math.Log(2) / 2048
+    private const double ROUND = 6755399441055744.0;        // 3UL << 51 as double
+
+    // Optimized coefficients for the rational approximation of the exponential function
+    private const double EXP_C3 = 3.0000000027955394;
+    private const double EXP_C2 = 0.16666666685227835;
+    private const double EXP_C1 = 1.0;
+
+    private const ulong EXP_MASK11 = (1UL << TABLE_SIZE) - 1;
+    private const ulong EXP_ADJ = (1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE);
+
+    #endregion FastExp consts
+
     static MathUtils()
     {
         NaNs = Vector256.Create(double.NaN);
 
-        ExpMin = Vector256.Create(-708.396418532264);       // Math.Log(Math.Pow(2, -1022)) where -1022 is the minimum exponent of a double-precision floating-point number (IEEE 754)
-        ExpMax = Vector256.Create(709.782712893384);        // Math.Log(double.MaxValue) = Math.Log(1.7976931348623157E+308)
-        Alpha = Vector256.Create(2954.6394437406);          // 2048 / Math.Log(2)
-        AlphaInv = Vector256.Create(0.000338450771757786);  // 1 / Alpha = Math.Log(2) / 2048
-        // Optimized coefficients for the rational approximation of the exponential function
-        C3 = Vector256.Create(3.0000000027955394);
-        C2 = Vector256.Create(0.16666666685227835);
-        C1 = Vector256.Create(1.0);
-        Round = Vector256.Create(6755399441055744.0);       // 3UL << 51 as double
-        Mask11 = Vector256.Create(2047UL);
-        Adj = Vector256.Create(2095104UL);                  // (1UL << (TABLE_SIZE + 10)) - (1UL << TABLE_SIZE) where TABLE_SIZE = 11
+        ExpMin = Vector256.Create(EXP_MIN);
+        ExpMax = Vector256.Create(EXP_MAX);
+        Alpha = Vector256.Create(ALPHA);
+        AlphaInv = Vector256.Create(ALPHA_INV);
+        
+        C3 = Vector256.Create(EXP_C3);
+        C2 = Vector256.Create(EXP_C2);
+        C1 = Vector256.Create(EXP_C1);
+        Round = Vector256.Create(ROUND);
+        Mask11 = Vector256.Create(EXP_MASK11);
+        Adj = Vector256.Create(EXP_ADJ);
 
         MaskE = Vector256.Create(0x7FFUL);
         BiasE = Vector256.Create(1023UL);
@@ -376,15 +396,15 @@ file static class MathUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double FastExp(double x)
     {
-        if (x <= -708.396418532264) return 0;
-        if (x >= 709.782712893384) return double.PositiveInfinity;
+        if (x <= EXP_MIN) return 0;
+        if (x >= EXP_MAX) return double.PositiveInfinity;
 
-        var d = x * (2954.6394437406) + (6755399441055744);
+        var d = x * ALPHA + ROUND;
         var i = BitConverter.DoubleToUInt64Bits(d);
-        var iax = exp_table[i & 2047];
-        var t = (d - (6755399441055744)) * 0.000338450771757786 - x;
-        var u = ((i + 2095104) >> 11) << 52;
-        var y = (3.0000000027955394 - t) * (t * t) * 0.16666666685227835 - t + 1;
+        var iax = exp_table[i & EXP_MASK11];
+        var t = (d - ROUND) * ALPHA_INV - x;
+        var u = ((i + EXP_ADJ) >> 11) << 52;
+        var y = (EXP_C3 - t) * (t * t) * EXP_C2 - t + EXP_C1;
         i = u | iax;
         d = BitConverter.UInt64BitsToDouble(i);
 
