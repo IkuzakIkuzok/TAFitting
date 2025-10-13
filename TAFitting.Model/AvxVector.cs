@@ -1082,6 +1082,9 @@ public sealed class AvxVector
     /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
     public static double InnerProduct(AvxVector left, AvxVector right)
     {
+        // Inner product of the same vector is the square of the Euclidean norm.
+        if (left == right) return left.Norm2;
+
         ThrowHelper.ThrowIfCountMismatch(left, right);
 
         ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
