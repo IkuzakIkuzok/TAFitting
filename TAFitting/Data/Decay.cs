@@ -273,6 +273,19 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
     private const int PARSING_LENGTH = 17; // The length of the string to be parsed
 
+    /// <summary>
+    /// Parses a fixed-point number in the format of "-123.123456789012" or " 123.123456789012".
+    /// </summary>
+    /// <param name="span">The span of bytes to be parsed.</param>
+    /// <returns>The parsed value as a long integer.</returns>
+    /// <remarks>
+    /// The input string must be exactly 17 bytes long, with the format of "-123.123456789012" or " 123.123456789012".
+    /// Leading whitespace is allowed, but leading zeros are not.
+    /// Trailing whitespace is not allowed; the string must end with a digit.
+    /// The integer part must be at most 3 digits (including the sign, if negative).
+    /// Floating point sign ('.') must be at the 5th position (index 4).
+    /// Returns the value multiplied by 10^12 as a long integer.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe private static long FastParseFixedPoint(Span<byte> span)
     {
