@@ -292,7 +292,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         /*
          * 0-3: integer part (including sign, if negative)
          * 4: floating point sign ('.')
-         * 3-14: 12 digits of the fractional part
+         * 5-16: 12 digits of the fractional part
          */
 
         Debug.Assert(span.Length == PARSING_LENGTH);
@@ -306,17 +306,21 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         // Whiltespace (0x20) or negative sign (0x2D) is less than '0' (0x30).
         if (p[2] < '0')
         {
+            // 1 digit integer part
             neg = p[2] == '-';
             goto END_INTEGER_PART;
         }
 
+        // 2 or 3 digit integer part
         val += (p[2] - '0') * 10;
         if (p[1] < '0')
         {
+            // 2 digit integer part
             neg = p[1] == '-';
             goto END_INTEGER_PART;
         }
 
+        // 3 digit integer part
         val += (p[1] - '0') * 100;
         neg = p[0] == '-';
 
