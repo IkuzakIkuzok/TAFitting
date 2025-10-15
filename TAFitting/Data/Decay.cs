@@ -271,22 +271,44 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     private const int FILE_SIZE = 107_457;
     private const double SCALING_FACTOR = 0.000_000_000_001;
 
+    private const int PARSING_LENGTH = 17; // The length of the string to be parsed
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe private static long FastParseFixedPoint(Span<byte> span)
     {
-        Debug.Assert(span.Length == 15);
         /*
-         * 0: sign or whitespace
-         * 1: 1st digit of the integer part
-         * 2: floating point sign ('.')
+         * 0-3: integer part (including sign, if negative)
+         * 4: floating point sign ('.')
          * 3-14: 12 digits of the fractional part
          */
 
-        var neg = span[0] == '-';
-        var val = (span[1] - (long)'0') * 1_000_000_000_000;
-        Debug.Assert(span[2] == '.');
+        Debug.Assert(span.Length == PARSING_LENGTH);
+        Debug.Assert(span[4] == '.');
 
         var p = (byte*)Unsafe.AsPointer(ref span.GetPinnableReference());
+
+        var val = span[3] - (long)'0';
+        bool neg;
+
+        // Whiltespace (0x20) or negative sign (0x2D) is less than '0' (0x30).
+        if (p[2] < '0')
+        {
+            neg = p[2] == '-';
+            goto END_INTEGER_PART;
+        }
+
+        val += (p[2] - '0') * 10;
+        if (p[1] < '0')
+        {
+            neg = p[1] == '-';
+            goto END_INTEGER_PART;
+        }
+
+        val += (p[1] - '0') * 100;
+        neg = p[0] == '-';
+
+    END_INTEGER_PART:
+        val *= 1_000_000_000_000; // Shift the integer part to the left by 12 digits
 
         /*
          * Parse the factorial part of the floating point number by splitting the 12 digits into 8 + 4 digits.
@@ -296,7 +318,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
          */
 
         // Parse the first 8 bytes after the floating point sign
-        var f64 = *(ulong*)(p + 3);
+        var f64 = *(ulong*)(p + 5);
 
         var l64 = (f64 & 0x0f_00_0f_00_0f_00_0f_00) >> 8;
         var u64 = (f64 & 0x00_0f_00_0f_00_0f_00_0f) * 10;
@@ -312,7 +334,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         val += (long)f64 * 10_000;
 
         // Parse the next 4 bytes
-        var f32 = *(uint*)(p + 11);
+        var f32 = *(uint*)(p + 13);
 
         var l32 = (f32 & 0x0f_00_0f_00) >> 8;
         var u32 = (f32 & 0x00_0f_00_0f) * 10;
@@ -360,7 +382,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             const int LINE_LEN = FileCache.LINE_LENGTH;
             const int LINES = 3;
-            const int SIGNAL_POS = 26; // The position of the signal in a line.
+            const int SIGNAL_POS = 24; // The position of the signal in a line.
 
             var times = new double[2499];
             var signals = new double[2499];
@@ -374,15 +396,15 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
             // Read the first line outside the loop to get the time step.
             reader.Read(buffer);
-            var t = buffer.Slice(5 + LINE_LEN * 0, 15);
+            var t = buffer.Slice(3 + LINE_LEN * 0, PARSING_LENGTH);
 
             // Calculating the time by some althmetic operations is significantly faster than parsing the string.
             // Time spep is constant and is stored as long integer to keep the precision (like a fixed-point number).
             var dt = FastParseFixedPoint(t);
 
-            var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
-            var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
-            var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
+            var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, PARSING_LENGTH);
+            var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, PARSING_LENGTH);
+            var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, PARSING_LENGTH);
 
             times[0] = dt * timeScaling;
             times[1] = (dt << 1) * timeScaling;
@@ -395,9 +417,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
-                s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
-                s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
+                s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, PARSING_LENGTH);
+                s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, PARSING_LENGTH);
+                s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, PARSING_LENGTH);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
@@ -449,7 +471,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
 #if Tekave
         const int LINE_LEN = FileCache.LINE_LENGTH;
-        const int SIGNAL_POS = 26; // The position of the signal in a line.
+        const int SIGNAL_POS = 24; // The position of the signal in a line.
         var span = preLoadData.AsSpan();
         /*
          * Do NOT use `preLoadData.Length` after this line,
@@ -463,14 +485,14 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var times = new double[lines];
         var signals = new double[lines];
 
-        var t = span.Slice(5, 15);
+        var t = span.Slice(3, PARSING_LENGTH);
         var dt = FastParseFixedPoint(t);
 
         var l = Math.Min(span.Length / LINE_LEN, lines);
         var i = 0;
         for (; i < l; ++i)
         {
-            var s = span.Slice(LINE_LEN * i + SIGNAL_POS, 15);
+            var s = span.Slice(LINE_LEN * i + SIGNAL_POS, PARSING_LENGTH);
             times[i] = (dt * (i + 1)) * timeScaling;
             signals[i] = FastParseFixedPoint(s) * signalScaling;
         }
@@ -492,9 +514,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             {
                 var read = reader.Read(buffer);
 
-                var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, 15);
-                var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, 15);
-                var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, 15);
+                var s0 = buffer.Slice(LINE_LEN * 0 + SIGNAL_POS, PARSING_LENGTH);
+                var s1 = buffer.Slice(LINE_LEN * 1 + SIGNAL_POS, PARSING_LENGTH);
+                var s2 = buffer.Slice(LINE_LEN * 2 + SIGNAL_POS, PARSING_LENGTH);
 
                 times[i + 0] = (dt * (i + 1)) * timeScaling;
                 times[i + 1] = (dt * (i + 2)) * timeScaling;
