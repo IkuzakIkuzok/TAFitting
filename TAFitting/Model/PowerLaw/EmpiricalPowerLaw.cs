@@ -62,19 +62,17 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
     } // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)
 
     /// <inheritdoc/>
-    Func<AvxVector, AvxVector> IVectorizedModel.GetVectorizedFunc(IReadOnlyList<double> parameters)
-        => (x) =>
+    Action<AvxVector, AvxVector> IVectorizedModel.GetVectorizedFunc(IReadOnlyList<double> parameters)
+        => (x, res) =>
         {
             var a0 = parameters[0];
             var a = parameters[1];
             var alpha = parameters[2];
 
-            var res = new AvxVector(x.Length);
             AvxVector.Multiply(x, a, res);
             AvxVector.Add(res, 1, res);
             AvxVector.Power(res, alpha, res);
             AvxVector.Divide(a0, res, res);
-            return res;
         };
 
     /// <inheritdoc/>

@@ -141,22 +141,20 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tglobal::System.Func<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> (x) =>");
+        builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\tvar length = x.Length;");
         builder.AppendLine($"\t\t\t\tvar temp = {TVector}.Create(length);");
-        builder.AppendLine($"\t\t\t\tvar a0 = {TVector}.Create(length, parameters[0]);");
+        builder.AppendLine($"\t\t\t\tres.Load(parameters[0]);");
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine();
             builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
             builder.AppendLine($"\t\t\t\tvar t{i} = parameters[{2 * i}];");
             builder.AppendLine($"\t\t\t\t{TVector}.ExpDecay(x, a{i}, t{i}, temp);  // temp = a{i} * exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Add(a0, temp, a0);          // a0 += a{i} * exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.Add(res, temp, res);        // a0 += a{i} * exp(-x / t{i})");
         }
-        builder.AppendLine();
-        builder.AppendLine("\t\t\t\treturn a0;");
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 

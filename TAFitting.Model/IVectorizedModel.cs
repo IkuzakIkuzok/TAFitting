@@ -15,7 +15,7 @@ public interface IVectorizedModel : IFittingModel
     /// </summary>
     /// <param name="parameters">The parameters of the model.</param>
     /// <returns>A vectorized function of the model with the specified <paramref name="parameters"/>.</returns>
-    public Func<AvxVector, AvxVector> GetVectorizedFunc(IReadOnlyList<double> parameters);
+    public Action<AvxVector, AvxVector> GetVectorizedFunc(IReadOnlyList<double> parameters);
 
     /// <summary>
     /// Gets the vectorized derivatives of the model with respect to the parameters.

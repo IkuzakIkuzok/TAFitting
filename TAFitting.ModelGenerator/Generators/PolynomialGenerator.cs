@@ -148,22 +148,21 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
     {
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tglobal::System.Func<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> (x) =>");
+        builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\tvar length = x.Length;");
         if (n == 1)
         {
-            builder.AppendLine($"\t\t\t\tvar a = new {TVector}(length, parameters[1]);");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(a, x, a);");
-            builder.AppendLine($"\t\t\t\t{TVector}.Add(a, parameters[0], a);");
-            builder.AppendLine("\t\t\t\treturn a;");
+            builder.AppendLine($"\t\t\t\tres.Load(parameters[1]);");
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res, x, res);");
+            builder.AppendLine($"\t\t\t\t{TVector}.Add(res, parameters[0], res);");
         }
         else
         {
             builder.AppendLine($"\t\t\t\tvar temp = new {TVector}(length);");
             builder.AppendLine($"\t\t\t\tvar temp_x = new {TVector}(length, 1.0);");
-            builder.AppendLine($"\t\t\t\tvar a0 = new {TVector}(length, parameters[0]);");
+            builder.AppendLine($"\t\t\t\tres.Load(parameters[0]);");
             for (var i = 1; i <= n; i++)
             {
                 builder.AppendLine();
@@ -171,12 +170,8 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
                 builder.Append($"\t\t\t\t{TVector}.Multiply(x, temp_x, temp_x);  // ");
                 builder.AppendLine(i == 1 ? "x = 1.0 * x" : $"x^{i} = x^{i - 1} * x");
                 builder.AppendLine($"\t\t\t\t{TVector}.Multiply(temp_x, a{i}, temp);   // a{i} * x^{i}");
-                builder.AppendLine($"\t\t\t\t{TVector}.Add(temp, a0, a0);            // a0 += a{i} * x^{i}");
+                builder.AppendLine($"\t\t\t\t{TVector}.Add(temp, res, res);          // a0 += a{i} * x^{i}");
             }
-            builder.AppendLine();
-            builder.Append("\t\t\t\t// a0 + a1*x");
-            builder.AppendLine(string.Concat(Enumerable.Range(2, n - 1).Select(i => $" + a{i}*x^{i}")));
-            builder.AppendLine("\t\t\t\treturn a0;");
         }
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)

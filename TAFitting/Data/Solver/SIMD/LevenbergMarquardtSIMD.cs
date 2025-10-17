@@ -49,7 +49,7 @@ internal sealed class LevenbergMarquardtSIMD
     internal Numbers Parameters => this.parameters;
 
     private readonly AvxVector x, y;
-    private AvxVector est_vals;
+    private readonly AvxVector est_vals;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
@@ -60,7 +60,7 @@ internal sealed class LevenbergMarquardtSIMD
     private readonly double[] gradient;
     private readonly AvxVector temp_vector, temp_vector2;
     private readonly AvxVector[] derivatives;  // Cache for the partial derivatives
-    private Func<AvxVector, AvxVector> func = null!;
+    private Action<AvxVector, AvxVector> func = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LevenbergMarquardtSIMD{AvxVector}"/> class.
@@ -93,6 +93,7 @@ internal sealed class LevenbergMarquardtSIMD
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
 
+        this.est_vals = AvxVector.Create(this.numberOfDataPoints);
         this.temp_vector = AvxVector.Create(this.numberOfDataPoints);
         this.temp_vector2 = AvxVector.Create(this.numberOfDataPoints);
 
@@ -113,7 +114,7 @@ internal sealed class LevenbergMarquardtSIMD
         do
         {
             this.func = this.Model.GetVectorizedFunc(this.parameters);
-            this.est_vals = this.func(this.x);
+            this.func(this.x, this.est_vals);
             chi2 = CalcChi2();
 
             this.Model.GetVectorizedDerivatives(this.parameters)(this.x, this.derivatives);
@@ -146,9 +147,9 @@ internal sealed class LevenbergMarquardtSIMD
     private double CalcChi2(Numbers parameters)
     {
         var func = this.Model.GetVectorizedFunc(parameters);
-        var v_e = func(this.x);
+        func(this.x, this.temp_vector);
 
-        AvxVector.Subtract(this.y, v_e, this.temp_vector);
+        AvxVector.Subtract(this.y, this.temp_vector, this.temp_vector);
         return this.temp_vector.Norm2;
     } // private double CalcChi2 (Numbers)
 
