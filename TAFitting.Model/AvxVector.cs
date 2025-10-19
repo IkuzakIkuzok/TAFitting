@@ -730,6 +730,13 @@ public sealed class AvxVector
     public ref double GetPinnableReference() => ref this._array[0];
 
     /// <summary>
+    /// Create a span over the internal array of the vector.
+    /// </summary>
+    /// <returns>The span over the internal array of the vector.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<double> AsSpan() => this._array.AsSpan();
+
+    /// <summary>
     /// Adds the specified vectors and stores the result in the specified vector.
     /// </summary>
     /// <param name="left">The left vector.</param>
