@@ -724,6 +724,12 @@ public sealed class AvxVector
     public static AvxVector CreateReadonly(int count, double value) => new(count, value, true);
 
     /// <summary>
+    /// Returns a reference to the first element of the vector's internal array.
+    /// </summary>
+    /// <returns>A reference to the first element of the vector's internal array.</returns>
+    public ref double GetPinnableReference() => ref this._array[0];
+
+    /// <summary>
     /// Adds the specified vectors and stores the result in the specified vector.
     /// </summary>
     /// <param name="left">The left vector.</param>
