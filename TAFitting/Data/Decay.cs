@@ -635,8 +635,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// The time origin is the time at which the signal is minimum.</remarks>
     internal double FilndT0()
     {
-        var min = this.signals.AsSpan().Min();
-        var index = Array.IndexOf(this.signals, min);
+        var span = this.signals.AsSpan();
+        var min = span.Min();
+        var index = span.IndexOf(min);
         return this.times[index];
     } // internal double FilndT0 ()
 
