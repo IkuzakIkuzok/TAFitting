@@ -737,6 +737,22 @@ public sealed class AvxVector
     public Span<double> AsSpan() => this._array.AsSpan();
 
     /// <summary>
+    /// Determines whether the current vector is equal to the specified vector by comparing their elements sequentially.
+    /// </summary>
+    /// <param name="other">The other vector to compare with the current vector.</param>
+    /// <returns><see cref="true"/> if the current vector is equal to the specified vector; otherwise, <see cref="false"/>.</returns>
+    public bool SequentialEquals(AvxVector? other)
+    {
+        if (other is null) return false;
+        if (this._array.Length != other._array.Length) return false;
+
+        var span1 = this._array.AsSpan();
+        var span2 = other._array.AsSpan();
+
+        return span1.SequenceEqual(span2);
+    } // public bool SequentialEquals (AvxVector?)
+
+    /// <summary>
     /// Adds the specified vectors and stores the result in the specified vector.
     /// </summary>
     /// <param name="left">The left vector.</param>
