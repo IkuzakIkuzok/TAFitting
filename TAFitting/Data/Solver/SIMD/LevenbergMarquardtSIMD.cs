@@ -77,8 +77,8 @@ internal sealed class LevenbergMarquardtSIMD
             throw new ArgumentException("The number of x and y values must be the same.");
 
         this.Model = model;
-        this.x = AvxVector.CreateReadonly([.. x]);
-        this.y = AvxVector.CreateReadonly([.. y]);
+        this.x = CreateReadonlyVector(x);
+        this.y = CreateReadonlyVector(y);
 
         this.numberOfParameters = parameters.Count;
         this.numberOfDataPoints = x.Count;
@@ -102,6 +102,16 @@ internal sealed class LevenbergMarquardtSIMD
             this.derivatives[i] = AvxVector.Create(this.numberOfDataPoints);
         this.fixedParameters = fixedParameters;
     } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static AvxVector CreateReadonlyVector(Numbers source)
+    {
+        // Optimize for array input by avoiding extra allocation and copy
+        if (source is double[] array)
+            return AvxVector.CreateReadonly(array);
+
+        return AvxVector.CreateReadonly([.. source]);
+    } // private static AvxVector CreateReadonlyVector (Numbers)
 
     /// <summary>
     /// Fits the model to the data.
@@ -274,4 +284,4 @@ internal sealed class LevenbergMarquardtSIMD
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
-} // internal sealed class LevenbergMarquardtSIMD<AvxVector> where AvxVector : IIntrinsicVector<AvxVector>
+} // internal sealed class LevenbergMarquardtSIMD
