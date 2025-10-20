@@ -83,7 +83,8 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// </summary>
     internal double DerivativeThreshold { get; init; } = 1e-4;
 
-    private Numbers x, y;
+    private readonly Numbers x;
+    private Numbers y;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
