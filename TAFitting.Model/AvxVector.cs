@@ -384,7 +384,7 @@ file static class MathUtils
             arr[1] = FastExp(v.GetElement(1));
             arr[2] = FastExp(v.GetElement(2));
             arr[3] = FastExp(v.GetElement(3));
-            return Avx.LoadVector256(arr);
+            return Vector256.Load(arr);
         }
     } // unsafe public static Vector256<double> Exp (Vector256<double>)
 
@@ -446,7 +446,7 @@ file static class MathUtils
             arr[1] = FastLog2(v.GetElement(1));
             arr[2] = FastLog2(v.GetElement(2));
             arr[3] = FastLog2(v.GetElement(3));
-            return Avx.LoadVector256(arr);
+            return Vector256.Load(arr);
         }
     } // unsafe public static Vector256<double> Log2 (Vector256<double>)
 
