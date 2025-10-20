@@ -5,6 +5,9 @@ using Numbers = System.Collections.Generic.IReadOnlyList<double>;
 
 namespace TAFitting.Data.Solver;
 
+/// <summary>
+/// Represents a Levenberg-Marquardt solver.
+/// </summary>
 internal interface ILevenbergMarquardtSolver
 {
     /// <summary>
@@ -30,7 +33,6 @@ internal interface ILevenbergMarquardtSolver
     /// <summary>
     /// Initializes the solver with the specified data.
     /// </summary>
-    /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
     /// <param name="parameters">The initial parameters.</param>
     void Initialize(Numbers y, Numbers parameters);
