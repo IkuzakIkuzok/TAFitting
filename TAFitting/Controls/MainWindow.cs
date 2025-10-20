@@ -1639,18 +1639,20 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        Func<ParametersTableRow, IFittingModel, IReadOnlyList<int>, IReadOnlyList<double>> estimation
-            = Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel
-            ? LevenbergMarquardtEstimationSIMD
-            : LevenbergMarquardtEstimation;
-
-        var start = Stopwatch.GetTimestamp();
+        var times = source.First().Decay.OnlyAfterT0.Times;
 
         var fixedCols =
             cols.Select((c, i) => (c.Fixed, Index: i))
                 .Where(c => c.Fixed)
                 .Select(c => c.Index)
                 .ToArray();
+
+        Func<ILevenbergMarquardtSolver> initSolver =
+            Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel vectorized
+            ? () => new LevenbergMarquardtSIMD(vectorized, times, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, }
+            : () => new LevenbergMarquardt(model, times, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, };
+
+        var start = Stopwatch.GetTimestamp();
 
         var stopRSquared = this.parametersTable.StopUpdateRSquared;
         try
@@ -1660,11 +1662,12 @@ internal sealed partial class MainWindow : Form
             if (source.Length >= Program.ParallelThreshold && Program.ParallelThreshold >= 0)
             {
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
-                await Task.Run(() => Parallel.ForEach(source, (row) =>
+                await Task.Run(() => Parallel.ForEach(source, initSolver, (row, _, solver) =>
                 {
-                    var parameters = estimation(row, model, fixedCols);
-                    results.TryAdd(row, parameters);
-                }));
+                    var parameters = LevenbergMarquardtEstimation(solver, row);
+                    results.TryAdd(row, [.. parameters]);  // Allocating a new array is necessary because the parameters array is reused.
+                    return solver;
+                }, (_) => { }));
 
                 // updating parameters on the UI thread
                 // Invoke() in each iteration is too slow
@@ -1676,8 +1679,9 @@ internal sealed partial class MainWindow : Form
             }
             else
             {
+                var solver = initSolver();
                 foreach (var row in rows)
-                    row.Parameters = estimation(row, model, fixedCols);
+                    row.Parameters = LevenbergMarquardtEstimation(solver, row);
             }
         }
         finally
@@ -1704,38 +1708,16 @@ internal sealed partial class MainWindow : Form
     /// <summary>
     /// Fits the specified row using the Levenberg-Marquardt algorithm.
     /// </summary>
+    /// <param name="solver">The solver to use.</param>
     /// <param name="row">The row to fit.</param>
-    /// <param name="model">The model to fit.</param>
-    /// <param name="fixedColumns">The indices of the fixed columns.</param>
     /// <returns>The estimated parameters.</returns>
-    private static IReadOnlyList<double> LevenbergMarquardtEstimation(ParametersTableRow row, IFittingModel model, IReadOnlyList<int> fixedColumns)
+    private static IReadOnlyList<double> LevenbergMarquardtEstimation(ILevenbergMarquardtSolver solver, ParametersTableRow row)
     {
         var decay = row.Decay.OnlyAfterT0;
-        var lma = new LevenbergMarquardt(model, decay.Times, decay.Filtered.Signals, row.Parameters, fixedColumns)
-        {
-            MaxIteration = Program.MaxIterations,
-        };
-        lma.Fit();
-        return lma.Parameters;
-    } // private static void LevenbergMarquardtEstimation (ParametersTableRow, IFittingModel, IReadOnlyList<int>)
-
-    /// <summary>
-    /// Fits the specified row using the SIMD-accelerated Levenberg-Marquardt algorithm.
-    /// </summary>
-    /// <param name="row">The row to fit.</param>
-    /// <param name="model">The model to fit.</param>
-    /// <param name="fixedColumns">The indices of the fixed columns.</param>
-    /// <returns>The estimated parameters.</returns>
-    private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD(ParametersTableRow row, IFittingModel model, IReadOnlyList<int> fixedColumns)
-    {
-        var decay = row.Decay.OnlyAfterT0;
-        var lma = new LevenbergMarquardtSIMD((IVectorizedModel)model, decay.Times, decay.Signals, row.Parameters, fixedColumns)
-        {
-            MaxIteration = Program.MaxIterations,
-        };
-        lma.Fit();
-        return lma.Parameters;
-    } // private static IReadOnlyList<double> LevenbergMarquardtEstimationSIMD (ParametersTableRow, IAnalyticallyDifferentiable, IReadOnlyList<int>)
+        solver.Initialize(decay.Signals, row.Parameters);
+        solver.Fit();
+        return solver.Parameters;
+    } // private static void LevenbergMarquardtEstimation (ILevenbergMarquardtSolver, ParametersTableRow)
 
     private void ToggleAutoFit(object? sender, EventArgs e)
     {

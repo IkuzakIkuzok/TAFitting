@@ -47,32 +47,26 @@ namespace TAFitting.Data.Solver;
 /// <summary>
 /// Represents the Levenberg-Marquardt solver.
 /// </summary>
-internal sealed class LevenbergMarquardt
+internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
 {
+    private const double LAMBDA = 0.001;
+
     /// <summary>
     /// Gets the fitting model.
     /// </summary>
     internal IFittingModel Model { get; }
 
-    /// <summary>
-    /// Gets the x values.
-    /// </summary>
-    internal Numbers X => this.x;
+    /// <inheritdoc/>
+    public Numbers X => this.x;
 
-    /// <summary>
-    /// Gets the y values.
-    /// </summary>
-    internal Numbers Y => this.y;
+    /// <inheritdoc/>
+    public Numbers Y => this.y;
 
-    /// <summary>
-    /// Gets the parameters.
-    /// </summary>
-    internal Numbers Parameters => this.parameters;
+    /// <inheritdoc/>
+    public Numbers Parameters => this.parameters;
 
-    /// <summary>
-    /// Gets the lambda (damping parameter).
-    /// </summary>
-    internal double Lambda { get; private set; } = 0.001;
+    /// <inheritdoc/>
+    public double Lambda { get; private set; } = LAMBDA;
 
     /// <summary>
     /// Gets the maximum iteration count.
@@ -89,7 +83,7 @@ internal sealed class LevenbergMarquardt
     /// </summary>
     internal double DerivativeThreshold { get; init; } = 1e-4;
 
-    private readonly Numbers x, y;
+    private Numbers x, y;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
@@ -125,13 +119,28 @@ internal sealed class LevenbergMarquardt
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
     internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y, Numbers parameters, IReadOnlyList<int> fixedParameters)
+        : this(model, x, parameters.Count, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
+        
+        Initialize(y, parameters);
+    } // ctor (IFittingModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LevenbergMarquardt"/> class.
+    /// </summary>
+    /// <param name="model">The fitting model.</param>
+    /// <param name="numberOfDataPoints">The number of data points.</param>
+    /// <param name="numberOfParameters">The number of parameters.</param>
+    /// <param name="fixedParameters">The indices of the fixed parameters.</param>
+    internal LevenbergMarquardt(IFittingModel model, Numbers x, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    {
         this.Model = model;
+        this.numberOfDataPoints = x.Count;
+        this.numberOfParameters = numberOfParameters;
         this.x = x;
-        this.y = y;
+        this.y = null!;
 
         if (this.Model is IAnalyticallyDifferentiable diff)
         {
@@ -143,14 +152,10 @@ internal sealed class LevenbergMarquardt
             this.ComputeDerivativesCache = ComputeDerivativesCacheNumerically;
         }
 
-        this.numberOfParameters = parameters.Count;
-        this.numberOfDataPoints = x.Count;
+        this.parameters = new double[this.numberOfParameters];
+        this.constraints = [.. model.Parameters.Select(p => p.Constraints)];
         this.fixedParameters = fixedParameters;
 
-        this.parameters = new double[this.numberOfParameters];
-        Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
-        this.constraints = [.. model.Parameters.Select(p => p.Constraints)];
-        
         this.incrementedParameters = new double[this.numberOfParameters];
         this.est_vals = new double[this.numberOfDataPoints];
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
@@ -159,12 +164,18 @@ internal sealed class LevenbergMarquardt
         this.derivatives = new double[this.numberOfDataPoints][];
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             this.derivatives[i] = new double[this.numberOfParameters];
-    } // ctor (IFittingModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
+    } // ctor (IFittingModel, Numbers, int, IReadOnlyList<int>)
 
-    /// <summary>
-    /// Fits the model to the data.
-    /// </summary>
-    internal void Fit()
+    /// <inheritdoc/>
+    public void Initialize(Numbers y, Numbers parameters)
+    {
+        this.y = y;
+        this.Lambda = LAMBDA;
+        Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
+    } // public void Initialize (Numbers, Numbers)
+
+    /// <inheritdoc/>
+    public void Fit()
     {
         var iterCount = 0;
 
@@ -202,7 +213,7 @@ internal sealed class LevenbergMarquardt
 
             ++iterCount;
         } while (!CheckStop(iterCount, chi2, incrementedChi2));
-    } // internal void Fit ()
+    } // public void Fit ()
 
     private double CalcChi2(Numbers parameters)
     {
@@ -380,4 +391,4 @@ internal sealed class LevenbergMarquardt
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
-} // internal sealed class LevenbergMarquardt
+} // internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver

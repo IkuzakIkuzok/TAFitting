@@ -10,8 +10,10 @@ namespace TAFitting.Data.Solver.SIMD;
 /// <summary>
 /// Represents the Levenberg-Marquardt algorithm with SIMD.
 /// </summary>
-internal sealed class LevenbergMarquardtSIMD
+internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
 {
+    private const double LAMBDA = 0.001;
+
     /// <summary>
     /// Gets a value indicating whether LMA with SIMD is supported.
     /// </summary>
@@ -23,10 +25,14 @@ internal sealed class LevenbergMarquardtSIMD
     /// </summary>
     internal IVectorizedModel Model { get; }
 
-    /// <summary>
-    /// Gets the lambda (damping parameter).
-    /// </summary>
-    internal double Lambda { get; private set; } = 0.001;
+    /// <inheritdoc/>
+    public Numbers X => this.x.ToReadOnlyList();
+
+    /// <inheritdoc/>
+    public Numbers Y => this.y.ToReadOnlyList();
+
+    /// <inheritdoc/>
+    public double Lambda { get; private set; } = LAMBDA;
 
     /// <summary>
     /// Gets the maximum iteration count.
@@ -43,12 +49,11 @@ internal sealed class LevenbergMarquardtSIMD
     /// </summary>
     internal double DerivativeThreshold { get; init; } = 1e-4;
 
-    /// <summary>
-    /// Gets the parameters.
-    /// </summary>
-    internal Numbers Parameters => this.parameters;
+    /// <inheritdoc/>
+    public Numbers Parameters => this.parameters;
 
-    private readonly AvxVector x, y;
+    private readonly AvxVector x;
+    private AvxVector y;
     private readonly AvxVector est_vals;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
@@ -72,36 +77,48 @@ internal sealed class LevenbergMarquardtSIMD
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
     internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Numbers parameters, IReadOnlyList<int> fixedParameters)
+        : this(model, x, parameters.Count, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
 
         this.Model = model;
-        this.x = CreateReadonlyVector(x);
-        this.y = CreateReadonlyVector(y);
 
-        this.numberOfParameters = parameters.Count;
+        Initialize(y, parameters);
+    } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
+
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    {
+        this.Model = model;
         this.numberOfDataPoints = x.Count;
-        this.fixedParameters = fixedParameters;
+        this.numberOfParameters = numberOfParameters;
+        this.x = CreateReadonlyVector(x);
+        this.y = null!;
 
         this.parameters = new double[this.numberOfParameters];
-        Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
         this.constraints = [.. model.Parameters.Select(p => p.Constraints)];
+        this.fixedParameters = fixedParameters;
 
         this.incrementedParameters = new double[this.numberOfParameters];
         this.est_vals = AvxVector.Create(this.numberOfDataPoints);
         this.hessian = new double[this.numberOfParameters, this.numberOfParameters];
         this.gradient = new double[this.numberOfParameters];
 
-        this.est_vals = AvxVector.Create(this.numberOfDataPoints);
         this.temp_vector = AvxVector.Create(this.numberOfDataPoints);
         this.temp_vector2 = AvxVector.Create(this.numberOfDataPoints);
 
         this.derivatives = new AvxVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
             this.derivatives[i] = AvxVector.Create(this.numberOfDataPoints);
-        this.fixedParameters = fixedParameters;
-    } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
+    } // ctor (IVectorizedModel, Numbers, int, IReadOnlyList<int>)
+
+    /// <inheritdoc/>
+    public void Initialize(Numbers y, Numbers parameters)
+    {
+        this.y = CreateReadonlyVector(y);
+        this.Lambda = LAMBDA;
+        Array.Copy(parameters.ToArray(), this.parameters, this.numberOfParameters);
+    } // public void Initialize (Numbers, Numbers)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static AvxVector CreateReadonlyVector(Numbers source)
@@ -113,10 +130,8 @@ internal sealed class LevenbergMarquardtSIMD
         return AvxVector.CreateReadonly([.. source]);
     } // private static AvxVector CreateReadonlyVector (Numbers)
 
-    /// <summary>
-    /// Fits the model to the data.
-    /// </summary>
-    internal void Fit()
+    /// <inheritdoc/>
+    public void Fit()
     {
         var iterCount = 0;
 
@@ -152,7 +167,7 @@ internal sealed class LevenbergMarquardtSIMD
 
             ++iterCount;
         } while (!CheckStop(iterCount, chi2, incrementedChi2));
-    } // internal void Fit ()
+    } // public void Fit ()
 
     private double CalcChi2(Numbers parameters)
     {
@@ -284,4 +299,4 @@ internal sealed class LevenbergMarquardtSIMD
         if (iterCount > this.MaxIteration) return true;
         return Math.Abs(chi2 - incrementedChi2) < this.MinimumDeltaChi2;
     } // private bool CheckStop (int, double, double)
-} // internal sealed class LevenbergMarquardtSIMD
+} // internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver

@@ -737,6 +737,12 @@ public sealed class AvxVector
     public Span<double> AsSpan() => this._array.AsSpan();
 
     /// <summary>
+    /// Converts the vector to a read-only list.
+    /// </summary>
+    /// <returns>The read-only list that contains the elements of the vector.</returns>
+    public IReadOnlyList<double> ToReadOnlyList() => Array.AsReadOnly(this._array);
+
+    /// <summary>
     /// Determines whether the current vector is equal to the specified vector by comparing their elements sequentially.
     /// </summary>
     /// <param name="other">The other vector to compare with the current vector.</param>
