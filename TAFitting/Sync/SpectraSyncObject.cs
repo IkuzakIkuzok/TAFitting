@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using System.Text;
+using TAFitting.Controls;
 
 namespace TAFitting.Sync;
 
@@ -100,7 +101,11 @@ internal sealed class SpectraSyncObject
             var kvp = part.Split('=');
             if (kvp.Length != 2) continue; // Invalid format
             var wavelength = kvp[0].ParseDoubleInvariant();
-            var values = kvp[1].Split(',').Select(double.Parse).ToList();
+            var values =
+                kvp[1]
+                .Split(',')
+                .Select(NegativeSignHandler.ToMinusSign)
+                .Select(double.Parse).ToList();
             spectra[wavelength] = values;
         } // foreach (var part in spectraParts)
         return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
