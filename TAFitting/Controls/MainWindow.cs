@@ -851,7 +851,8 @@ internal sealed partial class MainWindow : Form
 
                     await MakeTable();
                     this.parametersTable.ClearUndoBuffer();
-                    UpdatePreviewsUnits();
+                    UpdatePreviewsTimeUnit();
+                    UpdatePreviewsSignalUnits();
                 });
             }
             catch (Exception e)
@@ -1825,7 +1826,10 @@ internal sealed partial class MainWindow : Form
             SelectedWavelength = this.SelectedWavelength,
         };
         if (this.decays is not null)
+        {
+            preview.TimeUnit = this.decays.TimeUnit;
             preview.SignalUnit = this.decays.SignalUnit;
+        }
         SetTimeTable(preview);
         this.previewWindows.Add(preview);
         preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
@@ -1860,16 +1864,24 @@ internal sealed partial class MainWindow : Form
             preview.SelectedWavelength = wavelength;
     } // private void UpdatePreviewsSelectedWavelength ()
 
+    private void UpdatePreviewsTimeUnit()
+    {
+        if (this.decays is null) return;
+        var unit = this.decays.TimeUnit;
+        foreach (var preview in this.previewWindows)
+            preview.TimeUnit = unit;
+    } // private void UpdatePreviewsTimeUnit ()
+
     /// <summary>
     /// Updates the signal unit in the spectra preview windows.
     /// </summary>
-    private void UpdatePreviewsUnits()
+    private void UpdatePreviewsSignalUnits()
     {
         if (this.decays is null) return;
         var unit = this.decays.SignalUnit;
         foreach (var preview in this.previewWindows)
             preview.SignalUnit = unit;
-    } // private void UpdatePreviewsUnits ()
+    } // private void UpdatePreviewsSignalUnits ()
 
     internal SpectraSyncObject? GetSyncSpectra(int spectraId)
     {
