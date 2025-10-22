@@ -946,19 +946,30 @@ internal sealed partial class MainWindow : Form
         };
         this.menu_filter.DropDownItems.Add(menu_interpolate);
 
-        var menu_interpolateSelectedRow = new ToolStripMenuItem("&Selected row")
+        foreach (var mode in Enum.GetValues<InterpolationMode>())
         {
-            ToolTipText = "Interpolate the selected row",
-        };
-        menu_interpolateSelectedRow.Click += InterpolateSelectedRow;
-        menu_interpolate.DropDownItems.Add(menu_interpolateSelectedRow);
+            var menu_interpolateMode = new ToolStripMenuItem(mode.ToString())
+            {
+                ToolTipText = $"Interpolate using {mode} mode",
+            };
+            menu_interpolate.DropDownItems.Add(menu_interpolateMode);
 
-        var menu_interpolateAll = new ToolStripMenuItem("&All rows")
-        {
-            ToolTipText = "Interpolate all rows",
-        };
-        menu_interpolateAll.Click += InterpolateAll;
-        menu_interpolate.DropDownItems.Add(menu_interpolateAll);
+            var menu_interpolateSelectedRow = new ToolStripMenuItem("&Selected row")
+            {
+                ToolTipText = "Interpolate the selected row",
+                Tag = mode,
+            };
+            menu_interpolateSelectedRow.Click += InterpolateSelectedRow;
+            menu_interpolateMode.DropDownItems.Add(menu_interpolateSelectedRow);
+
+            var menu_interpolateAll = new ToolStripMenuItem("&All rows")
+            {
+                ToolTipText = "Interpolate all rows",
+                Tag = mode,
+            };
+            menu_interpolateAll.Click += InterpolateAll;
+            menu_interpolateMode.DropDownItems.Add(menu_interpolateAll);
+        }
 
         this.menu_filter.DropDownItems.Add(new ToolStripSeparator());
 
@@ -1063,13 +1074,19 @@ internal sealed partial class MainWindow : Form
     private void InterpolateSelectedRow(object? sender, EventArgs e)
     {
         if (this.row is null) return;
-        Interpolate([this.row]);
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not InterpolationMode mode) return;
+        Interpolate([this.row], mode);
     } // private void InterpolateSelectedRow (object?, EventArgs)
 
     private void InterpolateAll(object? sender, EventArgs e)
-        => Interpolate(this.parametersTable.ParameterRows);
+    {
+        if (sender is not ToolStripMenuItem item) return;
+        if (item.Tag is not InterpolationMode mode) return;
+        Interpolate(this.parametersTable.ParameterRows, mode);
+    } // private void InterpolateAll (object?, EventArgs)
 
-    private void Interpolate(IEnumerable<ParametersTableRow> rows)
+    private void Interpolate(IEnumerable<ParametersTableRow> rows, InterpolationMode mode)
     {
         var filter = Program.AutoApplyFilter ? FilterManager.DefaultFilter : null;
 
@@ -1077,13 +1094,13 @@ internal sealed partial class MainWindow : Form
         {
             var decay = row.Decay;
             if (decay is null) continue;
-            decay.Interpolate();
+            decay.Interpolate(mode);
             if (filter is not null)
                 decay.Filter(filter);
         }
         ShowObserved();
         UpdateAnalyzers();
-    } // private void Interpolate (IEnumerable<ParametersTableRow>)
+    } // private void Interpolate (IEnumerable<ParametersTableRow>, InterpolationMode)
 
     #endregion filters
 
