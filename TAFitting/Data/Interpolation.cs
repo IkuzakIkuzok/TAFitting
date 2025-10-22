@@ -28,7 +28,7 @@ internal static class Interpolation
     /// - or -
     /// The length of <paramref name="resampled_x"/> and <paramref name="resampled_y"/> must be greater than 1.
     /// </exception>
-    internal static void Interpolate(InterpolationMode mode, double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
+    internal static void Interpolate(InterpolationMode mode, ReadOnlySpan<double> sample_x, ReadOnlySpan<double> sample_y, Span<double> resampled_x, Span<double> resampled_y)
     {
         if (sample_x.Length != sample_y.Length)
             throw new ArgumentException("The lengths of sample_x and sample_y must be the same.");
@@ -53,7 +53,7 @@ internal static class Interpolation
             default:
                 throw new NotSupportedException($"The interpolation mode '{mode}' is not supported.");
         }
-    } // internal static void Interpolate (InterpolationMode, double[], double[], double[], double[])
+    } // internal static void Interpolate (InterpolationMode, ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>, Span<double>)
 
     /// <summary>
     /// Performs linear interpolation from the sampled data to the resampled data.
@@ -62,7 +62,7 @@ internal static class Interpolation
     /// <param name="sample_y">The y values of the sampled data.</param>
     /// <param name="resampled_x">The x values of the resampled data.</param>
     /// <param name="resampled_y">The y values of the resampled data.</param>
-    private static void LinearInterpolate(double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
+    private static void LinearInterpolate(ReadOnlySpan<double> sample_x, ReadOnlySpan<double> sample_y, Span<double> resampled_x, Span<double> resampled_y)
     {
         var sample_n = sample_x.Length;
         var resampled_n = resampled_x.Length;
@@ -80,7 +80,7 @@ internal static class Interpolation
             var x = sample_x[0] + i * dx;
             resampled_x[i] = x;
 
-            var index = Array.BinarySearch(sample_x, x);
+            var index = sample_x.BinarySearch(x);
             if (index < 0) index = ~index;
 
             if (index == 0)
@@ -100,7 +100,7 @@ internal static class Interpolation
             var s2 = sample_y[index];
             resampled_y[i] = s1 + (s2 - s1) * (x - t1) / (t2 - t1);
         }
-    } // private static void LinearInterpolate (double[], double[], double[], double[])
+    } // private static void LinearInterpolate (ReadOnlySpan<double>, ReadOnlySpan<double>, double[], double[])
 
     /// <summary>
     /// Performs spline interpolation from the sampled data to the resampled data.
@@ -109,7 +109,7 @@ internal static class Interpolation
     /// <param name="sample_y">The y values of the sampled data.</param>
     /// <param name="resampled_x">The x values of the resampled data.</param>
     /// <param name="resampled_y">The y values of the resampled data.</param>
-    private static void SplineInterpolate(double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
+    private static void SplineInterpolate(ReadOnlySpan<double> sample_x, ReadOnlySpan<double> sample_y, Span<double> resampled_x, Span<double> resampled_y)
     {
         // 0x1000 for 288 KiB stack allocation at maximum (9 double arrays of size 0x1000)
         // The stack size is 1 MiB by default in .NET applications.
@@ -180,7 +180,7 @@ internal static class Interpolation
             var x = sample_x[0] + i * dx;
             resampled_x[i] = x;
 
-            var index = Array.BinarySearch(sample_x, x);
+            var index = sample_x.BinarySearch(x);
             if (index < 0) index = ~index;
             if (index == 0)
             {
@@ -195,14 +195,14 @@ internal static class Interpolation
             var t = x - sample_x[index - 1];
             resampled_y[i] = a[index] * t * t * t + b[index] * t * t + c[index] * t + d[index];
         }
-    } // private static void SplineInterpolate (double[], double[], double[], double[])
+    } // private static void SplineInterpolate (ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>, Span<double>)
 
     /// <summary>
     /// Verifies that the given array is monotonically increasing.
     /// </summary>
     /// <param name="array">The array to verify.</param>
     /// <returns><see langword="true"/> if the array is monotonically increasing; otherwise, <see langword="false"/>.</returns>
-    private static bool VerifyMonotonicIncreasing(double[] array)
+    private static bool VerifyMonotonicIncreasing(ReadOnlySpan<double> array)
     {
         for (var i = 1; i < array.Length; i++)
         {
@@ -210,5 +210,5 @@ internal static class Interpolation
                 return false;
         }
         return true;
-    } // private static bool VerifyMonotonicIncreasing (double[])
+    } // private static bool VerifyMonotonicIncreasing (ReadOnlySpan<double>)
 } // internal static class Interpolation
