@@ -64,7 +64,7 @@ internal static class Interpolation
         if (resampled_n <= 1)
             throw new ArgumentException("The length of resampled_x and resampled_y must be greater than 1.");
 
-        var dt = (sample_x[^1] - sample_x[0]) / (resampled_n - 1);
+        var dx = (sample_x[^1] - sample_x[0]) / (resampled_n - 1);
 
         resampled_x[0] = sample_x[0];
         resampled_x[^1] = sample_x[^1];
@@ -74,11 +74,10 @@ internal static class Interpolation
 
         for (var i = 1; i < resampled_n - 1; ++i)
         {
-            var t = sample_x[0] + i * dt;
-            resampled_x[i] = t;
+            var x = sample_x[0] + i * dx;
+            resampled_x[i] = x;
 
-            // linear interpolation
-            var index = Array.BinarySearch(sample_x, t);
+            var index = Array.BinarySearch(sample_x, x);
             if (index < 0) index = ~index;
 
             if (index == 0)
@@ -96,7 +95,7 @@ internal static class Interpolation
             var t2 = sample_x[index];
             var s1 = sample_y[index - 1];
             var s2 = sample_y[index];
-            resampled_y[i] = s1 + (s2 - s1) * (t - t1) / (t2 - t1);
+            resampled_y[i] = s1 + (s2 - s1) * (x - t1) / (t2 - t1);
         }
     } // internal static void LinearInterpolate (double[], double[], double[], double[])
 
