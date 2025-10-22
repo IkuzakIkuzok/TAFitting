@@ -170,8 +170,9 @@ internal static class Interpolation
             c[i] = (delta[i] - beta[i] * c[i + 1]) / alpha[i];
         for (var i = 1; i < sample_n; ++i)
         {
-            a[i] = (1 / (h[i] * h[i])) * (c[i] + c[i + 1] - 2 * (sample_y[i] - sample_y[i - 1]) / h[i]);
-            b[i] = (1 / h[i]) * (-2 * c[i] - c[i + 1] + 3 * (sample_y[i] - sample_y[i - 1]) / h[i]);
+            var dy_h = (sample_y[i] - sample_y[i - 1]) / h[i];
+            a[i] = (1 / (h[i] * h[i])) * (c[i] + c[i + 1] - 2 * dy_h);
+            b[i] = (1 / h[i]) * (-2 * c[i] - c[i + 1] + 3 * dy_h);
             d[i] = sample_y[i - 1];
         }
 
