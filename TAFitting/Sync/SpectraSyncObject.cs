@@ -88,26 +88,33 @@ internal sealed class SpectraSyncObject
     {
         if (string.IsNullOrEmpty(data)) return null!;
 
-        var parts = data.Split('|');
-        if (parts.Length < 4) return null; // Invalid format
-        var spectraId = parts[0].ParseIntInvariant();
-        var hostName = parts[1];
-        var wavelengths = parts[2].Split(',').Select(double.Parse).ToList();
-        var maskingRanges = parts[3]; // Assuming this is a string representation of masking ranges
-        var spectra = new Dictionary<double, IList<double>>();
-        var spectraParts = parts[4].Split(';', StringSplitOptions.RemoveEmptyEntries);
-        foreach (var part in spectraParts)
+        try
         {
-            var kvp = part.Split('=');
-            if (kvp.Length != 2) continue; // Invalid format
-            var wavelength = kvp[0].ParseDoubleInvariant();
-            var values =
-                kvp[1]
-                .Split(',')
-                .Select(NegativeSignHandler.ToMinusSign)
-                .Select(double.Parse).ToList();
-            spectra[wavelength] = values;
-        } // foreach (var part in spectraParts)
-        return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
+            var parts = data.Split('|');
+            if (parts.Length < 4) return null; // Invalid format
+            var spectraId = parts[0].ParseIntInvariant();
+            var hostName = parts[1];
+            var wavelengths = parts[2].Split(',').Select(double.Parse).ToList();
+            var maskingRanges = parts[3]; // Assuming this is a string representation of masking ranges
+            var spectra = new Dictionary<double, IList<double>>();
+            var spectraParts = parts[4].Split(';', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var part in spectraParts)
+            {
+                var kvp = part.Split('=');
+                if (kvp.Length != 2) continue; // Invalid format
+                var wavelength = kvp[0].ParseDoubleInvariant();
+                var values =
+                    kvp[1]
+                    .Split(',')
+                    .Select(NegativeSignHandler.ToMinusSign)
+                    .Select(double.Parse).ToList();
+                spectra[wavelength] = values;
+            } // foreach (var part in spectraParts)
+            return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
+        }
+        catch
+        {
+            return null;
+        }
     } // internal static SpectraSyncObject? Parse (string? data)
 } // internal sealed class SpectraSyncObject
