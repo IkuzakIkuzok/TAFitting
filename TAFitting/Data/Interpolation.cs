@@ -17,8 +17,31 @@ internal static class Interpolation
     /// <param name="resampled_x">The x values of the resampled data.</param>
     /// <param name="resampled_y">The y values of the resampled data.</param>
     /// <exception cref="NotSupportedException">The specified interpolation mode is not supported.</exception>
+    /// <exception cref="ArgumentException">
+    /// The lengths of <paramref name="sample_x"/> and <paramref name="sample_y"/> must be the same.
+    /// - or -
+    /// The lengths of <paramref name="resampled_x"/> and <paramref name="resampled_y"/> must be the same.
+    /// - or -
+    /// <paramref name="sample_x"/> must be monotonically increasing.
+    /// - or -
+    /// The length of <paramref name="sample_x"/> and <paramref name="sample_y"/> must be greater than 2.
+    /// - or -
+    /// The length of <paramref name="resampled_x"/> and <paramref name="resampled_y"/> must be greater than 1.
+    /// </exception>
     internal static void Interpolate(InterpolationMode mode, double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
     {
+        if (sample_x.Length != sample_y.Length)
+            throw new ArgumentException("The lengths of sample_x and sample_y must be the same.");
+        if (resampled_x.Length != resampled_y.Length)
+            throw new ArgumentException("The lengths of resampled_x and resampled_y must be the same.");
+        if (!VerifyMonotonicIncreasing(sample_x))
+            throw new ArgumentException("sample_x must be monotonically increasing.");
+
+        if (sample_x.Length <= 2)
+            throw new ArgumentException("The length of sample_x and sample_y must be greater than 2.");
+        if (resampled_x.Length <= 1)
+            throw new ArgumentException("The length of resampled_x and resampled_y must be greater than 1.");
+
         switch (mode)
         {
             case InterpolationMode.Linear:
@@ -36,33 +59,10 @@ internal static class Interpolation
     /// <param name="sample_y">The y values of the sampled data.</param>
     /// <param name="resampled_x">The x values of the resampled data.</param>
     /// <param name="resampled_y">The y values of the resampled data.</param>
-    /// <exception cref="ArgumentException">
-    /// The lengths of <paramref name="sample_x"/> and <paramref name="sample_y"/> must be the same.
-    /// - or -
-    /// The lengths of <paramref name="resampled_x"/> and <paramref name="resampled_y"/> must be the same.
-    /// - or -
-    /// <paramref name="sample_x"/> must be monotonically increasing.
-    /// - or -
-    /// The length of <paramref name="sample_x"/> and <paramref name="sample_y"/> must be greater than 2.
-    /// - or -
-    /// The length of <paramref name="resampled_x"/> and <paramref name="resampled_y"/> must be greater than 1.
-    /// </exception>
-    internal static void LinearInterpolate(double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
+    private static void LinearInterpolate(double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
     {
-        if (sample_x.Length != sample_y.Length)
-            throw new ArgumentException("The lengths of sample_x and sample_y must be the same.");
-        if (resampled_x.Length != resampled_y.Length)
-            throw new ArgumentException("The lengths of resampled_x and resampled_y must be the same.");
-        if (!VerifyMonotonicIncreasing(sample_x))
-            throw new ArgumentException("sample_x must be monotonically increasing.");
-
         var sample_n = sample_x.Length;
         var resampled_n = resampled_x.Length;
-
-        if (sample_n <= 2)
-            throw new ArgumentException("The length of sample_x and sample_y must be greater than 2.");
-        if (resampled_n <= 1)
-            throw new ArgumentException("The length of resampled_x and resampled_y must be greater than 1.");
 
         var dx = (sample_x[^1] - sample_x[0]) / (resampled_n - 1);
 
@@ -97,7 +97,7 @@ internal static class Interpolation
             var s2 = sample_y[index];
             resampled_y[i] = s1 + (s2 - s1) * (x - t1) / (t2 - t1);
         }
-    } // internal static void LinearInterpolate (double[], double[], double[], double[])
+    } // private static void LinearInterpolate (double[], double[], double[], double[])
 
     /// <summary>
     /// Verifies that the given array is monotonically increasing.
