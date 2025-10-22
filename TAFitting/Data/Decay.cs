@@ -689,7 +689,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Interpolates the decay data so that the time points are evenly spaced.
     /// </summary>
-    internal void Interpolate()
+    /// <param name="mode">The interpolation mode.</param>
+    internal void Interpolate(InterpolationMode mode = InterpolationMode.Linear)
     {
         var n = this.times.Length;
         if (n <= 2)
@@ -703,6 +704,23 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var new_signals = new double[n];
         var dt = (this.TimeMax - this.TimeMin) / (n - 1);
 
+        switch (mode)
+        {
+            case InterpolationMode.Linear:
+                InterpolateLinear(dt, new_times, new_signals);
+                break;
+            default:
+                throw new NotSupportedException($"Interpolation mode '{mode}' is not supported.");
+        }
+
+        Array.Copy(new_times, this.times, n);
+        Array.Copy(new_signals, this.signals, n);
+        RestoreOriginal(true);
+    } // internal void Interpolate ()
+
+    private void InterpolateLinear(double dt, double[] new_times, double[] new_signals)
+    {
+        var n = this.times.Length;
         new_times[0] = this.TimeMin;
         new_times[n - 1] = this.TimeMax;
 
@@ -735,9 +753,5 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var s2 = this.signals[index];
             new_signals[i] = s1 + (s2 - s1) * (t - t1) / (t2 - t1);
         }
-
-        Array.Copy(new_times, this.times, n);
-        Array.Copy(new_signals, this.signals, n);
-        RestoreOriginal(true);
-    } // internal void Interpolate ()
+    } // private void InterpolateLinear (double, double[], double[])
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
