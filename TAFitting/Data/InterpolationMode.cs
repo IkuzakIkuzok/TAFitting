@@ -12,4 +12,9 @@ internal enum InterpolationMode
     /// Linear interpolation.
     /// </summary>
     Linear,
+
+    /// <summary>
+    /// Spline interpolation.
+    /// </summary>
+    Spline,
 } // internal enum InterpolationMode
