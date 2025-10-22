@@ -9,6 +9,27 @@ namespace TAFitting.Data;
 internal static class Interpolation
 {
     /// <summary>
+    /// Interpolates the sampled data to the resampled data using the specified interpolation mode.
+    /// </summary>
+    /// <param name="mode">The interpolation mode.</param>
+    /// <param name="sample_x">The x values of the sampled data.</param>
+    /// <param name="sample_y">The y values of the sampled data.</param>
+    /// <param name="resampled_x">The x values of the resampled data.</param>
+    /// <param name="resampled_y">The y values of the resampled data.</param>
+    /// <exception cref="NotSupportedException">The specified interpolation mode is not supported.</exception>
+    internal static void Interpolate(InterpolationMode mode, double[] sample_x, double[] sample_y, double[] resampled_x, double[] resampled_y)
+    {
+        switch (mode)
+        {
+            case InterpolationMode.Linear:
+                LinearInterpolate(sample_x, sample_y, resampled_x, resampled_y);
+                break;
+            default:
+                throw new NotSupportedException($"The interpolation mode '{mode}' is not supported.");
+        }
+    } // internal static void Interpolate (InterpolationMode, double[], double[], double[], double[])
+
+    /// <summary>
     /// Performs linear interpolation from the sampled data to the resampled data.
     /// </summary>
     /// <param name="sample_x">The x values of the sampled data.</param>

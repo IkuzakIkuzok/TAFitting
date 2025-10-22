@@ -703,14 +703,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var new_times = new double[n];
         var new_signals = new double[n];
 
-        switch (mode)
-        {
-            case InterpolationMode.Linear:
-                Interpolation.LinearInterpolate(this.times, this.signals, new_times, new_signals);
-                break;
-            default:
-                throw new NotSupportedException($"Interpolation mode '{mode}' is not supported.");
-        }
+        Interpolation.Interpolate(mode, this.times, this.signals, new_times, new_signals);
 
         Array.Copy(new_times, this.times, n);
         Array.Copy(new_signals, this.signals, n);
