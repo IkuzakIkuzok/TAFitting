@@ -75,6 +75,9 @@ internal static class StatsUtils
     {
         ArgumentNullException.ThrowIfNull(source);
 
+        if (source.TryGetSpan(out var span))
+            return span.AverageNumbers();
+
         var sum = .0;
         var count = 0;
         foreach (var value in source)
@@ -87,6 +90,24 @@ internal static class StatsUtils
     } // internal static double AverageNumbers (IEnumerable<double>)
 
     /// <summary>
+    /// Calculates the average of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <returns>The average of the sequence of double-precision floating-point numbers.</returns>
+    internal static double AverageNumbers(this Span<double> source)
+    {
+        var sum = .0;
+        var count = 0;
+        foreach (var value in source)
+        {
+            if (double.IsNaN(value) || double.IsInfinity(value)) continue;
+            sum += value;
+            ++count;
+        }
+        return sum / count;
+    } // internal static double AverageNumbers (Span<double>)
+
+    /// <summary>
     /// Calculates the variance of a sequence of double-precision floating-point numbers.
     /// </summary>
     /// <param name="source">The sequence of double-precision floating-point numbers.</param>
@@ -95,6 +116,9 @@ internal static class StatsUtils
     internal static double Variance(this IEnumerable<double> source, int ddof = 1)
     {
         ArgumentNullException.ThrowIfNull(source);
+
+        if (source.TryGetSpan(out var span))
+            return span.Variance(ddof);
 
         var s1 = .0;
         var s2 = .0;
@@ -110,12 +134,42 @@ internal static class StatsUtils
     } // internal static double Variance (this IEnumerable<double>, [int])
 
     /// <summary>
+    /// Calculates the variance of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The variance of the sequence of double-precision floating-point numbers.</returns>
+    internal static double Variance(this Span<double> source, int ddof = 1)
+    {
+        var s1 = .0;
+        var s2 = .0;
+        var n = -ddof;
+        foreach (var x in source)
+        {
+            s1 += x;
+            s2 += x * x;
+            ++n;
+        }
+        var avg = s1 / n;
+        return s2 / n - avg * avg;
+    } // internal static double Variance (this Span<double>, [int])
+
+    /// <summary>
     /// Calculates the standard deviation of a sequence of double-precision floating-point numbers.
     /// </summary>
     /// <param name="source">The sequence of double-precision floating-point numbers.</param>
     /// <param name="ddof">The delta degrees of freedom.</param>
     /// <returns>The standard deviation of the sequence of double-precision floating-point numbers.</returns>
     internal static double StandardDeviation(this IEnumerable<double> source, int ddof = 0)
+        => Math.Sqrt(source.Variance(ddof));
+
+    /// <summary>
+    /// Calculates the standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The standard deviation of the sequence of double-precision floating-point numbers.</returns>
+    internal static double StandardDeviation(this Span<double> source, int ddof = 0)
         => Math.Sqrt(source.Variance(ddof));
 
     /// <summary>
