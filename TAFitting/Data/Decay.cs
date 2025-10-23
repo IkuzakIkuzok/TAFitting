@@ -590,6 +590,21 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     } // internal Decay OfRange (double, double)
 
     /// <summary>
+    /// Gets the signals as a span.
+    /// </summary>
+    /// <returns>The signals as a span.</returns>
+    internal Span<double> GetSignalsAsSpan()
+        => this.signals.AsSpan();
+
+    /// <summary>
+    /// Gets the signals as a span for the specified length.
+    /// </summary>
+    /// <param name="length">The length of the span.</param>
+    /// <returns>The signals as a span for the specified length.</returns>
+    internal Span<double> GetSignalsAsSpan(int length)
+        => this.signals.AsSpan(0, length);
+
+    /// <summary>
     /// Adds the time.
     /// </summary>
     /// <param name="time">The time</param>
@@ -630,16 +645,16 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Finds the time origin.
     /// </summary>
-    /// <returns>The time origin.</returns>
+    /// <returns>The time origin and its index.</returns>
     /// <remarks>
     /// The time origin is the time at which the signal is minimum.</remarks>
-    internal double FilndT0()
+    internal (int, double) FilndT0()
     {
         var span = this.signals.AsSpan();
         var min = span.Min();
         var index = span.IndexOf(min);
-        return this.times[index];
-    } // internal double FilndT0 ()
+        return (index, this.times[index]);
+    } // internal (int, double) FilndT0 ()
 
     /// <summary>
     /// Removes the NaN.
