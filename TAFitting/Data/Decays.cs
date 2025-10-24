@@ -113,7 +113,6 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var format_b = Program.BSignalFormat;
 
         var decays = new Decays(timeUnit, signalUnit);
-        var l_t0 = new ConcurrentStack<double>();
 
         var folders = Directory.EnumerateDirectories(path);
         var loader = new FileLoader();
@@ -126,6 +125,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         });
 
         var dict = new ConcurrentDictionary<double, Decay>();
+        var l_t0 = new double[loader.Count];
+        var count = -1;  // start from -1 to use Interlocked.Increment as index
         Parallel.ForEach(loader, (l) =>
         {
             var (wavelength, folder) = l;
@@ -151,16 +152,18 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var noise = baseline.StandardDeviation();  // Noise level is estimated from the baseline
             var signal = Math.Abs(decay_b[b_t0]);
             var snr = signal / noise;
-            if (snr > 2) l_t0.Push(b_t0);  // S/N > 2
+            if (snr > 2) l_t0[Interlocked.Increment(ref count)] = b_t0;  // S/N > 2
             else Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {snr}");
         });
         foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
             decays.decays.Add(wavelength, decay);
 
-        if (l_t0.IsEmpty) throw new IOException($"No data found in {path}");
+        if ((++count) == 0)  // count starts from -1, so increment first
+            throw new IOException($"No data found in {path}");
 
         //var t0 = l_t0.SmirnovGrubbs().Average();
-        var t0 = l_t0.ToArray().AsSpan().SmirnovGrubbs().Average();
+        var s_t0 = l_t0.AsSpan(0, count);
+        var t0 = s_t0.SmirnovGrubbs().Average();
         decays.Time0 = t0;
 
         return decays;

@@ -21,6 +21,11 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     private readonly ConcurrentDictionary<double, FileCache> cache_b = new();
 
     /// <summary>
+    /// Gets the number of registered folders.
+    /// </summary>
+    internal int Count => this.folders.Count;
+
+    /// <summary>
     /// Registers the specified folder and starts loading the data.
     /// </summary>
     /// <param name="folder">The folder to register.</param>
