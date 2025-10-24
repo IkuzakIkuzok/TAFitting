@@ -88,7 +88,15 @@ internal sealed partial class SpectraPreviewWindow : Form
     internal string TimeUnit
     {
         get => this.timeTable.Unit;
-        set => this.timeTable.Unit = value;
+        set
+        {
+            // Setting the unit raises CellValueChanged event, which marks timeEdited to true.
+            // This behavior is undesirable when only changing the unit.
+            // To avoid this, save and restore the timeEdited state.
+            var timeEditedState = this.timeEdited;
+            this.timeTable.Unit = value;
+            this.timeEdited = timeEditedState;
+        }
     }
 
     /// <summary>
