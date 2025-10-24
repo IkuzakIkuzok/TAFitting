@@ -112,19 +112,11 @@ internal static class Interpolation
     private static void SplineInterpolate(ReadOnlySpan<double> sample_x, ReadOnlySpan<double> sample_y, Span<double> resampled_x, Span<double> resampled_y)
     {
         // 0x1000 for 288 KiB stack allocation at maximum (9 double arrays of size 0x1000)
-        // The stack size is 1 MiB by default in .NET applications.
+        // The stack size is 1 MiB by default in .NET applications on Windows.
         const int MAX_STACKALLOC_SIZE = 0x1000;
 
         var sample_n = sample_x.Length;
         var resampled_n = resampled_x.Length;
-
-        var dx = (sample_x[^1] - sample_x[0]) / (resampled_n - 1);
-
-        resampled_x[0] = sample_x[0];
-        resampled_x[^1] = sample_x[^1];
-
-        resampled_y[0] = sample_y[0];
-        resampled_y[^1] = sample_y[^1];
 
         var h = sample_n < MAX_STACKALLOC_SIZE ? (stackalloc double[sample_n]) : new double[sample_n];
         for (var i = 1; i < sample_n; ++i)
@@ -176,9 +168,19 @@ internal static class Interpolation
             d[i] = sample_y[i - 1];
         }
 
+        // Interpolation for resampled points
+        var x_min = sample_x[0];
+        var dx = (sample_x[^1] - x_min) / (resampled_n - 1);
+
+        resampled_x[0] = x_min;
+        resampled_x[^1] = sample_x[^1];
+
+        resampled_y[0] = sample_y[0];
+        resampled_y[^1] = sample_y[^1];
+
         for (var i = 1; i < resampled_n - 1; ++i)
         {
-            var x = sample_x[0] + i * dx;
+            var x = x_min + i * dx;
             resampled_x[i] = x;
 
             var index = sample_x.BinarySearch(x);
