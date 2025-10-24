@@ -196,7 +196,7 @@ internal static class Interpolation
                 continue;
             }
             var t = x - sample_x[index - 1];
-            resampled_y[i] = a[index] * t * t * t + b[index] * t * t + c[index] * t + d[index];
+            resampled_y[i] = ((a[index] * t + b[index]) * t + c[index]) * t + d[index];
         }
     } // private static void SplineInterpolate (ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>, Span<double>)
 
