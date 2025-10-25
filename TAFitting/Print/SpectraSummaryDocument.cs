@@ -23,7 +23,7 @@ internal sealed partial class SpectraSummaryDocument : Document
     private static readonly Regex re_expFormat = RegexExpFormat();
 
     private readonly Bitmap plot;
-    private readonly string[] parameters;
+    private readonly IReadOnlyList<string> parameters;
     private readonly Dictionary<double, double[]> values;
 
     /// <summary>
@@ -37,12 +37,12 @@ internal sealed partial class SpectraSummaryDocument : Document
     /// <param name="plot">The plot.</param>
     /// <param name="parameters">The parameters.</param>
     /// <param name="values">The values.</param>
-    internal SpectraSummaryDocument(Bitmap plot, string[] parameters, Dictionary<double, double[]> values)
+    internal SpectraSummaryDocument(Bitmap plot, IReadOnlyList<string> parameters, Dictionary<double, double[]> values)
     {
         this.plot = plot;
         this.parameters = parameters;
         this.values = values;
-    } // ctor (Bitmap, string[], Dictionary<double, double[]>)
+    } // ctor (Bitmap, IReadOnlyList<string>, Dictionary<double, double[]>)
 
     override protected void OnPrintPage(PrintPageEventArgs e)
     {
@@ -87,7 +87,7 @@ internal sealed partial class SpectraSummaryDocument : Document
         var size = e.Graphics.MeasureString("Wavelength", font);
         using var brush = new SolidBrush(Color.Black);
         
-        var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / (this.parameters.Length + 1);
+        var dx = (docWidth - e.Graphics.MeasureString(thead, font).Width) / (this.parameters.Count + 1);
         dx = Math.Min(dx, size.Width);
         var dy = size.Height * this.BaselineSkip;
 
@@ -96,8 +96,8 @@ internal sealed partial class SpectraSummaryDocument : Document
         var x = leftMargin + xOffset;
         var y = topMargin + plotHeight + MARGIN;
 
-        var pos = new float[this.parameters.Length];
-        var ws = new float[this.parameters.Length];
+        var pos = new float[this.parameters.Count];
+        var ws = new float[this.parameters.Count];
         e.Graphics.DrawString("Wavelength", font, brush, x, y);
         x += size.Width;
         foreach ((var i, var p) in this.parameters.Enumerate())

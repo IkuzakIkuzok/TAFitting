@@ -1359,7 +1359,7 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        var parameters = model.Parameters.Select(p => p.Name);
+        var parameters = model.Parameters.Names;
         var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
         foreach (var r in rows)
         {

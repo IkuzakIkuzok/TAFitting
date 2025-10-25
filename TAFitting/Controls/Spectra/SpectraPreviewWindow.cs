@@ -701,7 +701,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         try
         {
             using var _ = new NegativeSignHandler();
-            writer.Parameters = [.. this.Model.Parameters.Select(p => p.Name)];
+            writer.Parameters = this.Model.Parameters.Names;
             writer.Times = [.. this.timeTable.Times];
 
             foreach ((var wavelength, var parameters) in this.parameters)
@@ -1102,7 +1102,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         using var plot = CaptureSpectra();
 
-        var parameters = this.Model.Parameters.Select(p => p.Name).ToArray();
+        var parameters = this.Model.Parameters.Names;
         using var document = new SpectraSummaryDocument(plot, parameters, this.parameters)
         {
             DocumentName = Program.MainWindow.SampleName,

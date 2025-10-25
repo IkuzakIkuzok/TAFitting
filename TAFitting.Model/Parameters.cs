@@ -19,6 +19,12 @@ public sealed class Parameters(Parameter[] parameters) : IReadOnlyList<Parameter
     public int Count
         => this.parameters.Length;
 
+    /// <summary>
+    /// Gets the names of the parameters.
+    /// </summary>
+    public IReadOnlyList<string> Names
+        => Array.ConvertAll(this.parameters, p => p.Name);
+
     public static Parameters Create(ReadOnlySpan<Parameter> parameters) =>
         new([.. parameters]);
 
