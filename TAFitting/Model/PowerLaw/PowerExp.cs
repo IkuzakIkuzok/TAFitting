@@ -6,7 +6,7 @@ namespace TAFitting.Model.PowerLaw;
 [Guid("25345F16-17DD-41F5-AC79-2E35B99D811D")]
 internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
 {
-    private static readonly Parameter[] parameters = [
+    private static readonly Parameters parameters = [
         new() { Name = "A0"   , InitialValue = 1e3, IsMagnitude = true },
         new() { Name = "a"    , InitialValue = 1.0, Constraints = ParameterConstraints.Positive },
         new() { Name = "Alpha", InitialValue = 0.4, Constraints = ParameterConstraints.Positive },
@@ -24,7 +24,7 @@ internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
     public string ExcelFormula => "[A0] / ((1 + [a] * $X) ^ [Alpha]) + [AT] * EXP(-$X / [τT])";
 
     /// <inheritdoc/>
-    public IReadOnlyList<Parameter> Parameters => parameters;
+    public Parameters Parameters => parameters;
 
     /// <inheritdoc/>
     public bool XLogScale => true;

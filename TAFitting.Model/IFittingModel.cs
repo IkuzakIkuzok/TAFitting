@@ -37,7 +37,7 @@ public interface IFittingModel
     /// <summary>
     /// Gets the parameter list of the model.
     /// </summary>
-    public IReadOnlyList<Parameter> Parameters { get; }
+    public Parameters Parameters { get; }
 
     /// <summary>
     /// Gets a value indicating whether the X-axis should be shown in logarithmic scale.

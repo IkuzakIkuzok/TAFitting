@@ -27,7 +27,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         #region fields
 
-        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameter[] parameters = [");
+        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameters parameters = [");
         for (var i = 0; i <= n; i++)
             builder.AppendLine($"\t\t\tnew() {{ Name = \"A{i}\", InitialValue = {Math.Pow(-1, i)}e+{n - i}, IsMagnitude = true }},");
         builder.AppendLine("\t\t];");
@@ -56,7 +56,7 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic global::System.Collections.Generic.IReadOnlyList<global::TAFitting.Model.Parameter> Parameters => parameters;");
+        builder.AppendLine("\t\tpublic global::TAFitting.Model.Parameters Parameters => parameters;");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");

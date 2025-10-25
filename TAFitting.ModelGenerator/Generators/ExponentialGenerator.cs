@@ -27,7 +27,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         #region fields
 
-        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameter[] parameters = [");
+        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameters parameters = [");
         builder.AppendLine("\t\t\tnew() { Name = \"A0\", IsMagnitude = true },");
         for (var i = 1; i <= n; i++)
         {
@@ -60,7 +60,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic global::System.Collections.Generic.IReadOnlyList<global::TAFitting.Model.Parameter> Parameters => parameters;");
+        builder.AppendLine("\t\tpublic global::TAFitting.Model.Parameters Parameters => parameters;");
 
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");

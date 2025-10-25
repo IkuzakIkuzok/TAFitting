@@ -21,7 +21,7 @@ internal sealed class LinearCombinationModel : IFittingModel, IAnalyticallyDiffe
     public string ExcelFormula { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyList<Parameter> Parameters => this.parameters;
+    public Parameters Parameters => new([.. this.parameters]);
 
     /// <inheritdoc/>
     public bool XLogScale { get; }

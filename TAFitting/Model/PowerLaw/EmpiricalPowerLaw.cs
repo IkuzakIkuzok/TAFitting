@@ -8,7 +8,7 @@ namespace TAFitting.Model.PowerLaw;
 [Guid("84FCCACE-3DDF-42F5-92BF-7C6BE37B45C7")]
 internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable, IVectorizedModel
 {
-    private static readonly Parameter[] parameters = [
+    private static readonly Parameters parameters = [
         new Parameter { Name = "A0", InitialValue = 1e3, IsMagnitude = true },
         new Parameter {Name = "a", Constraints = ParameterConstraints.Positive, InitialValue = 1.0 },
         new Parameter {Name = "Alpha", Constraints = ParameterConstraints.Positive, InitialValue = 0.4 },
@@ -23,7 +23,7 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
     public string ExcelFormula => "[A0] / ((1 + [a] * $X) ^ [Alpha])";
 
     /// <inheritdoc/>
-    public IReadOnlyList<Parameter> Parameters => parameters;
+    public Parameters Parameters => parameters;
 
     /// <inheritdoc/>
     public bool XLogScale => true;
