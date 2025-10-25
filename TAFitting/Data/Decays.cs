@@ -127,6 +127,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var dict = new ConcurrentDictionary<double, Decay>();
         var l_t0 = new double[loader.Count];
         var count = -1;  // start from -1 to use Interlocked.Increment as index
+        var min_snr = Program.Config.DecayLoadingConfig.SignalToNoiseRatioThreshold;
         Parallel.ForEach(loader, (l) =>
         {
             var (wavelength, folder) = l;
@@ -152,8 +153,10 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var noise = baseline.StandardDeviation();  // Noise level is estimated from the baseline
             var signal = Math.Abs(decay_b[b_t0]);
             var snr = signal / noise;
-            if (snr > 2) l_t0[Interlocked.Increment(ref count)] = b_t0;  // S/N > 2
-            else Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {snr}");
+            if (snr >= min_snr)
+                l_t0[Interlocked.Increment(ref count)] = b_t0;
+            else
+                Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {snr} < {min_snr}");
         });
         foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
             decays.decays.Add(wavelength, decay);

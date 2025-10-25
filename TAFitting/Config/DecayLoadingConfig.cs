@@ -24,6 +24,12 @@ public sealed class DecayLoadingConfig
     public string BSignalFormat { get; set; } = "<BASENAME|nm/>-b.csv";
 
     /// <summary>
+    /// Gets or sets the signal-to-noise ratio threshold.
+    /// </summary>
+    [XmlElement("snr-threshold")]
+    public double SignalToNoiseRatioThreshold { get; set; } = 2.0;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DecayLoadingConfig"/> class.
     /// </summary>
     public DecayLoadingConfig() { }
