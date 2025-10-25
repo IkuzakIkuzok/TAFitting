@@ -31,24 +31,32 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// <value>The decay data at the specified wavelength.</value>
     public Decay this[double key] => this.decays[key];
 
+    /// <inheritdoc/>
     public IEnumerable<double> Keys => this.decays.Keys;
 
+    /// <inheritdoc/>
     public IEnumerable<Decay> Values => this.decays.Values;
 
+    /// <inheritdoc/>
     public int Count => this.decays.Count;
 
+    /// <inheritdoc/>
     public bool ContainsKey(double key)
         => this.decays.ContainsKey(key);
 
+    /// <inheritdoc/>
     public IEnumerator<KeyValuePair<double, Decay>> GetEnumerator()
         => this.decays.GetEnumerator();
 
+    /// <inheritdoc/>
     public bool TryGetValue(double key, [MaybeNullWhen(false)] out Decay value)
         => this.decays.TryGetValue(key, out value);
 
+    /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
         => this.decays.GetEnumerator();
 
+    /// <inheritdoc/>
     IEnumerator<Decay> IEnumerable<Decay>.GetEnumerator()
         => this.Values.GetEnumerator();
 
@@ -201,6 +209,12 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         return decays;
     } // internal static Decays FemtosecondFromCsvFile (string)
 
+    /// <summary>
+    /// Parses a double value from a string, handling special cases for NaN and infinity.
+    /// </summary>
+    /// <param name="s">The string to parse.</param>
+    /// <returns>The parsed double value.</returns>
+    /// <exception cref="FormatException"><paramref name="s"/> is not a valid double value.</exception>
     private static double ParseDouble(string s)
     {
         if (double.TryParse(s, out var d)) return d;
