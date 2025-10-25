@@ -1542,10 +1542,10 @@ internal sealed partial class MainWindow : Form
 
         this.s_observed.Points.Clear();
         if (!this.menu_hideOriginal.Checked)
-            this.s_observed.Points.AddDecay(decay);
+            this.s_observed.AddDecay(decay);
 
         this.s_filtered.Points.Clear();
-        this.s_filtered.Points.AddDecay(filtered);
+        this.s_filtered.AddDecay(filtered);
     }// private void ShowObserved ()
 
     private void ShowFit(object? sender, EventArgs e)
@@ -1571,7 +1571,7 @@ internal sealed partial class MainWindow : Form
         var signals = Array.ConvertAll(times, t => func(t) * invert);
 
         this.s_fit.Points.Clear();
-        this.s_fit.Points.AddDecay(times, signals);
+        this.s_fit.AddDecay(times, signals);
     } // private void ShowFit ()
 
     #endregion Show plots

@@ -81,32 +81,34 @@ internal static partial class UIUtils
 
 
     /// <summary>
-    /// Adds the specified decay to the data points.
+    /// Adds the specified decay to the data series.
     /// </summary>
-    /// <param name="points">The points.</param>
+    /// <param name="series">The series.</param>
     /// <param name="decay">The decay.</param>
-    internal static void AddDecay(this DataPointCollection points, Decay decay)
-        => points.AddDecay((IEnumerable<(double, double)>)decay);
+    internal static void AddDecay(this Series series, Decay decay)
+        => series.AddDecay(decay.Times, decay.Signals);
 
     /// <summary>
-    /// Adds the specified decay to the data points.
+    /// Adds the specified decay to the data series.
     /// </summary>
-    /// <param name="points">The points.</param>
+    /// <param name="series">The series.</param>
     /// <param name="times">The time series.</param>
     /// <param name="signals">The signal series.</param>
-    internal static void AddDecay(this DataPointCollection points, IEnumerable<double> times, IEnumerable<double> signals)
-        => points.AddDecay(times.Zip(signals));
-
-    private static void AddDecay(this DataPointCollection points, IEnumerable<(double, double)> signals)
+    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals)
     {
-        foreach (var (time, signal) in signals)
+        if (times.Count != signals.Count)
+            throw new ArgumentException("The lengths of times and signals must be the same.");
+
+        var points = new DataPoint[times.Count];
+        for (var i = 0; i < points.Length; i++)
         {
-            if (time <= 0) continue;
-            if (!double.IsFinite(signal)) continue;
-            var y = Math.Clamp(signal, DecimalMin, DecimalMax);
-            points.AddXY(time, y);
+            var p = new DataPoint(series);
+            p.SetValueXY(times[i], signals[i]);
+            points[i] = p;
         }
-    } // private static void AddDecay (this DataPointCollection, IEnumerable<(double, double)>)
+        series.Points.AddRange(points);
+        series.Points.Invalidate();
+    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>)
 
     /// <summary>
     /// Gets the range of the specified series.
