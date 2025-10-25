@@ -5,6 +5,7 @@ using DisposalGenerator;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Clipboard;
@@ -1566,8 +1567,8 @@ internal sealed partial class MainWindow : Form
         var parameters = this.row.Parameters;
         var func = model.GetFunction(parameters);
         var invert = this.cb_invert.Checked ? -1 : 1;
-        var times = decay.Times;
-        var signals = times.Select(t => func(t) * invert);
+        var times = Unsafe.As<double[]>(decay.Times);
+        var signals = Array.ConvertAll(times, t => func(t) * invert);
 
         this.s_fit.Points.Clear();
         this.s_fit.Points.AddDecay(times, signals);
