@@ -55,8 +55,23 @@ internal static class CollectionHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddRange(IEnumerable<T> collection)
         {
+#if SAFE_COLLECTION
+            if (this.items is List<T> list) list.AddRange(collection);
+            else AddRangeForEach(collection);
+#else
             var list = Unsafe.As<List<T>>(this.items);
             list.AddRange(collection);
+#endif
         } // internal void AddRange (IEnumerable<T>)
+
+#if SAFE_COLLECTION
+
+        private void AddRangeForEach(IEnumerable<T> collection)
+        {
+            foreach (var item in collection)
+                this.items.Add(item);
+        } // private void AddRangeForEach (IEnumerable<T>)
+
+#endif
     } // internal class CollectionWrapper<T>
 } // internal static class CollectionHelper
