@@ -151,28 +151,30 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length;");
-        if (n == 1)
+
+        // Horner's method
+
+        var comment = new StringBuilder($"a{n}");
+        builder.AppendLine($"\t\t\t\tres.Load(parameters[{n}]);  // a{n}");
+
+        for (var i = n - 1; i >= 0; --i)
         {
-            builder.AppendLine($"\t\t\t\tres.Load(parameters[1]);");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res, x, res);");
-            builder.AppendLine($"\t\t\t\t{TVector}.Add(res, parameters[0], res);");
-        }
-        else
-        {
-            builder.AppendLine($"\t\t\t\tvar temp = new {TVector}(length);");
-            builder.AppendLine($"\t\t\t\tvar temp_x = new {TVector}(length, 1.0);");
-            builder.AppendLine($"\t\t\t\tres.Load(parameters[0]);");
-            for (var i = 1; i <= n; i++)
+            builder.AppendLine();
+            if (i < n - 1)
             {
-                builder.AppendLine();
-                builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{i}];");
-                builder.Append($"\t\t\t\t{TVector}.Multiply(x, temp_x, temp_x);  // ");
-                builder.AppendLine(i == 1 ? "x = 1.0 * x" : $"x^{i} = x^{i - 1} * x");
-                builder.AppendLine($"\t\t\t\t{TVector}.Multiply(temp_x, a{i}, temp);   // a{i} * x^{i}");
-                builder.AppendLine($"\t\t\t\t{TVector}.Add(temp, res, res);          // a0 += a{i} * x^{i}");
+                comment.Insert(0, "(");
+                comment.Append($") * x");
             }
+            else
+            {
+                comment.Append(" * x");
+            }
+            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(x, res, res);         // {comment}");
+
+            comment.Append($" + a{i}");
+            builder.AppendLine($"\t\t\t\t{TVector}.Add(res, parameters[{i}], res);  // {comment}");
         }
+
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 
