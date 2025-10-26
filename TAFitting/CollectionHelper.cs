@@ -1,6 +1,14 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+/*
+ * Collection<T> has an internal items field of type IList<T>, which is actually a List<T> if initialized without specified IList<T>.
+ * By default, the internal items field is assumed to be List<T> and directly casted using Unsafe.As for performance reasons.
+ * If there is a possibility that the internal items field is not List<T>, define SAFE_COLLECTION to use a safe but slower implementation.
+ * Computational overhead of the safe implementation comes from type checking and method call overhead, which is not critical in most cases.
+ */
+//#define SAFE_COLLECTION
+
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
@@ -57,6 +65,7 @@ internal static class CollectionHelper
         {
 #if SAFE_COLLECTION
             if (this.items is List<T> list) list.AddRange(collection);
+            // The fallback method shuld not be included here to avoid performance degradation due to inlining prevention.
             else AddRangeForEach(collection);
 #else
             var list = Unsafe.As<List<T>>(this.items);
