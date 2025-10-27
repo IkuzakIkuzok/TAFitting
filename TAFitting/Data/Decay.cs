@@ -33,7 +33,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// An empty decay data.
     /// </summary>
-    internal static readonly Decay Empty = new([], TimeUnit.Second, [], SignalUnit.OD);
+    internal static readonly Decay Empty = new([], TimeUnit.Second, [], SignalUnit.OD, TasMode.None);
 
     /// <summary>
     /// Gets the time unit.
@@ -44,6 +44,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Gets the signal unit.
     /// </summary>
     internal SignalUnit SignalUnit { get; }
+
+    internal TasMode Mode { get; }
 
     /// <summary>
     /// Gets a value indicating whether the data has been filtered.
@@ -189,7 +191,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var abs = new double[this.signals.Length];
             for (var i = 0; i < this.signals.Length; i++)
                 abs[i] = Math.Abs(this.signals[i]);
-            return new(this.times, this.TimeUnit, abs, this.SignalUnit);
+            return new(this.times, this.TimeUnit, abs, this.SignalUnit, this.Mode);
         }
     }
 
@@ -204,14 +206,14 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var inv = new double[this.signals.Length];
             for (var i = 0; i < this.signals.Length; i++)
                 inv[i] = -this.signals[i];
-            return new(this.times, this.TimeUnit, inv, this.SignalUnit);
+            return new(this.times, this.TimeUnit, inv, this.SignalUnit, this.Mode);
         }
     }
 
     /// <summary>
     /// Gets the filtered decay data.
     /// </summary>
-    internal Decay Filtered => this.HasFiltered ? new(this.times, this.TimeUnit, this.filtered, this.SignalUnit) : this;
+    internal Decay Filtered => this.HasFiltered ? new(this.times, this.TimeUnit, this.filtered, this.SignalUnit, this.Mode) : this;
 
     /// <summary>
     /// Gets the decay data after t=0.
@@ -222,7 +224,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         {
             if (this.times[0] >= 0) return this;
             var index_t0 = this.times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
-            return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit);
+            return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit, this.Mode);
         }
     }
 
@@ -250,8 +252,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="timeUnit">The time unit.</param>
     /// <param name="signals">The signals.</param>
     /// <param name="signalUnit">The signal unit.</param>
+    /// <param name="mode">The TAS mode.</param>
     /// <exception cref="ArgumentException">times and signals must have the same length.</exception>
-    internal Decay(double[] times, TimeUnit timeUnit, double[] signals, SignalUnit signalUnit)
+    internal Decay(double[] times, TimeUnit timeUnit, double[] signals, SignalUnit signalUnit, TasMode mode)
     {
         if (times.Length != signals.Length)
             throw new ArgumentException("times and signals must have the same length.");
@@ -262,9 +265,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         this.TimeUnit = timeUnit;
         this.SignalUnit = signalUnit;
 
+        this.Mode = mode;
+
         this.filtered = new double[times.Length];
         RestoreOriginal(true);
-    } // ctor (double[], double[])
+    } // ctor (double[], TimeUnit, double[], SignalUnit, TasMode)
 
 #if Tekave
 
@@ -456,7 +461,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
                 signals[i] = double.Parse(parts[1]) * signalScaling;
             }
 #endif
-            return new(times, timeUnit, signals, signalUnit);
+            return new(times, timeUnit, signals, signalUnit, TasMode.Microsecond);
 
         }
         catch (Exception ex)
@@ -561,8 +566,8 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         }
 #endif  // Tekave
 
-        return new(times, timeUnit, signals, signalUnit);
-    } // internal static Decay FromFile (string, TimeUnit, SignalUnit, byte[])
+        return new(times, timeUnit, signals, signalUnit, TasMode.Microsecond);
+    } // internal static Decay FromFile (string, TimeUnit, SignalUnit, FileCache?, [int])
 
     /// <inheritdoc/>
     public IEnumerator<(double Time, double Signal)> GetEnumerator()
@@ -586,7 +591,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         if (startIndex < 0) startIndex = ~startIndex;  // If not found, Array.BinarySearch returns the bitwise complement of the index of the next element.
         var endIndex = Array.BinarySearch(this.times, end);
         if (endIndex < 0) endIndex = ~endIndex;
-        return new(this.times[startIndex..endIndex], this.TimeUnit, this.signals[startIndex..endIndex], this.SignalUnit);
+        return new(this.times[startIndex..endIndex], this.TimeUnit, this.signals[startIndex..endIndex], this.SignalUnit, this.Mode);
     } // internal Decay OfRange (double, double)
 
     /// <summary>

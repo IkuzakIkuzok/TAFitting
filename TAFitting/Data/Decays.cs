@@ -201,7 +201,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var parts = line.Split(',');
             if (!double.TryParse(parts[0], out var wl)) break;
             var signals = parts[1..].Select(ParseDouble).Select(s => s / signalUnit).ToArray();
-            var decay = new Decay(times, timeUnit, signals, signalUnit);
+            var decay = new Decay(times, timeUnit, signals, signalUnit, TasMode.Femtosecond);
             decay.RemoveNaN();
             decays.decays.Add(wl, decay);
         }
@@ -281,7 +281,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         {
             var wavelength = wavelengths[i];
             var signals = reader.ReadDoubles(timeCount).Select(s => s / signalUnit).ToArray();
-            var decay = new Decay(times, timeUnit, signals, signalUnit);
+            var decay = new Decay(times, timeUnit, signals, signalUnit, TasMode.Femtosecond);
             decay.RemoveNaN();
             decays.decays.Add(wavelength, decay);
         }
