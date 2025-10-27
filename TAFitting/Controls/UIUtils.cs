@@ -100,13 +100,19 @@ internal static partial class UIUtils
             throw new ArgumentException("The lengths of times and signals must be the same.");
 
         var points = new DataPoint[times.Count];
+        var count = 0;
         for (var i = 0; i < points.Length; i++)
         {
+            var x = times[i];
+            var y = signals[i];
+            if (x <= 0) continue;
+            if (!double.IsFinite(y)) continue;
+
             var p = new DataPoint(series);
-            p.SetValueXY(times[i], signals[i]);
-            points[i] = p;
+            p.SetValueXY(x, y);
+            points[count++] = p;
         }
-        series.Points.AddRange(points);
+        series.Points.AddRange(points[..count]);
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>)
 
