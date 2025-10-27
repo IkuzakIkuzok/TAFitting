@@ -107,6 +107,7 @@ internal static partial class UIUtils
             var y = signals[i];
             if (x <= 0) continue;
             if (!double.IsFinite(y)) continue;
+            y = Math.Clamp(y, DecimalMin, DecimalMax);
 
             var p = new DataPoint(series);
             p.SetValueXY(x, y);
