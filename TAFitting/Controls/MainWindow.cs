@@ -491,6 +491,16 @@ internal sealed partial class MainWindow : Form
         menu_dataPaste.Click += PasteTable;
         menu_data.DropDownItems.Add(menu_dataPaste);
 
+        var menu_dataReplace = new ToolStripMenuItem("&Replace decay")
+        {
+            ShortcutKeys = Keys.Control | Keys.H,
+            ToolTipText = "Load and replace the decay data for the selected wavelength",
+        };
+        menu_data.DropDownOpening += (sender, e)
+            => menu_dataReplace.Enabled = CheckDecayCanBeReplaced();
+        menu_dataReplace.Click += ReplaceDecay;
+        menu_data.DropDownItems.Add(menu_dataReplace);
+
         #endregion menu.data
 
         #region menu.analyze
@@ -873,6 +883,59 @@ internal sealed partial class MainWindow : Form
             }
         });
     } // private void LoadDecays (string, Func<string, Decays>)
+
+    /// <summary>
+    /// Checks whether the decay for the selected row can be replaced.
+    /// </summary>
+    /// <returns><see langword="true"/> if the decay can be replaced; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool CheckDecayCanBeReplaced()
+        => (this.row?.Decay.Mode ?? TasMode.None) == TasMode.Microsecond;
+
+    private void ReplaceDecay(object? sender, EventArgs e)
+    {
+        if (!CheckDecayCanBeReplaced()) return;
+
+        var dialog = new OpenFolderDialog()
+        {
+            Title = "Select a µs-TAS data folder",
+            ClientGuid = Program.Config.SeparateFileDialogState ? usTasDialog : Program.FileDialogCommonId,
+        };
+        if (!(dialog.ShowDialog() ?? false)) return;
+
+        ReplaceDecay(dialog.FolderName);
+    } // private void ReplaceDecay (object?, EventArgs)
+
+    private void ReplaceDecay(string path)
+    {
+        if (this.decays is null) return;
+        if (this.row is null) return;
+
+        var basename = Path.GetFileName(path);
+        var filename = FileNameHandler.GetFileName(basename, Program.AMinusBSignalFormat);
+        var filePath = Path.Combine(path, filename);
+        if (!File.Exists(filePath))
+        {
+            MessageBox.Show(
+                "The selected folder does not contain the decay data file.",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+            return;
+        }
+
+        var oldDecay = this.row.Decay;
+        var decay = Decay.FromFile(filePath, oldDecay.TimeUnit, oldDecay.SignalUnit);
+
+        // t0 determination is skipped and the old t0 is applied
+        var t0 = this.decays.Time0;
+        decay.AddTime(-t0);
+
+        this.decays[this.row.Wavelength] = decay;
+        this.row.Decay = decay;
+        ShowPlots();
+    } // private void ReplaceDecay (string)
 
     #endregion Data loading
 

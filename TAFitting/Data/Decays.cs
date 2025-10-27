@@ -25,11 +25,15 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     private readonly Dictionary<double, Decay> decays = [];
 
     /// <summary>
-    /// Gets the decay data at the specified wavelength.
+    /// Gets or sets the decay data at the specified wavelength.
     /// </summary>
     /// <param name="key">The wavelength.</param>
     /// <value>The decay data at the specified wavelength.</value>
-    public Decay this[double key] => this.decays[key];
+    public Decay this[double key]
+    {
+        get => this.decays[key];
+        set => this.decays[key] = value;
+    }
 
     /// <inheritdoc/>
     public IEnumerable<double> Keys => this.decays.Keys;
