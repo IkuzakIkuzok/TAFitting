@@ -222,6 +222,9 @@ internal static class StatsUtils
     {
         ArgumentNullException.ThrowIfNull(source);
 
+        if (source.TryGetSpan(out var span))
+            return [.. span.SmirnovGrubbs(alpha)];
+
         var list = source.Order().ToList();
         while (true)
         {
