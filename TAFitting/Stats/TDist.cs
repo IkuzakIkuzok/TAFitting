@@ -92,12 +92,21 @@ internal sealed class TDist : StatsDist
         }
         else // Γ(n/2)
         {
+            /*
+             *          (2n-1)!!
+             * Γ(n/2) = ———————— √π
+             *            2^n
+             */
+
             var g = SqrtPi;
 
+            // double factorial
             for (var i = 1; i < n; i += 2)
                 g *= i;
 
+            // divide by 2^n
             g /= (2 << ((n >> 1) - 1));
+
             if (n < CACHE_SIZE)
                 gamma_cache[n] = g;
             return g;
