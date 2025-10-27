@@ -25,6 +25,10 @@ internal sealed partial class TimeTable : DataGridView
                .Select(row => (double)row.Cells["Time"].Value)
                .Order()];
 
+    /// <summary>
+    /// Gets or sets the unit of time.
+    /// </summary>
+    /// <value>The unit of time.</value>
     internal string Unit
     {
         get => this.Columns["Time"].HeaderText[6..^1];
