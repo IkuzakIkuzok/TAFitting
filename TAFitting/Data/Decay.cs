@@ -223,10 +223,43 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         get
         {
             if (this.times[0] >= 0) return this;
-            var index_t0 = this.times.Select((t, i) => (t, i)).First(t => t.t >= 0).i;
+            var index_t0 = GetIndexT0();
             return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit, this.Mode);
         }
     }
+
+    /// <summary>
+    /// Gets the times after t=0.
+    /// </summary>
+    internal ReadOnlySpan<double> TimesAfterT0
+    {
+        get
+        {
+            var index_t0 = GetIndexT0();
+            return this.times.AsSpan(index_t0);
+        }
+    }
+
+    /// <summary>
+    /// Gets the signals after t=0.
+    /// </summary>
+    internal ReadOnlySpan<double> SignalsAfterT0
+    {
+        get
+        {
+            var index_t0 = GetIndexT0();
+            return this.signals.AsSpan(index_t0);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetIndexT0()
+    {
+        if (this.times[0] >= 0) return 0;
+        return this.times.Select((t, i) => (Time: t, Index: i))
+                   .First(t => t.Time >= 0)
+                   .Index;
+    } // private int GetIndexT0 ()
 
     /// <summary>
     /// Gets the signal at the specified time.
