@@ -404,8 +404,8 @@ internal sealed partial class ParametersTable : DataGridView
     {
         // Casting decimal.MinValue and decimal.MaxValue to double results in the OverflowException.
         // Therefore, the approximate values of them are used.
-        const double DecimalMin = -7.9e28;  // -79,228,162,514,264,337,593,543,950,335
-        const double DecimalMax = +7.9e28;  // +79,228,162,514,264,337,593,543,950,335
+        const double DecimalMin = UIUtils.DecimalMin;
+        const double DecimalMax = UIUtils.DecimalMax;
 
         var val = Math.Clamp((double)rows.First().Cells[column.Index].Value, DecimalMin, DecimalMax);
         using var nib = new NumericInputBox()

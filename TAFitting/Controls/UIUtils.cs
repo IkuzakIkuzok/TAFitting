@@ -13,8 +13,8 @@ namespace TAFitting.Controls;
 /// </summary>
 internal static partial class UIUtils
 {
-    private const double DecimalMin = -7.9e28;
-    private const double DecimalMax = +7.9e28;
+    internal const double DecimalMin = -7.9e28;
+    internal const double DecimalMax = +7.9e28;
 
     [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
     private static partial Regex RegexExpFormat();
