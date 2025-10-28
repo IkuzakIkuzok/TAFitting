@@ -35,20 +35,25 @@ internal static class StatsUtils
             y = Math.Abs(z) / 2;
             if (y >= 3.0)
             {
+                // tail cutoff
                 p = 1.0;
             }
             else if (y < 1.0)
             {
                 w = y * y;
+
+                // polynomial approximation based on w=y*y with Horner's method
                 p = ((((((((0.000124818987 * w
                   - 0.001075204047) * w + 0.005198775019) * w
                   - 0.019198292004) * w + 0.059054035642) * w
                   - 0.151968751364) * w + 0.319152932694) * w
                   - 0.531923007300) * w + 0.797884560593) * y * 2.0;
             }
-            else
+            else // 1 <= y < 3 (2 <= |z| < 6)
             {
-                y -= 2.0;
+                y -= 2.0;  // centering y at 2.0
+
+                // polynomial approximation with Horner's method
                 p = (((((((((((((-0.000045255659 * y
                   + 0.000152529290) * y - 0.000019538132) * y
                   - 0.000676904986) * y + 0.001390604284) * y
