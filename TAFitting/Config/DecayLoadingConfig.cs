@@ -30,6 +30,12 @@ public sealed class DecayLoadingConfig
     public double SignalToNoiseRatioThreshold { get; set; } = 2.0;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to warn before replacing mismatched data.
+    /// </summary>
+    [XmlElement("warn-before-mismatch-replacement")]
+    public bool WarnBeforeMismatchReplacement { get; set; } = true;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DecayLoadingConfig"/> class.
     /// </summary>
     public DecayLoadingConfig() { }

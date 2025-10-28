@@ -366,6 +366,16 @@ internal static partial class Program
         }
     }
 
+    internal static bool WarnBeforeMismatchReplacement
+    {
+        get => Config.DecayLoadingConfig.WarnBeforeMismatchReplacement;
+        set
+        {
+            Config.DecayLoadingConfig.WarnBeforeMismatchReplacement = value;
+            SaveConfig();
+        }
+    }
+
     internal static bool WarnBeforeChangeModel
     {
         get => Config.WarnBeforeChangeModel;

@@ -925,6 +925,28 @@ internal sealed partial class MainWindow : Form
             return;
         }
 
+        if (Program.WarnBeforeChangeModel && (!Decays.TryGetWavelength(basename, out var wavelength) || wavelength != this.row.Wavelength))
+        {
+            var page = new TaskDialogPage()
+            {
+                Heading = "The wavelength in the selected folder does not match the selected row.",
+                Text = "Do you want to continue?",
+                Caption = Program.AppName,
+                Icon = TaskDialogIcon.Warning,
+                AllowCancel = true,
+                Verification = new TaskDialogVerificationCheckBox()
+                {
+                    Text = "Do not show this message again.",
+                    Checked = false,
+                },
+                Buttons = { TaskDialogButton.Yes, TaskDialogButton.No },
+                DefaultButton = TaskDialogButton.No,
+            };
+            var result = TaskDialog.ShowDialog(page);
+            if (result != TaskDialogButton.Yes) return;
+            Program.WarnBeforeChangeModel = !page.Verification.Checked;
+        }
+
         var oldDecay = this.row.Decay;
         var decay = Decay.FromFile(filePath, oldDecay.TimeUnit, oldDecay.SignalUnit);
 
