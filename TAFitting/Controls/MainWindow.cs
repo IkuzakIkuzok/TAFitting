@@ -1413,7 +1413,7 @@ internal sealed partial class MainWindow : Form
             {
                 var decay = this.decays[wl];
                 var row = this.parametersTable.Add(wl, decay);
-                row.Inverted = decay.OnlyAfterT0.Signals.Average() < 0;
+                row.Inverted = decay.SignalsAfterT0.Average() < 0;
             }
 
             if (Program.AutoFit)
