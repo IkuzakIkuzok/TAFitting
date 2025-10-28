@@ -201,6 +201,12 @@ internal static class StatsUtils
         return (avg, Math.Sqrt(var));
     } // internal static (double, double) AverageAndStandardDeviation (this IEnumerable<double>, [int])
 
+    /// <summary>
+    /// Calculates the average and standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The average and standard deviation of the sequence of double-precision floating-point numbers.</returns>
     internal static (double, double) AverageAndStandardDeviation(this Span<double> source, int ddof = 0)
     {
         var s1 = .0;
@@ -247,6 +253,12 @@ internal static class StatsUtils
         return list;
     } // internal static List<double> SmirnovGrubbs (IEnumerable<double>, [double])
 
+    /// <summary>
+    /// Removes the outliers from a sequence of double-precision floating-point numbers using the Smirnov-Grubbs test.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="alpha">The significance level.</param>
+    /// <returns>The sequence of double-precision floating-point numbers without outliers.</returns>
     internal static Span<double> SmirnovGrubbs(this Span<double> source, double alpha = .05)
     {
         MemoryExtensions.Sort(source);
