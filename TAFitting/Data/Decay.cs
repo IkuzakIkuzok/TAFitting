@@ -631,7 +631,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// Gets the signals as a span.
     /// </summary>
     /// <returns>The signals as a span.</returns>
-    internal Span<double> GetSignalsAsSpan()
+    internal ReadOnlySpan<double> GetSignalsAsSpan()
         => this.signals.AsSpan();
 
     /// <summary>
@@ -639,7 +639,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     /// <param name="length">The length of the span.</param>
     /// <returns>The signals as a span for the specified length.</returns>
-    internal Span<double> GetSignalsAsSpan(int length)
+    internal ReadOnlySpan<double> GetSignalsAsSpan(int length)
         => this.signals.AsSpan(0, length);
 
     /// <summary>
