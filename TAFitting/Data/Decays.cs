@@ -32,7 +32,14 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     public Decay this[double key]
     {
         get => this.decays[key];
-        set => this.decays[key] = value;
+        set
+        {
+            if (value.TimeUnit != this.TimeUnit)
+                throw new ArgumentException("Time unit mismatch.", nameof(value));
+            if (value.SignalUnit != this.SignalUnit)
+                throw new ArgumentException("Signal unit mismatch.", nameof(value));
+            this.decays[key] = value;
+        }
     }
 
     /// <inheritdoc/>
