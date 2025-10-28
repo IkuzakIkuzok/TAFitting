@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using TAFitting.Stats;
 
@@ -118,6 +119,19 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     } // ctor (TimeUnit, SignalUnit)
 
     /// <summary>
+    /// Tries to extract the wavelength from the basename.
+    /// </summary>
+    /// <param name="basename">The basename of the folder.</param>
+    /// <param name="wavelength">The extracted wavelength.</param>
+    /// <returns><see langword="true"/> if the wavelength is successfully extracted; otherwise, <see langword="false"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool TryGetWavelength(string basename, out double wavelength)
+    {
+        var wl = re_wavelength.Match(basename).Groups[1].Value;
+        return double.TryParse(wl, out wavelength);
+    } // internal static bool TryGetWavelength (string, out double)
+
+    /// <summary>
     /// Loads the decay data from the folder.
     /// </summary>
     /// <param name="path">The path to the folder.</param>
@@ -138,8 +152,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         Parallel.ForEach(folders, (folder) =>
         {
             var basename = Path.GetFileName(folder);
-            var wl = re_wavelength.Match(basename).Groups[1].Value;
-            if (!double.TryParse(wl, out var wavelength)) return;
+            if (!TryGetWavelength(basename, out var wavelength)) return;
             loader.Register(folder, wavelength);
         });
 
