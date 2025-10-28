@@ -100,6 +100,14 @@ internal static class StatsUtils
     /// <param name="source">The sequence of double-precision floating-point numbers.</param>
     /// <returns>The average of the sequence of double-precision floating-point numbers.</returns>
     internal static double AverageNumbers(this Span<double> source)
+        => ((ReadOnlySpan<double>)source).AverageNumbers();
+
+    /// <summary>
+    /// Calculates the average of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <returns>The average of the sequence of double-precision floating-point numbers.</returns>
+    internal static double AverageNumbers(this ReadOnlySpan<double> source)
     {
         var sum = .0;
         var count = 0;
@@ -110,7 +118,7 @@ internal static class StatsUtils
             ++count;
         }
         return sum / count;
-    } // internal static double AverageNumbers (Span<double>)
+    } // internal static double AverageNumbers (ReadOnlySpan<double>)
 
     /// <summary>
     /// Calculates the variance of a sequence of double-precision floating-point numbers.
@@ -145,6 +153,15 @@ internal static class StatsUtils
     /// <param name="ddof">The delta degrees of freedom.</param>
     /// <returns>The variance of the sequence of double-precision floating-point numbers.</returns>
     internal static double Variance(this Span<double> source, int ddof = 1)
+        => ((ReadOnlySpan<double>)source).Variance(ddof);
+
+    /// <summary>
+    /// Calculates the variance of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The variance of the sequence of double-precision floating-point numbers.</returns>
+    internal static double Variance(this ReadOnlySpan<double> source, int ddof = 1)
     {
         var s1 = .0;
         var s2 = .0;
@@ -157,7 +174,7 @@ internal static class StatsUtils
         }
         var avg = s1 / n;
         return s2 / n - avg * avg;
-    } // internal static double Variance (this Span<double>, [int])
+    } // internal static double Variance (this ReadOnlySpan<double>, [int])
 
     /// <summary>
     /// Calculates the standard deviation of a sequence of double-precision floating-point numbers.
@@ -175,6 +192,15 @@ internal static class StatsUtils
     /// <param name="ddof">The delta degrees of freedom.</param>
     /// <returns>The standard deviation of the sequence of double-precision floating-point numbers.</returns>
     internal static double StandardDeviation(this Span<double> source, int ddof = 0)
+        => Math.Sqrt(source.Variance(ddof));
+
+    /// <summary>
+    /// Calculates the standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The standard deviation of the sequence of double-precision floating-point numbers.</returns>
+    internal static double StandardDeviation(this ReadOnlySpan<double> source, int ddof = 0)
         => Math.Sqrt(source.Variance(ddof));
 
     /// <summary>
@@ -208,6 +234,15 @@ internal static class StatsUtils
     /// <param name="ddof">The delta degrees of freedom.</param>
     /// <returns>The average and standard deviation of the sequence of double-precision floating-point numbers.</returns>
     internal static (double, double) AverageAndStandardDeviation(this Span<double> source, int ddof = 0)
+        => ((ReadOnlySpan<double>)source).AverageAndStandardDeviation(ddof);
+
+    /// <summary>
+    /// Calculates the average and standard deviation of a sequence of double-precision floating-point numbers.
+    /// </summary>
+    /// <param name="source">The sequence of double-precision floating-point numbers.</param>
+    /// <param name="ddof">The delta degrees of freedom.</param>
+    /// <returns>The average and standard deviation of the sequence of double-precision floating-point numbers.</returns>
+    internal static (double, double) AverageAndStandardDeviation(this ReadOnlySpan<double> source, int ddof = 0)
     {
         var s1 = .0;
         var s2 = .0;
@@ -221,7 +256,7 @@ internal static class StatsUtils
         var avg = s1 / n;
         var var = s2 / n - avg * avg;
         return (avg, Math.Sqrt(var));
-    } // internal static (double, double) AverageAndStandardDeviation (this Span<double>, [int])
+    } // internal static (double, double) AverageAndStandardDeviation (this ReadOnlySpan<double>, [int])
 
     /// <summary>
     /// Removes the outliers from a sequence of double-precision floating-point numbers using the Smirnov-Grubbs test.
