@@ -13,6 +13,10 @@ internal static partial class BytesConverter
 {
     private static readonly Encoding SystemEncoding;
 
+    /// <summary>
+    /// Retrieves the current Windows ANSI code page identifier for the operating system.
+    /// </summary>
+    /// <returns>The current Windows ANSI code page (ACP) identifier for the operating system.</returns>
     [LibraryImport("kernel32.dll")]
     private static partial int GetACP();
 
