@@ -892,7 +892,7 @@ internal sealed partial class MainWindow : Form
     private bool CheckDecayCanBeReplaced()
         => (this.row?.Decay.Mode ?? TasMode.None) == TasMode.Microsecond;
 
-    private void ReplaceDecay(object? sender, EventArgs e)
+    async private void ReplaceDecay(object? sender, EventArgs e)
     {
         if (!CheckDecayCanBeReplaced()) return;
 
@@ -903,10 +903,10 @@ internal sealed partial class MainWindow : Form
         };
         if (!(dialog.ShowDialog() ?? false)) return;
 
-        ReplaceDecay(dialog.FolderName);
-    } // private void ReplaceDecay (object?, EventArgs)
+        await ReplaceDecay(dialog.FolderName);
+    } // async private void ReplaceDecay (object?, EventArgs)
 
-    private void ReplaceDecay(string path)
+    async private Task ReplaceDecay(string path)
     {
         if (this.decays is null) return;
         if (this.row is null) return;
@@ -932,10 +932,21 @@ internal sealed partial class MainWindow : Form
         var t0 = this.decays.Time0;
         decay.AddTime(-t0);
 
+        if (Program.AutoApplyFilter)
+        {
+            var filter = FilterManager.DefaultFilter;
+            if (filter is not null)
+                decay.Filter(filter);
+        }
+
         this.decays[this.row.Wavelength] = decay;
         this.row.Decay = decay;
+
+        if (Program.AutoFit)
+            await LevenbergMarquardtEstimation([this.row]);
+
         ShowPlots();
-    } // private void ReplaceDecay (string)
+    } // async private Task ReplaceDecay (string)
 
     #endregion Data loading
 
