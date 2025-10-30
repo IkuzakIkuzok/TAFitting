@@ -49,7 +49,7 @@ internal sealed partial class MainWindow : Form
     private Guid selectedModel = Guid.Empty;
 
     private Decays? decays;
-    private readonly Series s_observed, s_filtered, s_fit;
+    private readonly Series s_observed, s_filtered, s_fit, s_compare;
     private bool stopDrawing = false;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
@@ -182,6 +182,16 @@ internal sealed partial class MainWindow : Form
             IsXValueIndexed = false,
         };
         this.chart.Series.Add(this.s_fit);
+
+        this.s_compare = new()
+        {
+            Color = Color.FromArgb(64, Program.FilteredColor),
+            ChartType = SeriesChartType.Line,
+            BorderWidth = Program.FilteredWidth,
+            IsVisibleInLegend = false,
+            IsXValueIndexed = false,
+        };
+        this.chart.Series.Add(this.s_compare);
 
         #endregion chart
 
@@ -1477,13 +1487,36 @@ internal sealed partial class MainWindow : Form
     {
         if (row is null) return;
 
-        this.row = row;
+        var compare = ModifierKeys.HasFlag(Keys.Control) || ModifierKeys.HasFlag(Keys.Shift);
+
+        if (!compare)
+            this.row = row;
+
+        this.s_compare.Points.Clear();
 
         if (movedToNewRow)
         {
-            this.suppressAutoInvert = true;
-            this.cb_invert.Checked = row.Inverted;
-            this.suppressAutoInvert = false;
+            if (compare)
+            {
+                // Suppress the unnecessary event during restoring the selected cell.
+                this.parametersTable.StopSelectionChanged = true;
+                try
+                {
+                    this.parametersTable.RestoreSelectedCell(this.row?.Index ?? 0);
+                }
+                finally
+                {
+                    this.parametersTable.StopSelectionChanged = false;
+                }
+                ShowCompare(row);
+                return;
+            }
+            else
+            {
+                this.suppressAutoInvert = true;
+                this.cb_invert.Checked = row.Inverted;
+                this.suppressAutoInvert = false;
+            }
         }
 
         this.Text = GetTitle();
@@ -1643,6 +1676,28 @@ internal sealed partial class MainWindow : Form
         this.s_filtered.Points.Clear();
         this.s_filtered.AddDecay(filtered);
     }// private void ShowObserved ()
+
+    /// <summary>
+    /// Shows the comparison plot.
+    /// </summary>
+    /// <param name="row">The row to show the comparison plot for.</param>
+    private void ShowCompare(ParametersTableRow row)
+    {
+        var decay = row.Decay;
+        var filtered = decay.Filtered;
+
+        if (row.Inverted)
+        {
+            decay = decay.Inverted;
+            filtered = filtered.Inverted;
+        }
+
+        this.s_compare.Points.Clear();
+        if (this.menu_hideOriginal.Checked)
+            this.s_compare.AddDecay(filtered);
+        else
+            this.s_compare.AddDecay(decay);
+    } // private void ShowCompare (ParametersTableRow)
 
     private void ShowFit(object? sender, EventArgs e)
         => ShowFit();
@@ -2067,6 +2122,7 @@ internal sealed partial class MainWindow : Form
         };
         if (cd.ShowDialog() != DialogResult.OK) return;
         this.s_filtered.Color = Program.FilteredColor = cd.Color;
+        this.s_compare.Color = Color.FromArgb(64, this.s_filtered.Color);
     } // private void SetFilteredColor (object?, EventArgs)
 
     private void SetFitColor(object? sender, EventArgs e)
@@ -2094,7 +2150,7 @@ internal sealed partial class MainWindow : Form
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not int size) return;
-        this.s_filtered.BorderWidth = Program.FilteredWidth = size;
+        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = size;
     } // private void ChangeFilteredWidth (object?, EventArgs)
 
     private void ChangeFitWidth(object? sender, EventArgs e)

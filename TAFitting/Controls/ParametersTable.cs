@@ -21,6 +21,7 @@ internal sealed partial class ParametersTable : DataGridView
 
     private readonly UndoBuffer<ParamsEditCommand> undoBuffer = new();
     private double oldValue, newValue;
+    private readonly FixedSizeQueue<int> selectedColumn = new(2);
 
     internal IFittingModel? Model { get; private set; }
 
@@ -478,12 +479,37 @@ internal sealed partial class ParametersTable : DataGridView
         if (cell is null) return;
         var rowIndex = cell.RowIndex;
         var colIndex = cell.ColumnIndex;
+        this.selectedColumn.Enqueue(colIndex);
 
-        foreach (var col in this.Columns.Cast<DataGridViewColumn>())
-            col.DefaultCellStyle.BackColor = col.Index == colIndex ? Color.LightGray : Color.White;
+        HighlightSelectedColumn(colIndex);
 
         SelectedRowChanged?.Invoke(this, new ParametersTableSelectionChangedEventArgs(this.ParameterRows.ElementAt(rowIndex)));
     } // override protected void OnSelectionChanged (EventArgs)
+
+    /// <summary>
+    /// Restores the selected cell at the specified row.
+    /// </summary>
+    /// <param name="row">The row index.</param>
+    /// <remarks>
+    /// The column index is restored from the last selected column automatically.
+    /// </remarks>
+    internal void RestoreSelectedCell(int row)
+    {
+        if (this.selectedColumn.Count == 0) return;
+
+        var col = this.selectedColumn.Peek();
+        this.selectedColumn.Clear();
+        this.selectedColumn.Enqueue(col);
+
+        this.CurrentCell = this[col, row];
+        HighlightSelectedColumn(col);  // Column highlight needs to be restored manually
+    } // internal void RestoreSelectedCell (int)
+
+    private void HighlightSelectedColumn(int columnIndex)
+    {
+        foreach (var col in this.Columns.Cast<DataGridViewColumn>())
+            col.DefaultCellStyle.BackColor = col.Index == columnIndex ? Color.LightGray : Color.White;
+    } // private void HighlightSelectedColumn (int)
 
     /// <summary>
     /// Recalculates the R-squared values.
