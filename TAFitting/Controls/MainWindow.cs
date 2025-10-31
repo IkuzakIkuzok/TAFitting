@@ -1801,7 +1801,7 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        var times = source.First().Decay.OnlyAfterT0.Times;
+        var times = source.First().Decay.TimesAfterT0.ToArray();
 
         var fixedCols =
             cols.Select((c, i) => (c.Fixed, Index: i))
@@ -1875,8 +1875,8 @@ internal sealed partial class MainWindow : Form
     /// <returns>The estimated parameters.</returns>
     private static IReadOnlyList<double> LevenbergMarquardtEstimation(ILevenbergMarquardtSolver solver, ParametersTableRow row)
     {
-        var decay = row.Decay.OnlyAfterT0;
-        solver.Initialize(decay.Signals, row.Parameters);
+        var signals = row.Decay.SignalsAfterT0.ToArray();
+        solver.Initialize(signals, row.Parameters);
         solver.Fit();
         return solver.Parameters;
     } // private static void LevenbergMarquardtEstimation (ILevenbergMarquardtSolver, ParametersTableRow)

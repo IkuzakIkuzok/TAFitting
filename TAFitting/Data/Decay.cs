@@ -188,19 +188,6 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal Decay Filtered => this.HasFiltered ? new(this.times, this.TimeUnit, this.filtered, this.SignalUnit, this.Mode) : this;
 
     /// <summary>
-    /// Gets the decay data after t=0.
-    /// </summary>
-    internal Decay OnlyAfterT0
-    {
-        get
-        {
-            if (this.times[0] >= 0) return this;
-            var index_t0 = GetIndexT0();
-            return new(this.times[index_t0..], this.TimeUnit, this.signals[index_t0..], this.SignalUnit, this.Mode);
-        }
-    }
-
-    /// <summary>
     /// Gets the times after t=0.
     /// </summary>
     internal ReadOnlySpan<double> TimesAfterT0
