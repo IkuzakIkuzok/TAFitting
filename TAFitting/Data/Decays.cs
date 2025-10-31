@@ -96,7 +96,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// </summary>
     /// <value>The maximum value of the absolute signal.</value>
     internal double MaxAbsSignal
-        => this.Values.Max(d => d.Absolute.SignalFiniteMax);
+        => this.Values.Max(d => d.SignalFiniteAbsMax);
 
     /// <summary>
     /// Gets or sets the time zero.

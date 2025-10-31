@@ -165,35 +165,22 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal double SignalMax => this.signals.AsSpan().Max();
 
     /// <summary>
-    /// Gets the finite maximum signal.
+    /// Gets the finite absolute maximum signal.
     /// </summary>
-    internal double SignalFiniteMax
+    internal double SignalFiniteAbsMax
     {
         get
         {
             var max = double.MinValue;
             foreach (var signal in this.signals)
             {
-                if (double.IsFinite(signal) && signal > max)
-                    max = signal;
+                if (!double.IsFinite(signal)) continue;
+                var abs = Math.Abs(signal);
+                if (abs > max) max = abs;
             }
             return max;
         }
-    } // internal double SignalFiniteMax
-
-    /// <summary>
-    /// Gets the absolute decay data.
-    /// </summary>
-    internal Decay Absolute
-    {
-        get
-        {
-            var abs = new double[this.signals.Length];
-            for (var i = 0; i < this.signals.Length; i++)
-                abs[i] = Math.Abs(this.signals[i]);
-            return new(this.times, this.TimeUnit, abs, this.SignalUnit, this.Mode);
-        }
-    }
+    } // internal double SignalFiniteAbsMax
 
     /// <summary>
     /// Gets the filtered decay data.
