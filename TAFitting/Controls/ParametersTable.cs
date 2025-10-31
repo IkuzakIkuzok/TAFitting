@@ -524,15 +524,20 @@ internal sealed partial class ParametersTable : DataGridView
     {
         if (this.Model is null) return;
 
-        // var decay = row.Decay.OnlyAfterT0;
-        var decay = row.Decay.OfRange(this.TimeMin, this.TimeMax);
+        var decay = row.Decay;
+        var range = decay.GetRange(this.TimeMin, this.TimeMax);
+        var times = decay.GetTimesAsSpan()[range];
+        var signals = decay.GetSignalsAsSpan()[range];
 
         var func = this.Model.GetFunction(row.Parameters);
         var inverse = row.Inverted ? -1 : 1;
         var scaler = this.Model.YLogScale ? Math.Log10 : (Func<double, double>)(x => x);
 
-        var X = decay.Times.ToArray();
-        var Y = decay.Signals.Select(y => scaler(y * inverse)).ToArray();
+        var X = times;
+        var Y = (stackalloc double[signals.Length]);
+        for (var i = 0; i < signals.Length; ++i)
+            Y[i] = scaler(signals[i] * inverse);
+
         var average = Y.AverageNumbers();
         var Se = 0.0;
         var St = 0.0;

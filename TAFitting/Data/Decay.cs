@@ -572,19 +572,26 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>
-    /// Gets the decay data of the specified range.
+    /// Gets the range of indices for the specified time range.
     /// </summary>
     /// <param name="start">The start time of the range.</param>
     /// <param name="end">The end time of the range.</param>
-    /// <returns>The decay data of the specified range.</returns>
-    internal Decay OfRange(double start, double end)
+    /// <returns>The range of indices for the specified time range.</returns>
+    internal Range GetRange(double start, double end)
     {
         var startIndex = Array.BinarySearch(this.times, start);
         if (startIndex < 0) startIndex = ~startIndex;  // If not found, Array.BinarySearch returns the bitwise complement of the index of the next element.
         var endIndex = Array.BinarySearch(this.times, end);
         if (endIndex < 0) endIndex = ~endIndex;
-        return new(this.times[startIndex..endIndex], this.TimeUnit, this.signals[startIndex..endIndex], this.SignalUnit, this.Mode);
-    } // internal Decay OfRange (double, double)
+        return startIndex..endIndex;
+    } // internal Range GetRange (double, double)
+
+    /// <summary>
+    /// Gets the times as a span.
+    /// </summary>
+    /// <returns>The times as a span.</returns>
+    internal ReadOnlySpan<double> GetTimesAsSpan()
+        => this.times.AsSpan();
 
     /// <summary>
     /// Gets the signals as a span.
