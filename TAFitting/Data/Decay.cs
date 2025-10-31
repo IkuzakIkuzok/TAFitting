@@ -215,9 +215,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     private int GetIndexT0()
     {
         if (this.times[0] >= 0) return 0;
-        return this.times.Select((t, i) => (Time: t, Index: i))
-                   .First(t => t.Time >= 0)
-                   .Index;
+        for (var i = 0; i < this.times.Length; i++)
+            if (this.times[i] >= 0) return i;
+        return this.times.Length - 1;  // Do not return this.times.Length, which causes an exception in AsSpan()
     } // private int GetIndexT0 ()
 
     /// <summary>
