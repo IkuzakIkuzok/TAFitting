@@ -145,15 +145,13 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
         builder.AppendLine("\t\t\t\tvar length = x.Length;");
-        builder.AppendLine($"\t\t\t\tvar temp = {TVector}.Create(length);");
         builder.AppendLine($"\t\t\t\tres.Load(parameters[0]);");
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine();
             builder.AppendLine($"\t\t\t\tvar a{i} = parameters[{2 * i - 1}];");
             builder.AppendLine($"\t\t\t\tvar t{i} = parameters[{2 * i}];");
-            builder.AppendLine($"\t\t\t\t{TVector}.ExpDecay(x, a{i}, t{i}, temp);  // temp = a{i} * exp(-x / t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Add(res, temp, res);        // a0 += a{i} * exp(-x / t{i})");
+            builder.AppendLine($"\t\t\t\t{TVector}.AddExpDecay(x, a{i}, t{i}, res);  // res += a{i} * exp(-x / t{i})");
         }
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)

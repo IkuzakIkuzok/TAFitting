@@ -1218,6 +1218,42 @@ public sealed class AvxVector
     } // public static void ExpDecay (AvxVector, double, double, AvxVector)
 
     /// <summary>
+    /// Computes the exponential decay and adds it to the specified result vector.
+    /// </summary>
+    /// <param name="time">The time vector.</param>
+    /// <param name="amplitude">The amplitude.</param>
+    /// <param name="timeConstant">The time constant.</param>
+    /// <param name="result">The vector to store the result.</param>
+    /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
+    /// <exception cref="InvalidOperationException">The <paramref name="result"/> vector is readonly.</exception>
+    public static void AddExpDecay(AvxVector time, double amplitude, double timeConstant, AvxVector result)
+    {
+        ThrowHelper.ThrowIfCountMismatch(time, result);
+        ThrowHelper.ThrowIfReadonly(result);
+
+        ref var begin_time = ref MemoryMarshal.GetArrayDataReference(time._array);
+        ref var to_time = ref Unsafe.Add(ref begin_time, time._array.Length - Vector256<double>.Count);
+
+        ref var current_time = ref begin_time;
+        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+
+        var t = -1.0 / timeConstant;
+        while (Unsafe.IsAddressLessThan(ref current_time, ref to_time))
+        {
+            var v_time = Vector256.LoadUnsafe(ref current_time);
+            var v_result = amplitude * MathUtils.Exp(t * v_time);
+            v_result += Vector256.LoadUnsafe(ref current_result);
+            v_result.StoreUnsafe(ref current_result);
+            current_time = ref Unsafe.Add(ref current_time, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(time);
+        for (var i = offset; i < time._array.Length; i++)
+            result._array[i] += amplitude * MathUtils.FastExp(time._array[i] * t);
+    } // public static void AddExpDecay (AvxVector, double, double, AvxVector)
+
+    /// <summary>
     /// Computes the natural logarithm for each element of the specified vector.
     /// </summary>
     /// <param name="vector">The vector.</param>
