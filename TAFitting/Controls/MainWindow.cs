@@ -1663,18 +1663,14 @@ internal sealed partial class MainWindow : Form
         var decay = this.row.Decay;
         var filtered = decay.Filtered;
 
-        if (this.cb_invert.Checked)
-        {
-            decay = decay.Inverted;
-            filtered = filtered.Inverted;
-        }
+        var invert = this.row.Inverted;
 
         this.s_observed.Points.Clear();
         if (!this.menu_hideOriginal.Checked)
-            this.s_observed.AddDecay(decay);
+            this.s_observed.AddDecay(decay, invert);
 
         this.s_filtered.Points.Clear();
-        this.s_filtered.AddDecay(filtered);
+        this.s_filtered.AddDecay(filtered, invert);
     }// private void ShowObserved ()
 
     /// <summary>
@@ -1686,17 +1682,13 @@ internal sealed partial class MainWindow : Form
         var decay = row.Decay;
         var filtered = decay.Filtered;
 
-        if (row.Inverted)
-        {
-            decay = decay.Inverted;
-            filtered = filtered.Inverted;
-        }
+        var invert = row.Inverted;
 
         this.s_compare.Points.Clear();
         if (this.menu_hideOriginal.Checked)
-            this.s_compare.AddDecay(filtered);
+            this.s_compare.AddDecay(filtered, invert);
         else
-            this.s_compare.AddDecay(decay);
+            this.s_compare.AddDecay(decay, invert);
     } // private void ShowCompare (ParametersTableRow)
 
     private void ShowFit(object? sender, EventArgs e)

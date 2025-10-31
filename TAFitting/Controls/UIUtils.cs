@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -85,8 +86,9 @@ internal static partial class UIUtils
     /// </summary>
     /// <param name="series">The series.</param>
     /// <param name="decay">The decay.</param>
-    internal static void AddDecay(this Series series, Decay decay)
-        => series.AddDecay(decay.Times, decay.Signals);
+    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
+    internal static void AddDecay(this Series series, Decay decay, bool invert = false)
+        => series.AddDecay(decay.Times, decay.Signals, invert);
 
     /// <summary>
     /// Adds the specified decay to the data series.
@@ -94,20 +96,22 @@ internal static partial class UIUtils
     /// <param name="series">The series.</param>
     /// <param name="times">The time series.</param>
     /// <param name="signals">The signal series.</param>
-    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals)
+    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
+    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals, bool invert = false)
     {
         if (times.Count != signals.Count)
             throw new ArgumentException("The lengths of times and signals must be the same.");
 
         var points = new DataPoint[times.Count];
         var count = 0;
+        var sign = invert ? -1 : 1;
         for (var i = 0; i < points.Length; i++)
         {
             var x = times[i];
             var y = signals[i];
             if (x <= 0) continue;
             if (!double.IsFinite(y)) continue;
-            y = Math.Clamp(y, DecimalMin, DecimalMax);
+            y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
             var p = new DataPoint(series);
             p.SetValueXY(x, y);
@@ -115,7 +119,7 @@ internal static partial class UIUtils
         }
         series.Points.AddRange(points[..count]);
         series.Points.Invalidate();
-    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>)
+    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, [bool])
 
     /// <summary>
     /// Gets the range of the specified series.

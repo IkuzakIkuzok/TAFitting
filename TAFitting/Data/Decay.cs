@@ -195,21 +195,6 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         }
     }
 
-
-    /// <summary>
-    /// Gets the inverted decay data.
-    /// </summary>
-    internal Decay Inverted
-    {
-        get
-        {
-            var inv = new double[this.signals.Length];
-            for (var i = 0; i < this.signals.Length; i++)
-                inv[i] = -this.signals[i];
-            return new(this.times, this.TimeUnit, inv, this.SignalUnit, this.Mode);
-        }
-    }
-
     /// <summary>
     /// Gets the filtered decay data.
     /// </summary>
