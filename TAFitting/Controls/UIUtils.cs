@@ -100,8 +100,8 @@ internal static partial class UIUtils
     /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
     internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals, DataPoint[] points, bool invert = false)
     {
-        if (times.Count != signals.Count)
-            throw new ArgumentException("The lengths of times and signals must be the same.");
+        if (times.Count > signals.Count)
+            throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
 
         var count = 0;
         var sign = invert ? -1 : 1;
@@ -122,6 +122,31 @@ internal static partial class UIUtils
         series.Points.AddRange(points[..count]);
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, DataPoint[], [bool])
+
+    internal static void AddDecay(this Series series, ReadOnlySpan<double> times, ReadOnlySpan<double> signals, DataPoint[] points, bool invert = false)
+    {
+        if (times.Length > signals.Length)
+            throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
+
+        var count = 0;
+        var sign = invert ? -1 : 1;
+        for (var i = 0; i < times.Length; i++)
+        {
+            var x = times[i];
+            var y = signals[i];
+            if (x <= 0) continue;
+            if (!double.IsFinite(y)) continue;
+            y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
+
+            var p = (points[count] ??= new(series));
+            p.XValue = x;
+            p.YValues[0] = y;
+            p.IsEmpty = false;
+            ++count;
+        }
+        series.Points.AddRange(points[..count]);
+        series.Points.Invalidate();
+    } // internal static void AddDecay (this Series, ReadOnlySpan<double>, ReadOnlySpan<double>, DataPoint[], [bool]))
 
     /// <summary>
     /// Gets the range of the specified series.

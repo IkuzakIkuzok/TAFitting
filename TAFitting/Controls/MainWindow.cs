@@ -3,6 +3,7 @@
 
 using DisposalGenerator;
 using Microsoft.Win32;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -1662,7 +1663,7 @@ internal sealed partial class MainWindow : Form
         if (this.stopDrawing) return;
         if (this.row is null) return;
         var decay = this.row.Decay;
-        var filtered = decay.Filtered;
+        var filtered = decay.FilteredSignals;
 
         var invert = this.row.Inverted;
 
@@ -1675,9 +1676,9 @@ internal sealed partial class MainWindow : Form
         }
 
         this.s_filtered.Points.Clear();
-        if ((this.dp_filtered?.Length ?? 0) < filtered.Times.Count)
-            this.dp_filtered = new DataPoint[filtered.Times.Count];
-        this.s_filtered.AddDecay(filtered, this.dp_filtered!, invert);
+        if ((this.dp_filtered?.Length ?? 0) < filtered.Length)
+            this.dp_filtered = new DataPoint[filtered.Length];
+        this.s_filtered.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_filtered!, invert);
     }// private void ShowObserved ()
 
     /// <summary>
@@ -1687,7 +1688,6 @@ internal sealed partial class MainWindow : Form
     private void ShowCompare(ParametersTableRow row)
     {
         var decay = row.Decay;
-        var filtered = decay.Filtered;
 
         var invert = row.Inverted;
 
@@ -1695,7 +1695,10 @@ internal sealed partial class MainWindow : Form
         if ((this.dp_compare?.Length ?? 0) < decay.Times.Count)
             this.dp_compare = new DataPoint[decay.Times.Count];
         if (this.menu_hideOriginal.Checked)
-            this.s_compare.AddDecay(filtered, this.dp_compare!, invert);
+        {
+            var filtered = decay.FilteredSignals;
+            this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_compare!, invert);
+        }
         else
             this.s_compare.AddDecay(decay, this.dp_compare!, invert);
     } // private void ShowCompare (ParametersTableRow)
@@ -1720,12 +1723,23 @@ internal sealed partial class MainWindow : Form
         var func = model.GetFunction(parameters);
         var invert = this.cb_invert.Checked ? -1 : 1;
         var times = Unsafe.As<double[]>(decay.Times);
-        var signals = Array.ConvertAll(times, t => func(t) * invert);
+        
+        //var signals = Array.ConvertAll(times, t => func(t) * invert);
+        var signals = ArrayPool<double>.Shared.Rent(times.Length);
+        try
+        {
+            for (var i = 0; i < times.Length; i++)
+                signals[i] = func(times[i]) * invert;
+        }
+        finally
+        {
+            ArrayPool<double>.Shared.Return(signals);
+        }
 
         this.s_fit.Points.Clear();
         if ((this.dp_fit?.Length ?? 0) < times.Length)
             this.dp_fit = new DataPoint[times.Length];
-        this.s_fit.AddDecay(times, signals, this.dp_fit!);
+        this.s_fit.AddDecay(times.AsSpan(), signals.AsSpan(), this.dp_fit!);  // AsSpan() is required to avoid ambiguity with IReadOnlyList<double> overload
     } // private void ShowFit ()
 
     #endregion Show plots
