@@ -35,10 +35,7 @@ internal sealed class FileCache
     internal FileCache(bool half = false)
     {
         this._buffer1 = new byte[BUFFER_LENGTH];
-        if (half)
-            this._buffer2 = null!;
-        else
-            this._buffer2 = new byte[BUFFER_LENGTH];
+        this._buffer2 = half ? [] : new byte[BUFFER_LENGTH];
     } // ctor ()
 
     /// <summary>
