@@ -482,16 +482,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         if (preLoadData.Length < lines * 43) return FromFile(filename, timeUnit, signalUnit);
 #endif
 
-
 #if Tekave
         const int LINE_LEN = FileCache.LINE_LENGTH;
         const int SIGNAL_POS = 24; // The position of the signal in a line.
-        var span = preLoadData.AsSpan();
-        /*
-         * Do NOT use `preLoadData.Length` after this line,
-         * because the property may change after span creation due to background loading
-         * whereas the length of the span is fixed.
-         */
 
         var timeScaling = SCALING_FACTOR / timeUnit;
         var signalScaling = SCALING_FACTOR / signalUnit;
@@ -499,14 +492,16 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var times = new double[lines];
         var signals = new double[lines];
 
-        var t = span.Slice(3, PARSING_LENGTH);
+        var line = preLoadData.ReadLine(0);
+        var t = line.Slice(3, PARSING_LENGTH);
         var dt = FastParseFixedPoint(t);
 
-        var l = Math.Min(span.Length / LINE_LEN, lines);
+        var l = Math.Min(preLoadData.Length / LINE_LEN, lines);
         var i = 0;
         for (; i < l; ++i)
         {
-            var s = span.Slice(LINE_LEN * i + SIGNAL_POS, PARSING_LENGTH);
+            line = preLoadData.ReadLine(i);
+            var s = line.Slice(SIGNAL_POS, PARSING_LENGTH);
             times[i] = (dt * (i + 1)) * timeScaling;
             signals[i] = FastParseFixedPoint(s) * signalScaling;
         }

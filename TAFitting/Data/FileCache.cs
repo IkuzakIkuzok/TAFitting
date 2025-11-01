@@ -8,35 +8,34 @@ namespace TAFitting.Data;
 /// </summary>
 internal sealed class FileCache
 {
+    /*
+     * A buffer for entire data (107457 bytes) is too large and allocated on Large Object Heap (LOH).
+     * This is unfavorable for performance.
+     * Splitting the buffer into two (66048 bytes each) avoids LOH allocation and improves performance.
+     * 66048 bytes = 43 bytes/line * 1536 lines
+     */
+
     internal const int LINE_LENGTH = 43;
     internal const int LINE_COUNT = 2499;
 
-    private readonly byte[] _buffer;
+    private const int BUFFER_LENGTH = 66048;
+
+    private int length = 0;
+    private readonly byte[] _buffer1, _buffer2;
 
     /// <summary>
     /// Gets the length of the data.
     /// </summary>
-    internal int Length { get; private set; }
+    internal int Length => this.length;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
     /// </summary>
-    internal FileCache() : this(LINE_LENGTH * LINE_COUNT) { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileCache"/> class with the specified length.
-    /// </summary>
-    /// <param name="length">The length of the buffer.</param>
-    internal FileCache(int length)
+    internal FileCache()
     {
-        this._buffer = new byte[length];
-    } // ctor (int)
-
-    /// <summary>
-    /// Gets the buffer as a span.
-    /// </summary>
-    /// <returns>The buffer as a span.</returns>
-    internal Span<byte> AsSpan() => this._buffer.AsSpan(0, this.Length);
+        this._buffer1 = new byte[BUFFER_LENGTH];
+        this._buffer2 = new byte[BUFFER_LENGTH];
+    } // ctor ()
 
     /// <summary>
     /// Appends the specified data to the buffer.
@@ -48,7 +47,20 @@ internal sealed class FileCache
     /// </remarks>
     internal void Append(ReadOnlySpan<byte> data)
     {
-        data.CopyTo(this._buffer.AsSpan(this.Length));
-        this.Length += data.Length;
+        var i = this.length % BUFFER_LENGTH;
+        data.CopyTo((this.length < BUFFER_LENGTH ? this._buffer1 : this._buffer2).AsSpan(i));
+        this.length += data.Length;
     } // internal void Append (ReadOnlySpan<byte>)
+
+    /// <summary>
+    /// Reads a line from the buffer at the specified line index.
+    /// </summary>
+    /// <param name="lineIndex">The index of the line to read.</param>
+    /// <returns>The span of bytes representing the line.</returns>
+    internal Span<byte> ReadLine(int lineIndex)
+    {
+        var start = lineIndex * LINE_LENGTH;
+        var bufferIndex = start % BUFFER_LENGTH;
+        return (start < BUFFER_LENGTH ? this._buffer1 : this._buffer2).AsSpan(bufferIndex, LINE_LENGTH);
+    } // internal Span<byte> ReadLine (int)
 } // internal sealed class FileCache
