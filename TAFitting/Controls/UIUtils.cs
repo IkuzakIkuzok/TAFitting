@@ -85,9 +85,10 @@ internal static partial class UIUtils
     /// </summary>
     /// <param name="series">The series.</param>
     /// <param name="decay">The decay.</param>
+    /// <param name="points">The data points buffer.</param>
     /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
-    internal static void AddDecay(this Series series, Decay decay, bool invert = false)
-        => series.AddDecay(decay.Times, decay.Signals, invert);
+    internal static void AddDecay(this Series series, Decay decay, DataPoint[] points, bool invert = false)
+        => series.AddDecay(decay.Times, decay.Signals, points, invert);
 
     /// <summary>
     /// Adds the specified decay to the data series.
@@ -95,16 +96,16 @@ internal static partial class UIUtils
     /// <param name="series">The series.</param>
     /// <param name="times">The time series.</param>
     /// <param name="signals">The signal series.</param>
+    /// <param name="points">The data points buffer.</param>
     /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
-    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals, bool invert = false)
+    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals, DataPoint[] points, bool invert = false)
     {
         if (times.Count != signals.Count)
             throw new ArgumentException("The lengths of times and signals must be the same.");
 
-        var points = new DataPoint[times.Count];
         var count = 0;
         var sign = invert ? -1 : 1;
-        for (var i = 0; i < points.Length; i++)
+        for (var i = 0; i < times.Count; i++)
         {
             var x = times[i];
             var y = signals[i];
@@ -112,13 +113,15 @@ internal static partial class UIUtils
             if (!double.IsFinite(y)) continue;
             y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
-            var p = new DataPoint(series);
-            p.SetValueXY(x, y);
-            points[count++] = p;
+            var p = (points[count] ??= new(series));
+            p.XValue = x;
+            p.YValues[0] = y;
+            p.IsEmpty = false;
+            ++count;
         }
         series.Points.AddRange(points[..count]);
         series.Points.Invalidate();
-    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, [bool])
+    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, DataPoint[], [bool])
 
     /// <summary>
     /// Gets the range of the specified series.
