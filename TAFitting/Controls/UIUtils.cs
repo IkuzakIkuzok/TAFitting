@@ -123,6 +123,15 @@ internal static partial class UIUtils
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, DataPoint[], [bool])
 
+    /// <summary>
+    /// Adds the specified decay to the data series.
+    /// </summary>
+    /// <param name="series">The series.</param>
+    /// <param name="times">The time series.</param>
+    /// <param name="signals">The signal series.</param>
+    /// <param name="points">The data points buffer.</param>
+    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
+    /// <exception cref="ArgumentException">The length of <paramref name="times"/> must not be greater than that of <paramref name="signals"/>.</exception>
     internal static void AddDecay(this Series series, ReadOnlySpan<double> times, ReadOnlySpan<double> signals, DataPoint[] points, bool invert = false)
     {
         if (times.Length > signals.Length)
