@@ -48,17 +48,17 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
         Task.Run(() =>
         {
             Load(file_ab, this.cache_ab, wavelength);
-            Load(file_b, this.cache_b, wavelength);
+            Load(file_b, this.cache_b, wavelength, true);
         });
     } // internal void Register (string)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Load(string path, ConcurrentDictionary<double, FileCache> cache, double wavelength)
+    private static void Load(string path, ConcurrentDictionary<double, FileCache> cache, double wavelength, bool half = false)
     {
         const int BUFF_LEN = FileCache.LINE_LENGTH;
         const int LINES = 3;
 
-        var data = new FileCache();
+        var data = new FileCache(half);
         cache[wavelength] = data;
 
         using var reader = new FileStream(
@@ -68,7 +68,13 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
         );
 
         var buffer = (stackalloc byte[BUFF_LEN * LINES]);
-        for (var i = 0; i < 2499; i += LINES)
+        var lines = FileCache.LINE_COUNT;
+        if (half) lines >>= 1;
+        /*
+         * For 'half' loading, 3*417 lines are read (total 1251 lines).
+         * This exceeds the exact half (1249 lines) but FileCache can hold 1251 lines, so this is acceptable.
+         */
+        for (var i = 0; i < lines; i += LINES)
         {
             reader.ReadExactly(buffer);
             data.Append(buffer);

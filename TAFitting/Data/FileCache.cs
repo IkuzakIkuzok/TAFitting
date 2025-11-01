@@ -11,14 +11,14 @@ internal sealed class FileCache
     /*
      * A buffer for entire data (107457 bytes) is too large and allocated on Large Object Heap (LOH).
      * This is unfavorable for performance.
-     * Splitting the buffer into two (66048 bytes each) avoids LOH allocation and improves performance.
-     * 66048 bytes = 43 bytes/line * 1536 lines
+     * Splitting the buffer into two (53793 bytes each) avoids LOH allocation and improves performance.
+     * 53793 bytes = 43 bytes/line * 1251 lines
      */
 
     internal const int LINE_LENGTH = 43;
     internal const int LINE_COUNT = 2499;
 
-    private const int BUFFER_LENGTH = 66048;
+    private const int BUFFER_LENGTH = 53793;
 
     private int length = 0;
     private readonly byte[] _buffer1, _buffer2;
@@ -31,10 +31,13 @@ internal sealed class FileCache
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
     /// </summary>
-    internal FileCache()
+    internal FileCache(bool half = false)
     {
         this._buffer1 = new byte[BUFFER_LENGTH];
-        this._buffer2 = new byte[BUFFER_LENGTH];
+        if (half)
+            this._buffer2 = null!;
+        else
+            this._buffer2 = new byte[BUFFER_LENGTH];
     } // ctor ()
 
     /// <summary>
