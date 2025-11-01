@@ -13,6 +13,7 @@ internal sealed class FileCache
      * This is unfavorable for performance.
      * Splitting the buffer into two (53793 bytes each) avoids LOH allocation and improves performance.
      * 53793 bytes = 43 bytes/line * 1251 lines
+     * 1251 lines = Ceil((2499 lines >> 1) / 3 lines) * 3 lines, where 3 is the number of lines read at once.
      */
 
     internal const int LINE_LENGTH = 43;
