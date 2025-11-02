@@ -12,22 +12,27 @@ internal sealed class FileCache
      * A buffer for entire data (107457 bytes) is too large and allocated on Large Object Heap (LOH).
      * This is unfavorable for performance.
      * Splitting the buffer into two (53793 bytes each) avoids LOH allocation and improves performance.
-     * 53793 bytes = 43 bytes/line * 1251 lines
-     * 1251 lines = Ceil((2499 lines >> 1) / 3 lines) * 3 lines, where 3 is the number of lines read at once.
+     * 53750 bytes = 43 bytes/line * 1250 lines
+     * 1250 lines = Ceil(2499 lines / 2)
      */
 
     internal const int LINE_LENGTH = 43;
     internal const int LINE_COUNT = 2499;
 
-    private const int BUFFER_LENGTH = 53793;
+    private const int BUFFER_LENGTH = 53750;
 
-    private int length = 0;
+    private int _length = 0;
     private readonly byte[] _buffer1, _buffer2;
 
     /// <summary>
     /// Gets the length of the data.
     /// </summary>
-    internal int Length => this.length;
+    internal int Length
+    {
+        get => this._length;
+        // RandomAccess.Read returns 0 if the end of the file has been reached.
+        set => this._length = value == 0 ? LINE_LENGTH * LINE_COUNT : value;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
@@ -39,19 +44,14 @@ internal sealed class FileCache
     } // ctor ()
 
     /// <summary>
-    /// Appends the specified data to the buffer.
+    /// Gets the buffers for file data.
     /// </summary>
-    /// <param name="data">The data to append.</param>
+    /// <returns>The list of buffers.</returns>
     /// <remarks>
-    /// This method is NOT thread-safe.
-    /// Ensure that calls to this method are synchronized if accessed from multiple threads.
+    /// The returned list can be used directly in <see cref="RandomAccess.Read"/> method.
     /// </remarks>
-    internal void Append(ReadOnlySpan<byte> data)
-    {
-        var i = this.length % BUFFER_LENGTH;
-        data.CopyTo((this.length < BUFFER_LENGTH ? this._buffer1 : this._buffer2).AsSpan(i));
-        this.length += data.Length;
-    } // internal void Append (ReadOnlySpan<byte>)
+    internal IReadOnlyList<Memory<byte>> GetBuffers()
+        => [this._buffer1.AsMemory(), this._buffer2.AsMemory()];
 
     /// <summary>
     /// Reads a line from the buffer at the specified line index.
