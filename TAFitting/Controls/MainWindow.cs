@@ -1826,7 +1826,9 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        var times = source.First().Decay.TimesAfterT0.ToArray();
+        var d = source.First().Decay;
+        var times = d.Times;
+        var range = d.GetRangeAfterT0();
 
         var fixedCols =
             cols.Select((c, i) => (c.Fixed, Index: i))
@@ -1836,8 +1838,8 @@ internal sealed partial class MainWindow : Form
 
         Func<ILevenbergMarquardtSolver> initSolver =
             Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel vectorized
-            ? () => new LevenbergMarquardtSIMD(vectorized, times, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, }
-            : () => new LevenbergMarquardt(model, times, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, };
+            ? () => new LevenbergMarquardtSIMD(vectorized, times, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, }
+            : () => new LevenbergMarquardt(model, times, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, };
 
         var start = Stopwatch.GetTimestamp();
 
@@ -1900,7 +1902,7 @@ internal sealed partial class MainWindow : Form
     /// <returns>The estimated parameters.</returns>
     private static IReadOnlyList<double> LevenbergMarquardtEstimation(ILevenbergMarquardtSolver solver, ParametersTableRow row)
     {
-        var signals = row.Decay.SignalsAfterT0.ToArray();
+        var signals = row.Decay.Signals;
         solver.Initialize(signals, row.Parameters);
         solver.Fit();
         return solver.Parameters;

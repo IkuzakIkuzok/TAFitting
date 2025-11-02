@@ -52,6 +52,7 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     /// <inheritdoc/>
     public Numbers Parameters => this.parameters;
 
+    private readonly Range range;
     private readonly AvxVector x;
     private AvxVector y;
     private readonly AvxVector est_vals;
@@ -73,11 +74,12 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     /// <param name="model">The fitting model.</param>
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
+    /// <param name="range">The range of data points to use.</param>
     /// <param name="parameters">The initial parameters.</param>
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
-    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Numbers parameters, IReadOnlyList<int> fixedParameters)
-        : this(model, x, parameters.Count, fixedParameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Range range, Numbers parameters, IReadOnlyList<int> fixedParameters)
+        : this(model, x, range, parameters.Count, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
@@ -87,12 +89,14 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         Initialize(y, parameters);
     } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
 
-    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Range range, int numberOfParameters, IReadOnlyList<int> fixedParameters)
     {
         this.Model = model;
-        this.numberOfDataPoints = x.Count;
+        (var _, var length) = range.GetOffsetAndLength(x.Count);
+        this.numberOfDataPoints = length;
         this.numberOfParameters = numberOfParameters;
-        this.x = CreateReadonlyVector(x);
+        this.range = range;
+        this.x = CreateReadonlyVector(x, range);
         this.y = null!;
 
         this.parameters = new double[this.numberOfParameters];
@@ -115,19 +119,20 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     /// <inheritdoc/>
     public void Initialize(Numbers y, Numbers parameters)
     {
-        this.y = CreateReadonlyVector(y);
+        this.y = CreateReadonlyVector(y, this.range);
         this.Lambda = LAMBDA;
         Array.Copy(parameters.ToArray(), this.parameters, this.numberOfParameters);
     } // public void Initialize (Numbers, Numbers)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static AvxVector CreateReadonlyVector(Numbers source)
+    private static AvxVector CreateReadonlyVector(Numbers source, Range range)
     {
+        (var offset, var length) = range.GetOffsetAndLength(source.Count);
         // Optimize for array input by avoiding extra allocation and copy
         if (source is double[] array)
-            return AvxVector.CreateReadonly(array);
+            return AvxVector.CreateReadonly(array, offset, length);
 
-        return AvxVector.CreateReadonly([.. source]);
+        return AvxVector.CreateReadonly([.. source], offset, length);
     } // private static AvxVector CreateReadonlyVector (Numbers)
 
     /// <inheritdoc/>

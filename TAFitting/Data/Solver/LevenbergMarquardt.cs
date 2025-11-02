@@ -83,8 +83,9 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// </summary>
     internal double DerivativeThreshold { get; init; } = 1e-4;
 
-    private readonly Numbers x;
-    private Numbers y;
+    private readonly Range range;
+    private readonly double[] x;
+    private double[] y;
     private readonly double[] parameters;
     private readonly double[] incrementedParameters;
     private readonly ParameterConstraints[] constraints;
@@ -106,8 +107,9 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// <param name="model">The fitting model.</param>
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
+    /// <param name="range">The range of data points to use.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
-    internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y) : this(model, x, y, [.. model.Parameters.Select(p => p.InitialValue)], []) { }
+    internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y, Range range) : this(model, x, y, range, [.. model.Parameters.Select(p => p.InitialValue)], []) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LevenbergMarquardt"/> class
@@ -116,11 +118,12 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// <param name="model">The fitting model.</param>
     /// <param name="x">The x values.</param>
     /// <param name="y">The y values.</param>
+    /// <param name="range">The range of data points to use.</param>
     /// <param name="parameters">The initial parameters.</param>
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
-    internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y, Numbers parameters, IReadOnlyList<int> fixedParameters)
-        : this(model, x, parameters.Count, fixedParameters)
+    internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y, Range range, Numbers parameters, IReadOnlyList<int> fixedParameters)
+        : this(model, x, range, parameters.Count, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
@@ -132,15 +135,18 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// Initializes a new instance of the <see cref="LevenbergMarquardt"/> class.
     /// </summary>
     /// <param name="model">The fitting model.</param>
-    /// <param name="numberOfDataPoints">The number of data points.</param>
+    /// <param name="x"">The x values.</param>
+    /// <param name="range">The range of data points to use.</param>
     /// <param name="numberOfParameters">The number of parameters.</param>
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
-    internal LevenbergMarquardt(IFittingModel model, Numbers x, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    internal LevenbergMarquardt(IFittingModel model, Numbers x, Range range, int numberOfParameters, IReadOnlyList<int> fixedParameters)
     {
         this.Model = model;
-        this.numberOfDataPoints = x.Count;
+        (var o, var l) = range.GetOffsetAndLength(x.Count);
+        this.numberOfDataPoints = l;
         this.numberOfParameters = numberOfParameters;
-        this.x = x;
+        this.range = range;
+        this.x = [.. x.Skip(o).Take(l)];
         this.y = null!;
 
         if (this.Model is IAnalyticallyDifferentiable diff)
@@ -170,7 +176,8 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// <inheritdoc/>
     public void Initialize(Numbers y, Numbers parameters)
     {
-        this.y = y;
+        (var o, var l) = this.range.GetOffsetAndLength(y.Count);
+        this.y = [.. y.Skip(o).Take(l)];
         this.Lambda = LAMBDA;
         Array.Copy(parameters.ToArray(), 0, this.parameters, 0, this.numberOfParameters);
     } // public void Initialize (Numbers, Numbers)
