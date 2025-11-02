@@ -588,6 +588,16 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     } // internal Range GetRange (double, double)
 
     /// <summary>
+    /// Gets the range of indices after t=0.
+    /// </summary>
+    /// <returns>The range of indices after t=0.</returns>
+    internal Range GetRangeAfterT0()
+    {
+       var index_t0 = GetIndexT0();
+        return index_t0..this.times.Length;
+    } // internal Range GetRangeAfterT0 ()
+
+    /// <summary>
     /// Gets the times as a span.
     /// </summary>
     /// <returns>The times as a span.</returns>
