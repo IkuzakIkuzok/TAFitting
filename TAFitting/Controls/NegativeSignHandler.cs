@@ -100,4 +100,23 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <returns>The converted text.</returns>
     internal static string ToMinusSign(string text)
         => text.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Tries to parse the string as a double, considering both minus sign variants.
+    /// </summary>
+    /// <param name="s">The string to parse.</param>
+    /// <param name="value">The parsed double value.</param>
+    /// <returns><see langword="true"/> if parsing succeeded; otherwise, <see langword="false"/>.</returns>
+    internal static bool TryParseDouble(string? s, out double value)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            value = 0;
+            return false;
+        }
+
+        if (double.TryParse(ToMinusSign(s), out value)) return true;
+        if (double.TryParse(ToHyphenMinus(s), out value)) return true;
+        return false;
+    } // internal static bool TryParseDouble (string?, out double)
 } // internal sealed partial class NegativeSignHandler : IDisposable

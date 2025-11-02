@@ -203,8 +203,8 @@ internal sealed partial class ParametersTable : DataGridView
 
         if (e.ColumnIndex < 1 || e.ColumnIndex > this.ParametersCount) return;
 
-        var cellValue = e.FormattedValue?.ToString()?.Replace("-", NegativeSignHandler.MinusSign, StringComparison.InvariantCulture);
-        if (!double.TryParse(cellValue, out var value))
+        var cellValue = e.FormattedValue?.ToString();
+        if (!NegativeSignHandler.TryParseDouble(cellValue, out var value))
         {
             e.Cancel = true;
             this.Rows[e.RowIndex].ErrorText = "Invalid value.";
