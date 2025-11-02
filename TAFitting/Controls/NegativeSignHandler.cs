@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
@@ -90,16 +91,18 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// </summary>
     /// <param name="text">The text to be converted.</param>
     /// <returns>The converted text.</returns>
-    internal static string ToHyphenMinus(string text)
-        => text.Replace(MinusSign, HyphenMinus, StringComparison.Ordinal);
+    [return: NotNullIfNotNull(nameof(text))]
+    internal static string? ToHyphenMinus(string? text)
+        => text?.Replace(MinusSign, HyphenMinus, StringComparison.Ordinal);
 
     /// <summary>
     /// Converts the text to use the minus sign.
     /// </summary>
     /// <param name="text">The text to be converted.</param>
     /// <returns>The converted text.</returns>
-    internal static string ToMinusSign(string text)
-        => text.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
+    [return: NotNullIfNotNull(nameof(text))]
+    internal static string? ToMinusSign(string? text)
+        => text?.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
 
     /// <summary>
     /// Tries to parse the string as a double, considering both minus sign variants.
