@@ -93,7 +93,15 @@ internal static class CollectionHelper
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddRange(ReadOnlySpan<T> span)
         {
+#if SAFE_COLLECTION
+            if (this.items is not List<T> list)
+            {
+                AddRangeForEach(span);
+                return;
+            }
+#else
             var list = Unsafe.As<List<T>>(this.items);
+#endif
             if (list.Capacity < list.Count + span.Length)
                 list.Capacity = list.Count + span.Length;
 
@@ -108,6 +116,7 @@ internal static class CollectionHelper
 
             for (var i = 0; i < span.Length; i++)
                 list.Add(span[i]);
+
         } // internal void AddRange (ReadOnlySpan<T>)
 
 #if SAFE_COLLECTION
@@ -117,6 +126,12 @@ internal static class CollectionHelper
             foreach (var item in collection)
                 this.items.Add(item);
         } // private void AddRangeForEach (IEnumerable<T>)
+
+        private void AddRangeForEach(ReadOnlySpan<T> span)
+        {
+            for (var i = 0; i < span.Length; i++)
+                this.items.Add(span[i]);
+        } // private void AddRangeForEach (ReadOnlySpan<T>)
 
 #endif
     } // internal class CollectionWrapper<T>
