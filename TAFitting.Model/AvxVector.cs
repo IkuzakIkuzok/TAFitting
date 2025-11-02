@@ -781,7 +781,7 @@ public sealed class AvxVector
     /// Converts the vector to a read-only list.
     /// </summary>
     /// <returns>The read-only list that contains the elements of the vector.</returns>
-    public IReadOnlyList<double> ToReadOnlyList() => Array.AsReadOnly(this._array);
+    public IReadOnlyList<double> ToReadOnlyList() => AsSpan().ToArray();
 
     /// <summary>
     /// Determines whether the current vector is equal to the specified vector by comparing their elements sequentially.
