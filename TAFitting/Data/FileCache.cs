@@ -21,18 +21,12 @@ internal sealed class FileCache
 
     private const int BUFFER_LENGTH = 53750;
 
-    private int _length = 0;
     private readonly byte[] _buffer1, _buffer2;
 
     /// <summary>
     /// Gets the length of the data.
     /// </summary>
-    internal int Length
-    {
-        get => this._length;
-        // RandomAccess.Read returns 0 if the end of the file has been reached.
-        set => this._length = value == 0 ? LINE_LENGTH * LINE_COUNT : value;
-    }
+    internal int Length { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
