@@ -487,6 +487,7 @@ file static class MathUtils
 public sealed class AvxVector
 {
     private readonly double[] _array;
+    private readonly int _offset, _length;
 
     /// <summary>
     /// Gets a value indicating whether the <see cref="AvxVector"/> is supported on the current system.
@@ -496,7 +497,7 @@ public sealed class AvxVector
     /// <summary>
     /// Gets the length of the vector.
     /// </summary>
-    public int Length => this._array.Length;
+    public int Length => this._length;
 
     /// <summary>
     /// Gets a value indicating whether the current vector is readonly.
@@ -510,8 +511,8 @@ public sealed class AvxVector
     {
         get
         {
-            ref var begin = ref MemoryMarshal.GetArrayDataReference(this._array);
-            ref var to = ref Unsafe.Add(ref begin, this._array.Length - Vector256<double>.Count);
+            ref var begin = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+            ref var to = ref Unsafe.Add(ref begin, this._length - Vector256<double>.Count);
             ref var current = ref begin;
 
             var sums = Vector256<double>.Zero;
@@ -524,9 +525,8 @@ public sealed class AvxVector
 
             var sum = Vector256.Sum(sums);
             var offset = GetRemainingOffset(this);
-            var remaining = this._array.AsSpan(offset);
-            foreach (var v in remaining)
-                sum += v;
+            for (var i = offset; i < this._length; i++)
+                sum += this._array[i + this._offset];
 
             return sum;
         }
@@ -539,8 +539,8 @@ public sealed class AvxVector
     {
         get
         {
-            ref var begin = ref MemoryMarshal.GetArrayDataReference(this._array);
-            ref var to = ref Unsafe.Add(ref begin, this._array.Length - Vector256<double>.Count);
+            ref var begin = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+            ref var to = ref Unsafe.Add(ref begin, this._length - Vector256<double>.Count);
             ref var current = ref begin;
 
             var sums = Vector256<double>.Zero;
@@ -553,9 +553,11 @@ public sealed class AvxVector
 
             var sum = Vector256.Sum(sums);
             var offset = GetRemainingOffset(this);
-            var remaining = this._array.AsSpan(offset);
-            foreach (var v in remaining)
+            for (var i = offset; i < this._length; i++)
+            {
+                var v = this._array[i + this._offset];
                 sum += v * v;
+            }
 
             return sum;
         }
@@ -569,11 +571,11 @@ public sealed class AvxVector
     /// <exception cref="InvalidOperationException">The current vector is readonly.</exception>
     public double this[int index]
     {
-        get => this._array[index];
+        get => this._array[index + this._offset];
         set
         {
             ThrowHelper.ThrowIfReadonly(this);
-            this._array[index] = value;
+            this._array[index + this._offset] = value;
         }
     }
 
@@ -590,11 +592,28 @@ public sealed class AvxVector
     /// </summary>
     /// <param name="values">The values of the vector.</param>
     /// <param name="isReadonly">A value indicating whether the vector is readonly.</param>
-    public AvxVector(double[] values, bool isReadonly)
+    public AvxVector(double[] values, bool isReadonly) : this(values, isReadonly, 0, values.Length) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AvxVector"/> class
+    /// with the specified values, a value indicating whether the vector is readonly,
+    /// and the offset and length of the vector within the values array.
+    /// </summary>
+    /// <param name="values">The values of the vector.</param>
+    /// <param name="isReadonly">A value indicating whether the vector is readonly.</param>
+    /// <param name="offset">The offset of the vector within the values array.</param>
+    /// <param name="length">The length of the vector.</param>
+    public AvxVector(double[] values, bool isReadonly, int offset, int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
+        ArgumentOutOfRangeException.ThrowIfNegative(length, nameof(length));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + length, values.Length, nameof(length));
+
         this.IsReadonly = isReadonly;
         this._array = values;
-    } // ctor (double[], bool)
+        this._offset = offset;
+        this._length = length;
+    } // ctor (double[], bool, int, int)
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AvxVector"/> class
@@ -619,6 +638,8 @@ public sealed class AvxVector
 
         this.IsReadonly = isReadonly;
         this._array = new double[count];
+        this._offset = 0;
+        this._length = count;
         var span = this._array.AsSpan();
         span.Fill(value);
     } // ctor (int, double, bool)
@@ -636,6 +657,8 @@ public sealed class AvxVector
             throw new ArgumentOutOfRangeException(nameof(count), "The count must be greater than or equal to zero.");
 
         this._array = new double[count];
+        this._offset = 0;
+        this._length = count;
     } // ctor (int)
 
     /// <summary>
@@ -650,7 +673,7 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfReadonly(this);
         ThrowHelper.ThrowIfCountMismatch(this, values);
 
-        values.CopyTo(this._array, 0);
+        values.CopyTo(this._array, this._offset);
     } // public void Load (double[])
 
     /// <summary>
@@ -667,7 +690,7 @@ public sealed class AvxVector
     {
         ThrowHelper.ThrowIfReadonly(this);
 
-        var span = this._array.AsSpan();
+        var span = this._array.AsSpan(this._offset, this._length);
         span.Fill(value);
     } // public void Load (double)
 
@@ -682,7 +705,7 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfReadonly(this);
 
         // Span<T>.Clear is faster than Array.Clear for this case
-        var span = this._array.AsSpan();
+        var span = this._array.AsSpan(this._offset, this._length);
         span.Clear();
     } // public void Clear ()
 
@@ -692,6 +715,15 @@ public sealed class AvxVector
     /// <param name="values">The values of the vector.</param>
     /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
     public static AvxVector Create(double[] values) => new(values, false);
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="AvxVector"/> class with the specified values, offset, and length.
+    /// </summary>
+    /// <param name="values">The values of the vector.</param>
+    /// <param name="offset">The offset of the vector within the values array.</param>
+    /// <param name="length">The length of the vector.</param>
+    /// <returns>A new <see cref="AvxVector"/> instance that contains the specified values.</returns>
+    public static AvxVector Create(double[] values, int offset, int length) => new(values, false, offset, length);
 
     /// <summary>
     /// Creates a new instance of the <see cref="AvxVector"/> class with the specified count and value.
@@ -716,6 +748,15 @@ public sealed class AvxVector
     public static AvxVector CreateReadonly(double[] values) => new(values, true);
 
     /// <summary>
+    /// Creates a new readonly instance of the <see cref="AvxVector"/> class with the specified values, offset, and length.
+    /// </summary>
+    /// <param name="values">The values of the vector.</param>
+    /// <param name="offset">The offset of the vector within the values array.</param>
+    /// <param name="length">The length of the vector.</param>
+    /// <returns>A new readonly <see cref="AvxVector"/> instance that contains the specified values.</returns>
+    public static AvxVector CreateReadonly(double[] values, int offset, int length) => new(values, true, offset, length);
+
+    /// <summary>
     /// Creates a new readonly instance of the <see cref="AvxVector"/> class with the specified count and value.
     /// </summary>
     /// <param name="count">The number of elements in the vector.</param>
@@ -727,14 +768,14 @@ public sealed class AvxVector
     /// Returns a reference to the first element of the vector's internal array.
     /// </summary>
     /// <returns>A reference to the first element of the vector's internal array.</returns>
-    public ref double GetPinnableReference() => ref this._array[0];
+    public ref double GetPinnableReference() => ref this._array[this._offset];
 
     /// <summary>
     /// Create a span over the internal array of the vector.
     /// </summary>
     /// <returns>The span over the internal array of the vector.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<double> AsSpan() => this._array.AsSpan();
+    public Span<double> AsSpan() => this._array.AsSpan(this._offset, this._length);
 
     /// <summary>
     /// Converts the vector to a read-only list.
@@ -750,10 +791,10 @@ public sealed class AvxVector
     public bool SequentialEquals(AvxVector? other)
     {
         if (other is null) return false;
-        if (this._array.Length != other._array.Length) return false;
+        if (this.Length != other.Length) return false;
 
-        var span1 = this._array.AsSpan();
-        var span2 = other._array.AsSpan();
+        var span1 = this._array.AsSpan(this._offset, this._length);
+        var span2 = other._array.AsSpan(other._offset, other._length);
 
         return span1.SequenceEqual(span2);
     } // public bool SequentialEquals (AvxVector?)
@@ -771,12 +812,12 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, right, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -790,8 +831,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] + right._array[i];
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] + right._array[i + right._offset];
     } // public static void Add (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
@@ -807,26 +848,26 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
-        ref var current_l = ref begin_l;
-        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_left = ref begin_left;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var v_right = Vector256.Create(right);
 
-        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
             var v_result = Vector256.Add(v_left, v_right);
-            v_result.StoreUnsafe(ref current_r);
-            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] + right;
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] + right;
     } // public static void Add (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -842,12 +883,12 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, right, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -861,8 +902,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] - right._array[i];
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] - right._array[i + right._offset];
     } // public static void Subtract (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
@@ -878,26 +919,26 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
-        ref var current_l = ref begin_l;
-        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_left = ref begin_left;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var v_right = Vector256.Create(right);
 
-        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
             var v_result = Vector256.Subtract(v_left, v_right);
-            v_result.StoreUnsafe(ref current_r);
-            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] - right;
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] - right;
     } // public static void Subtract (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -915,24 +956,24 @@ public sealed class AvxVector
 
         var v_left = Vector256.Create(left);
 
-        ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
+        ref var begin_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var to_right = ref Unsafe.Add(ref begin_right, right._length - Vector256<double>.Count);
 
-        ref var current_r = ref begin_r;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref begin_right;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
-        while (Unsafe.IsAddressLessThan(ref current_r, ref to_r))
+        while (Unsafe.IsAddressLessThan(ref current_right, ref to_right))
         {
-            var v_right = Vector256.LoadUnsafe(ref current_r);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
             var v_result = Vector256.Subtract(v_left, v_right);
             v_result.StoreUnsafe(ref current_result);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(right);
-        for (var i = offset; i < right._array.Length; i++)
-            result._array[i] = left - right._array[i];
+        for (var i = offset; i < right._length; i++)
+            result._array[i + result._offset] = left - right._array[i + right._offset];
     } // public static void Subtract (double, AvxVector, AvxVector)
 
     /// <summary>
@@ -948,12 +989,12 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, right, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -967,8 +1008,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] * right._array[i];
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] * right._array[i + right._offset];
     } // public static void Multiply (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
@@ -984,24 +1025,24 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
-        ref var current_l = ref begin_l;
-        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_left = ref begin_left;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
-        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
             var v_result = Vector256.Multiply(v_left, right);
-            v_result.StoreUnsafe(ref current_r);
-            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] * right;
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] * right;
     } // public static void Multiply (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -1017,12 +1058,12 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, right, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -1036,8 +1077,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] / right._array[i];
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] / right._array[i + right._offset];
     } // public static void Divide (AvxVector, AvxVector, AvxVector)
 
     /// <summary>
@@ -1053,24 +1094,24 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(left, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_l = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_l = ref Unsafe.Add(ref begin_l, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
-        ref var current_l = ref begin_l;
-        ref var current_r = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_left = ref begin_left;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
-        while (Unsafe.IsAddressLessThan(ref current_l, ref to_l))
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
-            var v_left = Vector256.LoadUnsafe(ref current_l);
+            var v_left = Vector256.LoadUnsafe(ref current_left);
             var v_result = Vector256.Divide(v_left, right);
-            v_result.StoreUnsafe(ref current_r);
-            current_l = ref Unsafe.Add(ref current_l, Vector256<double>.Count);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            v_result.StoreUnsafe(ref current_result);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            result._array[i] = left._array[i] / right;
+        for (var i = offset; i < left._length; i++)
+            result._array[i + result._offset] = left._array[i + left._offset] / right;
     } // public static void Divide (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -1088,24 +1129,24 @@ public sealed class AvxVector
 
         var v_left = Vector256.Create(left);
 
-        ref var begin_r = ref MemoryMarshal.GetArrayDataReference(right._array);
-        ref var to_r = ref Unsafe.Add(ref begin_r, right._array.Length - Vector256<double>.Count);
+        ref var begin_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+        ref var to_right = ref Unsafe.Add(ref begin_right, right._length - Vector256<double>.Count);
 
-        ref var current_r = ref begin_r;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_right = ref begin_right;
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
-        while (Unsafe.IsAddressLessThan(ref current_r, ref to_r))
+        while (Unsafe.IsAddressLessThan(ref current_right, ref to_right))
         {
-            var v_right = Vector256.LoadUnsafe(ref current_r);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
             var v_result = Vector256.Divide(v_left, v_right);
             v_result.StoreUnsafe(ref current_result);
-            current_r = ref Unsafe.Add(ref current_r, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
 
         var offset = GetRemainingOffset(right);
-        for (var i = offset; i < right._array.Length; i++)
-            result._array[i] = left / right._array[i];
+        for (var i = offset; i < right._length; i++)
+            result._array[i + result._offset] = left / right._array[i + right._offset];
     } // public static void Divide (double, AvxVector, AvxVector)
 
     /// <summary>
@@ -1122,11 +1163,11 @@ public sealed class AvxVector
 
         ThrowHelper.ThrowIfCountMismatch(left, right);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(left._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, left._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_right = ref MemoryMarshal.GetArrayDataReference(right._array);
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
 
         var sums = Vector256<double>.Zero;
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
@@ -1140,8 +1181,8 @@ public sealed class AvxVector
 
         var sum = Vector256.Sum(sums);
         var offset = GetRemainingOffset(left);
-        for (var i = offset; i < left._array.Length; i++)
-            sum += left._array[i] * right._array[i];
+        for (var i = offset; i < left._length; i++)
+            sum += left._array[i + left._offset] * right._array[i + right._offset];
 
         return sum;
     } // public static double InnerProduct (AvxVector, AvxVector)
@@ -1158,11 +1199,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(vector, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(vector._array), vector._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -1174,8 +1215,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(vector);
-        for (var i = offset; i < vector._array.Length; i++)
-            result._array[i] = MathUtils.FastExp(vector._array[i]);
+        for (var i = offset; i < vector._length; i++)
+            result._array[i + result._offset] = MathUtils.FastExp(vector._array[i + vector._offset]);
     } // public static void Exp (AvxVector, AvxVector)
 
     /// <summary>
@@ -1196,11 +1237,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(time, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_time = ref MemoryMarshal.GetArrayDataReference(time._array);
-        ref var to_time = ref Unsafe.Add(ref begin_time, time._array.Length - Vector256<double>.Count);
+        ref var begin_time = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(time._array), time._offset);
+        ref var to_time = ref Unsafe.Add(ref begin_time, time._length - Vector256<double>.Count);
 
         ref var current_time = ref begin_time;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var t = -1.0 / timeConstant;
         while (Unsafe.IsAddressLessThan(ref current_time, ref to_time))
@@ -1213,8 +1254,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(time);
-        for (var i = offset; i < time._array.Length; i++)
-            result._array[i] = amplitude * MathUtils.FastExp(time._array[i] * t);
+        for (var i = offset; i < time._length; i++)
+            result._array[i + result._offset] = amplitude * MathUtils.FastExp(time._array[i + time._offset] * t);
     } // public static void ExpDecay (AvxVector, double, double, AvxVector)
 
     /// <summary>
@@ -1231,11 +1272,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(time, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_time = ref MemoryMarshal.GetArrayDataReference(time._array);
-        ref var to_time = ref Unsafe.Add(ref begin_time, time._array.Length - Vector256<double>.Count);
+        ref var begin_time = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(time._array), time._offset);
+        ref var to_time = ref Unsafe.Add(ref begin_time, time._length - Vector256<double>.Count);
 
         ref var current_time = ref begin_time;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var t = -1.0 / timeConstant;
         while (Unsafe.IsAddressLessThan(ref current_time, ref to_time))
@@ -1249,8 +1290,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(time);
-        for (var i = offset; i < time._array.Length; i++)
-            result._array[i] += amplitude * MathUtils.FastExp(time._array[i] * t);
+        for (var i = offset; i < time._length; i++)
+            result._array[i + result._offset] += amplitude * MathUtils.FastExp(time._array[i + time._offset] * t);
     } // public static void AddExpDecay (AvxVector, double, double, AvxVector)
 
     /// <summary>
@@ -1265,11 +1306,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(vector, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(vector._array), vector._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -1281,8 +1322,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(vector);
-        for (var i = offset; i < vector._array.Length; i++)
-            result._array[i] = Math.Sqrt(vector._array[i]);
+        for (var i = offset; i < vector._length; i++)
+            result._array[i + result._offset] = Math.Sqrt(vector._array[i + vector._offset]);
     } // public static void Sqrt (AvxVector, AvxVector)
 
     /// <summary>
@@ -1297,11 +1338,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(vector, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(vector._array), vector._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
         {
@@ -1313,8 +1354,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(vector);
-        for (var i = offset; i < vector._array.Length; i++)
-            result._array[i] = MathUtils.FastLog2(vector._array[i]);
+        for (var i = offset; i < vector._length; i++)
+            result._array[i + result._offset] = MathUtils.FastLog2(vector._array[i + vector._offset]);
     } // public static void Log2 (AvxVector, AvxVector)
 
     /// <summary>
@@ -1330,10 +1371,10 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(vector, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(vector._array), vector._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._length - Vector256<double>.Count);
         ref var current_left = ref begin_left;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var logBase = 1.0 / Math.Log2(baseValue);
 
@@ -1346,8 +1387,8 @@ public sealed class AvxVector
             current_result = ref Unsafe.Add(ref current_result, Vector256<double>.Count);
         }
         var offset = GetRemainingOffset(vector);
-        for (var i = offset; i < vector._array.Length; i++)
-            result._array[i] = MathUtils.FastLog2(vector._array[i]) * logBase;
+        for (var i = offset; i < vector._length; i++)
+            result._array[i + result._offset] = MathUtils.FastLog2(vector._array[i + vector._offset]) * logBase;
     } // public static void Log (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -1373,11 +1414,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(vector, result);
         ThrowHelper.ThrowIfReadonly(result);
 
-        ref var begin_left = ref MemoryMarshal.GetArrayDataReference(vector._array);
-        ref var to_left = ref Unsafe.Add(ref begin_left, vector._array.Length - Vector256<double>.Count);
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(vector._array), vector._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, vector._length - Vector256<double>.Count);
 
         ref var current_left = ref begin_left;
-        ref var current_result = ref MemoryMarshal.GetArrayDataReference(result._array);
+        ref var current_result = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(result._array), result._offset);
 
         var exp = exponent / Math.Log2(Math.E);
 
@@ -1392,8 +1433,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(vector);
-        for (var i = offset; i < vector._array.Length; i++)
-            result._array[i] = Math.Pow(vector._array[i], exponent);
+        for (var i = offset; i < vector._length; i++)
+            result._array[i + result._offset] = Math.Pow(vector._array[i + vector._offset], exponent);
     } // public static void Power (AvxVector, double, AvxVector)
 
     /// <summary>
@@ -1412,11 +1453,11 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(x, y);
         ThrowHelper.ThrowIfReadonly(y);
 
-        ref var begin_x = ref MemoryMarshal.GetArrayDataReference(x._array);
-        ref var to_x = ref Unsafe.Add(ref begin_x, x._array.Length - Vector256<double>.Count);
+        ref var begin_x = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x._array), x._offset);
+        ref var to_x = ref Unsafe.Add(ref begin_x, x._length - Vector256<double>.Count);
 
         ref var current_x = ref begin_x;
-        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+        ref var current_y = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(y._array), y._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_x, ref to_x))
         {
@@ -1428,8 +1469,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(x);
-        for (var i = offset; i < x._array.Length; i++)
-            y._array[i] = func_s(x._array[i]);
+        for (var i = offset; i < x._length; i++)
+            y._array[i + y._offset] = func_s(x._array[i + x._offset]);
     } // public static void Map (AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>>, Func<double, double>)
 
     /// <summary>
@@ -1450,12 +1491,12 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(x1, x2, y);
         ThrowHelper.ThrowIfReadonly(y);
 
-        ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
-        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
+        ref var begin_x1 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x1._array), x1._offset);
+        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._length - Vector256<double>.Count);
 
         ref var current_x1 = ref begin_x1;
-        ref var current_x2 = ref MemoryMarshal.GetArrayDataReference(x2._array);
-        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+        ref var current_x2 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x2._array), x2._offset);
+        ref var current_y = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(y._array), y._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_x1, ref to_x1))
         {
@@ -1469,8 +1510,8 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(x1);
-        for (var i = offset; i < x1._array.Length; i++)
-            y._array[i] = func_s(x1._array[i], x2._array[i]);
+        for (var i = offset; i < x1._length; i++)
+            y._array[i + y._offset] = func_s(x1._array[i + x1._offset], x2._array[i + x2._offset]);
     } // public static void Map (AvxVector, AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>, Vector256<double>>, Func<double, double, double>)
 
     /// <summary>
@@ -1493,13 +1534,13 @@ public sealed class AvxVector
         ThrowHelper.ThrowIfCountMismatch(x1, x2, x3, y);
         ThrowHelper.ThrowIfReadonly(y);
 
-        ref var begin_x1 = ref MemoryMarshal.GetArrayDataReference(x1._array);
-        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._array.Length - Vector256<double>.Count);
+        ref var begin_x1 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x1._array), x1._offset);
+        ref var to_x1 = ref Unsafe.Add(ref begin_x1, x1._length - Vector256<double>.Count);
 
         ref var current_x1 = ref begin_x1;
-        ref var current_x2 = ref MemoryMarshal.GetArrayDataReference(x2._array);
-        ref var current_x3 = ref MemoryMarshal.GetArrayDataReference(x3._array);
-        ref var current_y = ref MemoryMarshal.GetArrayDataReference(y._array);
+        ref var current_x2 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x2._array), x2._offset);
+        ref var current_x3 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(x3._array), x3._offset);
+        ref var current_y = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(y._array), y._offset);
 
         while (Unsafe.IsAddressLessThan(ref current_x1, ref to_x1))
         {
@@ -1515,8 +1556,12 @@ public sealed class AvxVector
         }
 
         var offset = GetRemainingOffset(x1);
-        for (var i = offset; i < x1._array.Length; i++)
-            y._array[i] = func_s(x1._array[i], x2._array[i], x3._array[i]);
+        for (var i = offset; i < x1._length; i++)
+            y._array[i + y._offset] = func_s(
+                x1._array[i + x1._offset],
+                x2._array[i + x2._offset],
+                x3._array[i + x3._offset]
+            );
     } // public static void Map (AvxVector, AvxVector, AvxVector, AvxVector, Func<Vector256<double>, Vector256<double>, Vector256<double>, Vector256<double>>, Func<double, double, double, double>)
 
     /// <summary>
@@ -1526,7 +1571,7 @@ public sealed class AvxVector
     /// <returns>The remaining offset after the vectorized operations.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetRemainingOffset(AvxVector vector)
-        => (vector._array.Length / Vector256<double>.Count) * Vector256<double>.Count;
+        => ((vector._array.Length - vector._offset) / Vector256<double>.Count) * Vector256<double>.Count;
 
     /// <summary>
     /// Helper class for throwing exceptions.
@@ -1555,7 +1600,7 @@ public sealed class AvxVector
         /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
         internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2)
         {
-            if (v1._array.Length != v2._array.Length)
+            if (v1._length != v2._length)
                 throw new ArgumentException("The count of the vectors must be the same.");
         } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector)
 
@@ -1568,7 +1613,7 @@ public sealed class AvxVector
         /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
         internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2, AvxVector v3)
         {
-            if (v1._array.Length != v2._array.Length || v1._array.Length != v3._array.Length)
+            if (v1._length != v2._length || v1._length != v3._length)
                 throw new ArgumentException("The count of the vectors must be the same.");
         } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector, AvxVector)
 
@@ -1582,7 +1627,7 @@ public sealed class AvxVector
         /// <exception cref="ArgumentException">The count of the vectors must be the same.</exception>
         internal static void ThrowIfCountMismatch(AvxVector v1, AvxVector v2, AvxVector v3, AvxVector v4)
         {
-            if (v1._array.Length != v2._array.Length || v1._array.Length != v3._array.Length || v1._array.Length != v4._array.Length)
+            if (v1._length != v2._length || v1._length != v3._length || v1._length != v4._length)
                 throw new ArgumentException("The count of the vectors must be the same.");
         } // internal static void ThrowIfCountMismatch (AvxVector, AvxVector, AvxVector, AvxVector)
 
@@ -1594,7 +1639,7 @@ public sealed class AvxVector
         /// <exception cref="ArgumentException">The count of the vector and the array must be the same.</exception>
         internal static void ThrowIfCountMismatch(AvxVector vector, double[] array)
         {
-            if (vector._array.Length != array.Length)
+            if (vector._length != array.Length)
                 throw new ArgumentException("The count of the vector and the array must be the same.");
         } // internal static void ThrowIfCountMismatch (AvxVector, double[])
     } // private static class ThrowHelper
