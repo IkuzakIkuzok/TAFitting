@@ -119,7 +119,7 @@ internal static partial class UIUtils
             p.IsEmpty = false;
             ++count;
         }
-        series.Points.AddRange(points[..count]);
+        series.Points.AddRange(points.AsSpan(0, count));
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, DataPoint[], [bool])
 
@@ -153,7 +153,7 @@ internal static partial class UIUtils
             p.IsEmpty = false;
             ++count;
         }
-        series.Points.AddRange(points[..count]);
+        series.Points.AddRange(points.AsSpan(0, count));
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, ReadOnlySpan<double>, ReadOnlySpan<double>, DataPoint[], [bool]))
 

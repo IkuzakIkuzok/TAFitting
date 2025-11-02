@@ -44,6 +44,19 @@ internal static class CollectionHelper
     } // internal static void AddRange<T> (Collection<T>, IEnumerable<T>)
 
     /// <summary>
+    /// Adds the elements of the specified span to the end of the <see cref="Collection{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="this">The collection to which the elements should be added.</param>
+    /// <param name="span">The span whose elements should be added to the end of the <see cref="Collection{T}"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void AddRange<T>(this Collection<T> @this, ReadOnlySpan<T> span)
+    {
+        var wrapper = Unsafe.As<CollectionWrapper<T>>(@this);
+        wrapper.AddRange(span);
+    } // internal static void AddRange<T> (Collection<T>, ReadOnlySpan<T>)
+
+    /// <summary>
     /// Wrapper class to expose the internal items of <see cref="Collection{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
@@ -72,6 +85,30 @@ internal static class CollectionHelper
             list.AddRange(collection);
 #endif
         } // internal void AddRange (IEnumerable<T>)
+
+        /// <summary>
+        /// Adds the elements of the specified span to the end of the <see cref="Collection{T}"/>.
+        /// </summary>
+        /// <param name="span">The span whose elements should be added to the end of the <see cref="Collection{T}"/>.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void AddRange(ReadOnlySpan<T> span)
+        {
+            var list = Unsafe.As<List<T>>(this.items);
+            if (list.Capacity < list.Count + span.Length)
+                list.Capacity = list.Count + span.Length;
+
+            // list.AddRange(span);
+            /*
+             * CollectionExtensions.AddRange(List<T>, ReadOnlySpan<T>) fails with ExecutionEngineException; the reason is unknown.
+             * Still, using a simple loop here works correctly and efficiently.
+             * - Enlarging Capacity beforehand avoids multiple reallocations.
+             * - Avoiding unnecessary sub-array allocations improves performance in some cases.
+             * - Using a simple for-loop is faster than foreach-loop for IEnumerable<T>.
+             */
+
+            for (var i = 0; i < span.Length; i++)
+                list.Add(span[i]);
+        } // internal void AddRange (ReadOnlySpan<T>)
 
 #if SAFE_COLLECTION
 
