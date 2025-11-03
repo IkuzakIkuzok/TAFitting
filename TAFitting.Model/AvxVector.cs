@@ -781,7 +781,14 @@ public sealed class AvxVector
     /// Converts the vector to a read-only list.
     /// </summary>
     /// <returns>The read-only list that contains the elements of the vector.</returns>
-    public IReadOnlyList<double> ToReadOnlyList() => AsSpan().ToArray();
+    public IReadOnlyList<double> ToReadOnlyList()
+    {
+        // if the _length is equal to the length of the internal array, offset must be zero, so no check is needed
+        if (this._length == this._array.Length)
+            return Array.AsReadOnly(this._array);  // avoid allocation and copy
+
+        return AsSpan().ToArray();
+    } // public IReadOnlyList<double> ToReadOnlyList ()
 
     /// <summary>
     /// Determines whether the current vector is equal to the specified vector by comparing their elements sequentially.
