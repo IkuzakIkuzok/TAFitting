@@ -114,8 +114,7 @@ internal static partial class UIUtils
             y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
             var p = (points[count] ??= new(series));
-            p.XValue = x;
-            p.YValues[0] = y;
+            p.SetValueXY(x, y);
             p.IsEmpty = false;
             ++count;
         }
@@ -148,8 +147,7 @@ internal static partial class UIUtils
             y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
             var p = (points[count] ??= new(series));
-            p.XValue = x;
-            p.YValues[0] = y;
+            p.SetValueXY(x, y);
             p.IsEmpty = false;
             ++count;
         }
