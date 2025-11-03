@@ -92,7 +92,7 @@ internal sealed partial class TimeTable : DataGridView
         this.Updating = true;
         try
         {
-            var times = new double[n];
+            var times = (stackalloc double[n]);
             var d = Math.Pow(10, Math.Floor(Math.Log10(maxTime)));
             var m = maxTime / d;
 
