@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -113,9 +114,8 @@ internal static partial class UIUtils
             if (!double.IsFinite(y)) continue;
             y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
-            var p = (points[count] ??= new(series));
+            var p = GetOrCreateDataPoint(points, count, series);
             p.SetValueXY(x, y);
-            p.IsEmpty = false;
             ++count;
         }
         series.Points.AddRange(points.AsSpan(0, count));
@@ -146,14 +146,29 @@ internal static partial class UIUtils
             if (!double.IsFinite(y)) continue;
             y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
 
-            var p = (points[count] ??= new(series));
+            var p = GetOrCreateDataPoint(points, count, series);
             p.SetValueXY(x, y);
-            p.IsEmpty = false;
             ++count;
         }
         series.Points.AddRange(points.AsSpan(0, count));
         series.Points.Invalidate();
     } // internal static void AddDecay (this Series, ReadOnlySpan<double>, ReadOnlySpan<double>, DataPoint[], [bool]))
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static DataPoint GetOrCreateDataPoint(DataPoint[] points, int index, Series series)
+    {
+        /*
+         * DataPoint.IsEmpty property should be restored as `false` for reusing.
+         * However, setting this property calls Invalidate method internally, which degrades performance.
+         * Allocating a new instance of the DataPoint class is faster than calling Invalidate method.
+         * If the property has not been changed, reuse the existing instance.
+         */
+
+        var p = points[index];
+        if (p?.IsEmpty ?? true)
+            p = points[index] = new(series);
+        return p;
+    } // private static DataPoint GetDataPoint (DataPoint[], int)
 
     /// <summary>
     /// Gets the range of the specified series.
