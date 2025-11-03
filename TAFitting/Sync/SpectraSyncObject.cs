@@ -107,7 +107,9 @@ internal sealed class SpectraSyncObject
                     kvp[1]
                     .Split(',')
                     .Select(NegativeSignHandler.ToMinusSign)
+#pragma warning disable CS8622  // NegativeSignHandler.ToMinusSign returns non-null when input is non-null
                     .Select(double.Parse).ToList();
+#pragma warning restore CS8622
                 spectra[wavelength] = values;
             } // foreach (var part in spectraParts)
             return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
