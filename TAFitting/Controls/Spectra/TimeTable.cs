@@ -86,6 +86,9 @@ internal sealed partial class TimeTable : DataGridView
     /// <param name="n">The number of times.</param>
     internal void SetTimes(double maxTime, int n = 5)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxTime);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(n);
+
         this.Updating = true;
         try
         {
