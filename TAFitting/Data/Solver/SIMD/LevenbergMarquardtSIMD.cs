@@ -178,16 +178,12 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         var func = this.Model.GetVectorizedFunc(parameters);
         func(this.x, this.temp_vector);
 
-        AvxVector.Subtract(this.y, this.temp_vector, this.temp_vector);
-        return this.temp_vector.Norm2;
+        return AvxVector.SquareDistance(this.y, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcChi2()
-    {
-        AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
-        return this.temp_vector.Norm2;
-    } // private double CalcChi2 ()
+        => AvxVector.SquareDistance(this.y, this.est_vals);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private double CalcIncrementedChi2()

@@ -1195,6 +1195,45 @@ public sealed class AvxVector
     } // public static double InnerProduct (AvxVector, AvxVector)
 
     /// <summary>
+    /// Computes the squared Euclidean distance between the specified vectors.
+    /// </summary>
+    /// <param name="left">The left vector.</param>
+    /// <param name="right">The right vector.</param>
+    /// <returns>The squared Euclidean distance between the specified vectors.</returns>
+    public static double SquareDistance(AvxVector left, AvxVector right)
+    {
+        if (left == right) return 0.0;
+
+        ThrowHelper.ThrowIfCountMismatch(left, right);
+
+        ref var begin_left = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(left._array), left._offset);
+        ref var to_left = ref Unsafe.Add(ref begin_left, left._length - Vector256<double>.Count);
+
+        ref var current_left = ref begin_left;
+        ref var current_right = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(right._array), right._offset);
+
+        var sums = Vector256<double>.Zero;
+        while (Unsafe.IsAddressLessThan(ref current_left, ref to_left))
+        {
+            var v_left = Vector256.LoadUnsafe(ref current_left);
+            var v_right = Vector256.LoadUnsafe(ref current_right);
+            var v_diff = Vector256.Subtract(v_left, v_right);
+            sums += Vector256.Multiply(v_diff, v_diff);
+            current_left = ref Unsafe.Add(ref current_left, Vector256<double>.Count);
+            current_right = ref Unsafe.Add(ref current_right, Vector256<double>.Count);
+        }
+
+        var sum = Vector256.Sum(sums);
+        var offset = GetRemainingOffset(left);
+        for (var i = offset; i < left._length; i++)
+        {
+            var diff = left._array[i + left._offset] - right._array[i + right._offset];
+            sum += diff * diff;
+        }
+        return sum;
+    } // public static double SquareDistance (AvxVector, AvxVector)
+
+    /// <summary>
     /// Computes the exponential function for each element of the specified vector.
     /// </summary>
     /// <param name="vector">The vector.</param>
