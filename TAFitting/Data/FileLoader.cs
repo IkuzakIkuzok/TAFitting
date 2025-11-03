@@ -52,6 +52,13 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
         });
     } // internal void Register (string)
 
+    /// <summary>
+    /// Loads the file data into the cache.
+    /// </summary>
+    /// <param name="path">The file path to load.</param>
+    /// <param name="cache">The dictionary to store the loaded data.</param>
+    /// <param name="wavelength">The wavelength corresponding to the file.</param>
+    /// <param name="half">A value indicating whether to load only half of the data.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Load(string path, ConcurrentDictionary<double, FileCache> cache, double wavelength, bool half = false)
     {
@@ -61,7 +68,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
         using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.RandomAccess);
         var buffer = data.GetBuffers();
         data.Length = (int)RandomAccess.Read(handle, buffer, 0);
-    } // private static void Load (string, ConcurrentDictionary<double, byte[]>, double)
+    } // private static void Load (string, ConcurrentDictionary<double, byte[]>, double, [bool])
 
     /// <summary>
     /// Gets the A-B signal file data.
@@ -70,7 +77,6 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     /// <returns>The A-B file data if loading is completed; otherwise, <see langword="null"/>.</returns>
     internal FileCache? GetAMinusBFileData(double wavelength)
         => GetFileData(wavelength, this.cache_ab);
-
 
     /// <summary>
     /// Gets the B file signal data.
