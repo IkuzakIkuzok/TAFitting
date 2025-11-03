@@ -70,7 +70,7 @@ internal sealed partial class TimeTable : DataGridView
         if (this.Updating) return;
 
         Sort(this.Columns["Time"], ListSortDirection.Ascending);
-        var count = this.Rows.Count - 1;
+        var count = this.Rows.Count - 1;  // 1 for the new (empty) row
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, count);
         for (var i = 0; i < count; i++)
         {
