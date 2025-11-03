@@ -64,7 +64,7 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     private readonly int numberOfParameters, numberOfDataPoints;
     private readonly double[,] hessian;  // Hessian matrix with the damping parameter on the diagonal
     private readonly double[] gradient;
-    private readonly AvxVector temp_vector, temp_vector2;
+    private readonly AvxVector temp_vector;
     private readonly AvxVector[] derivatives;  // Cache for the partial derivatives
     private Action<AvxVector, AvxVector> func = null!;
 
@@ -109,7 +109,6 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         this.gradient = new double[this.numberOfParameters];
 
         this.temp_vector = AvxVector.Create(this.numberOfDataPoints);
-        this.temp_vector2 = AvxVector.Create(this.numberOfDataPoints);
 
         this.derivatives = new AvxVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
@@ -271,13 +270,9 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CalcGradient()
     {
-        AvxVector.Subtract(this.y, this.est_vals, this.temp_vector2);
+        AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
         for (var row = 0; row < this.numberOfParameters; ++row)
-        {
-            //AvxVector.Subtract(this.y, this.est_vals, this.temp_vector);
-            AvxVector.Multiply(this.temp_vector2, this.derivatives[row], this.temp_vector);
-            this.gradient[row] = this.temp_vector.Sum;
-        }
+            this.gradient[row] = AvxVector.InnerProduct(this.temp_vector, this.derivatives[row]);
     } // private void CalcGradient ()
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
