@@ -1057,9 +1057,9 @@ internal sealed partial class MainWindow : Form
 
         foreach (var mode in Enum.GetValues<InterpolationMode>())
         {
-            var menu_interpolateMode = new ToolStripMenuItem(mode.ToString())
+            var menu_interpolateMode = new ToolStripMenuItem(mode.ToDefaultSerializeValue())
             {
-                ToolTipText = $"Interpolate using {mode} mode",
+                ToolTipText = mode.ToDescription(),
             };
             menu_interpolate.DropDownItems.Add(menu_interpolateMode);
 

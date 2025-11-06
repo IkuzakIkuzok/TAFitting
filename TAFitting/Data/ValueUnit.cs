@@ -40,34 +40,7 @@ internal abstract class ValueUnit(string label, SIPrefix scale)
     /// <param name="prefix">The prefix.</param>
     /// <returns>The prefix symbol.</returns>
     protected static string GetPrefixSymbol(SIPrefix prefix)
-        => prefix switch
-        {
-            SIPrefix.Quetta => "Q",
-            SIPrefix.Ronna  => "R",
-            SIPrefix.Yotta  => "Y",
-            SIPrefix.Zetta  => "Z",
-            SIPrefix.Exa    => "E",
-            SIPrefix.Peta   => "P",
-            SIPrefix.Tera   => "T",
-            SIPrefix.Giga   => "G",
-            SIPrefix.Mega   => "M",
-            SIPrefix.Kilo   => "k",
-            SIPrefix.Hecto  => "h",
-            SIPrefix.Deca   => "da",
-            SIPrefix.Deci   => "d",
-            SIPrefix.Centi  => "c",
-            SIPrefix.Milli  => "m",
-            SIPrefix.Micro  => "μ",
-            SIPrefix.Nano   => "n",
-            SIPrefix.Pico   => "p",
-            SIPrefix.Femto  => "f",
-            SIPrefix.Atto   => "a",
-            SIPrefix.Zepto  => "z",
-            SIPrefix.Yocto  => "y",
-            SIPrefix.Ronto  => "r",
-            SIPrefix.Quecto => "q",
-            _ => string.Empty,
-        };
+        => prefix.ToDefaultSerializeValue();
 
     public static implicit operator string(ValueUnit value)
         => value.Label;
