@@ -93,9 +93,34 @@ namespace {ns}
         foreach (var target in targetTypes)
             GenerateSpecialToString(builder, enumName, enumType, target);
 
+        builder.AppendLine($@"
+        /// <summary>
+        /// Deserializes the specified string to a <see cref=""{enumName}""/> value using the specified serialization attribute.
+        /// </summary>
+        /// <typeparam name=""TAttr"">The serialization attribute type.</typeparam>
+        /// <param name=""text"">The string representation of the enum value.</param>
+        /// <returns>The deserialized <see cref=""{enumName}""/> value.</returns>
+        internal static {enumName} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        {{");
+
+        foreach (var target in targetTypes)
+            GenerateFromString(builder, target);
+
+        /*builder.AppendLine($@"    // Fallback to default Enum.Parse if no matching attribute type is found
+            return ({enumName})global::System.Enum.Parse(typeof({enumName}), text);
+        }} // internal static {enumName} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute");*/
+        builder.AppendLine("\t\t\t// Fallback to default Enum.Parse if no matching attribute type is found");
+        builder.AppendLine($"\t\t\treturn ({enumName})global::System.Enum.Parse(typeof({enumName}), text);");
+        builder.AppendLine($"\t\t}} // internal static {enumName} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute");
+
+        foreach (var target in targetTypes)
+            GenerateSpecialFromString(builder, enumName, enumType, target);
+
         builder.AppendLine($"\t}} // internal static class {enumType.Name}SerializationExtensions");
         builder.AppendLine("} // namespace " + ns);
     } // private static void Generate (StringBuilder, INamedTypeSymbol, IEnumerable<INamedTypeSymbol>)
+
+    #region ToString
 
     private static void GenerateToString(StringBuilder builder, INamedTypeSymbol target)
     {
@@ -152,4 +177,66 @@ namespace {ns}
             name = name[..^"Attribute".Length];
         return $"To{name}";
     } // private static string GetSpecialToStringMethodName (INamedTypeSymbol)
+
+    #endregion ToString
+
+    #region FromString
+
+    private static void GenerateFromString(StringBuilder builder, INamedTypeSymbol target)
+    {
+        if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
+            return;
+
+        var targetName = GetFullName(target);
+        var targetFullName = $"global::{targetName}";
+        builder.AppendLine($"\t\t\tif (typeof(TAttr) == typeof({targetFullName}))");
+        builder.AppendLine($"\t\t\t\treturn {GetSpecialFromStringMethodName(target)}(text);");
+        builder.AppendLine();
+    } // private static void GenerateFromString (StringBuilder, INamedTypeSymbol)
+
+    private static void GenerateSpecialFromString(StringBuilder builder, string enumName, INamedTypeSymbol enumType, INamedTypeSymbol target)
+    {
+        if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
+            return;
+
+        var targetName = GetFullName(target);
+        var targetFullName = $"global::{targetName}";
+        var methodName = GetSpecialFromStringMethodName(target);
+
+        builder.AppendLine($@"
+        /// <summary>
+        /// Deserializes the specified string to a <see cref=""{enumName}""/> value using the <see cref=""{targetFullName}""/> attribute.
+        /// </summary>
+        /// <param name=""text"">The string representation of the enum value.</param>
+        /// <returns>The deserialized <see cref=""{enumName}""/> value.</returns>
+        internal static {enumName} {methodName}(this string text)
+        {{
+            return text switch
+            {{");
+
+        var fields = enumType.GetMembers().OfType<IFieldSymbol>().Where(f => f.IsStatic);
+        foreach (var field in fields)
+        {
+            var attr = field.GetAttributes().FirstOrDefault(a => GetFullName(a.AttributeClass) == targetName);
+            if (attr is null) continue;
+            var args = attr.ConstructorArguments;
+            if (args.Length == 0) continue;
+            var serializedValue = args[0].Value?.ToString() ?? string.Empty;
+            builder.AppendLine($"\t\t\t\t\"{serializedValue}\" => {enumName}.{field.Name},");
+        }
+
+        builder.AppendLine($"\t\t\t\t_ => ({enumName})global::System.Enum.Parse(typeof({enumName}), text),");
+        builder.AppendLine("\t\t\t};");  // end of switch
+        builder.AppendLine($"\t\t}} // internal static {enumName} {methodName} (this string)"); // end of method
+    } // private static void GenerateSpecialFromString (StringBuilder, string, INamedTypeSymbol, INamedTypeSymbol)
+
+    private static string GetSpecialFromStringMethodName(INamedTypeSymbol target)
+    {
+        var name = target.Name;
+        if (name.EndsWith("Attribute"))
+            name = name[..^"Attribute".Length];
+        return $"From{name}";
+    } // private static string GetSpecialFromStringMethodName (INamedTypeSymbol)
+
+    #endregion FromString
 } // internal sealed class SerializerGenerator : IIncrementalGenerator
