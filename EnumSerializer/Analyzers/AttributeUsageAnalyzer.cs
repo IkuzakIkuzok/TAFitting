@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using static EnumSerializer.SymbolUtils;
 
 namespace EnumSerializer.Analyzers;
 
@@ -69,18 +70,4 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
             }
         }
     } // private static void AnalyzeEnum　(SyntaxNodeAnalysisContext)
-
-    private static string GetFullName(INamedTypeSymbol? symbol)
-        => symbol is null ? string.Empty : symbol.ContainingNamespace.ToDisplayString() + "." + symbol.Name;
-
-    private static bool CheckInheritance(INamedTypeSymbol symbol, string baseFullName)
-    {
-        var current = symbol;
-        while (current.BaseType is not null)
-        {
-            if (GetFullName(current.BaseType) == baseFullName) return true;
-            current = current.BaseType;
-        }
-        return false;
-    } // private static bool CheckInheritance (INamedTypeSymbol, string)
 } // internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer

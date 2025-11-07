@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using TAFitting.SourceGeneratorUtils;
+using static EnumSerializer.SymbolUtils;
 
 namespace EnumSerializer.Generators;
 
@@ -59,9 +60,6 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
 
         context.AddSource("EnumSerializationExtensions.g.cs", builder.ToString().NormalizeNewLines());
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
-
-    private static string GetFullName(INamedTypeSymbol? symbol)
-        => symbol is null ? string.Empty : symbol.ContainingNamespace.ToDisplayString() + "." + symbol.Name;
 
     private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<INamedTypeSymbol> targetTypes)
     {
@@ -154,15 +152,4 @@ namespace {ns}
             name = name[..^"Attribute".Length];
         return $"To{name}";
     } // private static string GetSpecialToStringMethodName (INamedTypeSymbol)
-
-    private static bool CheckInheritance(INamedTypeSymbol symbol, string baseFullName)
-    {
-        var current = symbol;
-        while (current.BaseType is not null)
-        {
-            if (GetFullName(current.BaseType) == baseFullName) return true;
-            current = current.BaseType;
-        }
-        return false;
-    } // private static bool CheckInheritance (INamedTypeSymbol, string)
 } // internal sealed class SerializerGenerator : IIncrementalGenerator
