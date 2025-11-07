@@ -141,6 +141,8 @@ internal sealed partial class ParametersTable : DataGridView
     internal ParametersTableRow? this[double wavelength]
         => this.ParameterRows.FirstOrDefault(row => row.Wavelength == wavelength);
 
+    internal event FileDroppedEventHandler? FileDropped;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ParametersTable"/> class.
     /// </summary>
@@ -150,6 +152,7 @@ internal sealed partial class ParametersTable : DataGridView
         this.MultiSelect = false;
         this.DefaultCellStyle.SelectionBackColor = Color.Gray;
         this.DefaultCellStyle.SelectionForeColor = Color.White;
+        this.AllowDrop = true;
     } // ctor ()
 
     /// <inheritdoc/>
@@ -260,6 +263,27 @@ internal sealed partial class ParametersTable : DataGridView
         if (this.Rows[e.RowIndex] is not ParametersTableRow row) return;
         CalculateRSquared(row);
     } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
+
+    /// <inheritdoc/>
+    override protected void OnDragEnter(DragEventArgs drgevent)
+    {
+        base.OnDragEnter(drgevent);
+
+        if (drgevent.Data?.GetDataPresent(DataFormats.FileDrop) ?? false)
+            drgevent.Effect = DragDropEffects.Copy;
+        else
+            drgevent.Effect = DragDropEffects.None;
+    } // override protected void OnDragEnter (DragEventArgs)
+
+    /// <inheritdoc/>
+    override protected void OnDragDrop(DragEventArgs drgevent)
+    {
+        base.OnDragDrop(drgevent);
+        if (!(drgevent.Data?.GetDataPresent(DataFormats.FileDrop) ?? false)) return;
+
+        if (drgevent.Data?.GetData(DataFormats.FileDrop) is not string[] { Length: > 0 } path) return;
+        FileDropped?.Invoke(this, new(path[0]));
+    } // override protected void OnDragDrop (DragEventArgs)
 
     /// <summary>
     /// Undoes the last command.
