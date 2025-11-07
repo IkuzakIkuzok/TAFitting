@@ -49,25 +49,29 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
         var attributes = enumSymbol.GetAttributes();
 
         foreach (var attribute in attributes)
-        {
-            var attrClass = attribute.AttributeClass;
-            if (attrClass is null) continue;
-            var attrname = GetFullName(attrClass);
-            if (attrname != SerializableAttributeFullName) continue;
-
-            var args = attribute.ConstructorArguments;
-            if (args.Length == 0) continue;
-            var argValues = args[0].Values;
-            foreach (var argValue in argValues)
-            {
-                if (argValue.Kind != TypedConstantKind.Type) continue;
-                if (argValue.Value is not INamedTypeSymbol c) continue;
-                if (CheckInheritance(c, ValueAttributeFullName)) continue;
-
-                var argLocation = attribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken).GetLocation()
-                    ?? enumSyntax.GetLocation();
-                context.ReportDiagnostic(Diagnostic.Create(AttrInheritanceErr, argLocation, c.Name));
-            }
-        }
+            AnalyzeAttribute(context, attribute, enumSyntax);
     } // private static void AnalyzeEnum　(SyntaxNodeAnalysisContext)
+
+    private static void AnalyzeAttribute(SyntaxNodeAnalysisContext context, AttributeData attribute, EnumDeclarationSyntax enumSyntax)
+    {
+        var attrClass = attribute.AttributeClass;
+        if (attrClass is null) return;
+        var attrname = GetFullName(attrClass);
+        if (attrname != SerializableAttributeFullName) return;
+
+        var args = attribute.ConstructorArguments;
+        if (args.Length == 0) return;
+        var argValues = args[0].Values;
+
+        foreach (var argValue in argValues)
+        {
+            if (argValue.Kind != TypedConstantKind.Type) continue;
+            if (argValue.Value is not INamedTypeSymbol c) continue;
+            if (CheckInheritance(c, ValueAttributeFullName)) continue;
+
+            var argLocation = attribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken).GetLocation()
+                ?? enumSyntax.GetLocation();
+            context.ReportDiagnostic(Diagnostic.Create(AttrInheritanceErr, argLocation, c.Name));
+        }
+    }
 } // internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
