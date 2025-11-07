@@ -17,6 +17,7 @@ using TAFitting.Controls.Spectra;
 using TAFitting.Data;
 using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
+using TAFitting.Excel;
 using TAFitting.Filter;
 using TAFitting.Model;
 using TAFitting.Sync;
@@ -216,6 +217,7 @@ internal sealed partial class MainWindow : Form
         this.parametersTable.CellValueChanged += ShowFit;
         this.parametersTable.CellValueChanged += UpdatePreviewsParameters;
         this.parametersTable.UserDeletedRow += RemoveDecay;
+        this.parametersTable.FileDropped += ReadSpreadSheet;
 
         #endregion params
 
@@ -1478,6 +1480,68 @@ internal sealed partial class MainWindow : Form
             row.Parameters = r.Parameters;
         }
     } // private void PasteTable ()
+
+    private void ReadSpreadSheet(object? sender, FileDroppedEventArgs e)
+        => ReadSpreadSheet(e.FilePath);
+
+#pragma warning disable IDE0079
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "IDisposableAnalyzers.Correctness",
+        "IDISP001:Dispose created",
+        Justification = "The spread sheet reader will be disposed in `finally` blick if its implement `IDisposable`.")]
+#pragma warning restore
+    private void ReadSpreadSheet(string path)
+    {
+        if (this.decays is null) return;
+
+        var model = this.SelectedModel;
+        if (model is null) return;
+
+        var ext = Path.GetExtension(path);
+        var reader = GetSpreadSheetReader(ext);
+
+        try
+        {
+            reader.Open(path);
+            if (!reader.ModelMatched)
+            {
+                FadingMessageBox.Show(
+                    "The selected spreadsheet does not match the selected model.",
+                    0.8, 1000, 75, 0.1
+                );
+                return;
+            }
+            foreach (var row in reader.ReadRows())
+            {
+                var wavelength = row.Wavelength;
+                var tableRow = this.parametersTable[wavelength];
+                if (tableRow is null) continue;
+                tableRow.Parameters = row.Parameters;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+        finally
+        {
+            if (reader is IDisposable disposable)
+                disposable.Dispose();
+        }
+    } // private void ReadSpreadSheet (string)
+
+    private ISpreadSheetReader GetSpreadSheetReader(string extension)
+        => extension.ToUpperInvariant() switch
+        {
+            ".CSV" => new CsvReader(this.SelectedModel!),
+            ".XLSX" => new ExcelReader(this.SelectedModel!),
+            _ => throw new NotSupportedException("The selected file format is not supported."),
+        };
 
     private void ChangeRow(object? sender, ParametersTableSelectionChangedEventArgs e)
     {
