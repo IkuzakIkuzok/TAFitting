@@ -35,6 +35,7 @@ internal sealed class CsvWriter : ISpreadSheetWriter
         var rowData = new RowData
         {
             Wavelength = wavelength,
+            Parameters = paramValues,
             Values = [.. this.Times.Select(func)],
         };
         this.rows.Add(rowData);
@@ -43,7 +44,11 @@ internal sealed class CsvWriter : ISpreadSheetWriter
     public void Write(string path)
     {
         using var writer = new StreamWriter(path, false, Encoding.UTF8);
-        writer.WriteLine("Wavelength (nm)," + string.Join(" µs,", this.Times) + " µs");
+        writer.Write("Wavelength (nm),");
+        writer.Write(string.Join(",", this.Parameters));
+        writer.Write(',');
+        writer.Write(string.Join(" µs,", this.Times));
+        writer.WriteLine(" µs");
         foreach (var row in this.rows)
             writer.WriteLine(row.ToString());
     } // public void Write (string)
@@ -51,9 +56,18 @@ internal sealed class CsvWriter : ISpreadSheetWriter
     private class RowData()
     {
         required internal double Wavelength { get; init; }
+        required internal double[] Parameters { get; init; }
         required internal double[] Values { get; init; }
 
-        public override string ToString()
-            => $"{this.Wavelength},{string.Join(",", this.Values)}";
+        override public string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append(this.Wavelength);
+            builder.Append(',');
+            builder.Append(string.Join(",", this.Parameters));
+            builder.Append(',');
+            builder.Append(string.Join(",", this.Values));
+            return builder.ToString();
+        } // public override string ToString ()
     } // private class RowData
 } // internal sealed class CsvWriter : ISpreadSheetWriter
