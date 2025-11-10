@@ -3,6 +3,7 @@
 
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 using System.Runtime.Intrinsics;
 
 namespace TAFitting;
@@ -222,4 +223,24 @@ internal static class SpanUtils
             return max;
         }
     } // internal static T Max<T>(this ReadOnlySpan<T> source) where T : struct, INumber<T>
+
+    #region parse
+
+    /// <summary>
+    /// Parses the <see cref="ReadOnlySpan{Char}"/> to an integer using invariant culture.
+    /// </summary>
+    /// <param name="span">The span to parse.</param>
+    /// <returns>The parsed integer.</returns>
+    internal static int ParseIntInvariant(this ReadOnlySpan<char> span)
+        => int.Parse(span, CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Parses the <see cref="ReadOnlySpan{Char}"/> to a double using invariant culture.
+    /// </summary>
+    /// <param name="span">The span to parse.</param>
+    /// <returns>The parsed double.</returns>
+    internal static double ParseDoubleInvariant(this ReadOnlySpan<char> span)
+        => double.Parse(span, CultureInfo.InvariantCulture);
+
+    #endregion parse
 } // internal static class SpanUtils
