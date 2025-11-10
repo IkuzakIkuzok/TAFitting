@@ -98,20 +98,14 @@ internal sealed class SpectraSyncObject
             var maskingRanges = parts[3]; // Assuming this is a string representation of masking ranges
             var spectra = new Dictionary<double, IList<double>>();
             var spectraParts = parts[4].Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var values = (stackalloc double[wavelengths.Count]);
             foreach (var part in spectraParts)
             {
                 var kvp = part.Split('=');
                 if (kvp.Length != 2) continue; // Invalid format
                 var wavelength = kvp[0].ParseDoubleInvariant();
-                var values =
-                    kvp[1]
-                    .Split(',')
-                    .Select(NegativeSignHandler.ToMinusSign)
-#pragma warning disable IDE0079
-#pragma warning disable CS8622  // NegativeSignHandler.ToMinusSign returns non-null when input is non-null
-                    .Select(double.Parse).ToList();
-#pragma warning restore CS8622, IDE0079
-                spectra[wavelength] = values;
+                NegativeSignHandler.ParseDoubles(kvp[1], ',', values);
+                spectra[wavelength] = values.ToArray();
             } // foreach (var part in spectraParts)
             return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
         }

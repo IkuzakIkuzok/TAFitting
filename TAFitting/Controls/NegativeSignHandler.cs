@@ -123,6 +123,36 @@ internal sealed partial class NegativeSignHandler : IDisposable
         return false;
     } // internal static bool TryParseDouble (string?, out double)
 
+    internal static bool TryParseDouble(ReadOnlySpan<char> s, out double value)
+    {
+        if (s.IsEmpty)
+        {
+            value = 0;
+            return false;
+        }
+
+        if (s[0] == '-')
+        {
+            if (double.TryParse(s, out value)) return true;
+            var longMinus = (stackalloc char[s.Length]);
+            longMinus[0] = '\u2212';
+            s[1..].CopyTo(longMinus[1..]);
+            return double.TryParse(longMinus, out value);
+        }
+        else if (s[0] == '\u2212')
+        {
+            if (double.TryParse(s, out value)) return true;
+            var shortMinus = (stackalloc char[s.Length]);
+            shortMinus[0] = '-';
+            s[1..].CopyTo(shortMinus[1..]);
+            return double.TryParse(shortMinus, out value);
+        }
+        else
+        {
+            return double.TryParse(s, out value);
+        }
+    } // internal static bool TryParseDouble (ReadOnlySpan<char>, out double)
+
     /// <summary>
     /// Tries to parse multiple strings as doubles, considering both minus sign variants.
     /// </summary>
@@ -143,4 +173,37 @@ internal sealed partial class NegativeSignHandler : IDisposable
         }
         return true;
     } // internal static bool TryParseDoubles (ReadOnlySpan<string>, Span<double>)
+
+    /// <summary>
+    /// Parses doubles from a delimited string.
+    /// </summary>
+    /// <param name="s">The input string.</param>
+    /// <param name="separator">The character that separates the values.</param>
+    /// <param name="values">A span to store the parsed double values.</param>
+    /// <returns>The number of successfully parsed double values.</returns>
+    internal static int ParseDoubles(ReadOnlySpan<char> s, char separator, Span<double> values)
+    {
+        var count = 0;
+        var start = 0;
+        for (var i = 0; i <= s.Length; i++)
+        {
+            if (i != s.Length && s[i] != separator)
+                continue;
+
+            var length = i - start;
+            if (length > 0)
+            {
+                var segment = s.Slice(start, length);
+                if (TryParseDouble(segment, out var value))
+                {
+                    if (count < values.Length)
+                        values[count++] = value;
+                    else
+                        break;
+                }
+            }
+            start = i + 1;
+        }
+        return count;
+    } // internal static int ParseDoubles (ReadOnlySpan<char>, char, Span<double>)
 } // internal sealed partial class NegativeSignHandler : IDisposable
