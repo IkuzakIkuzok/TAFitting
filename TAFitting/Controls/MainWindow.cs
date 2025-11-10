@@ -1471,14 +1471,19 @@ internal sealed partial class MainWindow : Form
         if (model is null) return;
 
         var parameters = model.Parameters.Names;
-        var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
-        foreach (var r in rows)
+        try
         {
-            var wavelength = r.Wavelength;
-            var row = this.parametersTable[wavelength];
-            if (row is null) continue;
-            row.Parameters = r.Parameters;
+            var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
+            foreach (var r in rows)
+            {
+                var wavelength = r.Wavelength;
+                var row = this.parametersTable[wavelength];
+                if (row is null) continue;
+                row.Parameters = r.Parameters;
+            }
         }
+        catch
+        { }
     } // private void PasteTable ()
 
     private void ReadSpreadSheet(object? sender, FileDroppedEventArgs e)
