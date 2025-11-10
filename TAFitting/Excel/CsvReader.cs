@@ -92,16 +92,18 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         string? line;
         while ((line = this.reader.ReadLine()) is not null)
         {
-            var fields = line.Split(',');
-            if (fields.Length - 1 < len)
-                continue;
+            var span = line.AsSpan();
+            var sep = span.IndexOf(',');
 
-            if (!double.TryParse(fields[0], out var wavelength))
+            var s_wavelength = span[..sep];
+            var s_values = span[(sep + 1)..];
+
+            if (!double.TryParse(s_wavelength, out var wavelength))
                 continue;
 
             var parameters = new double[len];
             var values = parameters.AsSpan();
-            if (!NegativeSignHandler.TryParseDoubles(fields.AsSpan(1, len), values))
+            if (NegativeSignHandler.ParseDoubles(s_values, ',', values) != len)
                 continue;
 
             yield return new(wavelength, parameters);
