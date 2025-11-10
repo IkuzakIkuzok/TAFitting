@@ -122,4 +122,25 @@ internal sealed partial class NegativeSignHandler : IDisposable
         if (double.TryParse(ToHyphenMinus(s), out value)) return true;
         return false;
     } // internal static bool TryParseDouble (string?, out double)
+
+    /// <summary>
+    /// Tries to parse multiple strings as doubles, considering both minus sign variants.
+    /// </summary>
+    /// <param name="strings">The strings to parse.</param>
+    /// <param name="values">The span to store the parsed double values.</param>
+    /// <retursns><see langword="true"/> if all parsing succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentException">The length of the <paramref name="values"/> span is less than that of the <paramref name="strings"/> span.</exception>
+    internal static bool TryParseDoubles(ReadOnlySpan<string> strings, Span<double> values)
+    {
+        if (values.Length < strings.Length)
+            throw new ArgumentException("The length of the values span is less than that of the strings span.");
+
+        for (var i = 0; i < strings.Length; i++)
+        {
+            if (!TryParseDouble(strings[i], out var value))
+                return false;
+            values[i] = value;
+        }
+        return true;
+    } // internal static bool TryParseDoubles (ReadOnlySpan<string>, Span<double>)
 } // internal sealed partial class NegativeSignHandler : IDisposable

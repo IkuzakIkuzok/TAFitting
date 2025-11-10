@@ -98,18 +98,8 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
                 continue;
 
             var parameters = new double[this.Parameters.Count];
-            var parseFailed = false;
-            for (var i = 0; i < this.Parameters.Count; i++)
-            {
-                if (!NegativeSignHandler.TryParseDouble(fields[i + 1], out var value))
-                {
-                    parseFailed = true;
-                    break;
-                }
-
-                parameters[i] = value;
-            }
-            if (parseFailed)
+            var values = parameters.AsSpan();
+            if (!NegativeSignHandler.TryParseDoubles(fields.AsSpan(1, this.Parameters.Count), values))
                 continue;
 
             yield return new SpreadSheetRow(wavelength, parameters);
