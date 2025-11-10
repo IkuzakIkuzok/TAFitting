@@ -2,13 +2,14 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using TAFitting.Controls;
+using TAFitting.Data;
 using WinClipboard = System.Windows.Forms.Clipboard;
 
 namespace TAFitting.Clipboard;
 
 internal static class ClipboardHandler
 {
-    internal static IEnumerable<ClipboardRow> GetRowsFromClipboard(IEnumerable<string> parameters)
+    internal static IEnumerable<ParameterValues> GetRowsFromClipboard(IEnumerable<string> parameters)
     {
         if (!WinClipboard.ContainsData(DataFormats.CommaSeparatedValue)) yield break;
         if (WinClipboard.GetData(DataFormats.CommaSeparatedValue) is not MemoryStream stream) yield break;
@@ -29,7 +30,7 @@ internal static class ClipboardHandler
             if (string.IsNullOrWhiteSpace(content[0])) continue;
             var wavelength = content[0].ParseDoubleInvariant();
             var values = parameterIndices.Select(i => content[i].ParseDoubleInvariant()).ToArray();
-            yield return new ClipboardRow(wavelength, values);
+            yield return new(wavelength, values);
         }
-    } // internal static IEnumerable<ClipboardRow> GetRowsFromClipboard (IEnumerable<string>)
+    } // internal static IEnumerable<ParameterValues> GetRowsFromClipboard (IEnumerable<string>)
 } // internal static class ClipboardHandler

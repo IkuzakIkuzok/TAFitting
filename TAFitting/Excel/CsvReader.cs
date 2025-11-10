@@ -3,6 +3,7 @@
 
 using System.Text;
 using TAFitting.Controls;
+using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -80,7 +81,7 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
     } // public void Open (string)
 
     /// <inheritdoc/>
-    public IEnumerable<SpreadSheetRow> ReadRows()
+    public IEnumerable<ParameterValues> ReadRows()
     {
         if (this.reader is null)
             throw new InvalidOperationException("The CSV file is not opened.");
@@ -103,9 +104,9 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
             if (!NegativeSignHandler.TryParseDoubles(fields.AsSpan(1, len), values))
                 continue;
 
-            yield return new SpreadSheetRow(wavelength, parameters);
+            yield return new(wavelength, parameters);
         }
-    } // public IEnumerable<SpreadSheetRow> ReadRows ()
+    } // public IEnumerable<ParameterValues> ReadRows ()
 
     public void Dispose()
     {

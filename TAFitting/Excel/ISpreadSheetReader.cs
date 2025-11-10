@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -35,5 +36,5 @@ internal interface ISpreadSheetReader
     /// Reads the rows.
     /// </summary>
     /// <returns>The rows.</returns>
-    IEnumerable<SpreadSheetRow> ReadRows();
+    IEnumerable<ParameterValues> ReadRows();
 } // internal interface ISpreadSheetReader

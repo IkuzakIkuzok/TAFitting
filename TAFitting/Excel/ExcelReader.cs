@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using ClosedXML.Excel;
+using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -64,7 +65,7 @@ internal class ExcelReader : ISpreadSheetReader, IDisposable
     } // public void Open (string)
 
     /// <inheritdoc/>
-    public IEnumerable<SpreadSheetRow> ReadRows()
+    public IEnumerable<ParameterValues> ReadRows()
     {
         if (this.worksheet is null)
             throw new InvalidOperationException("The workbook is not opened.");
@@ -78,10 +79,10 @@ internal class ExcelReader : ISpreadSheetReader, IDisposable
             var wavelength = row.Cell(1).GetDouble();
             for (var i = 0; i < this.Parameters.Count; i++)
                 parameters[i] = row.Cell(i + 2).GetDouble();
-            yield return new SpreadSheetRow(wavelength, parameters);
+            yield return new(wavelength, parameters);
             this.rowIndex++;
         }
-    } // public IEnumerable<SpreadSheetRow> ReadRows ()
+    } // public IEnumerable<ParameterValues> ReadRows ()
 
     public void Dispose()
     {
