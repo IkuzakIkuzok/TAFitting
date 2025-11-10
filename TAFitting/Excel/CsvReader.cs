@@ -87,19 +87,20 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         if (!this.ModelMatched)
             throw new InvalidOperationException("The model does not match with the CSV file.");
 
+        var len = this.Parameters.Count;
         string? line;
         while ((line = this.reader.ReadLine()) is not null)
         {
             var fields = line.Split(',');
-            if (fields.Length - 1 < this.Parameters.Count)
+            if (fields.Length - 1 < len)
                 continue;
 
             if (!double.TryParse(fields[0], out var wavelength))
                 continue;
 
-            var parameters = new double[this.Parameters.Count];
+            var parameters = new double[len];
             var values = parameters.AsSpan();
-            if (!NegativeSignHandler.TryParseDoubles(fields.AsSpan(1, this.Parameters.Count), values))
+            if (!NegativeSignHandler.TryParseDoubles(fields.AsSpan(1, len), values))
                 continue;
 
             yield return new SpreadSheetRow(wavelength, parameters);
