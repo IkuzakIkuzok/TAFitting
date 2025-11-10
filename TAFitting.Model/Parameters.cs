@@ -14,6 +14,7 @@ namespace TAFitting.Model;
 public sealed class Parameters(Parameter[] parameters) : IReadOnlyList<Parameter>
 {
     private readonly Parameter[] parameters = parameters;
+    private string[]? names;
 
     /// <inheritdoc/>
     public Parameter this[int index]
@@ -27,7 +28,7 @@ public sealed class Parameters(Parameter[] parameters) : IReadOnlyList<Parameter
     /// Gets the names of the parameters.
     /// </summary>
     public IReadOnlyList<string> Names
-        => Array.ConvertAll(this.parameters, p => p.Name);
+        => this.names ??= Array.ConvertAll(this.parameters, p => p.Name);
 
     public static Parameters Create(ReadOnlySpan<Parameter> parameters) =>
         new([.. parameters]);
