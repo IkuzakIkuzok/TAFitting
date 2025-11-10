@@ -74,7 +74,7 @@ internal sealed class SpectraSyncObject
             sb.Append(wavelength);
             sb.Append('=');
             sb.Append(string.Join(',', values.Select(v => v.ToInvariantString())));
-            sb.Append(';');
+            sb.Append(';');  // Do NOT remove the trailing ';' even after the last entry.
         }
 
         return sb.ToString();
@@ -91,24 +91,50 @@ internal sealed class SpectraSyncObject
 
         try
         {
-            var parts = data.Split('|');
-            if (parts.Length < 4) return null; // Invalid format
-            var spectraId = parts[0].ParseIntInvariant();
-            var hostName = parts[1];
-            var wavelengths = parts[2].Split(',').Select(double.Parse).ToList();
-            var maskingRanges = parts[3]; // Assuming this is a string representation of masking ranges
+            var dataSpan = data.AsSpan();
+            if (dataSpan.Count('|') < 3) return null; // Invalid format
+
+            var sep = dataSpan.IndexOf('|');
+            var spectraIdPart = dataSpan[..sep];
+            var spectraId = spectraIdPart.ParseIntInvariant();
+
+            dataSpan = dataSpan[(sep + 1)..];
+            sep = dataSpan.IndexOf('|');
+            var hostName = dataSpan[..sep].ToString();
+
+            dataSpan = dataSpan[(sep + 1)..];
+            sep = dataSpan.IndexOf('|');
+            var wavelengthsPart = dataSpan[..sep];
+            var wavelengthCount = wavelengthsPart.Count(',') + 1;
+            var wavelengths = new double[wavelengthCount];
+            wavelengthCount = NegativeSignHandler.ParseDoubles(wavelengthsPart, ',', wavelengths.AsSpan());
+
+            dataSpan = dataSpan[(sep + 1)..];
+            sep = dataSpan.IndexOf('|');
+            var maskingRanges = dataSpan[..sep].ToString();
+
+            dataSpan = dataSpan[(sep + 1)..];
+
             var spectra = new Dictionary<double, IList<double>>();
-            var spectraParts = parts[4].Split(';', StringSplitOptions.RemoveEmptyEntries);
-            var values = (stackalloc double[wavelengths.Count]);
-            foreach (var part in spectraParts)
+            var values = (stackalloc double[wavelengthCount]);
+
+            // Trailing ';' exists after the last entry, so checking for IndexOf(';') before loop is not necessary.
+            while ((sep = dataSpan.IndexOf(';')) >= 0)
             {
-                var kvp = part.Split('=');
-                if (kvp.Length != 2) continue; // Invalid format
-                var wavelength = kvp[0].ParseDoubleInvariant();
-                var count = NegativeSignHandler.ParseDoubles(kvp[1], ',', values);
-                Debug.Assert(count == wavelengths.Count);
-                spectra[wavelength] = values.ToArray();
-            } // foreach (var part in spectraParts)
+                var part = dataSpan[..sep];
+                dataSpan = dataSpan[(sep + 1)..];
+
+                var equalIndex = part.IndexOf('=');
+                if (equalIndex < 0) continue; // Invalid format
+
+                var timePart = part[..equalIndex];
+                var valuesPart = part[(equalIndex + 1)..];
+
+                var time = timePart.ParseDoubleInvariant();
+                var count = NegativeSignHandler.ParseDoubles(valuesPart, ',', values);
+                Debug.Assert(count == wavelengthCount);
+                spectra[time] = values.ToArray();
+            }
             return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
         }
         catch
