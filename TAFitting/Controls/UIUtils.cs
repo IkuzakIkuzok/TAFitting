@@ -1,9 +1,8 @@
 ﻿
 // (c) 2024 Kazuki Kohzuki
 
+using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Data;
 
@@ -12,74 +11,63 @@ namespace TAFitting.Controls;
 /// <summary>
 /// Provides utility methods for UI.
 /// </summary>
-internal static partial class UIUtils
+internal static class UIUtils
 {
     internal const double DecimalMin = -7.9e28;
     internal const double DecimalMax = +7.9e28;
-
-    [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
-    private static partial Regex RegexExpFormat();
-
-    private static readonly Regex re_expFormat = RegexExpFormat();
 
     /// <summary>
     /// Formats the specified value in exponential notation.
     /// </summary>
     /// <param name="value">The value.</param>
     /// <returns>String representation of the value in exponential notation.</returns>
-    // Constant formant is used and no exception is thrown with this format.
-    // ExceptionAdjustment: M:System.Decimal.ToString(System.String) -T:System.FormatException
     internal static string ExpFormatter(decimal value)
     {
-        var s = value.ToInvariantString("E2");
+        // +0.00x10⁻⁰⁰⁰ = 12 characters max, allocate with some margin for safety
+        var s = (stackalloc char[16]);
+        if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
+            return value.ToInvariantString();
 
-        Match? match;
-        try
+        var expIndex = s.IndexOf('E');
+        var exponent = (stackalloc char[len - expIndex - 1]);
+        s[(expIndex + 1)..(len)].CopyTo(exponent);  // copy exponent part to separate buffer, as `s` will be modified in-place
+
+        var index = expIndex;
+
+        s[index++] = '×';
+        s[index++] = '1';
+        s[index++] = '0';
+
+        if (exponent[0] is '-' or '\u2212')
+            s[index++] = '⁻';  // U+207B
+
+        exponent = exponent[1..].TrimStart('0');
+        if (exponent.Length == 0)
         {
-            match = re_expFormat.Match(s);
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return s;
-        }
-
-        if (!(match?.Success ?? false)) return s;
-
-        var mantissa = match.Groups["mantissa"].Value;
-        var exponent = match.Groups["exponent"].Value;
-
-        var sb = new StringBuilder(mantissa);
-        sb.Append("×10");
-        if (exponent.StartsWith('\u2212') || exponent.StartsWith('-'))
-            sb.Append('⁻');  // U+207B
-
-        var e = exponent[1..].TrimStart('0');
-        if (e.Length == 0)
-        {
-            sb.Append('⁰');  // U+2070
+            s[index++] = '⁰';  // U+2070
         }
         else
         {
             // append unicode superscript
-            foreach (var c in e)
+            foreach (var c in exponent)
             {
                 /*
                  * Superscript of 1, 2, 3 are located in U+00Bx,
                  * whereas the rest in U+207x.
                  */
-                sb.Append(c switch
+                s[index++] = c switch
                 {
                     '1' => '¹',  // U+00B9
                     '2' => '²',  // U+00B2
                     '3' => '³',  // U+00B3
                     _ => (char)(c + 0x2040)  // U+2070 - U+2079
-                });
+                };
             }
         }
 
-        return sb.ToString();
+        s = s[..index];
+        return new(s);
     } // internal static string ExpFormatter (decimal)
-
 
     /// <summary>
     /// Adds the specified decay to the data series.
@@ -286,4 +274,4 @@ internal static partial class UIUtils
         axis.IntervalOffset = offset;
         axis.MinorGrid.IntervalOffset = offset;
     } // internal static void AdjustAxisIntervalLogarithmic (this Axis, [double])
-} // internal static partial class UIUtils
+} // internal static class UIUtils
