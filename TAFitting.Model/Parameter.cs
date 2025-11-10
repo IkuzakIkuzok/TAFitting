@@ -31,5 +31,8 @@ public readonly struct Parameter
     /// </remarks>
     public bool IsMagnitude { get; init; } = false;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Parameter"/> struct.
+    /// </summary>
     public Parameter() { }
 } // public struct Parameter

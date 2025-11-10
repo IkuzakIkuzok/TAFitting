@@ -6,6 +6,10 @@ using System.Runtime.CompilerServices;
 
 namespace TAFitting.Model;
 
+/// <summary>
+/// Represents a collection of parameters.
+/// </summary>
+/// <param name="parameters">The parameters.</param>
 [CollectionBuilder(typeof(Parameters), nameof(Create))]
 public sealed class Parameters(Parameter[] parameters) : IReadOnlyList<Parameter>
 {
