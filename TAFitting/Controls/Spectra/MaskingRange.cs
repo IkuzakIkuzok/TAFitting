@@ -49,18 +49,19 @@ internal readonly record struct MaskingRange(double Start, double End)
     /// <returns>The equivalent masking range.</returns>
     internal static MaskingRange FromString(string value)
     {
-        var values = value.Trim().Split('-');
-
-        if (values.Length == 1)
+        var span = value.AsSpan();
+        var hyphenIndex = span.IndexOf('-');
+        if (hyphenIndex < 0) // single value
         {
-            if (!double.TryParse(values[0], out var time)) return Empty;
+            if (!double.TryParse(value, out var time)) return Empty;
             return new(time, time);
         }
-        if (values.Length != 2) return Empty;
 
-        if (!double.TryParse(values[0], out var start)) return Empty;
-        if (!double.TryParse(values[1], out var end)) return Empty;
-        if (start > end) return new(end, start);
+        // range value
+        var startSpan = span[..hyphenIndex].Trim();
+        var endSpan = span[(hyphenIndex + 1)..].Trim();
+        if (!double.TryParse(startSpan, out var start)) return Empty;
+        if (!double.TryParse(endSpan, out var end)) return Empty;
         return new(start, end);
     } // internal static MaskingRange FromString (string)
 } // internal readonly record struct MaskingRange (double, double)
