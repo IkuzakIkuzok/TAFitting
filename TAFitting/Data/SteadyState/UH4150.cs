@@ -1,6 +1,8 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using TAFitting.Controls;
+
 namespace TAFitting.Data.SteadyState;
 
 /// <summary>
@@ -24,12 +26,14 @@ internal sealed  partial class UH4150 : SteadyStateSpectrum
         }
 
         Func<double, double> a_map = abs ? FromAbsorbance : FromTransmittance;
+        var values = (stackalloc double[2]);
         while ((line = reader.ReadLine()) is not null)
         {
-            var fields = line.Split('\t');
-            if (fields.Length < 2) continue;
-            if (!double.TryParse(fields[0], out var wl)) continue;
-            if (!double.TryParse(fields[1], out var i)) continue;
+            if (NegativeSignHandler.ParseDoubles(line.AsSpan(), '\t', values) < 2)
+                continue;
+
+            var wl = values[0];
+            var i = values[1];
             var a = a_map(i);
             this._spectrum.Add((wl, a));
         }
