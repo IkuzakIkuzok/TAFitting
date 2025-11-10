@@ -27,5 +27,26 @@ internal record ExtensionItem(string Name, string Extension)
         => $"{this.Name}|{AddAsterisk(this.Extension)}";
 
     private static string AddAsterisk(string extension)
-        => string.Join(";", extension.Split(';').Select(ext => $"*" + ext));
+    {
+        var src = extension.AsSpan();
+        var exts = src.Count(';') + 1;
+
+        var dst = (stackalloc char[src.Length + exts]);
+        var di = 0;
+        dst[di++] = '*';  // first character is always '*'
+        for (var si = 0; si < src.Length; si++)
+        {
+            if (src[si] == ';')
+            {
+                dst[di++] = ';';
+                dst[di++] = '*';
+            }
+            else
+            {
+                dst[di++] = src[si];
+            }
+        }
+
+        return new(dst);
+    } // private static string AddAsterisk(string extension)
 } // internal record ExtensionItem (string, string)
