@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using System.Diagnostics;
 using System.Text;
 using TAFitting.Controls;
 
@@ -104,7 +105,8 @@ internal sealed class SpectraSyncObject
                 var kvp = part.Split('=');
                 if (kvp.Length != 2) continue; // Invalid format
                 var wavelength = kvp[0].ParseDoubleInvariant();
-                NegativeSignHandler.ParseDoubles(kvp[1], ',', values);
+                var count = NegativeSignHandler.ParseDoubles(kvp[1], ',', values);
+                Debug.Assert(count == wavelengths.Count);
                 spectra[wavelength] = values.ToArray();
             } // foreach (var part in spectraParts)
             return new SpectraSyncObject(spectraId, hostName, wavelengths, maskingRanges, spectra);
