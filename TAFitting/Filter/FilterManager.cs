@@ -115,7 +115,7 @@ internal static class FilterManager
 
     private static string GetCategory(Type type)
     {
-        var category = type.Namespace?.Split('.').Last() ?? string.Empty;
+        var category = type.Namespace?.GetLastPartition('.') ?? string.Empty;
         return category_map.TryGetValue(category, out var value) ? value : category;
     } // private static string GetCategory (Type)
 

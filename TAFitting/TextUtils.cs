@@ -250,4 +250,19 @@ internal static class TextUtils
         => value.ToString(format, CultureInfo.InvariantCulture);
 
     #endregion ToString
+
+    /// <summary>
+    /// Gets the last partition of the string separated by the specified separator character.
+    /// </summary>
+    /// <param name="s">The string to get the last partition from.</param>
+    /// <param name="separator">The separator character.</param>
+    /// <returns>
+    /// The last partition of the string.
+    /// If the separator character is not found in the string, the entire string is returned.
+    /// </returns>
+    internal static string GetLastPartition(this string s, char separator)
+    {
+        var index = s.LastIndexOf(separator);
+        return index >= 0 ? s[(index + 1)..] : s;
+    } // internal static string GetLastPartition (this string, char)
 } // internal static class TextUtils

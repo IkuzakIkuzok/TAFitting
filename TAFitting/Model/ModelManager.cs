@@ -192,7 +192,7 @@ internal static class ModelManager
 
     private static void AddModel(Guid guid, IFittingModel model)
     {
-        var category = model.GetType().Namespace?.Split('.').Last() ?? string.Empty;
+        var category = model.GetType().Namespace?.GetLastPartition('.') ?? string.Empty;
         AddModel(guid, model, category);
     } // private static void AddModel (Guid, IFittingModel)
 
