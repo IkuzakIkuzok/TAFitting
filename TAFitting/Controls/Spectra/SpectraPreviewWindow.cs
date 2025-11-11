@@ -871,12 +871,14 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {
-        if (wavelengths.Count < 2) return [];
+        // If the wavelengths are less than 4, intervals are less than 3, so no masking points can be determined.
+        if (wavelengths.Count < 4) return [];
+
         var allSteps = new double[wavelengths.Count - 1];
         for (var i = 0; i < allSteps.Length; i++)
             allSteps[i] = wavelengths[i + 1] - wavelengths[i];
         var steps = allSteps.Order().Reverse().ToArray();
-        if (steps.Length < 3) return [];
+        // if (steps.Length < 3) return [];
         if (steps[0] >= steps[1] * 2)
         {
             var step = steps[0];
