@@ -58,28 +58,7 @@ internal static partial class FileNameHandler
 
                 var replaces = pattern[10..^1].Split('|');
                 foreach (var replace in replaces)
-                {
-                    if (replace.StartsWith("r:", StringComparison.Ordinal))
-                    {
-                        var kv = replace[2..].Split('/');
-
-                        var timeout = TimeSpan.FromMilliseconds(RegexTimeoutMilliseconds);
-                        try
-                        {
-                            var re = new Regex(kv[0], RegexOptions.None, timeout);
-                            s_basename = re.Replace(s_basename, kv[1]);
-                        }
-                        catch (RegexMatchTimeoutException)
-                        {
-                            s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
-                        }
-                    }
-                    else
-                    {
-                        var kv = replace.Split('/');
-                        s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
-                    }
-                }
+                    ModifyBasename(ref s_basename, replace);
 
                 ReplacePlaceholder:
                 filename = filename.Replace(pattern, s_basename, StringComparison.Ordinal);
@@ -92,6 +71,30 @@ internal static partial class FileNameHandler
             return basename;
         }
     } // internal static string GetFileName (string, string)
+
+    private static void ModifyBasename(ref string basename, string replace)
+    {
+        if (!replace.StartsWith("r:", StringComparison.Ordinal))
+        {
+            // Simple string replacement
+            var kv = replace.Split('/');
+            basename = basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
+            return;
+        }
+
+        // Regular expression replacement
+        var kv_r = replace[2..].Split('/');
+        var timeout = TimeSpan.FromMilliseconds(RegexTimeoutMilliseconds);
+        try
+        {
+            var re = new Regex(kv_r[0], RegexOptions.None, timeout);
+            basename = re.Replace(basename, kv_r[1]);
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            basename = basename.Replace(kv_r[0], kv_r[1], StringComparison.Ordinal);
+        }
+    } // private static void ModifyBasename (ref string, string)
 
     [GeneratedRegex(@"<BASENAME(\|[^|/]+/[^|/]*)*>")]
     private static partial Regex BasenamePattern();
