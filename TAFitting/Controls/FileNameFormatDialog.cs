@@ -177,8 +177,14 @@ internal sealed partial class FileNameFormatDialog : Form
         var basename = this.tb_basename.Text;
         if (string.IsNullOrEmpty(basename)) return;
 
-        this.lb_sample_ab.Text = FileNameHandler.GetFileName(basename, format_ab);
-        this.lb_sample_b.Text = FileNameHandler.GetFileName(basename, format_b);
+        this.lb_sample_ab.Text =
+            FileNameHandler.IsSimpleFormat(format_ab)
+            ? FileNameHandler.GetFileNameFastMode(basename, format_ab)
+            : FileNameHandler.GetFileName(basename, format_ab);
+        this.lb_sample_b.Text =
+            FileNameHandler.IsSimpleFormat(format_b)
+            ? FileNameHandler.GetFileNameFastMode(basename, format_b)
+            : FileNameHandler.GetFileName(basename, format_b);
     } // UpdateText ()
 } // internal sealed partial class FileNameFormatDialog : Form
 

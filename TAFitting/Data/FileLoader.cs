@@ -14,6 +14,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
 {
     private readonly string format_ab = Program.AMinusBSignalFormat;
     private readonly string format_b = Program.BSignalFormat;
+    private readonly bool simple_ab, simple_b;
 
     // Concurrent collections are required because loading is done in parallel.
     private readonly ConcurrentDictionary<double, string> folders = [];
@@ -26,6 +27,15 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     internal int Count => this.folders.Count;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="FileLoader"/> class.
+    /// </summary>
+    internal FileLoader()
+    {
+        this.simple_ab = FileNameHandler.IsSimpleFormat(this.format_ab);
+        this.simple_b = FileNameHandler.IsSimpleFormat(this.format_b);
+    } // ctor ()
+
+    /// <summary>
     /// Registers the specified folder and starts loading the data.
     /// </summary>
     /// <param name="folder">The folder to register.</param>
@@ -36,8 +46,14 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
     internal void Register(string folder, double wavelength)
     {
         var basename = Path.GetFileName(folder);
-        var name_ab = FileNameHandler.GetFileName(basename, this.format_ab);
-        var name_b = FileNameHandler.GetFileName(basename, this.format_b);
+        var name_ab =
+            this.simple_ab
+            ? FileNameHandler.GetFileNameFastMode(basename, this.format_ab)
+            : FileNameHandler.GetFileName(basename, this.format_ab);
+        var name_b =
+            this.simple_b
+            ? FileNameHandler.GetFileNameFastMode(basename, this.format_b)
+            : FileNameHandler.GetFileName(basename, this.format_b);
 
         var file_ab = Path.Combine(folder, name_ab);
         var file_b = Path.Combine(folder, name_b);

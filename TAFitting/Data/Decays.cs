@@ -144,6 +144,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 
         var format_ab = Program.AMinusBSignalFormat;
         var format_b = Program.BSignalFormat;
+        var simple_ab = FileNameHandler.IsSimpleFormat(format_ab);
+        var simple_b = FileNameHandler.IsSimpleFormat(format_b);
 
         var decays = new Decays(timeUnit, signalUnit);
 
@@ -164,8 +166,12 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         {
             var (wavelength, folder) = l;
             var basename = Path.GetFileName(folder);
-            var name_ab = FileNameHandler.GetFileName(basename, format_ab);
-            var name_b = FileNameHandler.GetFileName(basename, format_b);
+            var name_ab = simple_ab
+                ? FileNameHandler.GetFileNameFastMode(basename, format_ab)
+                : FileNameHandler.GetFileName(basename, format_ab);
+            var name_b = simple_b
+                ? FileNameHandler.GetFileNameFastMode(basename, format_b)
+                : FileNameHandler.GetFileName(basename, format_b);
 
             var file_ab = Path.Combine(folder, name_ab);
             var file_b = Path.Combine(folder, name_b);
