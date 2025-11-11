@@ -17,6 +17,11 @@ internal interface ISpreadSheetReader
     IFittingModel Model { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether the spreadsheet is opened successfully.
+    /// </summary>
+    bool IsOpened { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the model matched with the spreadsheet.
     /// </summary>
     bool ModelMatched { get; }

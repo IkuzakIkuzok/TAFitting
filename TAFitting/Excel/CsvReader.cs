@@ -19,6 +19,8 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
     /// <inheritdoc/>
     public IFittingModel Model { get; init; }
 
+    public bool IsOpened => this.reader is not null && !this._disposed;
+
     /// <inheritdoc/>
     public bool ModelMatched { get; private set; }
 

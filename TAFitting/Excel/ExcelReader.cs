@@ -21,6 +21,9 @@ internal class ExcelReader : ISpreadSheetReader, IDisposable
     public IFittingModel Model { get; init; }
 
     /// <inheritdoc/>
+    public bool IsOpened => this.workbook is not null && this.worksheet is not null && !this._disposed;
+
+    /// <inheritdoc/>
     public bool ModelMatched { get; private set; }
 
     /// <inheritdoc/>

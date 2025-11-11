@@ -1508,6 +1508,16 @@ internal sealed partial class MainWindow : Form
         try
         {
             reader.Open(path);
+
+            if (!reader.IsOpened)
+            {
+                FadingMessageBox.Show(
+                    "The selected spreadsheet could not be opened.",
+                    0.8, 1000, 75, 0.1
+                );
+                return;
+            }
+
             if (!reader.ModelMatched)
             {
                 FadingMessageBox.Show(
@@ -1516,6 +1526,7 @@ internal sealed partial class MainWindow : Form
                 );
                 return;
             }
+
             foreach (var row in reader.ReadRows())
             {
                 var wavelength = row.Wavelength;
