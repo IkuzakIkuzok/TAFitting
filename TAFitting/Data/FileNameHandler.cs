@@ -53,36 +53,37 @@ internal static partial class FileNameHandler
                 var pattern = m.Value;
                 var s_basename = basename;
 
-                if (pattern != "<BASENAME>") // <BASENAME|...>
-                {
-                    var replaces = pattern[10..^1].Split('|');
-                    foreach (var replace in replaces)
-                    {
-                        if (replace.StartsWith("r:", StringComparison.Ordinal))
-                        {
-                            var kv = replace[2..].Split('/');
+                if (pattern == "<BASENAME>")  // No need to modify the placeholder
+                    goto ReplacePlaceholder;
 
-                            var timeout = TimeSpan.FromMilliseconds(RegexTimeoutMilliseconds);
-                            try
-                            {
-                                var re = new Regex(kv[0], RegexOptions.None, timeout);
-                                s_basename = re.Replace(s_basename, kv[1]);
-                            }
-                            catch (RegexMatchTimeoutException)
-                            {
-                                s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
-                            }
-                        }
-                        else
+                var replaces = pattern[10..^1].Split('|');
+                foreach (var replace in replaces)
+                {
+                    if (replace.StartsWith("r:", StringComparison.Ordinal))
+                    {
+                        var kv = replace[2..].Split('/');
+
+                        var timeout = TimeSpan.FromMilliseconds(RegexTimeoutMilliseconds);
+                        try
                         {
-                            var kv = replace.Split('/');
+                            var re = new Regex(kv[0], RegexOptions.None, timeout);
+                            s_basename = re.Replace(s_basename, kv[1]);
+                        }
+                        catch (RegexMatchTimeoutException)
+                        {
                             s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
                         }
                     }
+                    else
+                    {
+                        var kv = replace.Split('/');
+                        s_basename = s_basename.Replace(kv[0], kv[1], StringComparison.Ordinal);
+                    }
                 }
 
+                ReplacePlaceholder:
                 filename = filename.Replace(pattern, s_basename, StringComparison.Ordinal);
-            }
+            }  // foreach (Match m in ms)
 
             return filename;
         }
