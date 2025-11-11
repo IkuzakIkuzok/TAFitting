@@ -2,9 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using System.Drawing.Printing;
-using System.Text;
-using System.Text.RegularExpressions;
-using TAFitting.Controls;
+using System.Globalization;
 
 namespace TAFitting.Print;
 
@@ -12,15 +10,10 @@ namespace TAFitting.Print;
 /// Represents a document for printing the summary of spectra.
 /// </summary>
 [DesignerCategory("Code")]
-internal sealed partial class SpectraSummaryDocument : Document
+internal sealed class SpectraSummaryDocument : Document
 {
     private const float MARGIN = 20;
     private const float MARGIN_CELL = 5;
-
-    [GeneratedRegex(@"(?<mantissa>.*)(E(?<exponent>.*))")]
-    private static partial Regex RegexExpFormat();
-
-    private static readonly Regex re_expFormat = RegexExpFormat();
 
     private readonly Bitmap plot;
     private readonly IReadOnlyList<string> parameters;
@@ -176,52 +169,48 @@ internal sealed partial class SpectraSummaryDocument : Document
 
     private static string ExpFormatValue(double value, int n)
     {
-        var s = value.ToInvariantString($"E{n}");
+        var s = (stackalloc char[64]);
+        if (!value.TryFormat(s, out var len, $"E{n}", CultureInfo.InvariantCulture))
+            return value.ToInvariantString();
 
-        Match? match;
-        try
+        var expIndex = s.IndexOf('E');
+        var exponent = (stackalloc char[len - expIndex - 1]);
+        s[(expIndex + 1)..(len)].CopyTo(exponent);  // copy exponent part to separate buffer, as `s` will be modified in-place
+
+        var index = expIndex;
+
+        s[index++] = '×';
+        s[index++] = '1';
+        s[index++] = '0';
+
+        if (exponent[0] is '-' or '\u2212')
+            s[index++] = '⁻';  // U+207B
+
+        exponent = exponent[1..].TrimStart('0');
+        if (exponent.Length == 0)
         {
-            match = re_expFormat.Match(s);
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return s;
-        }
-
-        if (!(match?.Success ?? false)) return s;
-
-        var mantissa = match.Groups["mantissa"].Value;
-        var exponent = match.Groups["exponent"].Value;
-
-        var sb = new StringBuilder(mantissa);
-        sb.Append("×10");
-        if (exponent.StartsWith(NegativeSignHandler.NegativeSign, StringComparison.Ordinal))
-            sb.Append('⁻');  // U+207B
-
-        var e = exponent[1..].TrimStart('0');
-        if (e.Length == 0)
-        {
-            sb.Append('⁰');  // U+2070
+            s[index++] = '⁰';  // U+2070
         }
         else
         {
             // append unicode superscript
-            foreach (var c in e)
+            foreach (var c in exponent)
             {
                 /*
                  * Superscript of 1, 2, 3 are located in U+00Bx,
                  * whereas the rest in U+207x.
                  */
-                sb.Append(c switch
+                s[index++] = c switch
                 {
                     '1' => '¹',  // U+00B9
                     '2' => '²',  // U+00B2
                     '3' => '³',  // U+00B3
                     _ => (char)(c + 0x2040)  // U+2070 - U+2079
-                });
+                };
             }
         }
 
-        return sb.ToString();
+        s = s[..index];
+        return new(s);
     } // private static string ExpFormatValue (double, int)
-} // internal sealed partial class Document
+} // internal sealed class Document
