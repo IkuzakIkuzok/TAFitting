@@ -83,16 +83,19 @@ internal static partial class FileNameHandler
         }
 
         // Regular expression replacement
-        var kv_r = replace[2..].Split('/');
+        var span_r = replace.AsSpan()[2..];
+        var sep = span_r.IndexOf('/');
+        var oldPattern = span_r[..sep].ToString();
+        var newPattern = span_r[(sep + 1)..].ToString();
         var timeout = TimeSpan.FromMilliseconds(RegexTimeoutMilliseconds);
         try
         {
-            var re = new Regex(kv_r[0], RegexOptions.None, timeout);
-            basename = re.Replace(basename, kv_r[1]);
+            var re = new Regex(oldPattern, RegexOptions.None, timeout);
+            basename = re.Replace(basename, newPattern);
         }
         catch (RegexMatchTimeoutException)
         {
-            basename = basename.Replace(kv_r[0], kv_r[1], StringComparison.Ordinal);
+            basename = basename.Replace(oldPattern, newPattern, StringComparison.Ordinal);
         }
     } // private static void ModifyBasename (ref string, string)
 
