@@ -16,10 +16,10 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     /// </summary>
     internal double IncrementOrderBias
     {
-        get => ((DataGridViewNumericBoxCell)this.CellTemplate).IncrementOrderBias;
+        get => ((DataGridViewNumericBoxCell)this.CellTemplate!).IncrementOrderBias;
         set
         {
-            ((DataGridViewNumericBoxCell)this.CellTemplate).IncrementOrderBias = value;
+            ((DataGridViewNumericBoxCell)this.CellTemplate!).IncrementOrderBias = value;
             var dgw = this.DataGridView;
             if (dgw is not null)
             {
@@ -37,10 +37,10 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     /// </summary>
     internal double Maximum
     {
-        get => ((DataGridViewNumericBoxCell)this.CellTemplate).Maximum;
+        get => ((DataGridViewNumericBoxCell)this.CellTemplate!).Maximum;
         set
         {
-            ((DataGridViewNumericBoxCell)this.CellTemplate).Maximum = value;
+            ((DataGridViewNumericBoxCell)this.CellTemplate!).Maximum = value;
             var dgw = this.DataGridView;
             if (dgw is not null)
             {
@@ -58,10 +58,10 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     /// </summary>
     internal double Minimum
     {
-        get => ((DataGridViewNumericBoxCell)this.CellTemplate).Minimum;
+        get => ((DataGridViewNumericBoxCell)this.CellTemplate!).Minimum;
         set
         {
-            ((DataGridViewNumericBoxCell)this.CellTemplate).Minimum = value;
+            ((DataGridViewNumericBoxCell)this.CellTemplate!).Minimum = value;
             var dgw = this.DataGridView;
             if (dgw is not null)
             {
@@ -79,10 +79,10 @@ internal partial class DataGridViewNumericBoxColumn : DataGridViewColumn
     /// </summary>
     internal int DecimalPlaces
     {
-        get => ((DataGridViewNumericBoxCell)this.CellTemplate).DecimalPlaces;
+        get => ((DataGridViewNumericBoxCell)this.CellTemplate!).DecimalPlaces;
         set
         {
-            ((DataGridViewNumericBoxCell)this.CellTemplate).DecimalPlaces = value;
+            ((DataGridViewNumericBoxCell)this.CellTemplate!).DecimalPlaces = value;
             var dgw = this.DataGridView;
             if (dgw is not null)
             {

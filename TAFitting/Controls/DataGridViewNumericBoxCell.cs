@@ -85,15 +85,15 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     override public object DefaultNewRowValue => this.DefaultValue;
 
     /// <inheritdoc/>
-    override protected object GetFormattedValue(object value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter valueTypeConverter, TypeConverter formattedValueTypeConverter, DataGridViewDataErrorContexts context)
+    override protected object? GetFormattedValue(object? value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter? valueTypeConverter, TypeConverter? formattedValueTypeConverter, DataGridViewDataErrorContexts context)
     {
         if (value is double d)
             return d.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
         return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
-    } // override protected object GetFormattedValue (object, int, ref DataGridViewCellStyle, TypeConverter, TypeConverter, DataGridViewDataErrorContexts)
+    } // override protected object? GetFormattedValue (object?, int, ref DataGridViewCellStyle, TypeConverter?, TypeConverter?, DataGridViewDataErrorContexts)
 
     /// <inheritdoc/>
-    override protected bool SetValue(int rowIndex, object value)
+    override protected bool SetValue(int rowIndex, object? value)
     {
         if (!this.FreezeEditedState) this.Edited = true;
         if (value is string s && double.TryParse(s, out var d))
@@ -102,11 +102,11 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
             return base.SetValue(rowIndex, d);
         }
         return base.SetValue(rowIndex, value);
-    } // override protected bool SetValue (int, object)
+    } // override protected bool SetValue (int, object?)
 
     /// <inheritdoc/>
     protected double GetDoubleValue(int rowIndex)
-        => Math.Round((double)GetValue(rowIndex), this.Digit);
+        => Math.Round(GetValue(rowIndex) is double value ? value : 0.0, this.Digit);
 
     /// <inheritdoc/>
     override protected void OnKeyDown(KeyEventArgs e, int rowIndex)
@@ -169,7 +169,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// <returns>The logarithmic value.</returns>
     protected virtual double GetLogValue()
     {
-        var val = Math.Abs((double)GetValue(this.RowIndex));
+        var val = Math.Abs(GetValue(this.RowIndex) is double value ? value : 0.0);
         if (val == 0) return 0;
         return Math.Log10(val);
     } // protected virtual double GetLogValue ()
