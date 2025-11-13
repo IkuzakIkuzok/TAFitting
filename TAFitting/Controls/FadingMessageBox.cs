@@ -111,15 +111,15 @@ internal partial class FadingMessageBox : Form
     private static int CalcHeight(string text, int width, Font font)
         => TextRenderer.MeasureText(text, font, new Size(width, int.MaxValue), TextFormatFlags.WordBreak).Height;
 
-    protected override void OnClosed(EventArgs e)
+    protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        base.OnClosed(e);
+        base.OnFormClosing(e);
 
         this.parent.FormClosed -= OnParentClosed;
         this.timer?.Dispose();
 
         showing = null;
-    } // protected override void OnClosed (EventArgs)
+    } // protected override void OnFormClosing (FormClosingEventArgs)
 
     override protected void OnLoad(EventArgs e)
     {
