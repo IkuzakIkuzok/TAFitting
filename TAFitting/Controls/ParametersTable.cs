@@ -178,7 +178,8 @@ internal sealed partial class ParametersTable : DataGridView
     override protected void OnCellBeginEdit(DataGridViewCellCancelEventArgs e)
     {
         NegativeSignHandler.SetHyphenMinus();
-        this.oldValue = (double)this[e.ColumnIndex, e.RowIndex].Value;
+        if (this[e.ColumnIndex, e.RowIndex].Value is double value)
+            this.oldValue = value;
         base.OnCellBeginEdit(e);
     } // override protected void OnCellBeginEdit (DataGridViewCellCancelEventArgs)
 
@@ -186,7 +187,8 @@ internal sealed partial class ParametersTable : DataGridView
     override protected void OnCellEndEdit(DataGridViewCellEventArgs e)
     {
         NegativeSignHandler.SetMinusSign();
-        this.newValue = (double)this[e.ColumnIndex, e.RowIndex].Value;
+        if (this[e.ColumnIndex, e.RowIndex].Value is double value)
+            this.newValue = value;
         base.OnCellEndEdit(e);
 
         if (this.StopUpdateRSquared) return;
@@ -432,7 +434,9 @@ internal sealed partial class ParametersTable : DataGridView
         const double DecimalMin = UIUtils.DecimalMin;
         const double DecimalMax = UIUtils.DecimalMax;
 
-        var val = Math.Clamp((double)rows.First().Cells[column.Index].Value, DecimalMin, DecimalMax);
+        var cell = rows.First().Cells[column.Index];
+        var val = cell.Value is double v ? v : 0.0;
+        val = Math.Clamp(val, DecimalMin, DecimalMax);
         using var nib = new NumericInputBox()
         {
             Text = column.HeaderText,
