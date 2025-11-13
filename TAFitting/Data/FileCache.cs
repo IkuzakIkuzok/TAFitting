@@ -55,7 +55,11 @@ internal sealed class FileCache
     internal Span<byte> ReadLine(int lineIndex)
     {
         var start = lineIndex * LINE_LENGTH;
-        var bufferIndex = start % BUFFER_LENGTH;
-        return (start < BUFFER_LENGTH ? this._buffer1 : this._buffer2).AsSpan(bufferIndex, LINE_LENGTH);
+        //var bufferIndex = start % BUFFER_LENGTH;
+        //return (start < BUFFER_LENGTH ? this._buffer1 : this._buffer2).AsSpan(bufferIndex, LINE_LENGTH);
+        if (start < BUFFER_LENGTH)
+            return this._buffer1.AsSpan(start, LINE_LENGTH);
+        else
+            return this._buffer2.AsSpan(start - BUFFER_LENGTH, LINE_LENGTH);
     } // internal Span<byte> ReadLine (int)
 } // internal sealed class FileCache
