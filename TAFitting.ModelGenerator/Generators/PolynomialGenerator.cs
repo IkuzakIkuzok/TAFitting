@@ -88,13 +88,9 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             if (i < n - 1)
             {
                 func.Insert(0, "(");
-                func.Append($") * x");
+                func.Append($")");
             }
-            else
-            {
-                func.Append(" * x");
-            }
-            func.Append($" + a{i}");
+            func.Append($" * x + a{i}");
         }
         builder.AppendLine($"\t\t\treturn (x) => {func};");
         builder.AppendLine("\t\t} // public global::System.Func<double, double> GetFunction (global::System.Collections.Generic.IReadOnlyList<double>)");
