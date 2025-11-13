@@ -38,7 +38,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
     private readonly List<Series> wavelengthHighlights = [];
-    private readonly object chartLock = new();
+    private readonly Lock chartLock = new();
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
@@ -430,112 +430,110 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (this.timeTable.Updating) return;
         var model = this.Model;
 
-        lock (this.chartLock)
+        using var _ = this.chartLock.EnterScope();
+        try
         {
-            try
+            this.chart.Series.Clear();
+            if (sync) this.timeTable.SetColors();
+            this.wavelengthHighlights.Clear();
+
+            if (this.parameters.Count == 0)
             {
-                this.chart.Series.Clear();
-                if (sync) this.timeTable.SetColors();
-                this.wavelengthHighlights.Clear();
-
-                if (this.parameters.Count == 0)
-                {
-                    DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
-                    return;
-                }
-
-                // using var _ = new ControlDrawingSuspender(this.chart);
-
-                var wlMin = this.parameters.Keys.Min();
-                var wlMax = this.parameters.Keys.Max();
-
-                DrawHorizontalLine(wlMin, wlMax);
-
-                var maskingRanges = this.maskingRangeBox.MaskingRanges;
-                var wavelengths = this.parameters.Keys.Order().ToArray();
-                var masked = maskingRanges.GetMaskedPoints(wavelengths);
-                var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
-
-                var times = this.timeTable.Times.ToArray();
-                var funcs = this.parameters.ToDictionary(
-                    kv => kv.Key,
-                    kv => model.GetFunction(kv.Value)
-                );
-
-                this.spectraSyncObject = new SpectraSyncObject(
-                    this.SerialNumber,
-                    SyncServer.MyName,
-                    wavelengths,
-                    this.maskingRangeBox.Text,
-                    new Dictionary<double, IList<double>>()
-                );
-
-                var sigMin = double.MaxValue;
-                var sigMax = double.MinValue;
-                // Add sync spectra series before drawing the main spectra
-                foreach (var syncSeries in this.syncSpectraSeries.SelectMany(s => s.Value))
-                {
-                    this.chart.Series.Add(syncSeries);
-                    (var min, var max) = syncSeries.GetRange();
-                    sigMin = Math.Min(sigMin, min);
-                    sigMax = Math.Max(sigMax, max);
-                }
-
-                var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
-                var index = 0;
-                foreach (var time in times)
-                {
-                    (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
-                    sigMin = Math.Min(sigMin, min);
-                    sigMax = Math.Max(sigMax, max);
-                }
-
-                sigMin = Math.Min(sigMin, 0.0);
-                sigMax = Math.Max(sigMax, 0.0);
-
-                if (this.steadyStateSpectrum is not null)
-                {
-                    var scale = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
-                    var s_sss = new Series()
-                    {
-                        Color = Color.Black,
-                        ChartType = SeriesChartType.Line,
-                        BorderDashStyle = ChartDashStyle.Dot,
-                        BorderWidth = 2,
-                        LegendText = "Steady-state",
-                    };
-                    try
-                    {
-                        foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
-                            s_sss.Points.AddXY(wl, a);
-                        this.chart.Series.Add(s_sss);
-                        sigMax = scale;
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // No absorbance data within the wavelength range
-                    }
-                }
-
-                this.axisX.Minimum = wlMin;
-                this.axisX.Maximum = wlMax;
-                this.axisY.Minimum = sigMin * 1.1;
-                this.axisY.Maximum = sigMax * 1.1;
-
-                AdjustAxesIntervals();
-
-                if (sync)
-                    SyncManager.UpdateSpectra(this.spectraSyncObject);
+                DrawHorizontalLine(this.axisX.Minimum, this.axisX.Maximum);
+                return;
             }
-            catch (Exception e)
+
+            // using var _ = new ControlDrawingSuspender(this.chart);
+
+            var wlMin = this.parameters.Keys.Min();
+            var wlMax = this.parameters.Keys.Max();
+
+            DrawHorizontalLine(wlMin, wlMax);
+
+            var maskingRanges = this.maskingRangeBox.MaskingRanges;
+            var wavelengths = this.parameters.Keys.Order().ToArray();
+            var masked = maskingRanges.GetMaskedPoints(wavelengths);
+            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
+
+            var times = this.timeTable.Times.ToArray();
+            var funcs = this.parameters.ToDictionary(
+                kv => kv.Key,
+                kv => model.GetFunction(kv.Value)
+            );
+
+            this.spectraSyncObject = new SpectraSyncObject(
+                this.SerialNumber,
+                SyncServer.MyName,
+                wavelengths,
+                this.maskingRangeBox.Text,
+                new Dictionary<double, IList<double>>()
+            );
+
+            var sigMin = double.MaxValue;
+            var sigMax = double.MinValue;
+            // Add sync spectra series before drawing the main spectra
+            foreach (var syncSeries in this.syncSpectraSeries.SelectMany(s => s.Value))
             {
-                Debug.WriteLine(e.Message);
+                this.chart.Series.Add(syncSeries);
+                (var min, var max) = syncSeries.GetRange();
+                sigMin = Math.Min(sigMin, min);
+                sigMax = Math.Max(sigMax, max);
             }
-            finally
+
+            var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Length);
+            var index = 0;
+            foreach (var time in times)
             {
-                this.chart.Invalidate();
+                (var min, var max) = DrawSpectrum(time, funcs, gradient[index++], masked, nextOfMasked);
+                sigMin = Math.Min(sigMin, min);
+                sigMax = Math.Max(sigMax, max);
             }
-        } // lock (this.chartLock)
+
+            sigMin = Math.Min(sigMin, 0.0);
+            sigMax = Math.Max(sigMax, 0.0);
+
+            if (this.steadyStateSpectrum is not null)
+            {
+                var scale = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
+                var s_sss = new Series()
+                {
+                    Color = Color.Black,
+                    ChartType = SeriesChartType.Line,
+                    BorderDashStyle = ChartDashStyle.Dot,
+                    BorderWidth = 2,
+                    LegendText = "Steady-state",
+                };
+                try
+                {
+                    foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
+                        s_sss.Points.AddXY(wl, a);
+                    this.chart.Series.Add(s_sss);
+                    sigMax = scale;
+                }
+                catch (InvalidOperationException)
+                {
+                    // No absorbance data within the wavelength range
+                }
+            }
+
+            this.axisX.Minimum = wlMin;
+            this.axisX.Maximum = wlMax;
+            this.axisY.Minimum = sigMin * 1.1;
+            this.axisY.Maximum = sigMax * 1.1;
+
+            AdjustAxesIntervals();
+
+            if (sync)
+                SyncManager.UpdateSpectra(this.spectraSyncObject);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
+        }
+        finally
+        {
+            this.chart.Invalidate();
+        }
     } // private void DrawSpectra ()
 
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
