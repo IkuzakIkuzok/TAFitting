@@ -72,8 +72,6 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         #region GetFunction
 
-        static string GetTerm(int i) => $"a{i} * x{i}";
-
         builder.AppendLine();
         builder.AppendLine("\t\t/// <inheritdoc/>");
         builder.AppendLine("\t\tpublic global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
@@ -82,29 +80,23 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             builder.AppendLine($"\t\t\tvar a{i} = parameters[{i}];");
         builder.AppendLine();
 
-        if (n == 1)
+        if (n > 1)
+            builder.AppendLine("\t\t\t//Horner's method");
+        var func = new StringBuilder($"a{n}");
+        for (var i = n - 1; i >= 0; --i)
         {
-            builder.AppendLine("\t\t\treturn x => a0 + a1 * x;");
-        }
-        else if (n == 2)
-        {
-            builder.AppendLine("\t\t\treturn x => a0 + a1 * x + a2 * x * x;");
-        }
-        else
-        {
-            builder.AppendLine("\t\t\treturn (x) =>");
-            builder.AppendLine("\t\t\t{");
-            for (var i = 1; i <= n; i++)
+            if (i < n - 1)
             {
-                if (i == 1)
-                    builder.AppendLine($"\t\t\t\tvar x1 = x;");
-                else
-                    builder.AppendLine($"\t\t\t\tvar x{i} = x{i - 1} * x;");
+                func.Insert(0, "(");
+                func.Append($") * x");
             }
-
-            builder.AppendLine($"\t\t\t\treturn a0 + {string.Join(" + ", Enumerable.Range(1, n).Select(GetTerm))};");
-            builder.AppendLine("\t\t\t};");
-        } // if (n == 1)
+            else
+            {
+                func.Append(" * x");
+            }
+            func.Append($" + a{i}");
+        }
+        builder.AppendLine($"\t\t\treturn (x) => {func};");
         builder.AppendLine("\t\t} // public global::System.Func<double, double> GetFunction (global::System.Collections.Generic.IReadOnlyList<double>)");
 
         GenerateGetVectorizedFunc(builder, "global::TAFitting.Data.AvxVector", n);
