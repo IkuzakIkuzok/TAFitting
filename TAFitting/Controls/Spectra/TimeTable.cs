@@ -22,7 +22,8 @@ internal sealed partial class TimeTable : DataGridView
         => [.. this.Rows
                .Cast<DataGridViewRow>()
                .Where(row => !row.IsNewRow)
-               .Select(row => (double)row.Cells["Time"].Value)
+               .Select(row => row.Cells["Time"].Value is double t ? t : double.NaN)
+               .Where(t => !double.IsNaN(t))
                .Order()];
 
     /// <summary>
@@ -31,8 +32,8 @@ internal sealed partial class TimeTable : DataGridView
     /// <value>The unit of time.</value>
     internal string Unit
     {
-        get => this.Columns["Time"].HeaderText[6..^1];
-        set => this.Columns["Time"].HeaderText = $"Time ({value})";
+        get => this.Columns["Time"]!.HeaderText[6..^1];
+        set => this.Columns["Time"]!.HeaderText = $"Time ({value})";
     }
 
     /// <summary>
@@ -69,7 +70,7 @@ internal sealed partial class TimeTable : DataGridView
     {
         if (this.Updating) return;
 
-        Sort(this.Columns["Time"], ListSortDirection.Ascending);
+        Sort(this.Columns["Time"]!, ListSortDirection.Ascending);
         var count = this.Rows.Count - 1;  // 1 for the new (empty) row
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, count);
         for (var i = 0; i < count; i++)
