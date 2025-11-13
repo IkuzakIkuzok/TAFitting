@@ -47,7 +47,7 @@ internal static partial class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        typeof(Form).GetField("defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
+        typeof(Form).GetField("s_defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
 
         if (args.Length > 0)
