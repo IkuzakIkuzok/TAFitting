@@ -38,12 +38,12 @@ internal sealed class ParamsEditCommand(ParametersTable table, double wavelength
     public void Redo()
     {
         var row = this.table[this.Wavelength];
-        if (row is not null) row[this.Index] = this.NewValue;
+        row?[this.Index] = this.NewValue;
     } // public void Redo()
 
     public void Undo()
     {
         var row = this.table[this.Wavelength];
-        if (row is not null) row[this.Index] = this.OldValue;
+        row?[this.Index] = this.OldValue;
     } // public void Undo()
 } // internal sealed class ParamsEditCommand : IUndoCommand
