@@ -51,6 +51,16 @@ internal sealed class UfsReader : UfsIOHelper
     } // internal double[] ReadDoubles (int)
 
     /// <summary>
+    /// Reads multiple 64-bit floating-point numbers from the stream into the provided buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer to store the read 64-bit floating-point numbers.</param>
+    internal void ReadDoubles(Span<double> buffer)
+    {
+        for (var i = 0; i < buffer.Length; i++)
+            buffer[i] = ReadDouble();
+    } // internal void ReadDoubles (Span<double>)
+
+    /// <summary>
     /// Reads a string from the stream.
     /// </summary>
     /// <returns>The string read from the stream.</returns>

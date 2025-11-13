@@ -275,7 +275,8 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         reader.SkipString();  // wavelength unit
 
         var wavelengthCount = reader.ReadInt32();
-        var wavelengths = reader.ReadDoubles(wavelengthCount);
+        var wavelengths = (stackalloc double[wavelengthCount]);
+        reader.ReadDoubles(wavelengths);
 
         reader.SkipString();  // "Time"
         var tu = reader.ReadString();
