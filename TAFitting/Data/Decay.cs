@@ -415,7 +415,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             var buffer = (stackalloc byte[LINE_LEN * LINES]);
 
             // Read the first line outside the loop to get the time step.
-            reader.Read(buffer);
+            reader.ReadExactly(buffer);
             var t = buffer.Slice(3 + LINE_LEN * 0, PARSING_LENGTH);
 
             // Calculating the time by some althmetic operations is significantly faster than parsing the string.
