@@ -502,8 +502,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         var t = line.Slice(3, PARSING_LENGTH);
         var dt = FastParseFixedPoint(t);
 
+        times[0] = dt * timeScaling;
+        signals[0] = FastParseFixedPoint(line.Slice(SIGNAL_POS, PARSING_LENGTH)) * signalScaling;
+
         var l = Math.Min(preLoadData.Length / LINE_LEN, lines);
-        var i = 0;
+        var i = 1;
         for (; i < l; ++i)
         {
             line = preLoadData.ReadLine(i);
