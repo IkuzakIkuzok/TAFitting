@@ -11,7 +11,7 @@ internal static class ClipboardHandler
 {
     internal static IEnumerable<ParameterValues> GetRowsFromClipboard(IEnumerable<string> parameters)
     {
-        if (!WinClipboard.ContainsData(DataFormats.CommaSeparatedValue)) yield break;
+        //if (!WinClipboard.ContainsData(DataFormats.CommaSeparatedValue)) yield break;
         if (!WinClipboard.TryGetData(DataFormats.CommaSeparatedValue, out MemoryStream? stream)) yield break;
 
         var csv = stream.ToArray().GetText();
