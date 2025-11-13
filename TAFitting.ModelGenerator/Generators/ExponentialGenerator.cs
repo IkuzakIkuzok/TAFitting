@@ -177,7 +177,7 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
             builder.AppendLine($"\t\t\t\t// res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})");
             builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 1}], a{i} / (t{i} * t{i}), res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
-            builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{2 * i - 0}], x, res[{2 * i - 0}]);               // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($"\t\t\t\tres[{2 * i - 0}] *= x;                                                                // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
         }
         builder.AppendLine("\t\t\t};");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
