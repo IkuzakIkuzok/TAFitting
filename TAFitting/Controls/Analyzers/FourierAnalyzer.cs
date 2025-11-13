@@ -168,13 +168,13 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         #endregion menu
     } // ctor ()
 
-    override protected void OnClosing(CancelEventArgs e)
+    override protected void OnFormClosing(FormClosingEventArgs e)
     {
-        base.OnClosing(e);
+        base.OnFormClosing(e);
 
         Program.AxisTitleFontChanged -= SetAxisTitleFont;
         Program.AxisLabelFontChanged -= SetAxisLabelFont;
-    } // override protected void OnClosing (CancelEventArgs)
+    } // override protected void OnFormClosing (FormClosingEventArgs)
 
     /// <summary>
     /// Sets the spectrum of the decay.

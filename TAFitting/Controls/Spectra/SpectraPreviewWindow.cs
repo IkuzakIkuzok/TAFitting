@@ -380,9 +380,9 @@ internal sealed partial class SpectraPreviewWindow : Form
         SetParameters(parameters);
     } // ctor (IReadOnlyDictionary<double, double[]>)
 
-    override protected void OnClosing(CancelEventArgs e)
+    override protected void OnFormClosing(FormClosingEventArgs e)
     {
-        base.OnClosing(e);
+        base.OnFormClosing(e);
 
         Program.AxisTitleFontChanged -= SetAxisTitleFont;
         Program.AxisLabelFontChanged -= SetAxisLabelFont;
@@ -390,7 +390,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         foreach (var source in this.syncSpectraSeries.Keys)
             _ = SyncManager.StopSyncSpectra(source.HostName, source.SpectraId);
-    } // override protected void OnClosing (CancelEventArgs)
+    } // override protected void OnFormClosing (FormClosingEventArgs)
 
     override protected void OnShown(EventArgs e)
     {
