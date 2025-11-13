@@ -806,6 +806,8 @@ public sealed class AvxVector
         return span1.SequenceEqual(span2);
     } // public bool SequentialEquals (AvxVector?)
 
+    #region arithmetic operations
+
     /// <summary>
     /// Adds the specified vectors and stores the result in the specified vector.
     /// </summary>
@@ -1155,6 +1157,212 @@ public sealed class AvxVector
         for (var i = offset; i < right._length; i++)
             result._array[i + result._offset] = left / right._array[i + right._offset];
     } // public static void Divide (double, AvxVector, AvxVector)
+
+    #endregion arithmetic operations
+
+    #region complex assignments
+
+    public void operator +=(AvxVector other)
+    {
+        ThrowHelper.ThrowIfCountMismatch(this, other);
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+        ref var current_other = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other._array), other._offset);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_other = Vector256.LoadUnsafe(ref current_other);
+            var v_result = Vector256.Add(v_this, v_other);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+            current_other = ref Unsafe.Add(ref current_other, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] += other._array[i + other._offset];
+    } // public void operator += (AvxVector)
+
+    public void operator +=(double value)
+    {
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+
+        var v_value = Vector256.Create(value);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_result = Vector256.Add(v_this, v_value);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] += value;
+    } // public void operator += (double)
+
+    public void operator -=(AvxVector other)
+    {
+        ThrowHelper.ThrowIfCountMismatch(this, other);
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+        ref var current_other = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other._array), other._offset);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_other = Vector256.LoadUnsafe(ref current_other);
+            var v_result = Vector256.Subtract(v_this, v_other);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+            current_other = ref Unsafe.Add(ref current_other, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] -= other._array[i + other._offset];
+    } // public void operator -= (AvxVector)
+
+    public void operator -=(double value)
+    {
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+
+        var v_value = Vector256.Create(value);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_result = Vector256.Subtract(v_this, v_value);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] -= value;
+    } // public void operator -= (double)
+
+    public void operator *=(AvxVector other)
+    {
+        ThrowHelper.ThrowIfCountMismatch(this, other);
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+        ref var current_other = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other._array), other._offset);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_other = Vector256.LoadUnsafe(ref current_other);
+            var v_result = Vector256.Multiply(v_this, v_other);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+            current_other = ref Unsafe.Add(ref current_other, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] *= other._array[i + other._offset];
+    } // public void operator *= (AvxVector)
+
+    public void operator *=(double value)
+    {
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+
+        var v_value = Vector256.Create(value);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_result = Vector256.Multiply(v_this, v_value);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] *= value;
+    } // public void operator *= (double)
+
+    public void operator /=(AvxVector other)
+    {
+        ThrowHelper.ThrowIfCountMismatch(this, other);
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+        ref var current_other = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(other._array), other._offset);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_other = Vector256.LoadUnsafe(ref current_other);
+            var v_result = Vector256.Divide(v_this, v_other);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+            current_other = ref Unsafe.Add(ref current_other, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] /= other._array[i + other._offset];
+    } // public void operator /= (AvxVector)
+
+    public void operator /=(double value)
+    {
+        ThrowHelper.ThrowIfReadonly(this);
+
+        ref var begin_this = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(this._array), this._offset);
+        ref var to_this = ref Unsafe.Add(ref begin_this, this._length - Vector256<double>.Count);
+
+        ref var current_this = ref begin_this;
+
+        var v_value = Vector256.Create(value);
+
+        while (Unsafe.IsAddressLessThan(ref current_this, ref to_this))
+        {
+            var v_this = Vector256.LoadUnsafe(ref current_this);
+            var v_result = Vector256.Divide(v_this, v_value);
+            v_result.StoreUnsafe(ref current_this);
+            current_this = ref Unsafe.Add(ref current_this, Vector256<double>.Count);
+        }
+
+        var offset = GetRemainingOffset(this);
+        for (var i = offset; i < this._length; i++)
+            this._array[i + this._offset] /= value;
+    } // public void operator /= (double)
+
+    #endregion complex assignments
 
     /// <summary>
     /// Computes the inner product of the specified vectors.
