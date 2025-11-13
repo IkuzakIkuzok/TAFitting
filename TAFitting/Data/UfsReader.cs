@@ -21,8 +21,8 @@ internal sealed class UfsReader : UfsIOHelper
     /// <returns>The 32-bit signed integer read from the stream.</returns>
     internal int ReadInt32()
     {
-        var bytes = new byte[sizeof(int)];
-        this._stream.Read(bytes, 0, bytes.Length);
+        var bytes = (stackalloc byte[sizeof(int)]);
+        this._stream.ReadExactly(bytes);
         return BytesConverter.ToInt32(bytes);
     } // internal int ReadInt32 ()
 
@@ -32,8 +32,8 @@ internal sealed class UfsReader : UfsIOHelper
     /// <returns>The 64-bit floating-point number read from the stream.</returns>
     internal double ReadDouble()
     {
-        var bytes = new byte[sizeof(double)];
-        this._stream.Read(bytes, 0, bytes.Length);
+        var bytes = (stackalloc byte[sizeof(double)]);
+        this._stream.ReadExactly(bytes);
         return BytesConverter.ToDouble(bytes);
     } // internal double ReadDouble ()
 
@@ -59,8 +59,8 @@ internal sealed class UfsReader : UfsIOHelper
         var length = ReadInt32();
         if (length == 0) return string.Empty;
 
-        var bytes = new byte[length];
-        this._stream.Read(bytes, 0, bytes.Length);
+        var bytes = length <= 1024 ? stackalloc byte[length] : new byte[length];
+        this._stream.ReadExactly(bytes);
         return NormNewLineInput(BytesConverter.ToString(bytes));
     } // internal string ReadString ()
 

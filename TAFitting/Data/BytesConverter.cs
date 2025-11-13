@@ -38,51 +38,51 @@ internal static partial class BytesConverter
         SystemEncoding = Encoding.GetEncoding(codePage);
     } // cctor ()
 
-    private static byte[] CorrectEndian(byte[] bytes)
+    private static Span<byte> CorrectEndian(Span<byte> bytes)
     {
         if (BitConverter.IsLittleEndian)
-            Array.Reverse(bytes);
+            bytes.Reverse();
         return bytes;
-    } // private static byte[] CorrectEndian (byte[])
+    } // private static Span<byte> CorrectEndian (Span<byte>)
 
     /// <summary>
     /// Converts the specified byte array to a 32-bit signed integer.
     /// </summary>
-    /// <param name="bytes">The byte array to convert.</param>
+    /// <param name="bytes">The span of bytes to convert.</param>
     /// <returns>The 32-bit signed integer converted from the byte array.</returns>
-    internal static int ToInt32(byte[] bytes)
-        => BitConverter.ToInt32(CorrectEndian(bytes), 0);
+    internal static int ToInt32(Span<byte> bytes)
+        => BitConverter.ToInt32(CorrectEndian(bytes));
 
     /// <summary>
     /// Converts the specified byte array to a 64-bit floating-point number.
     /// </summary>
-    /// <param name="bytes">The byte array to convert.</param>
+    /// <param name="bytes">The span of bytes to convert.</param>
     /// <returns>The 64-bit floating-point number converted from the byte array.</returns>
-    internal static double ToDouble(byte[] bytes)
-        => BitConverter.ToDouble(CorrectEndian(bytes), 0);
+    internal static double ToDouble(Span<byte> bytes)
+        => BitConverter.ToDouble(CorrectEndian(bytes));
 
     /// <summary>
     /// Converts the specified byte array to a string.
     /// </summary>
-    /// <param name="bytes">The byte array to convert.</param>
+    /// <param name="bytes">The span of bytes to convert.</param>
     /// <returns>The string converted from the byte array.</returns>
-    internal static string ToString(byte[] bytes)
+    internal static string ToString(Span<byte> bytes)
         => SystemEncoding.GetString(bytes).TrimEnd('\0');
 
     /// <summary>
     /// Converts the specified 32-bit signed integer to a byte array.
     /// </summary>
     /// <param name="value">The 32-bit signed integer to convert.</param>
-    /// <returns>The byte array converted from the 32-bit signed integer.</returns>
-    internal static byte[] ToBytes(int value)
+    /// <returns>The span of bytes converted from the 32-bit signed integer.</returns>
+    internal static Span<byte> ToBytes(int value)
         => CorrectEndian(BitConverter.GetBytes(value));
 
     /// <summary>
     /// Converts the specified 64-bit floating-point number to a byte array.
     /// </summary>
     /// <param name="value">The 64-bit floating-point number to convert.</param>
-    /// <returns>The byte array converted from the 64-bit floating-point number.</returns>
-    internal static byte[] ToBytes(double value)
+    /// <returns>The span of bytes converted from the 64-bit floating-point number.</returns>
+    internal static Span<byte> ToBytes(double value)
         => CorrectEndian(BitConverter.GetBytes(value));
 
     /// <summary>
@@ -90,6 +90,6 @@ internal static partial class BytesConverter
     /// </summary>
     /// <param name="value">The string to convert.</param>
     /// <returns>The byte array converted from the string.</returns>
-    internal static byte[] ToBytes(string value)
+    internal static Span<byte> ToBytes(string value)
         => SystemEncoding.GetBytes(value);
 } // internal static partial class BytesConverter
