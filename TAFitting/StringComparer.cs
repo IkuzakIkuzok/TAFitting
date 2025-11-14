@@ -12,12 +12,10 @@ internal sealed partial class StringComparer : IComparer<string>
 {
     private static readonly Regex re_textNum = NamePartsPattern();
 
-    private static readonly StringComparer _instance = new();
-
     /// <summary>
     /// Gets the instance of the <see cref="StringComparer"/> class.
     /// </summary>
-    internal static StringComparer Instance => _instance;
+    internal static StringComparer Instance => field ??= new();
 
     /// <inheritdoc/>
     // Only use supported StringComparison values.
