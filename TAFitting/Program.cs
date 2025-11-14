@@ -36,6 +36,8 @@ internal static partial class Program
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
+        SplashForm.ShowSplash();
+
         Config = AppConfig.Load();
         SyncManager.Start();
     } // cctor ()
@@ -46,8 +48,6 @@ internal static partial class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        SplashForm.ShowSplash();
-
         typeof(Form).GetField("s_defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
 
