@@ -280,7 +280,7 @@ internal sealed partial class MainWindow : Form
 
         var defaultModel = Program.DefaultModel;
         if (ModelManager.Models.ContainsKey(defaultModel))
-            _ = SelectModel(defaultModel);
+            SelectModel(defaultModel).Wait();
 
         #region menu
 
