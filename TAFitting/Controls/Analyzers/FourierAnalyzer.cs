@@ -154,7 +154,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
         foreach (var spectrumType in Enum.GetValues<FourierSpectrumType>())
         {
-            var item = new ToolStripMenuItem(GetYAxisLabel(spectrumType))
+            var item = new ToolStripMenuItem(spectrumType.ToDefaultSerializeValue())
             {
                 Tag = spectrumType,
             };
@@ -219,7 +219,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
             amp_min = Math.Min(amp_min, a);
             amp_max = Math.Max(amp_max, a);
         }
-        this.axisY.Title = GetYAxisLabel(this.spectrumType);
+        this.axisY.Title = this.spectrumType.ToDefaultSerializeValue();
 
         var freq_min = freq[1];  // exclude DC component
         var freq_max = freq[^1];
@@ -284,17 +284,6 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         Debug.Assert(spectrumType == FourierSpectrumType.PowerSpectralDensityDecibel);
         return 10 * Math.Log10(psd);
     } // private static double CalcYValue (FourierSpectrumType, Complex, double)
-
-    private static string GetYAxisLabel(FourierSpectrumType spectrumType)
-        => spectrumType switch
-        {
-            FourierSpectrumType.AmplitudeSpectrum           => "Amplitude",
-            FourierSpectrumType.AmplitudeSpectralDensity    => "Amplitude spectral density",
-            FourierSpectrumType.PowerSpectrum               => "Power",
-            FourierSpectrumType.PowerSpectralDensity        => "Power spectral density",
-            FourierSpectrumType.PowerSpectralDensityDecibel => "Power spectral density (dB)",
-            _ => throw new ArgumentOutOfRangeException(nameof(spectrumType)),
-        };
 
     /// <summary>
     /// Sets the time labels.
