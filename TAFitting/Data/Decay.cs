@@ -31,9 +31,10 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     private readonly double[] times, signals, filtered;
 
     /// <summary>
-    /// An empty decay data.
+    /// Gets an empty decay data.
     /// </summary>
-    internal static readonly Decay Empty = new([], TimeUnit.Second, [], SignalUnit.OD, TasMode.None);
+    internal static Decay Empty
+        => field ??= new([], TimeUnit.Second, [], SignalUnit.OD, TasMode.None);
 
     /// <summary>
     /// Gets the time unit.
