@@ -1,6 +1,8 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using Microsoft.Win32.SafeHandles;
+
 namespace TAFitting.Data;
 
 /// <summary>
@@ -26,7 +28,7 @@ internal sealed class FileCache
     /// <summary>
     /// Gets the length of the data.
     /// </summary>
-    internal int Length { get; set; }
+    internal int Length { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileCache"/> class.
@@ -44,8 +46,17 @@ internal sealed class FileCache
     /// <remarks>
     /// The returned list can be used directly in <see cref="RandomAccess.Read"/> method.
     /// </remarks>
-    internal IReadOnlyList<Memory<byte>> GetBuffers()
+    private IReadOnlyList<Memory<byte>> GetBuffers()
         => [this._buffer1.AsMemory(), this._buffer2.AsMemory()];
+
+    /// <summary>
+    /// Reads the file data into the buffers.
+    /// </summary>
+    /// <param name="handle">The file handle to read from.</param>
+    internal void Read(SafeFileHandle handle)
+    {
+        this.Length = (int)RandomAccess.Read(handle, GetBuffers(), 0);
+    } // internal void Read (SafeFileHandle)
 
     /// <summary>
     /// Reads a line from the buffer at the specified line index.

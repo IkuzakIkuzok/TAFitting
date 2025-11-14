@@ -82,8 +82,7 @@ internal sealed class FileLoader : IEnumerable<KeyValuePair<double, string>>
         cache[wavelength] = data;
 
         using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.None);
-        var buffer = data.GetBuffers();
-        data.Length = (int)RandomAccess.Read(handle, buffer, 0);
+        data.Read(handle);
     } // private static void Load (string, ConcurrentDictionary<double, byte[]>, double, [bool])
 
     /// <summary>
