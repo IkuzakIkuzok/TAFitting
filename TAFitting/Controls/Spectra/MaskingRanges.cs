@@ -13,11 +13,17 @@ internal sealed partial class MaskingRanges : IEnumerable<MaskingRange>
     private readonly HashSet<MaskingRange> _maskingRanges;
 
     /// <summary>
+    /// Gets the source string representation of the masking ranges.
+    /// </summary>
+    internal string SourceString { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MaskingRanges"/> class.
     /// </summary>
     /// <param name="ranges">The string representation of masking ranges.</param>
     internal MaskingRanges(string ranges)
     {
+        this.SourceString = ranges;
         this._maskingRanges = [
             .. ranges.Split(',')
                 .Select(MaskingRange.FromString)

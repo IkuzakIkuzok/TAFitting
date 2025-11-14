@@ -12,5 +12,12 @@ internal partial class MaskingRangeBox : DelayedTextBox
     /// Gets the masking ranges.
     /// </summary>
     internal MaskingRanges MaskingRanges
-        => new(this.Text);
+    {
+        get
+        {
+            if (field?.SourceString == this.Text)
+                return field;
+            return field = new(this.Text);
+        }
+    }
 } // internal partial class MaskingRangeBox : DelayedTextBox
