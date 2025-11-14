@@ -16,7 +16,7 @@ internal readonly record struct MaskingRange(double Start, double End)
     /// <summary>
     /// Gets an empty masking range.
     /// </summary>
-    internal static MaskingRange Empty { get; } = new MaskingRange(double.NaN, double.NaN);
+    internal static MaskingRange Empty { get; } = new(double.NaN, double.NaN);
 
     /// <summary>
     /// Gets the start of the masking range.
