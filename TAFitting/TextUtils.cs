@@ -240,12 +240,31 @@ internal static class TextUtils
 
     #region ToString
 
+    /// <summary>
+    /// Converts the specified integer to its string representation using the invariant culture.
+    /// </summary>
+    /// <param name="value">The integer value to convert to a string.</param>
+    /// <param name="format">A standard or custom numeric format string that defines the format of the returned string. If <see langword="null"/> or empty, the default format is used.</param>
+    /// <returns>A string representation of the integer value, formatted using the specified format string and the invariant culture.</returns>
     internal static string ToInvariantString(this int value, string? format = null)
         => value.ToString(format, CultureInfo.InvariantCulture);
 
+    /// <summary>
+    /// Converts the specified decimal value to its string representation using the invariant culture.
+    /// </summary>
+    /// <param name="value">The decimal value to convert to a string.</param>
+    /// <param name="format">A standard or custom numeric format string that defines the format of the returned string. If <see langword="null"/> or empty, the default format is used.</param>
+    /// <returns>A string representation of the decimal value, formatted using the specified format string and the invariant culture.</returns>
     internal static string ToInvariantString(this decimal value, string? format = null)
         => value.ToString(format, CultureInfo.InvariantCulture);
 
+    /// <summary>
+    /// Converts the specified double-precision floating-point number to its string representation using the invariant
+    /// culture.
+    /// </summary>
+    /// <param name="value">The double-precision floating-point number to convert.</param>
+    /// <param name="format">A standard or custom numeric format string that defines the format of the returned string. If <see langword="null"/> or empty, the default format is used.</param>
+    /// <returns>A string representation of the value of the double-precision floating-point number, formatted using the specified format string and the invariant culture.</returns>
     internal static string ToInvariantString(this double value, string? format = null)
         => value.ToString(format, CultureInfo.InvariantCulture);
 
