@@ -29,7 +29,7 @@ internal static partial class Program
     /// <summary>
     /// Gets the main window.
     /// </summary>
-    internal static MainWindow MainWindow { get; private set; } = null!;
+    internal static MainWindow MainWindow { get; }
 
     static Program()
     {
@@ -40,6 +40,7 @@ internal static partial class Program
 
         Config = AppConfig.Load();
         SyncManager.Start();
+        MainWindow = new();
     } // cctor ()
 
     /// <summary>
@@ -50,8 +51,6 @@ internal static partial class Program
     {
         typeof(Form).GetField("s_defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
         NegativeSignHandler.SetMinusSign();
-
-        MainWindow = new();
 
         if (args.Length > 0)
         {
