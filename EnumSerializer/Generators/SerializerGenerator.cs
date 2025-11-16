@@ -155,6 +155,8 @@ namespace {ns}
             {{");
 
         var fields = enumType.GetMembers().OfType<IFieldSymbol>().Where(f => f.IsStatic);
+        var cases = new Dictionary<string, string>();
+        var length = 0;
         foreach (var field in fields)
         {
             var attr = field.GetAttributes().FirstOrDefault(a => GetFullName(a.AttributeClass) == targetName);
@@ -162,7 +164,17 @@ namespace {ns}
             var args = attr.ConstructorArguments;
             if (args.Length == 0) continue;
             var serializedValue = args[0].Value?.ToString() ?? string.Empty;
-            builder.AppendLine($"\t\t\t\t{enumName}.{field.Name} => \"{serializedValue}\",");
+            var key = $"{enumName}.{field.Name}";
+            cases.Add(key, serializedValue);
+            if (key.Length > length)
+                length = key.Length;
+        }
+
+        foreach ((var key, var value) in cases)
+        {
+            builder.Append($"\t\t\t\t{key}");
+            builder.Append(' ', length - key.Length);
+            builder.AppendLine($" => \"{value}\",");
         }
 
         builder.AppendLine("\t\t\t\t_ => value.ToString(),");
@@ -215,6 +227,8 @@ namespace {ns}
             {{");
 
         var fields = enumType.GetMembers().OfType<IFieldSymbol>().Where(f => f.IsStatic);
+        var cases = new Dictionary<string, string>();
+        var length = 0;
         foreach (var field in fields)
         {
             var attr = field.GetAttributes().FirstOrDefault(a => GetFullName(a.AttributeClass) == targetName);
@@ -222,7 +236,17 @@ namespace {ns}
             var args = attr.ConstructorArguments;
             if (args.Length == 0) continue;
             var serializedValue = args[0].Value?.ToString() ?? string.Empty;
-            builder.AppendLine($"\t\t\t\t\"{serializedValue}\" => {enumName}.{field.Name},");
+            var value = $"{enumName}.{field.Name}";
+            cases.Add(serializedValue, value);
+            if (serializedValue.Length > length)
+                length = serializedValue.Length;
+        }
+
+        foreach ((var key, var value) in cases)
+        {
+            builder.Append($"\t\t\t\t\"{key}\"");
+            builder.Append(' ', length - key.Length);
+            builder.AppendLine($" => {value},");
         }
 
         builder.AppendLine($"\t\t\t\t_ => ({enumName})global::System.Enum.Parse(typeof({enumName}), text),");
