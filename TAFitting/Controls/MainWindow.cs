@@ -1774,13 +1774,8 @@ internal sealed partial class MainWindow : Form
         this.s_compare.Points.Clear();
         if ((this.dp_compare?.Length ?? 0) < decay.Times.Count)
             this.dp_compare = new DataPoint[decay.Times.Count];
-        if (this.menu_hideOriginal.Checked)
-        {
-            var filtered = decay.FilteredSignals;
-            this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_compare!, invert);
-        }
-        else
-            this.s_compare.AddDecay(decay, this.dp_compare!, invert);
+        var filtered = decay.FilteredSignals;
+        this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_compare!, invert);
     } // private void ShowCompare (ParametersTableRow)
 
     private void ShowFit(object? sender, EventArgs e)
