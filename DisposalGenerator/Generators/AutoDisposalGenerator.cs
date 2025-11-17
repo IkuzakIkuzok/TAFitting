@@ -58,15 +58,14 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
                 var baseNames = classDeclaration.BaseList?.Types.Select(t => model.GetTypeInfo(t.Type).Type?.Name) ?? [];
 
-                builder.Append(
-                    Generate(
-                        nameSpace, className,
-                        fields,
-                        string.Join(", ", baseNames),
-                        hasDisposeMethod, hasDisposeMethodWithBool,
-                        isSealed,
-                        unmanagedDisposalMethod
-                    )
+                Generate(
+                    builder,
+                    nameSpace, className,
+                    fields,
+                    string.Join(", ", baseNames),
+                    hasDisposeMethod, hasDisposeMethodWithBool,
+                    isSealed,
+                    unmanagedDisposalMethod
                 );
             }
             catch
@@ -79,10 +78,8 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         context.AddSource("AutoDisposal.g.cs", code);
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
-    private static string Generate(string nameSpace, string className, IReadOnlyCollection<FieldDeclarationSyntax> fields, string baseNames, bool hasDispose, bool hasDisposeBool, bool isSealed, string? unmanaged)
+    private static void Generate(StringBuilder builder, string nameSpace, string className, IReadOnlyCollection<FieldDeclarationSyntax> fields, string baseNames, bool hasDispose, bool hasDisposeBool, bool isSealed, string? unmanaged)
     {
-        var builder = new StringBuilder();
-
         builder.AppendLine();
         builder.AppendLine($"namespace {nameSpace}");
         builder.AppendLine("{");
@@ -146,9 +143,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         else
             builder.AppendLine($"\t}} // partial class {className} : global::.System.IDisposable");
         builder.AppendLine("} // namespace " + nameSpace);
-
-        return builder.ToString();
-    } // private static string Generate(string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
+    } // private static void Generate(StringBuilder, string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
 
     private static readonly string[] attrs = [AttributesGenerator.NotToBeDisposedAttributeName, AttributesGenerator.NotToBeDisposedAttributeShortName];
     private static bool IsDisposable(FieldDeclarationSyntax field, SemanticModel model, INamedTypeSymbol interfaceSymbol)
