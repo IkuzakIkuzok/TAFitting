@@ -106,9 +106,6 @@ namespace {ns}
         foreach (var target in targetTypes)
             GenerateFromString(builder, target);
 
-        /*builder.AppendLine($@"    // Fallback to default Enum.Parse if no matching attribute type is found
-            return ({enumName})global::System.Enum.Parse(typeof({enumName}), text);
-        }} // internal static {enumName} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute");*/
         builder.AppendLine("\t\t\t// Fallback to default Enum.Parse if no matching attribute type is found");
         builder.AppendLine($"\t\t\treturn ({enumName})global::System.Enum.Parse(typeof({enumName}), text);");
         builder.AppendLine($"\t\t}} // internal static {enumName} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute");
