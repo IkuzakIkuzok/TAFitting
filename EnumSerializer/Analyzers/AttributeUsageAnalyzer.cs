@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using TAFitting.SourceGeneratorUtils;
 using static EnumSerializer.SymbolUtils;
 
 namespace EnumSerializer.Analyzers;
@@ -56,7 +57,7 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
     {
         var attrClass = attribute.AttributeClass;
         if (attrClass is null) return;
-        var attrname = GetFullName(attrClass);
+        var attrname = attrClass.GetFullName();
         if (attrname != SerializableAttributeFullName) return;
 
         var args = attribute.ConstructorArguments;

@@ -37,7 +37,7 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
             {
                 var typeSymbol = (INamedTypeSymbol)type.TargetSymbol;
 
-                var attrs = type.Attributes.Where(a => GetFullName(a.AttributeClass) == AttributeFullName);
+                var attrs = type.Attributes.Where(a => a.AttributeClass.GetFullName() == AttributeFullName);
                 var args =
                     attrs
                     .SelectMany(a => a.ConstructorArguments)
@@ -63,7 +63,7 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
 
     private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<INamedTypeSymbol> targetTypes)
     {
-        var enumName = $"global::{GetFullName(enumType)}";
+        var enumName = $"global::{enumType.GetFullName()}";
 
         var ns = enumType.ContainingNamespace.ToDisplayString();
         builder.AppendLine(@$"
@@ -127,7 +127,7 @@ namespace {ns}
         if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
             return;
 
-        var targetName = GetFullName(target);
+        var targetName = target.GetFullName();
         var targetFullName = $"global::{targetName}";
         builder.AppendLine($"\t\t\tif (typeof(TAttr) == typeof({targetFullName}))");
         builder.AppendLine($"\t\t\t\treturn {GetSpecialToStringMethodName(target)}(value);");
@@ -139,7 +139,7 @@ namespace {ns}
         if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
             return;
 
-        var targetName = GetFullName(target);
+        var targetName = target.GetFullName();
         var targetFullName = $"global::{targetName}";
         var methodName = GetSpecialToStringMethodName(target);
 
@@ -159,7 +159,7 @@ namespace {ns}
         var length = 0;
         foreach (var field in fields)
         {
-            var attr = field.GetAttributes().FirstOrDefault(a => GetFullName(a.AttributeClass) == targetName);
+            var attr = field.GetAttributes().FirstOrDefault(a => a.AttributeClass.GetFullName() == targetName);
             if (attr is null) continue;
             var args = attr.ConstructorArguments;
             if (args.Length == 0) continue;
@@ -199,7 +199,7 @@ namespace {ns}
         if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
             return;
 
-        var targetName = GetFullName(target);
+        var targetName = target.GetFullName();
         var targetFullName = $"global::{targetName}";
         builder.AppendLine($"\t\t\tif (typeof(TAttr) == typeof({targetFullName}))");
         builder.AppendLine($"\t\t\t\treturn {GetSpecialFromStringMethodName(target)}(text);");
@@ -211,7 +211,7 @@ namespace {ns}
         if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
             return;
 
-        var targetName = GetFullName(target);
+        var targetName = target.GetFullName();
         var targetFullName = $"global::{targetName}";
         var methodName = GetSpecialFromStringMethodName(target);
 
@@ -231,7 +231,7 @@ namespace {ns}
         var length = 0;
         foreach (var field in fields)
         {
-            var attr = field.GetAttributes().FirstOrDefault(a => GetFullName(a.AttributeClass) == targetName);
+            var attr = field.GetAttributes().FirstOrDefault(a => a.AttributeClass.GetFullName() == targetName);
             if (attr is null) continue;
             var args = attr.ConstructorArguments;
             if (args.Length == 0) continue;

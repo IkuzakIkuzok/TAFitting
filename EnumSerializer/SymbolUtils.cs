@@ -1,6 +1,8 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using TAFitting.SourceGeneratorUtils;
+
 namespace EnumSerializer;
 
 /// <summary>
@@ -8,15 +10,6 @@ namespace EnumSerializer;
 /// </summary>
 internal static class SymbolUtils
 {
-    /// <summary>
-    /// Gets the full name of a named type symbol.
-    /// </summary>
-    /// <param name="symbol">The named type symbol.</param>
-    /// <returns>The full name of the symbol, or a <see cref="string.Empty"/> if the symbol is <see langword="null"/>.</returns>
-    internal static string GetFullName(INamedTypeSymbol? symbol)
-    => symbol is null ? string.Empty : symbol.ContainingNamespace.ToDisplayString() + "." + symbol.Name;
-
-
     /// <summary>
     /// Checks if a named type symbol inherits from a specified base type by its full name.
     /// </summary>
@@ -31,7 +24,7 @@ internal static class SymbolUtils
         var current = symbol;
         while (current.BaseType is not null)
         {
-            if (GetFullName(current.BaseType) == baseFullName) return true;
+            if (current.BaseType.GetFullName() == baseFullName) return true;
             current = current.BaseType;
         }
         return false;
