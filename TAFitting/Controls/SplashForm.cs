@@ -45,12 +45,12 @@ internal sealed class SplashForm : Form
         }
 
         var version = $"TA Fitting v{Assembly.GetExecutingAssembly().GetName().Version}";
-        using var font = new Font(pfc.Families[0], 18);
+        using var font = new Font(pfc.Families[0], 16);
         e.Graphics.DrawString(
             version,
             font,
             Brushes.White,
-            new RectangleF(10, this.Height - 40, this.Width - 20, 40)
+            new RectangleF(10, this.Height - 40, this.Width - 10, 40)
         );
     } // override protected void OnPaint (PaintEventArgs)
 
