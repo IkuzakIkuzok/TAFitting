@@ -1,6 +1,8 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using System.Drawing.Text;
+using System.Reflection;
 using TAFitting.Properties;
 
 namespace TAFitting.Controls;
@@ -18,12 +20,39 @@ internal sealed class SplashForm : Form
 
     private SplashForm()
     {
+        this.TopMost = true;
         this.Size = this.MinimumSize = this.MaximumSize = new(300, 300);
         this.StartPosition = FormStartPosition.CenterScreen;
         this.FormBorderStyle = FormBorderStyle.None;
         this.ShowInTaskbar = false;
         this.BackgroundImage = Resources.SplashImage;
+
     } // ctor ()
+
+    override protected void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+
+        // Load the embedded subset font from resources
+        var fontBuf = Resources.SegoeUISubset;
+        using var pfc = new PrivateFontCollection();
+        unsafe
+        {
+            fixed (byte* p = fontBuf)
+            {
+                pfc.AddMemoryFont((IntPtr)p, fontBuf.Length);
+            }
+        }
+
+        var version = $"TA Fitting v{Assembly.GetExecutingAssembly().GetName().Version}";
+        using var font = new Font(pfc.Families[0], 18);
+        e.Graphics.DrawString(
+            version,
+            font,
+            Brushes.White,
+            new RectangleF(10, this.Height - 40, this.Width - 20, 40)
+        );
+    } // override protected void OnPaint (PaintEventArgs)
 
     /// <summary>
     /// Displays the application's splash screen if it is not already visible.
