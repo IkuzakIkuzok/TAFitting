@@ -2095,7 +2095,7 @@ internal sealed partial class MainWindow : Form
         }
         SetTimeTable(preview);
         this.previewWindows.Add(preview);
-        preview.FormClosed += (s, e) => this.previewWindows.Remove(preview);
+        preview.FormClosed += (_, _) => this.previewWindows.Remove(preview);
         preview.Show();
     } // private void ShowSpectraPreview ()
 
@@ -2163,7 +2163,7 @@ internal sealed partial class MainWindow : Form
         if (this.row is not null)
             analyzer.SetDecay(this.row.Decay, this.row.Wavelength);
         this.analyzers.Add(analyzer);
-        analyzer.FormClosed += (s, e) => this.analyzers.Remove(analyzer);
+        analyzer.FormClosed += (_, _) => this.analyzers.Remove(analyzer);
         analyzer.Show();
     } // private void ShowFourierAnalyzer (object?, EventArgs)
 
