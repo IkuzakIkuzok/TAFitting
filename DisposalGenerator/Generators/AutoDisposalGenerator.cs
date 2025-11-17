@@ -94,31 +94,32 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         builder.AppendLine("\t{");
 
         builder.AppendLine("\t\tprivate bool disposed = false;");
-        builder.AppendLine();
 
         if (!hasDispose)
         {
-            builder.AppendLine("\t\tpublic void Dispose()");
-            builder.AppendLine("\t\t{");
-            builder.AppendLine("\t\t\tDispose(true);");
-            builder.AppendLine("\t\t\tglobal::System.GC.SuppressFinalize(this);");
-            builder.AppendLine("\t\t} // public void Dispose()");
-            builder.AppendLine();
+            builder.AppendLine(@"
+        public void Dispose()
+        {
+            Dispose(true);
+            global::System.GC.SuppressFinalize(this);
+        }");
         }
 
         var m = isSealed ? "private" : "protected virtual";
         if (hasDisposeBool)
         {
-            builder.AppendLine("\t\toverride protected void Dispose(bool disposing)");
-            builder.AppendLine("\t\t{");
-            builder.AppendLine("\t\t\tif (this.disposed) return;");
-            builder.AppendLine("\t\t\tbase.Dispose(disposing);");
+            builder.AppendLine(@"
+        override protected void Dispose(bool disposing)
+        {
+            if (this.disposed) return;
+            base.Dispose(disposing);");
         }
         else
         {
-            builder.AppendLine($"\t\t{m} void Dispose(bool disposing)");
-            builder.AppendLine("\t\t{");
-            builder.AppendLine("\t\t\tif (disposed) return;");
+            builder.AppendLine($@"
+        {m} void Dispose(bool disposing)
+        {{
+            if (this.disposed) return;");
         }
 
         builder.AppendLine();
