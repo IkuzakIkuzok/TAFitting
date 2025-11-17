@@ -144,7 +144,6 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
         builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
         builder.AppendLine("\t\t\t=> (x, res) =>");
         builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tvar length = x.Length;");
         builder.AppendLine($"\t\t\t\tres.Load(parameters[0]);");
         for (var i = 1; i <= n; i++)
         {
