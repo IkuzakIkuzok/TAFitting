@@ -1,7 +1,7 @@
 ﻿
-// (c) 2024 Kazuki Kohzuki
+// (c) 2024-2025 Kazuki Kohzuki
 
-namespace TAFitting.SourceGeneratorUtils;
+namespace SourceGeneratorUtils;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class RoslynUtilsGenerator : IIncrementalGenerator
@@ -20,7 +20,7 @@ internal sealed class RoslynUtilsGenerator : IIncrementalGenerator
 
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace TAFitting.SourceGeneratorUtils;
+namespace SourceGeneratorUtils;
 
 /// <summary>
 /// Provides extension methods for Roslyn APIs.

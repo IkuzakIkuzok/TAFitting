@@ -1,6 +1,7 @@
 ﻿
-// (c) 2024 Kazuki Kohzuki
-namespace TAFitting.SourceGeneratorUtils;
+// (c) 2024-2025 Kazuki Kohzuki
+
+namespace SourceGeneratorUtils;
 
 [Generator(LanguageNames.CSharp)]
 internal sealed class SysLibGenerator : IIncrementalGenerator

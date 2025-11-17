@@ -1,8 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using SourceGeneratorUtils;
 using System.Collections.Immutable;
-using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.ModelGenerator.Generators;
 

@@ -3,8 +3,8 @@
 
 using DisposalGenerator.Generators;
 using Microsoft.CodeAnalysis.Diagnostics;
+using SourceGeneratorUtils;
 using System.Collections.Immutable;
-using TAFitting.SourceGeneratorUtils;
 
 namespace DisposalGenerator.Analyzers;
 

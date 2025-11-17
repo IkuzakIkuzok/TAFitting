@@ -2,8 +2,8 @@
 // (c) 2025 Kazuki Kohzuki
 
 using Microsoft.CodeAnalysis.Diagnostics;
+using SourceGeneratorUtils;
 using System.Collections.Immutable;
-using TAFitting.SourceGeneratorUtils;
 using static EnumSerializer.SymbolUtils;
 
 namespace EnumSerializer.Analyzers;

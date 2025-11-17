@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using TAFitting.SourceGeneratorUtils;
+using SourceGeneratorUtils;
 
 namespace EnumSerializer;
 

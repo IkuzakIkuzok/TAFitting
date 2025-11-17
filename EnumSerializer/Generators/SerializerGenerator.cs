@@ -1,8 +1,8 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using SourceGeneratorUtils;
 using System.Collections.Immutable;
-using TAFitting.SourceGeneratorUtils;
 using static EnumSerializer.SymbolUtils;
 
 namespace EnumSerializer.Generators;

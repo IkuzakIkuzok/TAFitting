@@ -2,9 +2,9 @@
 // (c) 2024 Kazuki Kohzuki
 
 using Microsoft.CodeAnalysis.Diagnostics;
+using SourceGeneratorUtils;
 using System.Collections.Immutable;
 using TAFitting.ModelGenerator.Generators;
-using TAFitting.SourceGeneratorUtils;
 
 namespace TAFitting.ModelGenerator.Analyzers;
 
