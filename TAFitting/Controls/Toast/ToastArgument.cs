@@ -30,7 +30,7 @@ internal sealed partial class ToastArgument : Dictionary<string, string?>
     {
         var ta = new ToastArgument();
 
-        var pairs = arg.Split('&');
+        var pairs = arg.Split('&', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var pair in pairs)
         {
