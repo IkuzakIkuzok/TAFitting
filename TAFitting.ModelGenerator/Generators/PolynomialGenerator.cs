@@ -157,10 +157,9 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             {
                 comment.Append(" * x");
             }
-            builder.AppendLine($"\t\t\t\tres *= x;              // {comment}");
-
             comment.Append($" + a{i}");
-            builder.AppendLine($"\t\t\t\tres += parameters[{i}];  // {comment}");
+            builder.AppendLine($"\t\t\t\t// {comment}");
+            builder.AppendLine($"\t\t\t\tres *= x; res += parameters[{i}];");
         }
 
         builder.AppendLine("\t\t\t};");
