@@ -32,9 +32,9 @@ internal sealed partial class TimeTable : DataGridView
     /// <value>The unit of time.</value>
     internal string Unit
     {
-        get => this.Columns["Time"]!.HeaderText[6..^1];
-        set => this.Columns["Time"]!.HeaderText = $"Time ({value})";
-    }
+        get => field;
+        set => this.Columns["Time"]!.HeaderText = string.IsNullOrEmpty(field = value) ? "Time" : $"Time ({value})";
+    } = "µs";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeTable"/> class.
