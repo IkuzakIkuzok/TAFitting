@@ -1393,8 +1393,11 @@ internal sealed partial class MainWindow : Form
         this.rangeSelector.Signal.Logarithmic = model.YLogScale;
         await MakeTable();
         this.parametersTable.ClearUndoBuffer();
-        foreach (var preview in this.previewWindows)
-            preview.ModelId = guid;
+
+        // MakeTable method calls UpdatePreviewsParameters method, which also updates the model ID.
+        // Updating model ID here is redundant.
+        //foreach (var preview in this.previewWindows)
+        //    preview.ModelId = guid;
     } // async private Task SelectModel (Guid)
 
     private void AddLinearCombination(object? sender, EventArgs e)
@@ -2120,7 +2123,22 @@ internal sealed partial class MainWindow : Form
     {
         foreach (var preview in this.previewWindows)
         {
+            /*
+             * If preview.ModelId != this.selectedModel:
+             *   1. Set ModelId to Guid.Empty to clear the current model and stop updating spectra.
+             *   2. Set parameters. The spectra will not be updated because the model is not set.
+             *   3. Set the selected model to update spectra.
+             *   Note: Do NOT set the selected model at step 1, because setting the model raises spectra update automatically, which may cause parameters mismatch.
+             *  
+             * If preview.ModelId == this.selectedModel:
+             *   1. Set parameters. This step raises spectra update automatically.
+             *   2. Set the selected model. This step does not have any effect, because the setter method returns early.
+             */
+            if (preview.ModelId != this.selectedModel)
+                preview.ModelId = Guid.Empty;
             preview.SetParameters(this.ParametersList);
+            preview.ModelId = this.selectedModel;
+
             SetTimeTable(preview);
         }
     } // private void UpdatePreviewsParameters ()
