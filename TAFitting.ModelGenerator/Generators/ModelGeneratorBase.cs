@@ -62,7 +62,7 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
             }
         }
 
-        context.AddSource(this.FileName, builder.ToString().NormalizeNewLines());
+        context.AddSource(this.FileName, builder.NormalizeNewLines().ToString());
     } // private void Execute (SourceProductionContext, GeneratorAttributeSyntaxContext)
 
     private static string GetFullName(INamedTypeSymbol? symbol)

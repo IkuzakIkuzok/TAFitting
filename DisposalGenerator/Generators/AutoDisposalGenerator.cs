@@ -74,7 +74,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             }
         }
 
-        var code = builder.ToString().NormalizeNewLines();
+        var code = builder.NormalizeNewLines().ToString();
         context.AddSource("AutoDisposal.g.cs", code);
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 

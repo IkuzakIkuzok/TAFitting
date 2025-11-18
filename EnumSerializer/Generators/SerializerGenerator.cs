@@ -58,7 +58,7 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
             }
         }
 
-        context.AddSource("EnumSerializationExtensions.g.cs", builder.ToString().NormalizeNewLines());
+        context.AddSource("EnumSerializationExtensions.g.cs", builder.NormalizeNewLines().ToString());
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
     private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<INamedTypeSymbol> targetTypes)
