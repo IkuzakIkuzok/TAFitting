@@ -42,7 +42,6 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
-    private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
 
     private SpectraSyncObject? spectraSyncObject = null;
@@ -58,11 +57,11 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     internal Guid ModelId
     {
-        get => this.modelId;
+        get => field;
         set
         {
-            if (this.modelId == value) return;
-            this.modelId = value;
+            if (field == value) return;
+            field = value;
             DrawSpectra();
         }
     }
@@ -110,7 +109,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// <summary>
     /// Gets the model.
     /// </summary>
-    private IFittingModel Model => ModelManager.Models[this.modelId].Model;
+    private IFittingModel Model => ModelManager.Models[this.ModelId].Model;
 
     /// <summary>
     /// Gets the spectra sync object.
@@ -425,7 +424,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void DrawSpectra(bool sync = true)
     {
-        if (this.modelId == Guid.Empty) return;
+        if (this.ModelId == Guid.Empty) return;
         if (this.timeTable.Updating) return;
         var model = this.Model;
 
@@ -598,7 +597,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     private void HighlightWavelength()
     {
-        if (this.modelId == Guid.Empty) return;
+        if (this.ModelId == Guid.Empty) return;
         if (this.timeTable.Updating) return;
         var model = this.Model;
 
@@ -704,7 +703,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 #pragma warning restore
     private void SaveToFile()
     {
-        if (this.modelId == Guid.Empty) return;
+        if (this.ModelId == Guid.Empty) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
@@ -760,7 +759,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void ExportToOrigin()
     {
-        if (this.modelId == Guid.Empty) return;
+        if (this.ModelId == Guid.Empty) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
@@ -1123,7 +1122,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void PrintSummary()
     {
-        if (this.modelId == Guid.Empty) return;
+        if (this.ModelId == Guid.Empty) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
