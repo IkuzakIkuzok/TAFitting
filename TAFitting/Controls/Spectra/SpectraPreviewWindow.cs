@@ -44,7 +44,6 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private Guid modelId = Guid.Empty;
     private Dictionary<double, double[]> parameters = [];
-    private double selectedWavelength = double.NaN;
 
     private SpectraSyncObject? spectraSyncObject = null;
     private readonly Dictionary<SyncSpectraSource, List<Series>> syncSpectraSeries = [];
@@ -73,14 +72,14 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     internal double SelectedWavelength
     {
-        get => this.selectedWavelength;
+        get => field;
         set
         {
-            if (this.selectedWavelength == value) return;
-            this.selectedWavelength = value;
-            DrawSpectra(sync: false);  // Only the highlights are updated, no need to synchronize
+            if (field == value) return;
+            field = value;
+            HighlightWavelength();  // Only the highlights are updated
         }
-    }
+    } = double.NaN;
 
     /// <summary>
     /// Gets or sets the time unit for the spectra.
@@ -573,7 +572,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             max = Math.Max(max, signal);
             series.Points.AddXY(wavelength, signal);
 
-            if (wavelength == this.selectedWavelength)
+            if (wavelength == this.SelectedWavelength)
                 HighlightWavelength(wavelength, signal, color);
         }
         this.chart.Series.Add(series);
@@ -593,6 +592,34 @@ internal sealed partial class SpectraPreviewWindow : Form
         horizontal.Points.AddXY(wlMax, 0);
         this.chart.Series.Add(horizontal);
     } // private void DrawHorizontalLine ()
+
+    /// <summary>
+    /// Highlights the selected wavelength.
+    /// </summary>
+    private void HighlightWavelength()
+    {
+        if (this.modelId == Guid.Empty) return;
+        if (this.timeTable.Updating) return;
+        var model = this.Model;
+
+        if (!this.parameters.TryGetValue(this.SelectedWavelength, out var parameters)) return;
+
+        using var _ = this.chartLock.EnterScope();
+
+        foreach (var series in this.wavelengthHighlights)
+            this.chart.Series.Remove(series);
+        this.wavelengthHighlights.Clear();
+
+        var func = model.GetFunction(parameters);
+        var times = this.timeTable.Times;
+        var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, times.Count);
+        var index = 0;
+        foreach (var time in times)
+        {
+            var signal = func(time);
+            HighlightWavelength(this.SelectedWavelength, signal, gradient[index++]);
+        }
+    } // private void HighlightWavelength ()
 
     private void HighlightWavelength(double wavelength, double signal, Color color)
     {
