@@ -234,6 +234,8 @@ namespace {ns}
             if (args.Length == 0) continue;
             var serializedValue = args[0].Value?.ToString() ?? string.Empty;
             var value = $"{enumName}.{field.Name}";
+            if (cases.ContainsKey(serializedValue))
+                continue;
             cases.Add(serializedValue, value);
             if (serializedValue.Length > length)
                 length = serializedValue.Length;
