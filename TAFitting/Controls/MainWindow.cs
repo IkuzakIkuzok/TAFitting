@@ -863,6 +863,7 @@ internal sealed partial class MainWindow : Form
                     this.axisY.Title = this.decays.SignalUnit;
                     this.rangeSelector.Time.Text = $"Time ({this.decays.TimeUnit}):";
                     this.rangeSelector.Signal.Text = $"{this.decays.SignalUnit}:";
+                    this.lb_timeUnit.Text = this.decays.TimeUnit;
 
                     this.rangeSelector.Time.To = (decimal)this.decays.MaxTime;
                     var maxAbsSignal = this.decays.MaxAbsSignal;
