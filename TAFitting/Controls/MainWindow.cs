@@ -14,6 +14,7 @@ using TAFitting.Controls.Analyzers;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.LinearCombination;
 using TAFitting.Controls.Spectra;
+using TAFitting.Controls.Toast;
 using TAFitting.Data;
 using TAFitting.Data.Solver;
 using TAFitting.Data.Solver.SIMD;
@@ -21,6 +22,7 @@ using TAFitting.Excel;
 using TAFitting.Filter;
 using TAFitting.Model;
 using TAFitting.Sync;
+using TAFitting.Update;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
@@ -643,6 +645,12 @@ internal sealed partial class MainWindow : Form
         var menu_help = new ToolStripMenuItem("&Help");
         this.MainMenuStrip.Items.Add(menu_help);
 
+        var menu_helpCheckUpdates = new ToolStripMenuItem("Check for &updates", null, ForceCheckUpdate)
+        {
+            ToolTipText = "Check for updates",
+        };
+        menu_help.DropDownItems.Add(menu_helpCheckUpdates);
+
         var menu_helpGitHub = new ToolStripMenuItem("Open &GitHub")
         {
             ToolTipText = "Open the GitHub repository",
@@ -653,6 +661,8 @@ internal sealed partial class MainWindow : Form
         #endregion menu.help
 
         #endregion menu
+
+        UpdateManager.NewerVersionFound += OnNewerReleaseFound;
 
         this.mainContainer.SplitterDistance = 750;
         this.mainContainer.Panel2MinSize = 420;
@@ -2281,4 +2291,32 @@ internal sealed partial class MainWindow : Form
     #endregion change font
 
     #endregion change appearance
+
+    #region update
+
+    private static void OnNewerReleaseFound(object? sender, NewerVersionFoundEventArgs e)
+    {
+        var release = e.LatestRelease;
+        var url = release.BrowserUrl;
+        if (string.IsNullOrEmpty(url)) return;
+
+        var toast = new ToastNotification($"Version {release.Version} is available.", "A newer version is available.")
+            .AddText($"You are using version {UpdateManager.CurrentVersion.Version}.")
+            .AddButton("Download", args => Program.OpenUrl(url))
+            .AddButton("Later");
+        toast.Show();
+    } // private static void OnNewerReleaseFound (object?, NewerVersionFoundEventArgs)
+
+    async private static void ForceCheckUpdate(object? sender, EventArgs e)
+    {
+        var release = await UpdateManager.GetLatestVersionAsync(true);
+        // If newer version is found, the update manager raises the event, and no need to show the message here.
+        if (release.IsNewerThan(UpdateManager.CurrentVersion)) return;
+
+        var toast = new ToastNotification($"You are using the latest version ({UpdateManager.CurrentVersion.Version}).", "No updates found.")
+            .AddButton("OK");
+        toast.Show();
+    } // private static void ForceCheckUpdate (object?, EventArgs)
+
+    #endregion update
 } // internal sealed partial class MainWindow : Form

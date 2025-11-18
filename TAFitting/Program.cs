@@ -10,6 +10,7 @@ using TAFitting.Controls.Toast;
 using TAFitting.Model;
 using TAFitting.Properties;
 using TAFitting.Sync;
+using TAFitting.Update;
 
 [assembly: NeutralResourcesLanguage("en-US")]
 
@@ -61,6 +62,8 @@ internal static partial class Program
                 MainWindow.LoadMicrosecondDecays(path);
         }
 
+        _ = UpdateManager.GetLatestVersionAsync();
+
         Application.Run(MainWindow);
         ToastNotificationCallbackManager.Uninstall();
     } // private static void Main (string[])
@@ -109,17 +112,24 @@ internal static partial class Program
     /// Opens the GitHub repository.
     /// </summary>
     internal static void OpenGitHub()
+        => OpenUrl(GitHub);
+
+    /// <summary>
+    /// Opens the specified URL in the system's default web browser.
+    /// </summary>
+    /// <param name="url">The URL to open. This should be a valid, well-formed URI string.</param>
+    internal static void OpenUrl(string url)
     {
         try
         {
-            using var _ = Process.Start("explorer", GitHub);
+            using var _ = Process.Start("explorer", url);
         }
         catch
         {
             FadingMessageBox.Show(
-                "Failed to open the GitHub page.",
+                $"Failed to open the URL:\n{url}",
                 0.8, 1000, 75, 0.1
             );
         }
-    } // internal static void OpenGitHub ()
+    } // internal static void OpenUrl (string)
 } // internal static partial class Program
