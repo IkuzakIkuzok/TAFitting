@@ -75,11 +75,11 @@ internal static class SeriesExtension
         /// <param name="times">A span of time values representing the x-coordinates for the decay curve. Each value must be greater than zero to be included.</param>
         /// <param name="signals">A span of signal values corresponding to each time value. Only finite values are included.</param>
         /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        /// <exception cref="ArgumentException">Thrown if the length of <paramref name="times"/> is greater than the length of <paramref name="signals"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the lengths of the <paramref name="times"/> and <paramref name="signals"/> spans do not match.</exception>
         internal void AddDecay(ReadOnlySpan<double> times, ReadOnlySpan<double> signals, bool invert = false)
         {
-            if (times.Length > signals.Length)
-                throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
+            if (times.Length != signals.Length)
+                throw new ArgumentException("The length of times must be equal to the length of signals.", nameof(times));
 
             series.EnsureCacheSize(times.Length);
             series.Points.Clear();
@@ -89,8 +89,9 @@ internal static class SeriesExtension
             for (var i = 0; i < times.Length; i++)
             {
                 var x = times[i];
-                var y = signals[i];
                 if (x <= 0) continue;
+
+                var y = signals[i];
                 if (!double.IsFinite(y)) continue;
                 y = Math.Clamp(y, UIUtils.DecimalMin, UIUtils.DecimalMax) * sign;
 
