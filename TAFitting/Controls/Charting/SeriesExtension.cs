@@ -58,7 +58,6 @@ internal static class SeriesExtension
         /// <returns>A span of type DataPoint containing up to the specified number of elements from the beginning of the data points cache.</returns>
         private Span<DataPoint> GetPointsAsSpan(int length)
             => CollectionsMarshal.AsSpan(series.DataPointsCache)[..length];
-
         
         /// <summary>
         /// Adds a decay sequence to the current series, optionally inverting the signal values.
@@ -66,40 +65,7 @@ internal static class SeriesExtension
         /// <param name="decay">The decay sequence to add.</param>
         /// <param name="invert">If set to <see langword="true"/>, inverts the signal values of the decay sequence before adding; otherwise, adds them as-is.</param>
         internal void AddDecay(Decay decay, bool invert = false)
-            => series.AddDecay(decay.Times, decay.Signals, invert);
-
-        /// <summary>
-        /// Adds a set of decay data points to the series using the specified time and signal values.
-        /// </summary>
-        /// <param name="times">A list of time values corresponding to each decay data point. Each value must be greater than zero to be included.</param>
-        /// <param name="signals">A list of signal values associated with each time value. Only finite values are included.</param>
-        /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        /// <exception cref="ArgumentException">Thrown if the number of elements in <paramref name="times"/> is greater than the number of elements in <paramref name="signals"/>.</exception>
-        internal void AddDecay(IReadOnlyList<double> times, IReadOnlyList<double> signals, bool invert = false)
-        {
-            if (times.Count > signals.Count)
-                throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
-
-            series.EnsureCacheSize(times.Count);
-            series.Points.Clear();
-
-            var count = 0;
-            var sign = invert ? -1 : 1;
-            for (var i = 0; i < times.Count; i++)
-            {
-                var x = times[i];
-                var y = signals[i];
-                if (x <= 0) continue;
-                if (!double.IsFinite(y)) continue;
-                y = Math.Clamp(y, UIUtils.DecimalMin, UIUtils.DecimalMax) * sign;
-
-                var p = series.GetOrCreateDataPoint(count);
-                p.SetValueXY(x, y);
-                ++count;
-            }
-            series.Points.AddRange(series.GetPointsAsSpan(count));
-            series.Points.Invalidate();
-        } // internal void AddDecay　(IReadOnlyList<double>, IReadOnlyList<double>, [bool])
+            => series.AddDecay(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
 
         /// <summary>
         /// Adds a decay curve to the series using the specified time and signal values.
