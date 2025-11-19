@@ -18,15 +18,7 @@ internal static class SeriesExtension
         /// <summary>
         /// Gets the cached list of data points for the current series.
         /// </summary>
-        private List<DataPoint> DataPointsCache
-        {
-            get
-            {
-                if (dataPointsCaches.TryGetValue(series, out var cache))
-                    return cache;
-                return dataPointsCaches[series] = [];
-            }
-        }
+        private List<DataPoint> DataPointsCache => dataPointsCaches.GetOrAdd(series, _ => []);
 
         /// <summary>
         /// Ensures that the cache for data points has at least the specified capacity.

@@ -110,12 +110,7 @@ internal class AppLauncher
     {
         extension = extension.ToUpperInvariant();
 
-        if (!launchers.TryGetValue(extension, out var launcher))
-        {
-            launcher = new AppLauncher(extension);
-            launchers.Add(extension, launcher);
-        }
-
+        var launcher = launchers.GetOrAdd(extension, ext => new(ext));
         if (!launcher.IsRegistered) return null;
         return launcher;
     } // internal static AppLauncher? GetInstance (string)
