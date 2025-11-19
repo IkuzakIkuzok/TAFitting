@@ -100,6 +100,13 @@ internal static class SeriesExtension
             series.Points.Invalidate();
         } // internal void AddDecay　(IReadOnlyList<double>, IReadOnlyList<double>, [bool])
 
+        /// <summary>
+        /// Adds a decay curve to the series using the specified time and signal values.
+        /// </summary>
+        /// <param name="times">A span of time values representing the x-coordinates for the decay curve. Each value must be greater than zero to be included.</param>
+        /// <param name="signals">A span of signal values corresponding to each time value. Only finite values are included.</param>
+        /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
+        /// <exception cref="ArgumentException">Thrown if the length of <paramref name="times"/> is greater than the length of <paramref name="signals"/>.</exception>
         internal void AddDecay(ReadOnlySpan<double> times, ReadOnlySpan<double> signals, bool invert = false)
         {
             if (times.Length > signals.Length)
