@@ -46,6 +46,9 @@ internal static class SeriesExtension
                 return cache[index];
             }
             var p = cache[index];
+
+            // Setting DataPoint.IsEmpty to true raises redrawing and is computationally more expensive than creating a new DataPoint.
+            // Therefore, a new instance is created to replace the empty one.
             if (p?.IsEmpty ?? true)
                 p = cache[index] = new(series);
             return p;
