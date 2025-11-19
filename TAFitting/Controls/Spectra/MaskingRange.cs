@@ -43,14 +43,6 @@ internal readonly record struct MaskingRange(double Start, double End)
         => this.Start <= value && value <= this.End;
 
     /// <summary>
-    /// Converts the string representation of a masking range to its equivalent masking range.
-    /// </summary>
-    /// <param name="value">The string representation of the masking range.</param>
-    /// <returns>The equivalent masking range.</returns>
-    internal static MaskingRange FromString(string value)
-        => FromSpan(value.AsSpan());
-
-    /// <summary>
     /// Parses a character span representing a numeric value or a range and returns the corresponding <see cref="MaskingRange"/> instance.
     /// </summary>
     /// <remarks>If the input contains a hyphen ('-'), it is interpreted as a range with start and end values.
@@ -61,6 +53,8 @@ internal readonly record struct MaskingRange(double Start, double End)
     /// Returns <see cref="MaskingRange.Empty"/> if the input cannot be parsed as a valid number or range.</returns>
     internal static MaskingRange FromSpan(ReadOnlySpan<char> value)
     {
+        if (value.IsEmpty) return Empty;
+
         var hyphenIndex = value.IndexOf('-');
         if (hyphenIndex < 0) // single value
         {

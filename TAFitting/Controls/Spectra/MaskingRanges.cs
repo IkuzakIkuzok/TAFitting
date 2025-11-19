@@ -24,11 +24,29 @@ internal sealed partial class MaskingRanges : IEnumerable<MaskingRange>
     internal MaskingRanges(string ranges)
     {
         this.SourceString = ranges;
-        this._maskingRanges = [
-            .. ranges.Split(',')
-                .Select(MaskingRange.FromString)
-                .Where(r => !r.IsEmpty)
-        ];
+        var span = ranges.AsSpan();
+        var count = span.Count(',') + 1;
+        this._maskingRanges = new(count);
+
+        var start = 0;
+        var end = 0;
+        while (end < span.Length)
+        {
+            if (span[end] == ',')
+            {
+                var rangeSpan = span[start..end].Trim();
+                var range = MaskingRange.FromSpan(rangeSpan);
+                if (!range.IsEmpty)
+                    this._maskingRanges.Add(range);
+                start = end + 1;
+            }
+            end++;
+        }
+        // Last range
+        var lastRangeSpan = span[start..end].Trim();
+        var lastRange = MaskingRange.FromSpan(lastRangeSpan);
+        if (!lastRange.IsEmpty)
+            this._maskingRanges.Add(lastRange);
     } // ctor (string)
 
     /// <inheritdoc/>
