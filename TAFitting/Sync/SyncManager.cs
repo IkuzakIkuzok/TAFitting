@@ -74,7 +74,7 @@ internal static class SyncManager
         if (string.IsNullOrEmpty(res)) return [];
         var json = MessageObject.LoadJson(res);
         if (json is null || string.IsNullOrEmpty(json.Type) || json.Type != "r:spectraList") return [];
-        return json.Content?.Split(',').Select(s => int.TryParse(s, out var id) ? id : -1).Where(id => id >= 0) ?? [];
+        return json.Content?.Split(',').Select<string, int>(int.TryParse) ?? [];
     } // internal static async Task<IEnumerable<int>> GetSpectra (string)
 
     private static void UpdateAppList()

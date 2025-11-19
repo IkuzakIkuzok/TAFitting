@@ -22,8 +22,7 @@ internal sealed partial class TimeTable : DataGridView
         => [.. this.Rows
                .Cast<DataGridViewRow>()
                .Where(row => !row.IsNewRow)
-               .Select(row => row.Cells["Time"].Value is double t ? t : double.NaN)
-               .Where(t => !double.IsNaN(t))
+               .Select<DataGridViewRow, double>(row => row.Cells["Time"].Value)
                .Order()];
 
     /// <summary>
