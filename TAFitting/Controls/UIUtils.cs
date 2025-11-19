@@ -2,9 +2,7 @@
 // (c) 2024 Kazuki Kohzuki
 
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms.DataVisualization.Charting;
-using TAFitting.Data;
 
 namespace TAFitting.Controls;
 
@@ -68,95 +66,6 @@ internal static class UIUtils
         s = s[..index];
         return new(s);
     } // internal static string ExpFormatter (decimal)
-
-    /// <summary>
-    /// Adds the specified decay to the data series.
-    /// </summary>
-    /// <param name="series">The series.</param>
-    /// <param name="decay">The decay.</param>
-    /// <param name="points">The data points buffer.</param>
-    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
-    internal static void AddDecay(this Series series, Decay decay, DataPoint[] points, bool invert = false)
-        => series.AddDecay(decay.Times, decay.Signals, points, invert);
-
-    /// <summary>
-    /// Adds the specified decay to the data series.
-    /// </summary>
-    /// <param name="series">The series.</param>
-    /// <param name="times">The time series.</param>
-    /// <param name="signals">The signal series.</param>
-    /// <param name="points">The data points buffer.</param>
-    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
-    internal static void AddDecay(this Series series, IReadOnlyList<double> times, IReadOnlyList<double> signals, DataPoint[] points, bool invert = false)
-    {
-        if (times.Count > signals.Count)
-            throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
-
-        var count = 0;
-        var sign = invert ? -1 : 1;
-        for (var i = 0; i < times.Count; i++)
-        {
-            var x = times[i];
-            var y = signals[i];
-            if (x <= 0) continue;
-            if (!double.IsFinite(y)) continue;
-            y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
-
-            var p = GetOrCreateDataPoint(points, count, series);
-            p.SetValueXY(x, y);
-            ++count;
-        }
-        series.Points.AddRange(points.AsSpan(0, count));
-        series.Points.Invalidate();
-    } // internal static void AddDecay (this Series, IReadOnlyList<double>, IReadOnlyList<double>, DataPoint[], [bool])
-
-    /// <summary>
-    /// Adds the specified decay to the data series.
-    /// </summary>
-    /// <param name="series">The series.</param>
-    /// <param name="times">The time series.</param>
-    /// <param name="signals">The signal series.</param>
-    /// <param name="points">The data points buffer.</param>
-    /// <param name="invert">If set to <c>true</c>, inverts the signal values.</param>
-    /// <exception cref="ArgumentException">The length of <paramref name="times"/> must not be greater than that of <paramref name="signals"/>.</exception>
-    internal static void AddDecay(this Series series, ReadOnlySpan<double> times, ReadOnlySpan<double> signals, DataPoint[] points, bool invert = false)
-    {
-        if (times.Length > signals.Length)
-            throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
-
-        var count = 0;
-        var sign = invert ? -1 : 1;
-        for (var i = 0; i < times.Length; i++)
-        {
-            var x = times[i];
-            var y = signals[i];
-            if (x <= 0) continue;
-            if (!double.IsFinite(y)) continue;
-            y = Math.Clamp(y, DecimalMin, DecimalMax) * sign;
-
-            var p = GetOrCreateDataPoint(points, count, series);
-            p.SetValueXY(x, y);
-            ++count;
-        }
-        series.Points.AddRange(points.AsSpan(0, count));
-        series.Points.Invalidate();
-    } // internal static void AddDecay (this Series, ReadOnlySpan<double>, ReadOnlySpan<double>, DataPoint[], [bool]))
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static DataPoint GetOrCreateDataPoint(DataPoint[] points, int index, Series series)
-    {
-        /*
-         * DataPoint.IsEmpty property should be restored as `false` for reusing.
-         * However, setting this property calls Invalidate method internally, which degrades performance.
-         * Allocating a new instance of the DataPoint class is faster than calling Invalidate method.
-         * If the property has not been changed, reuse the existing instance.
-         */
-
-        var p = points[index];
-        if (p?.IsEmpty ?? true)
-            p = points[index] = new(series);
-        return p;
-    } // private static DataPoint GetDataPoint (DataPoint[], int)
 
     /// <summary>
     /// Gets the range of the specified series.

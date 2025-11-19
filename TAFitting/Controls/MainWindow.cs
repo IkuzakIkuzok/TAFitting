@@ -54,7 +54,6 @@ internal sealed partial class MainWindow : Form
 
     private Decays? decays;
     private readonly Series s_observed, s_filtered, s_fit, s_compare;
-    private DataPoint[]? dp_observed, dp_filtered, dp_fit, dp_compare;
     private bool stopDrawing = false;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
@@ -1761,18 +1760,10 @@ internal sealed partial class MainWindow : Form
 
         var invert = this.row.Inverted;
 
-        this.s_observed.Points.Clear();
         if (!this.menu_hideOriginal.Checked)
-        {
-            if ((this.dp_observed?.Length ?? 0) < decay.Times.Count)
-                this.dp_observed = new DataPoint[decay.Times.Count];
-            this.s_observed.AddDecay(decay, this.dp_observed!, invert);
-        }
+            this.s_observed.AddDecay(decay, invert);
 
-        this.s_filtered.Points.Clear();
-        if ((this.dp_filtered?.Length ?? 0) < filtered.Length)
-            this.dp_filtered = new DataPoint[filtered.Length];
-        this.s_filtered.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_filtered!, invert);
+        this.s_filtered.AddDecay(decay.GetTimesAsSpan(), filtered, invert);
     }// private void ShowObserved ()
 
     /// <summary>
@@ -1785,11 +1776,8 @@ internal sealed partial class MainWindow : Form
 
         var invert = row.Inverted;
 
-        this.s_compare.Points.Clear();
-        if ((this.dp_compare?.Length ?? 0) < decay.Times.Count)
-            this.dp_compare = new DataPoint[decay.Times.Count];
         var filtered = decay.FilteredSignals;
-        this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, this.dp_compare!, invert);
+        this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, invert);
     } // private void ShowCompare (ParametersTableRow)
 
     private void ShowFit(object? sender, EventArgs e)
@@ -1825,10 +1813,7 @@ internal sealed partial class MainWindow : Form
             ArrayPool<double>.Shared.Return(signals);
         }
 
-        this.s_fit.Points.Clear();
-        if ((this.dp_fit?.Length ?? 0) < times.Length)
-            this.dp_fit = new DataPoint[times.Length];
-        this.s_fit.AddDecay(times.AsSpan(), signals.AsSpan(), this.dp_fit!);  // AsSpan() is required to avoid ambiguity with IReadOnlyList<double> overload
+        this.s_fit.AddDecay(times.AsSpan(), signals.AsSpan());  // AsSpan() is required to avoid ambiguity with IReadOnlyList<double> overload
     } // private void ShowFit ()
 
     #endregion Show plots
