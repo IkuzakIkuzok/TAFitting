@@ -19,38 +19,35 @@ internal static class SeriesExtension
         /// Gets the cached list of data points for the current series.
         /// </summary>
         private List<DataPoint> DataPointsCache => dataPointsCaches.GetOrAdd(series, _ => []);
-
+        
         /// <summary>
-        /// Ensures that the cache for data points has at least the specified capacity.
+        /// Ensures that the data points cache contains at least the specified number of elements.
         /// </summary>
-        /// <param name="size">The minimum number of elements that the data points cache should be able to hold. Must be non-negative.</param>
+        /// <param name="size">The minimum number of elements that the data points cache should contain. Must be non-negative.</param>
         private void EnsureCacheSize(int size)
-            => series.DataPointsCache.EnsureCapacity(size);
+        {
+            series.DataPointsCache.EnsureCapacity(size);
+
+            var toAdd = size - series.DataPointsCache.Count;
+            for (var i = 0; i < toAdd; i++)
+                series.DataPointsCache.Add(null!);
+        } // private void EnsureCacheSize (int size)
 
         /// <summary>
         /// Retrieves the data point at the specified index, creating and initializing it if it does not already exist.
         /// </summary>
-        /// <remarks>If the specified index is greater than the current number of data points, additional data points are created and added to the cache to accommodate the request.
-        /// Existing data points that are empty are replaced with new instances.</remarks>
         /// <param name="index">The zero-based index of the data point to retrieve or create. Must be greater than or equal to zero.</param>
         /// <returns>The data point at the specified index. If the data point does not exist or is empty, a new data point is created and returned.</returns>
         private DataPoint GetOrCreateDataPoint(int index)
         {
             var cache = series.DataPointsCache;
-            if (index >= cache.Count)
-            {
-                series.EnsureCacheSize(index + 1);
-                var toAdd = index - cache.Count + 1;
-                for (var i = 0; i < toAdd; i++)
-                    cache.Add(new(series));
-                return cache[index];
-            }
             var p = cache[index];
 
             // Setting DataPoint.IsEmpty property raises redrawing and is computationally more expensive than creating a new DataPoint.
             // Therefore, a new instance is created to replace the empty one.
             if (p?.IsEmpty ?? true)
                 p = cache[index] = new(series);
+
             return p;
         } // internal DataPoint GetOrCreateDataPoint (int index)
 
@@ -83,6 +80,7 @@ internal static class SeriesExtension
             if (times.Count > signals.Count)
                 throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
 
+            series.EnsureCacheSize(times.Count);
             series.Points.Clear();
 
             var count = 0;
@@ -115,6 +113,7 @@ internal static class SeriesExtension
             if (times.Length > signals.Length)
                 throw new ArgumentException("The length of times must not be greater than that of signals.", nameof(times));
 
+            series.EnsureCacheSize(times.Length);
             series.Points.Clear();
 
             var count = 0;
