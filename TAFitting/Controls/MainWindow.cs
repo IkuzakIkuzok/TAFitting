@@ -1798,22 +1798,8 @@ internal sealed partial class MainWindow : Form
 
         var parameters = this.row.Parameters;
         var func = model.GetFunction(parameters);
-        var invert = this.cb_invert.Checked ? -1 : 1;
-        var times = Unsafe.As<double[]>(decay.Times);
-        
-        //var signals = Array.ConvertAll(times, t => func(t) * invert);
-        var signals = ArrayPool<double>.Shared.Rent(times.Length);
-        try
-        {
-            for (var i = 0; i < times.Length; i++)
-                signals[i] = func(times[i]) * invert;
-        }
-        finally
-        {
-            ArrayPool<double>.Shared.Return(signals);
-        }
-
-        this.s_fit.AddDecay(times.AsSpan(), signals.AsSpan());  // AsSpan() is required to avoid ambiguity with IReadOnlyList<double> overload
+        var invert = this.cb_invert.Checked;
+        this.s_fit.AddDecay(decay.GetTimesAsSpan(), func, invert);
     } // private void ShowFit ()
 
     #endregion Show plots

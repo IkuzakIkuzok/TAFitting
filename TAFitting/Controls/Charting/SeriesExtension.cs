@@ -101,5 +101,37 @@ internal static class SeriesExtension
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
         } // internal void AddDecay (ReadOnlySpan<double>, ReadOnlySpan<double>, [bool])
+
+        /// <summary>
+        /// Adds a series of decay data points to the underlying chart series using the specified time values and decay function.
+        /// </summary>
+        /// <remarks>Decay values produced by the function are clamped to a valid range before being added to the series.
+        /// Existing points in the series are cleared before new points are added.</remarks>
+        /// <param name="times">A read-only span of time values, in the same units expected by the decay function. Only positive values are processed; non-positive values are ignored.</param>
+        /// <param name="func">A function that computes the decay value for a given time. The function should return a finite double value for valid input times.</param>
+        /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
+        internal void AddDecay(ReadOnlySpan<double> times, Func<double, double> func, bool invert = false)
+        {
+            series.EnsureCacheSize(times.Length);
+            series.Points.Clear();
+
+            var count = 0;
+            var sign = invert ? -1 : 1;
+            for (var i = 0; i < times.Length; i++)
+            {
+                var x = times[i];
+                if (x <= 0) continue;
+
+                var y = func(x);
+                if (!double.IsFinite(y)) continue;
+                y = Math.Clamp(y, UIUtils.DecimalMin, UIUtils.DecimalMax) * sign;
+
+                var p = series.GetOrCreateDataPoint(count);
+                p.SetValueXY(x, y);
+                ++count;
+            }
+            series.Points.AddRange(series.GetPointsAsSpan(count));
+            series.Points.Invalidate();
+        } // internal void AddDecay (ReadOnlySpan<double>, Func<double, double>, [bool])
     } // extension(Series series)
 } // internal static class SeriesExtension
