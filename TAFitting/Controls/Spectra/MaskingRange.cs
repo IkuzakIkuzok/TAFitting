@@ -48,9 +48,20 @@ internal readonly record struct MaskingRange(double Start, double End)
     /// <param name="value">The string representation of the masking range.</param>
     /// <returns>The equivalent masking range.</returns>
     internal static MaskingRange FromString(string value)
+        => FromSpan(value.AsSpan());
+
+    /// <summary>
+    /// Parses a character span representing a numeric value or a range and returns the corresponding <see cref="MaskingRange"/> instance.
+    /// </summary>
+    /// <remarks>If the input contains a hyphen ('-'), it is interpreted as a range with start and end values.
+    /// Otherwise, the input is treated as a single value, and the range will have identical start and end values.</remarks>
+    /// <param name="value">A read-only span of characters containing either a single numeric value or a range in the format "start-end". 
+    /// Leading and trailing whitespace is ignored for each value.</param>
+    /// <returns>A <see cref="MaskingRange"/> representing the parsed value or range.
+    /// Returns <see cref="MaskingRange.Empty"/> if the input cannot be parsed as a valid number or range.</returns>
+    internal static MaskingRange FromSpan(ReadOnlySpan<char> value)
     {
-        var span = value.AsSpan();
-        var hyphenIndex = span.IndexOf('-');
+        var hyphenIndex = value.IndexOf('-');
         if (hyphenIndex < 0) // single value
         {
             if (!double.TryParse(value, out var time)) return Empty;
@@ -58,10 +69,10 @@ internal readonly record struct MaskingRange(double Start, double End)
         }
 
         // range value
-        var startSpan = span[..hyphenIndex].Trim();
-        var endSpan = span[(hyphenIndex + 1)..].Trim();
+        var startSpan = value[..hyphenIndex].Trim();
+        var endSpan = value[(hyphenIndex + 1)..].Trim();
         if (!double.TryParse(startSpan, out var start)) return Empty;
         if (!double.TryParse(endSpan, out var end)) return Empty;
         return new(start, end);
-    } // internal static MaskingRange FromString (string)
+    } // internal static MaskingRange FromSpan (ReadOnlySpan<char>)
 } // internal readonly record struct MaskingRange (double, double)
