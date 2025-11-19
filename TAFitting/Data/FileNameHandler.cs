@@ -34,7 +34,8 @@ internal static partial class FileNameHandler
     /// </summary>
     internal static int RegexTimeoutMilliseconds { get; set; } = 500;
 
-    private static readonly Regex re_basename = BasenamePattern();
+    [GeneratedRegex(@"<BASENAME(\|[^|/]+/[^|/]*)*>")]
+    private static partial Regex BasenamePattern { get; }
 
     /// <summary>
     /// Gets the filename from the basename and the format.
@@ -51,7 +52,7 @@ internal static partial class FileNameHandler
         var filename = format;
         try
         {
-            var ms = re_basename.Matches(format);
+            var ms = BasenamePattern.Matches(format);
             foreach (Match m in ms)
             {
                 var pattern = m.Value;
@@ -191,7 +192,4 @@ internal static partial class FileNameHandler
 
         return true;  // Simple string replacement, simple.
     } // internal static bool IsSimpleFormat (string)
-
-    [GeneratedRegex(@"<BASENAME(\|[^|/]+/[^|/]*)*>")]
-    private static partial Regex BasenamePattern();
 } // internal static class FileNameHandler

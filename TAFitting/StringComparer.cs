@@ -10,7 +10,8 @@ namespace TAFitting;
 /// </summary>
 internal sealed partial class StringComparer : IComparer<string>
 {
-    private static readonly Regex re_textNum = NamePartsPattern();
+    [GeneratedRegex(@"(\D+|\d+(\.\d+)?)")]
+    private static partial Regex NamePartsPattern { get; }
 
     /// <summary>
     /// Gets the instance of the <see cref="StringComparer"/> class.
@@ -26,8 +27,8 @@ internal sealed partial class StringComparer : IComparer<string>
         if (s1 == null) return -1;
         if (s2 == null) return 1;
 
-        var parts1 = re_textNum.Matches(s1).Select(m => m.Value);
-        var parts2 = re_textNum.Matches(s2).Select(m => m.Value);
+        var parts1 = NamePartsPattern.Matches(s1).Select(m => m.Value);
+        var parts2 = NamePartsPattern.Matches(s2).Select(m => m.Value);
 
         var sr = 0;
         foreach ((var part1, var part2) in parts1.Zip(parts2))
@@ -45,7 +46,4 @@ internal sealed partial class StringComparer : IComparer<string>
     } // public int Compare (s1, s2)
 
     private StringComparer() { }
-
-    [GeneratedRegex(@"(\D+|\d+(\.\d+)?)")]
-    private static partial Regex NamePartsPattern();
 } // internal sealed partial class StringComparer : IComparer<string>

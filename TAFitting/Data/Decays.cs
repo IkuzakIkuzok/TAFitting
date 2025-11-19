@@ -20,10 +20,11 @@ namespace TAFitting.Data;
 #endif
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
-    private static readonly Regex re_wavelength = RegexWavelength();
-
     private double time0 = 0.0;
     private readonly Dictionary<double, Decay> decays = [];
+
+    [GeneratedRegex(@"(\d+).*")]
+    private static partial Regex RegexWavelength { get; }
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
@@ -127,7 +128,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool TryGetWavelength(string basename, out double wavelength)
     {
-        var wl = re_wavelength.Match(basename).Groups[1].Value;
+        var wl = RegexWavelength.Match(basename).Groups[1].Value;
         return double.TryParse(wl, out wavelength);
     } // internal static bool TryGetWavelength (string, out double)
 
@@ -344,10 +345,6 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         foreach (var decay in this.Values)
             decay.Interpolate();
     } // internal void Interpolate ()
-
-    [GeneratedRegex(@"(\d+).*")]
-    private static partial Regex RegexWavelength();
-
 
 #if DEBUG
     private sealed class DecaysDebugView(Decays decays)
