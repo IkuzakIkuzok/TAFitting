@@ -26,9 +26,11 @@ internal static class SeriesExtension
         /// <param name="size">The minimum number of elements that the data points cache should contain. Must be non-negative.</param>
         private void EnsureCacheSize(int size)
         {
+            var toAdd = size - series.DataPointsCache.Count;
+            if (toAdd <= 0) return;
+
             series.DataPointsCache.EnsureCapacity(size);
 
-            var toAdd = size - series.DataPointsCache.Count;
             for (var i = 0; i < toAdd; i++)
                 series.DataPointsCache.Add(null!);
         } // private void EnsureCacheSize (int size)
