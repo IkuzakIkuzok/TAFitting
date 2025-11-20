@@ -76,33 +76,34 @@ internal static class SeriesExtension
         /// <param name="decay">The decay sequence to add.</param>
         /// <param name="invert">If set to <see langword="true"/>, inverts the signal values of the decay sequence before adding; otherwise, adds them as-is.</param>
         internal void AddDecay(Decay decay, bool invert = false)
-            => series.AddDecay(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
+            => series.AddPoints(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
+
 
         /// <summary>
-        /// Adds a decay curve to the series using the specified time and signal values.
+        /// Adds a sequence of data points to the series using the specified X and Y values.
         /// </summary>
-        /// <param name="times">A span of time values representing the x-coordinates for the decay curve.
-        /// The values should be sorted in ascending order.
-        /// Each value must be greater than zero to be included.</param>
-        /// <param name="signals">A span of signal values corresponding to each time value. Only finite values are included.</param>
-        /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        /// <exception cref="ArgumentException">Thrown when the lengths of the <paramref name="times"/> and <paramref name="signals"/> spans do not match.</exception>
-        internal void AddDecay(ReadOnlySpan<double> times, ReadOnlySpan<double> signals, bool invert = false)
+        /// <param name="xValues">A read-only span containing the X values for the data points.
+        /// Each value must be greater than 0. The length must match that of <paramref name="yValues"/>.</param>
+        /// <param name="yValues">A read-only span containing the Y values for the data points.
+        /// Each value is paired with the corresponding value in <paramref name="xValues"/>.</param>
+        /// <param name="invert"><see langword="true"/> to invert the sign of all Y values before adding them to the series; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
+        /// <exception cref="ArgumentException">Thrown if the length of <paramref name="xValues"/> does not equal the length of <paramref name="yValues"/>.</exception>
+        internal void AddPoints(ReadOnlySpan<double> xValues, ReadOnlySpan<double> yValues, bool invert = false)
         {
-            if (times.Length != signals.Length)
-                throw new ArgumentException("The length of times must be equal to the length of signals.", nameof(times));
+            if (xValues.Length != yValues.Length)
+                throw new ArgumentException("The length of times must be equal to the length of signals.", nameof(xValues));
 
-            series.EnsureCacheSize(times.Length);
+            series.EnsureCacheSize(xValues.Length);
             series.Points.Clear();
 
             var count = 0;
             var sign = invert ? -1 : 1;
-            for (var i = times.Length - 1; i >= 0; i--)
+            for (var i = xValues.Length - 1; i >= 0; i--)
             {
-                var x = times[i];
+                var x = xValues[i];
                 if (x <= 0) break;
 
-                var y = signals[i];
+                var y = yValues[i];
                 if (!double.IsFinite(y)) continue;
                 y = Math.Clamp(y, UIUtils.DecimalMin, UIUtils.DecimalMax) * sign;
 
@@ -112,28 +113,27 @@ internal static class SeriesExtension
             }
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
-        } // internal void AddDecay (ReadOnlySpan<double>, ReadOnlySpan<double>, [bool])
+        } // internal void AddPoints (ReadOnlySpan<double>, ReadOnlySpan<double>, [bool])
 
         /// <summary>
-        /// Adds a series of decay data points to the underlying chart series using the specified time values and decay function.
+        /// Adds data points to the series by evaluating a specified function over a set of x-values.
         /// </summary>
-        /// <remarks>Decay values produced by the function are clamped to a valid range before being added to the series.
-        /// Existing points in the series are cleared before new points are added.</remarks>
-        /// <param name="times">A read-only span of time values, in the same units expected by the decay function.
-        /// he values should be sorted in ascending order.
-        /// Only positive values are processed; non-positive values are ignored.</param>
-        /// <param name="func">A function that computes the decay value for a given time. The function should return a finite double value for valid input times.</param>
-        /// <param name="invert"><see langword="true"/> to invert the sign of each signal value; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        internal void AddDecay(ReadOnlySpan<double> times, Func<double, double> func, bool invert = false)
+        /// <remarks>Existing points in the series are cleared before new points are added. Non-finite y-values are ignored.
+        /// The resulting y-values are clamped to a predefined range before being added to the series.</remarks>
+        /// <param name="xValues">A read-only span of x-values for which the function will be evaluated.
+        /// Only positive values are processed; processing stops at the first non-positive value.</param>
+        /// <param name="func">A function that computes the y-value for each x-value. The function is called once for each valid x-value.</param>
+        /// <param name="invert"><see langword="true"/> to invert the sign of all Y values before adding them to the series; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
+        internal void AddPoints(ReadOnlySpan<double> xValues, Func<double, double> func, bool invert = false)
         {
-            series.EnsureCacheSize(times.Length);
+            series.EnsureCacheSize(xValues.Length);
             series.Points.Clear();
 
             var count = 0;
             var sign = invert ? -1 : 1;
-            for (var i = times.Length - 1; i >= 0; i--)
+            for (var i = xValues.Length - 1; i >= 0; i--)
             {
-                var x = times[i];
+                var x = xValues[i];
                 if (x <= 0) break;
 
                 var y = func(x);
@@ -146,6 +146,6 @@ internal static class SeriesExtension
             }
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
-        } // internal void AddDecay (ReadOnlySpan<double>, Func<double, double>, [bool])
+        } // internal void AddPoints (ReadOnlySpan<double>, Func<double, double>, [bool])
     } // extension(Series series)
 } // internal static class SeriesExtension

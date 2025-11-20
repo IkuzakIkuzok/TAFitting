@@ -1759,7 +1759,7 @@ internal sealed partial class MainWindow : Form
         if (!this.menu_hideOriginal.Checked)
             this.s_observed.AddDecay(decay, invert);
 
-        this.s_filtered.AddDecay(decay.GetTimesAsSpan(), filtered, invert);
+        this.s_filtered.AddPoints(decay.GetTimesAsSpan(), filtered, invert);
     }// private void ShowObserved ()
 
     /// <summary>
@@ -1773,7 +1773,7 @@ internal sealed partial class MainWindow : Form
         var invert = row.Inverted;
 
         var filtered = decay.FilteredSignals;
-        this.s_compare.AddDecay(decay.GetTimesAsSpan(), filtered, invert);
+        this.s_compare.AddPoints(decay.GetTimesAsSpan(), filtered, invert);
     } // private void ShowCompare (ParametersTableRow)
 
     private void ShowFit(object? sender, EventArgs e)
@@ -1795,7 +1795,7 @@ internal sealed partial class MainWindow : Form
         var parameters = this.row.Parameters;
         var func = model.GetFunction(parameters);
         var invert = this.cb_invert.Checked;
-        this.s_fit.AddDecay(decay.GetTimesAsSpan(), func, invert);
+        this.s_fit.AddPoints(decay.GetTimesAsSpan(), func, invert);
     } // private void ShowFit ()
 
     #endregion Show plots
