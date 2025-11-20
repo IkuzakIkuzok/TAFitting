@@ -78,7 +78,6 @@ internal static class SeriesExtension
         internal void AddDecay(Decay decay, bool invert = false)
             => series.AddPoints(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
 
-
         /// <summary>
         /// Adds a sequence of data points to the series using the specified X and Y values.
         /// </summary>
@@ -147,5 +146,19 @@ internal static class SeriesExtension
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
         } // internal void AddPoints (ReadOnlySpan<double>, Func<double, double>, [bool])
+
+        /// <summary>
+        /// Adds a data point with the specified X and Y values to the series.
+        /// </summary>
+        /// <param name="x">The X value of the data point to add.</param>
+        /// <param name="y">The Y value of the data point to add.</param>
+        internal void AddPoint(double x, double y)
+        {
+            series.EnsureCacheSize(series.Points.Count + 1);
+            var p = series.GetOrCreateDataPoint(series.Points.Count);
+            p.SetValueXY(x, y);
+            series.Points.Add(p);
+            series.Points.Invalidate();
+        } // internal void AddPoint (double, double)
     } // extension(Series series)
 } // internal static class SeriesExtension
