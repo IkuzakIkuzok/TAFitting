@@ -503,7 +503,7 @@ internal sealed partial class SpectraPreviewWindow : Form
                 try
                 {
                     foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
-                        s_sss.Points.AddXY(wl, a);
+                        s_sss.AddPoint(wl, a);
                     this.chart.Series.Add(s_sss);
                     sigMax = scale;
                 }
@@ -570,7 +570,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
             min = Math.Min(min, signal);
             max = Math.Max(max, signal);
-            series.Points.AddXY(wavelength, signal);
+            series.AddPoint(wavelength, signal);
 
             if (wavelength == this.SelectedWavelength)
                 HighlightWavelength(wavelength, signal, color);
@@ -588,8 +588,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         horizontal.MarkerStyle = MarkerStyle.None;
         horizontal.IsVisibleInLegend = false;
 
-        horizontal.Points.AddXY(wlMin, 0);
-        horizontal.Points.AddXY(wlMax, 0);
+        horizontal.AddPoints([wlMin, wlMax], [0, 0]);
         this.chart.Series.Add(horizontal);
     } // private void DrawHorizontalLine ()
 
@@ -633,7 +632,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         series.Color = color;
         series.BorderWidth = 2;
         series.IsVisibleInLegend = false;
-        series.Points.AddXY(wavelength, signal);
+        series.AddPoint(wavelength, signal);
         this.chart.Series.Add(series);
         this.wavelengthHighlights.Add(series);
     } // private void HighlightWavelength (double)
@@ -1010,7 +1009,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             }
             if (masked.Contains(wavelength)) continue;
 
-            series.Points.AddXY(wavelength, signal);
+            series.AddPoint(wavelength, signal);
         }
         seriesList.Add(series);
     } // private void AddSyncSeries (double, IList<double>, IList<double>, Color, IEnumerable<double>, IEnumerable<double>, List<Series>)
