@@ -286,7 +286,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         {
             ShortcutKeys = Keys.Control | Keys.W,
         };
-        menu_fileClose.Click += (sender, e) => Close();
+        menu_fileClose.Click += (_, _) => Close();
         menu_file.DropDownItems.Add(menu_fileClose);
 
         #endregion menu.file
@@ -307,12 +307,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString())
-            {
-                Tag = i,
-            };
-            item.Click += ChangeLineWidth;
-            menu_viewLineWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.SpectraLineWidth;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeLineWidth);
+            menu_viewLineWidth.DropDownOpening += (_, _) => item.Checked = item.Tag == Program.SpectraLineWidth;
             menu_viewLineWidth.DropDownItems.Add(item);
         }
 
@@ -325,12 +321,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString())
-            {
-                Tag = i,
-            };
-            item.Click += ChangeMarkerSize;
-            menu_viewMarkerSize.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.SpectraMarkerSize;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeMarkerSize);
+            menu_viewMarkerSize.DropDownOpening += (_, _) => item.Checked = item.Tag == Program.SpectraMarkerSize;
             menu_viewMarkerSize.DropDownItems.Add(item);
         }
 
@@ -1091,16 +1083,14 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void ChangeLineWidth(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int width) return;
-        Program.SpectraLineWidth = width;
+        if (sender is not GenericToolStripMenuItem<int> item) return;
+        Program.SpectraLineWidth = item.Tag;
     } // private void ChangeLineWidth (object?, EventArgs)
 
     private void ChangeMarkerSize(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int size) return;
-        Program.SpectraMarkerSize = size;
+        if (sender is not GenericToolStripMenuItem<int> item) return;
+        Program.SpectraMarkerSize = item.Tag;
     } // private void ChangeMarkerSize (object?, EventArgs)
 
     private void SetAxisTitleFont(object? sender, EventArgs e)
