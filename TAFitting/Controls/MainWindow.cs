@@ -1247,22 +1247,20 @@ internal sealed partial class MainWindow : Form
 
             foreach ((var guid, var model) in category)
             {
-                var modelItem = new ToolStripMenuItem(model.Model.Name)
+                var modelItem = new ToolStripMenuItem(model.Model.Name, null, SelectModel)
                 {
                     Tag = guid,
                     ToolTipText = model.Model.Description,
                     Checked = guid == this.selectedModel,
                 };
-                modelItem.Click += SelectModel;
                 categoryItem.DropDownItems.Add(modelItem);
 
                 if (model.Model is LinearCombinationModel)
                 {
-                    var removeModel = new ToolStripMenuItem("Remove")
+                    var removeModel = new ToolStripMenuItem("Remove", null, RemoveLinearCombination)
                     {
                         Tag = guid,
                     };
-                    removeModel.Click += RemoveLinearCombination;
                     modelItem.DropDownItems.Add(removeModel);
                 }
 
@@ -1275,23 +1273,21 @@ internal sealed partial class MainWindow : Form
                     };
                     modelItem.DropDownItems.Add(estimateItem);
 
-                    var estimateAll = new ToolStripMenuItem("All rows")
+                    var estimateAll = new ToolStripMenuItem("All rows", null, EstimateParametersAllRows)
                     {
                         Tag = provider,
                     };
-                    estimateAll.Click += EstimateParametersAllRows;
                     estimateItem.DropDownItems.Add(estimateAll);
 
-                    var estimateNotEdited = new ToolStripMenuItem("Not edited rows only")
+                    var estimateNotEdited = new ToolStripMenuItem("Not edited rows only", null, EstimateParametersNotEditedRows)
                     {
                         Tag = provider,
                     };
-                    estimateNotEdited.Click += EstimateParametersNotEditedRows;
                     estimateItem.DropDownItems.Add(estimateNotEdited);
                 }
-            }
-        }
-        
+            } // foreach ((var guid, var model) in category)
+        } // foreach (var category in models)
+
         this.menu_model.DropDownItems.Add(new ToolStripSeparator());
 
         var add_model = new ToolStripMenuItem()
