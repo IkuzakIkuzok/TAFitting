@@ -5,6 +5,7 @@ using DisposalGenerator;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Controls.Charting;
 using TAFitting.Controls.Toast;
 using TAFitting.Data.SteadyState;
 using TAFitting.Excel;
@@ -24,7 +25,6 @@ internal sealed partial class SpectraPreviewWindow : Form
 {
     private static readonly Guid steadyStateDialog = new("AE0B2F4B-7A4E-425A-89DF-E81194032356");
     private static int serialNumber = 0;
-    private static int seriesCount;
 
     private readonly SplitContainer mainContainer, optionsContainer;
 
@@ -38,6 +38,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
     private readonly List<Series> wavelengthHighlights = [];
+    private readonly SeriesPool seriesPool = new();
     private readonly Lock chartLock = new();
 
     private SteadyStateSpectrum? steadyStateSpectrum;
@@ -431,7 +432,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         using var _ = this.chartLock.EnterScope();
         try
         {
-            this.chart.Series.Clear();
+            this.seriesPool.ReturnAll(this.chart);
             if (sync) this.timeTable.SetColors();
             this.wavelengthHighlights.Clear();
 
@@ -493,14 +494,12 @@ internal sealed partial class SpectraPreviewWindow : Form
             if (this.steadyStateSpectrum is not null)
             {
                 var scale = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
-                var s_sss = new Series()
-                {
-                    Color = Color.Black,
-                    ChartType = SeriesChartType.Line,
-                    BorderDashStyle = ChartDashStyle.Dot,
-                    BorderWidth = 2,
-                    LegendText = "Steady-state",
-                };
+                var s_sss = this.seriesPool.Rent();
+                s_sss.Color = Color.Black;
+                s_sss.ChartType = SeriesChartType.Line;
+                s_sss.BorderDashStyle = ChartDashStyle.Dot;
+                s_sss.BorderWidth = 2;
+                s_sss.LegendText = "Steady-state";
                 try
                 {
                     foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
@@ -537,16 +536,18 @@ internal sealed partial class SpectraPreviewWindow : Form
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
         var count = 0;
-        Series MakeSeries() => new((++seriesCount).ToString(CultureInfo.InvariantCulture))
+        Series MakeSeries()
         {
-            ChartType = SeriesChartType.Line,
-            MarkerStyle = MarkerStyle.Circle,
-            MarkerSize = Program.SpectraMarkerSize,
-            Color = color,
-            BorderWidth = Program.SpectraLineWidth,
-            LegendText = $"{time:F2} {this.TimeUnit}",
-            IsVisibleInLegend = count++ == 0,
-        };
+            var series = this.seriesPool.Rent();
+            series.ChartType = SeriesChartType.Line;
+            series.MarkerStyle = MarkerStyle.Circle;
+            series.MarkerSize = Program.SpectraMarkerSize;
+            series.Color = color;
+            series.BorderWidth = Program.SpectraLineWidth;
+            series.LegendText = $"{time:F2} {this.TimeUnit}";
+            series.IsVisibleInLegend = count++ == 0;
+            return series;
+        }
 
         var series = MakeSeries();
         var syncSpectra = new List<double>();
@@ -580,13 +581,13 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void DrawHorizontalLine(double wlMin, double wlMax)
     {
-        var horizontal = new Series()
-        {
-            ChartType = SeriesChartType.Line,
-            Color = Color.Black,
-            BorderWidth = 2,
-            IsVisibleInLegend = false,
-        };
+        var horizontal = this.seriesPool.Rent();
+        horizontal.ChartType = SeriesChartType.Line;
+        horizontal.Color = Color.Black;
+        horizontal.BorderWidth = 2;
+        horizontal.MarkerStyle = MarkerStyle.None;
+        horizontal.IsVisibleInLegend = false;
+
         horizontal.Points.AddXY(wlMin, 0);
         horizontal.Points.AddXY(wlMax, 0);
         this.chart.Series.Add(horizontal);
@@ -606,7 +607,10 @@ internal sealed partial class SpectraPreviewWindow : Form
         using var _ = this.chartLock.EnterScope();
 
         foreach (var series in this.wavelengthHighlights)
+        {
             this.chart.Series.Remove(series);
+            this.seriesPool.Return(series);
+        }
         this.wavelengthHighlights.Clear();
 
         var func = model.GetFunction(parameters);
@@ -622,15 +626,13 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void HighlightWavelength(double wavelength, double signal, Color color)
     {
-        var series = new Series()
-        {
-            ChartType = SeriesChartType.Line,
-            MarkerStyle = MarkerStyle.Cross,
-            MarkerSize = Program.SpectraMarkerSize + 10,
-            Color = color,
-            BorderWidth = 2,
-            IsVisibleInLegend = false,
-        };
+        var series = this.seriesPool.Rent();
+        series.ChartType = SeriesChartType.Line;
+        series.MarkerStyle = MarkerStyle.Cross;
+        series.MarkerSize = Program.SpectraMarkerSize + 10;
+        series.Color = color;
+        series.BorderWidth = 2;
+        series.IsVisibleInLegend = false;
         series.Points.AddXY(wavelength, signal);
         this.chart.Series.Add(series);
         this.wavelengthHighlights.Add(series);
@@ -981,17 +983,19 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         color = Color.FromArgb(192, color);
 
-        Series MakeSeries() => new((++seriesCount).ToString(CultureInfo.InvariantCulture))
+        Series MakeSeries()
         {
-            ChartType = SeriesChartType.Line,
-            MarkerStyle = MarkerStyle.Circle,
-            BorderDashStyle = ChartDashStyle.Dash,
-            MarkerSize = Program.SpectraMarkerSize,
-            Color = color,
-            BorderWidth = Program.SpectraLineWidth,
-            LegendText = $"{time:F2} {this.TimeUnit}",
-            IsVisibleInLegend = false,
-        };
+            var series = this.seriesPool.Rent();
+            series.ChartType = SeriesChartType.Line;
+            series.MarkerStyle = MarkerStyle.Circle;
+            series.BorderDashStyle = ChartDashStyle.Dash;
+            series.MarkerSize = Program.SpectraMarkerSize;
+            series.Color = color;
+            series.BorderWidth = Program.SpectraLineWidth;
+            series.LegendText = $"{time:F2} {this.TimeUnit}";
+            series.IsVisibleInLegend = false;
+            return series;
+        }
 
         var series = MakeSeries();
 
