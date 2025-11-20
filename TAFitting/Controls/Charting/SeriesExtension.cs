@@ -36,6 +36,15 @@ internal static class SeriesExtension
         } // private void EnsureCacheSize (int size)
 
         /// <summary>
+        /// Clears all cached data points associated with the current series.
+        /// </summary>
+        internal void ClearCache()
+        {
+            series.DataPointsCache.Clear();
+            dataPointsCaches.Remove(series);
+        } // private void ClearCache ()
+
+        /// <summary>
         /// Retrieves the data point at the specified index, creating and initializing it if it does not already exist.
         /// </summary>
         /// <param name="index">The zero-based index of the data point to retrieve or create. Must be greater than or equal to zero.</param>
