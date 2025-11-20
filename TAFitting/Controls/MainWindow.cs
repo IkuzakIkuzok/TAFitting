@@ -355,12 +355,8 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString())
-            {
-                Tag = i,
-            };
-            item.Click += ChangeObservedSize;
-            menu_viewObserved.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.ObservedSize;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeObservedSize);
+            menu_viewObserved.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.ObservedSize;
             menu_viewObservedSize.DropDownItems.Add(item);
         }
 
@@ -385,12 +381,8 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString())
-            {
-                Tag = i,
-            };
-            item.Click += ChangeFilteredWidth;
-            menu_viewFiltered.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.FilteredWidth;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeFilteredWidth);
+            menu_viewFiltered.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.FilteredWidth;
             menu_viewFilteredWidth.DropDownItems.Add(item);
         }
 
@@ -415,12 +407,8 @@ internal sealed partial class MainWindow : Form
 
         for (var i = 1; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString())
-            {
-                Tag = i,
-            };
-            item.Click += ChangeFitWidth;
-            menu_viewFit.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.FitWidth;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeFitWidth);
+            menu_viewFit.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.FitWidth;
             menu_viewFitWidth.DropDownItems.Add(item);
         }
 
@@ -2231,23 +2219,20 @@ internal sealed partial class MainWindow : Form
 
     private void ChangeObservedSize(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int size) return;
-        this.s_observed.MarkerSize = Program.ObservedSize = size;
+        if (sender is not GenericToolStripMenuItem<int> item) return;
+        this.s_observed.MarkerSize = Program.ObservedSize = item.Tag;
     } // private void ChangeObservedSize (object?, EventArgs)
 
     private void ChangeFilteredWidth(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int size) return;
-        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = size;
+        if (sender is not GenericToolStripMenuItem<int> item) return;
+        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = item.Tag;
     } // private void ChangeFilteredWidth (object?, EventArgs)
 
     private void ChangeFitWidth(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int size) return;
-        this.s_fit.BorderWidth = Program.FitWidth = size;
+        if (sender is not GenericToolStripMenuItem<int> item) return;
+        this.s_fit.BorderWidth = Program.FitWidth = item.Tag;
     } // private void ChangeFitWidth (object?, EventArgs)
 
     #endregion change width/size
