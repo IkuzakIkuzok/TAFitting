@@ -580,7 +580,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         horizontal.MarkerStyle = MarkerStyle.None;
         horizontal.IsVisibleInLegend = false;
 
-        horizontal.AddPoints([wlMin, wlMax], [0, 0]);
+        horizontal.AddPositivePoints([wlMin, wlMax], [0, 0]);
         this.chart.Series.Add(horizontal);
     } // private void DrawHorizontalLine ()
 

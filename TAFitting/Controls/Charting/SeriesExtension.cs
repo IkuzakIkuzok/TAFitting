@@ -76,10 +76,10 @@ internal static class SeriesExtension
         /// <param name="decay">The decay sequence to add.</param>
         /// <param name="invert">If set to <see langword="true"/>, inverts the signal values of the decay sequence before adding; otherwise, adds them as-is.</param>
         internal void AddDecay(Decay decay, bool invert = false)
-            => series.AddPoints(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
+            => series.AddPositivePoints(decay.GetTimesAsSpan(), decay.GetSignalsAsSpan(), invert);
 
         /// <summary>
-        /// Adds a sequence of data points to the series using the specified X and Y values.
+        /// Adds data points to the series for each positive X value in the provided spans.
         /// </summary>
         /// <param name="xValues">A read-only span containing the X values for the data points.
         /// Each value must be greater than 0. The length must match that of <paramref name="yValues"/>.</param>
@@ -87,7 +87,7 @@ internal static class SeriesExtension
         /// Each value is paired with the corresponding value in <paramref name="xValues"/>.</param>
         /// <param name="invert"><see langword="true"/> to invert the sign of all Y values before adding them to the series; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
         /// <exception cref="ArgumentException">Thrown if the length of <paramref name="xValues"/> does not equal the length of <paramref name="yValues"/>.</exception>
-        internal void AddPoints(ReadOnlySpan<double> xValues, ReadOnlySpan<double> yValues, bool invert = false)
+        internal void AddPositivePoints(ReadOnlySpan<double> xValues, ReadOnlySpan<double> yValues, bool invert = false)
         {
             if (xValues.Length != yValues.Length)
                 throw new ArgumentException("The length of times must be equal to the length of signals.", nameof(xValues));
@@ -112,10 +112,10 @@ internal static class SeriesExtension
             }
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
-        } // internal void AddPoints (ReadOnlySpan<double>, ReadOnlySpan<double>, [bool])
+        } // internal void AddPositivePoints (ReadOnlySpan<double>, ReadOnlySpan<double>, [bool])
 
         /// <summary>
-        /// Adds data points to the series by evaluating a specified function over a set of x-values.
+        /// Adds data points to the series by evaluating a function for each positive X value in the provided span.
         /// </summary>
         /// <remarks>Existing points in the series are cleared before new points are added. Non-finite y-values are ignored.
         /// The resulting y-values are clamped to a predefined range before being added to the series.</remarks>
@@ -123,7 +123,7 @@ internal static class SeriesExtension
         /// Only positive values are processed; processing stops at the first non-positive value.</param>
         /// <param name="func">A function that computes the y-value for each x-value. The function is called once for each valid x-value.</param>
         /// <param name="invert"><see langword="true"/> to invert the sign of all Y values before adding them to the series; otherwise, <see langword="false"/>. The default is <see langword="false"/>.</param>
-        internal void AddPoints(ReadOnlySpan<double> xValues, Func<double, double> func, bool invert = false)
+        internal void AddPositivePoints(ReadOnlySpan<double> xValues, Func<double, double> func, bool invert = false)
         {
             series.EnsureCacheSize(xValues.Length);
             series.Points.Clear();
@@ -145,7 +145,7 @@ internal static class SeriesExtension
             }
             series.Points.AddRange(series.GetPointsAsSpan(count));
             series.Points.Invalidate();
-        } // internal void AddPoints (ReadOnlySpan<double>, Func<double, double>, [bool])
+        } // internal void AddPositivePoints (ReadOnlySpan<double>, Func<double, double>, [bool])
 
         /// <summary>
         /// Adds a data point with the specified X and Y values to the series.
