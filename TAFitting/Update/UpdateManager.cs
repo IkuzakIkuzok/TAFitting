@@ -28,7 +28,7 @@ internal static class UpdateManager
     /// </summary>
     internal static ReleaseInfo? LatestRelease
     {
-        get => field;
+        get;
         private set
         {
             field = value;
