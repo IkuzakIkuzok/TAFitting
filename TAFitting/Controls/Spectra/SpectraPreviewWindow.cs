@@ -58,7 +58,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     internal Guid ModelId
     {
-        get => field;
+        get;
         set
         {
             if (field == value) return;
@@ -72,7 +72,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     internal double SelectedWavelength
     {
-        get => field;
+        get;
         set
         {
             if (field == value) return;

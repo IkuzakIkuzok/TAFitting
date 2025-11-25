@@ -31,7 +31,7 @@ internal sealed partial class TimeTable : DataGridView
     /// <value>The unit of time.</value>
     internal string Unit
     {
-        get => field;
+        get;
         set => this.Columns["Time"]!.HeaderText = string.IsNullOrEmpty(field = value) ? "Time" : $"Time ({value})";
     } = "µs";
 
