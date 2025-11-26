@@ -902,15 +902,17 @@ internal sealed partial class SpectraPreviewWindow : Form
         // If the wavelengths are less than 4, intervals are less than 3, so no masking points can be determined.
         if (wavelengths.Count < 4) return [];
 
-        var allSteps = new double[wavelengths.Count - 1];
+        var allSteps = (stackalloc double[wavelengths.Count - 1]);
         for (var i = 0; i < allSteps.Length; i++)
             allSteps[i] = wavelengths[i + 1] - wavelengths[i];
-        var steps = allSteps.Order().Reverse().ToArray();
+        var steps = (stackalloc double[allSteps.Length]);
+        allSteps.CopyTo(steps);
+        MemoryExtensions.Sort(steps);
         // if (steps.Length < 3) return [];
-        if (steps[0] >= steps[1] * 2)
+        if (steps[^1] >= steps[^2] * 2)
         {
-            var step = steps[0];
-            var index = Array.IndexOf(allSteps, step);
+            var step = steps[^1];
+            var index = allSteps.IndexOf(step);
             return [wavelengths[index] + step / 2];
         }
         return [];
