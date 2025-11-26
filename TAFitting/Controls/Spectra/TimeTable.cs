@@ -9,6 +9,8 @@ namespace TAFitting.Controls.Spectra;
 [DesignerCategory("Code")]
 internal sealed partial class TimeTable : DataGridView
 {
+    internal const string TimeColName = "Time";
+
     /// <summary>
     /// Gets a value indicating whether the table is updating.
     /// </summary>
@@ -22,7 +24,7 @@ internal sealed partial class TimeTable : DataGridView
         => [.. this.Rows
                .Cast<DataGridViewRow>()
                .Where(row => !row.IsNewRow)
-               .Select<DataGridViewRow, double>(row => row.Cells["Time"].Value)
+               .Select<DataGridViewRow, double>(row => row.Cells[TimeColName].Value)
                .Order()];
 
     /// <summary>
@@ -32,7 +34,7 @@ internal sealed partial class TimeTable : DataGridView
     internal string Unit
     {
         get;
-        set => this.Columns["Time"]!.HeaderText = string.IsNullOrEmpty(field = value) ? "Time" : $"Time ({value})";
+        set => this.Columns[TimeColName]!.HeaderText = string.IsNullOrEmpty(field = value) ? "Time" : $"Time ({value})";
     } = "µs";
 
     /// <summary>
@@ -46,7 +48,7 @@ internal sealed partial class TimeTable : DataGridView
 
         var col = new DataGridViewNumericBoxColumn()
         {
-            Name = "Time",
+            Name = TimeColName,
             HeaderText = "Time (µs)",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
         };
@@ -69,7 +71,7 @@ internal sealed partial class TimeTable : DataGridView
     {
         if (this.Updating) return;
 
-        Sort(this.Columns["Time"]!, ListSortDirection.Ascending);
+        Sort(this.Columns[TimeColName]!, ListSortDirection.Ascending);
         var count = this.Rows.Count - 1;  // 1 for the new (empty) row
         var gradient = new ColorGradient(Program.GradientStart, Program.GradientEnd, count);
         for (var i = 0; i < count; i++)

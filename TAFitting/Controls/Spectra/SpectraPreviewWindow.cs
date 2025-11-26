@@ -446,7 +446,18 @@ internal sealed partial class SpectraPreviewWindow : Form
             var masked = maskingRanges.GetMaskedPoints(wavelengths).ToArray();
             var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths).ToArray();
 
-            var times = this.timeTable.Times.ToArray();
+            var times = (stackalloc double[this.timeTable.RowCount]);
+            var timesCount = 0;
+            for (var i = 0; i < times.Length; i++)
+            {
+                var row = this.timeTable.Rows[i];
+                if (row.IsNewRow) continue;
+                if (row.Cells[TimeTable.TimeColName].Value is not double time) continue;
+                times[timesCount++] = time;
+            }
+            times = times[..timesCount];
+            MemoryExtensions.Sort(times);
+
             var funcs = this.parameters.ToDictionary(
                 kv => kv.Key,
                 kv => model.GetFunction(kv.Value)
