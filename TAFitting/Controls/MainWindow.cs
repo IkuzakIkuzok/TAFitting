@@ -1436,6 +1436,8 @@ internal sealed partial class MainWindow : Form
             this.parametersTable.StopUpdateRSquared = false;
         }
 
+        // Clearing the cache is required to update the masked data after changing the data set or the model.
+        ClearSpectraMaskingCache();
         UpdatePreviewsParameters();
 
         this.s_observed.Points.Clear();
@@ -2097,6 +2099,15 @@ internal sealed partial class MainWindow : Form
             SetTimeTable(preview);
         }
     } // private void UpdatePreviewsParameters ()
+
+    /// <summary>
+    /// Clears the masking cache for all preview windows, ensuring that any cached masking data is removed.
+    /// </summary>
+    private void ClearSpectraMaskingCache()
+    {
+        foreach (var preview in this.previewWindows)
+            preview.ClearMaskingCache();
+    } // private void ClearSpectraMaskingCache ()
 
     private void SetTimeTable(SpectraPreviewWindow preview)
         => preview.SetTimeTable((double)this.rangeSelector.Time.To);

@@ -44,6 +44,8 @@ internal sealed partial class SpectraPreviewWindow : Form
     private SteadyStateSpectrum? steadyStateSpectrum;
 
     private Dictionary<double, double[]> parameters = [];
+    private double[]? maskedPoints, nextOfMaskedPoints;
+    private MaskingRanges? maskingRanges;
 
     private SpectraSyncObject? spectraSyncObject = null;
     private readonly Dictionary<SyncSpectraSource, List<Series>> syncSpectraSeries = [];
@@ -441,10 +443,19 @@ internal sealed partial class SpectraPreviewWindow : Form
 
             DrawHorizontalLine(wlMin, wlMax);
 
-            var maskingRanges = this.maskingRangeBox.MaskingRanges;
+            if (this.maskingRanges?.SourceString != this.maskingRangeBox.Text)
+            {
+                // masking ranges have been changed
+                // clear cached masking points
+                this.maskingRanges = this.maskingRangeBox.MaskingRanges;
+                this.maskedPoints = null;
+                this.nextOfMaskedPoints = null;
+            }
+
+            var maskingRanges = this.maskingRanges;
             var wavelengths = this.parameters.Keys.Order().ToArray();
-            var masked = maskingRanges.GetMaskedPoints(wavelengths).ToArray();
-            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths).ToArray();
+            var masked = this.maskedPoints ??= [.. maskingRanges.GetMaskedPoints(wavelengths)];
+            var nextOfMasked = this.nextOfMaskedPoints ??= [.. maskingRanges.GetNextOfMaskedPoints(wavelengths)];
 
             var times = (stackalloc double[this.timeTable.RowCount]);
             var timesCount = 0;
@@ -868,7 +879,18 @@ internal sealed partial class SpectraPreviewWindow : Form
     internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
     {
         if (CheckParametersMatching(parameters)) return;
+
+        // This condition depends on the fact that the number of wavelengths may be changed but thrir values are never changed.
+        // If they can be changed in the future, a more robust check is required.
+        if (this.parameters.Count != parameters.Count)
+        {
+            // clear cached masking points
+            this.maskedPoints = null;
+            this.nextOfMaskedPoints = null;
+        }
+
         this.parameters = parameters.ToDictionary();
+        
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
         DrawSpectra();
@@ -917,6 +939,16 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
         return [];
     } // private static IEnumerable<double> DetermineMaskingPoints (IReadOnlyList<double>)
+
+    /// <summary>
+    /// Clears all cached masking data, resetting the internal state for subsequent operations.
+    /// </summary>
+    internal void ClearMaskingCache()
+    {
+        this.maskingRanges = null;
+        this.maskedPoints = null;
+        this.nextOfMaskedPoints = null;
+    } // internal void ClearMaskingCache ()
 
     /// <summary>
     /// Sets the time table with the specified maximum time.
