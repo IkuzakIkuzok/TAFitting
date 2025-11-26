@@ -443,8 +443,8 @@ internal sealed partial class SpectraPreviewWindow : Form
 
             var maskingRanges = this.maskingRangeBox.MaskingRanges;
             var wavelengths = this.parameters.Keys.Order().ToArray();
-            var masked = maskingRanges.GetMaskedPoints(wavelengths);
-            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths);
+            var masked = maskingRanges.GetMaskedPoints(wavelengths).ToArray();
+            var nextOfMasked = maskingRanges.GetNextOfMaskedPoints(wavelengths).ToArray();
 
             var times = this.timeTable.Times.ToArray();
             var funcs = this.parameters.ToDictionary(
