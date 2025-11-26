@@ -1,12 +1,13 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using System.Collections.Concurrent;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace TAFitting.Controls.Charting;
 
 /// <summary>
-/// Provides a pool for reusing <see cref="CacheSeries"/> instances to optimize resource usage and reduce allocations within charting operations.
+/// Provides a pool for reusing <see cref="CacheSeries"/> instances to optimize resource usage and reduce allocations within charting operations. This class is thread-safe.
 /// </summary>
 /// <remarks>This class is intended for internal use to manage the lifecycle of <see cref="CacheSeries"/> objects.
 /// Callers are responsible for returning rented instances to the pool after use.
@@ -14,19 +15,18 @@ namespace TAFitting.Controls.Charting;
 internal sealed class SeriesPool
 {
     private int seriesCount = 0;
-    private readonly Stack<CacheSeries> pool = [];
+    private readonly ConcurrentStack<CacheSeries> pool = [];
 
     /// <summary>
     /// Retrieves a reusable <see cref="CacheSeries"/> instance from the pool, or creates a new one if the pool is empty.
     /// </summary>
-    /// <remarks>Callers are responsible for returning the Series instance to the pool when it is no longer needed.
+    /// <remarks>Callers are responsible for returning the <see cref="CacheSeries"/> instance to the pool when it is no longer needed.
     /// This method is intended for internal use to optimize resource reuse and reduce allocations.</remarks>
     /// <returns>A <see cref="CacheSeries"/> instance that can be used by the caller. The returned instance may be newly created or previously used.</returns>
     internal CacheSeries Rent()
     {
-        var series = this.pool.Count > 0
-            ? this.pool.Pop()
-            : new CacheSeries($"Pool-{Interlocked.Increment(ref this.seriesCount)}");
+        if (!this.pool.TryPop(out var series))
+            series = new CacheSeries($"Pool-{Interlocked.Increment(ref this.seriesCount)}");
 
         return series;
     } // internal CacheSeries Rent ()
