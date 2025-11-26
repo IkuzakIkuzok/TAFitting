@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using TAFitting.Config;
 using TAFitting.Data;
 
 namespace TAFitting.Controls;
@@ -12,6 +13,8 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
 {
     private bool inverted = false;
     private int[] magnitudeColumns = [];
+
+    private static RSquaredColorTable ColorTable => field ??= new(Program.Config.AppearanceConfig.RSquaredThresholds);
 
     private double GetCellValue(int index, double defaultValue) =>
         this.Cells[index].Value is double value ? value : defaultValue;
@@ -163,7 +166,35 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         => this.Inverted = !this.Inverted;
 
     private static Color GetRSquaredColor(double value)
-        => Program.Config.AppearanceConfig.RSquaredThresholds
-            .OrderByDescending(t => t.Threshold)
-            .FirstOrDefault(t => value >= t.Threshold)?.Color ?? Color.White;
+        => ColorTable.GetRSquaredColor(value);
+
+    private class RSquaredColorTable
+    {
+        private readonly double[] thresholds;
+        private readonly Color[] colors;
+
+        internal RSquaredColorTable(IReadOnlyList<RSquaredThresholdItem> items)
+        {
+            this.thresholds = new double[items.Count];
+            this.colors = new Color[items.Count];
+
+            for (var i = 0; i < items.Count; i++)
+            {
+                this.thresholds[i] = items[i].Threshold;
+                this.colors[i] = items[i].Color;
+            }
+
+            Array.Sort(this.thresholds, this.colors);
+        } // ctor (IReadOnlyList<RSquaredThresholdItem>)
+
+        internal Color GetRSquaredColor(double value)
+        {
+            for (var i = this.thresholds.Length; i > 0; i--)
+            {
+                if (value >= this.thresholds[i - 1])
+                    return this.colors[i - 1];
+            }
+            return this.colors[0];
+        } // internal static Color GetRSquaredColor (double value)
+    } // private class RSquaredColorTable
 } // internal sealed partial class ParametersTableRow : DataGridViewRow
