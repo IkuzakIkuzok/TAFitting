@@ -37,7 +37,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private readonly Chart chart;
     private readonly Axis axisX, axisY;
-    private readonly List<Series> wavelengthHighlights = [];
+    private readonly List<CacheSeries> wavelengthHighlights = [];
     private readonly SeriesPool seriesPool = new();
     private readonly Lock chartLock = new();
 
@@ -528,7 +528,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
         var count = 0;
-        Series MakeSeries()
+        CacheSeries MakeSeries()
         {
             var series = this.seriesPool.Rent();
             series.ChartType = SeriesChartType.Line;
@@ -974,7 +974,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         color = Color.FromArgb(192, color);
 
-        Series MakeSeries()
+        CacheSeries MakeSeries()
         {
             var series = this.seriesPool.Rent();
             series.ChartType = SeriesChartType.Line;

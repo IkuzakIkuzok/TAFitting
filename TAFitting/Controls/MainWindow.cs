@@ -53,7 +53,7 @@ internal sealed partial class MainWindow : Form
     private Guid selectedModel = Guid.Empty;
 
     private Decays? decays;
-    private readonly Series s_observed, s_filtered, s_fit, s_compare;
+    private readonly CacheSeries s_observed, s_filtered, s_fit, s_compare;
     private bool stopDrawing = false;
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
