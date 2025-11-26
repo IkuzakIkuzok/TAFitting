@@ -57,20 +57,16 @@ internal sealed partial class MaskingRanges : IEnumerable<MaskingRange>
     IEnumerator IEnumerable.GetEnumerator()
         => ((IEnumerable)this._maskingRanges).GetEnumerator();
 
+    private static bool CheckIncluded(MaskingRange range, double point)
+        => range.Includes(point);
+
     /// <summary>
     /// Determines whether the specified point is contained within any of the masking ranges in the collection.
     /// </summary>
     /// <param name="point">The value to test for inclusion within the masking ranges.</param>
     /// <returns><see langword="true"/> if the point is included in at least one masking range; otherwise, <see langword="false"/>.</returns>
     internal bool Include(double point)
-    {
-        // Do NOT use LINQ (Any) to avoid Func<MaskingRange, bool> allocation.
-        foreach (var range in this)
-            if (range.Includes(point))
-                return true;
-
-        return false;
-    } // internal bool Include (double)
+        => this._maskingRanges.Any(CheckIncluded, point);
 
     /// <summary>
     /// Gets the masked points.

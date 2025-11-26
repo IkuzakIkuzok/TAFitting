@@ -63,6 +63,27 @@ internal static class IterUtils
     } // internal static IEnumerable<TResult> Select<TSource, TResult> (this IEnumerable<TSource>, Func<TSource, object?>)
 
     /// <summary>
+    /// Determines whether any element in the sequence satisfies a condition defined by a predicate that takes an additional argument.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+    /// <typeparam name="TArgument">The type of the additional argument passed to the predicate.</typeparam>
+    /// <param name="source">The sequence of elements to test for a matching condition. Cannot be <see langword="null"/>.</param>
+    /// <param name="predicate">A function that defines the condition to check for each element, accepting the element and the additional argument. Cannot be <see langword="null"/>.</param>
+    /// <param name="option">An additional argument passed to the predicate for each element in the sequence.</param>
+    /// <returns><see langword="true"/> if any element in the sequence satisfies the condition specified by the predicate; otherwise, <see langword="false"/>.</returns>
+    internal static bool Any<TSource, TArgument>(this IEnumerable<TSource> source, Func<TSource, TArgument, bool> predicate, TArgument option)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        foreach (var element in source)
+            if (predicate(element, option))
+                return true;
+
+        return false;
+    } // internal static bool Any<TSource, TArgument> (this IEnumerable<TSource>, Func<TSource, TArgument, bool>, TArgument)
+
+    /// <summary>
     /// Enumerates the elements of the source.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
