@@ -85,7 +85,21 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
     /// <param name="points">The points to be masked.</param>
     /// <returns>The next points of the masked points.</returns>
     internal IEnumerable<double> GetNextOfMaskedPoints(IEnumerable<double> points)
-        => this.Select(r => r.End)
-               .Select(p => points.SkipWhile(w => w < p).FirstOrDefault(double.NaN))
-               .Where(p => !double.IsNaN(p));
+    {
+        static double GetEnd(MaskingRange range) => range.End;
+
+        using var iter = points.GetEnumerator();
+        foreach (var end in this.Select(GetEnd).Order())
+        {
+            while (iter.MoveNext())
+            {
+                var point = iter.Current;
+                if (point > end)
+                {
+                    yield return point;
+                    break;
+                }
+            }
+        }
+    } // internal IEnumerable<double> GetNextOfMaskedPoints (IEnumerable<double>)
 } // internal sealed class MaskingRanges : IEnumerable<MaskingRange>
