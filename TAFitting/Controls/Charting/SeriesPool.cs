@@ -97,6 +97,9 @@ internal sealed class SeriesPool
     /// <param name="series">The <see cref="CacheSeries"/> instance to be returned to the pool.</param>
     internal void Return(CacheSeries series)
     {
+        // If the series is marked to be excluded from pooling, do not return it.
+        if (series.ExcludeFromPooling) return;
+
         series.Points.Clear();
         series.LegendText = string.Empty;
         

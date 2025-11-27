@@ -20,6 +20,15 @@ internal class CacheSeries : Series
     protected List<DataPoint> DataPointsCache { get; } = [];
 
     /// <summary>
+    /// Gets or sets a value indicating whether the series is excluded from pooling.
+    /// </summary>
+    /// <remarks>
+    /// When set to <see langword="true"/>, the series will not be returned to the series pool after use.
+    /// Ensure that this property is set appropriately before returning the series to the pool to avoid unintended behavior.
+    /// </remarks>
+    internal bool ExcludeFromPooling { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CacheSeries"/> class.
     /// </summary>
     internal CacheSeries() : base() { }

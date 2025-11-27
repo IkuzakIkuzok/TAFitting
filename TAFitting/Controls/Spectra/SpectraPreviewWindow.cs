@@ -48,7 +48,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private MaskingRanges? maskingRanges;
 
     private SpectraSyncObject? spectraSyncObject = null;
-    private readonly Dictionary<SyncSpectraSource, List<Series>> syncSpectraSeries = [];
+    private readonly Dictionary<SyncSpectraSource, List<CacheSeries>> syncSpectraSeries = [];
 
     /// <summary>
     /// Gets the serial number of the window.
@@ -1004,7 +1004,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         Invoke(() => DrawSpectra(sync: false));  // Prevent recursive syncing
     } // private void ReceiveSpectra (string, int, IList<double>, IDictionary<double, IList<double>>)
 
-    private void AddSyncSeries(double time, IList<double> wavelengths, IList<double> spectrum, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked, List<Series> seriesList)
+    private void AddSyncSeries(double time, IList<double> wavelengths, IList<double> spectrum, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked, List<CacheSeries> seriesList)
     {
         color = Color.FromArgb(192, color);
 
@@ -1018,6 +1018,11 @@ internal sealed partial class SpectraPreviewWindow : Form
                 legendText : $"{time:F2} {this.TimeUnit}"
             );
             series.IsVisibleInLegend = false;
+
+            // Prevent from being returned to the pool automatically
+            // Series for synced spectra are managed manually with syncSpectraSeries dictionary and RemoveSyncSeries method.
+            series.ExcludeFromPooling = true;
+
             return series;
         }
 
@@ -1037,7 +1042,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             series.AddPoint(wavelength, signal);
         }
         seriesList.Add(series);
-    } // private void AddSyncSeries (double, IList<double>, IList<double>, Color, IEnumerable<double>, IEnumerable<double>, List<Series>)
+    } // private void AddSyncSeries (double, IList<double>, IList<double>, Color, IEnumerable<double>, IEnumerable<double>, List<CacheSeries>)
 
     private void ToggleSync(object? sender, EventArgs e)
     {
@@ -1085,7 +1090,11 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         if (!this.syncSpectraSeries.TryGetValue(source, out var seriesList)) return;
         foreach (var series in seriesList)
+        {
             this.chart.Series.Remove(series);
+            series.ExcludeFromPooling = false;  // Allow to be returned to the pool
+            this.seriesPool.Return(series);
+        }
     } // private void RemoveSyncSeries (SyncSpectraSource)
 
     private static void ShowMyId(object? sender, EventArgs e)
