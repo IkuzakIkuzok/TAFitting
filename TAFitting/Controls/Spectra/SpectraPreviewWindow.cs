@@ -979,11 +979,10 @@ internal sealed partial class SpectraPreviewWindow : Form
     } // private async void UpdateApps (object?, EventArgs)
 
     private void ReceiveSpectra(object? sender, SpectraReceivedEventArgs e)
-        => ReceiveSpectra(e.HostName, e.SpectraId, e.Wavelengths, new(e.MaskRanges), e.Spectra);
+        => ReceiveSpectra(new(e.HostName, e.SpectraId), e.Wavelengths, new(e.MaskRanges), e.Spectra);
 
-    private void ReceiveSpectra(string hostName, int spectraId, IList<double> wavelengths, MaskingRanges maskingRanges, IDictionary<double, IList<double>> spectra)
+    private void ReceiveSpectra(SyncSpectraSource source, IList<double> wavelengths, MaskingRanges maskingRanges, IDictionary<double, IList<double>> spectra)
     {
-        var source = new SyncSpectraSource(hostName, spectraId);
         if (!this.syncSpectraSeries.TryGetValue(source, out var seriesList)) return; // Not syncing this spectra
 
         RemoveSyncSeries(source);
@@ -1002,7 +1001,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
 
         Invoke(() => DrawSpectra(sync: false));  // Prevent recursive syncing
-    } // private void ReceiveSpectra (string, int, IList<double>, IDictionary<double, IList<double>>)
+    } // private void ReceiveSpectra (SyncSpectraSource, IList<double>, IDictionary<double, IList<double>>)
 
     private void AddSyncSeries(double time, IList<double> wavelengths, IList<double> spectrum, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked, List<CacheSeries> seriesList)
     {
@@ -1074,7 +1073,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
 
         this.syncSpectraSeries[source] = [];
-        ReceiveSpectra(hostName, spectraId, spectra.Wavelengths, new(spectra.MaskRanges), spectra.Spectra);
+        ReceiveSpectra(source, spectra.Wavelengths, new(spectra.MaskRanges), spectra.Spectra);
     } // private async void StartSync (string, int)
 
     private void StopSync(string hostName, int spectraId)
