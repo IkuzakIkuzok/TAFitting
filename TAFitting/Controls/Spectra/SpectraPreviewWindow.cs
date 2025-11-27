@@ -43,7 +43,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
-    private Dictionary<double, double[]> parameters = [];
+    private IReadOnlyDictionary<double, double[]>? parameters;
     private double[]? maskedPoints, nextOfMaskedPoints;
     private MaskingRanges? maskingRanges;
 
@@ -421,6 +421,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         if (this.ModelId == Guid.Empty) return;
         if (this.timeTable.Updating) return;
+        if (this.parameters is null) return;
         var model = this.Model;
 
         using var _ = this.chartLock.EnterScope();
@@ -563,7 +564,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         var min = double.MaxValue;
         var max = double.MinValue;
-        foreach (var wavelength in this.parameters.Keys.Order())
+        foreach (var wavelength in this.parameters!.Keys.Order())
         {
             var func = funcs[wavelength];
             var signal = func(time);
@@ -603,6 +604,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         if (this.ModelId == Guid.Empty) return;
         if (this.timeTable.Updating) return;
+        if (this.parameters is null) return;
         var model = this.Model;
 
         if (!this.parameters.TryGetValue(this.SelectedWavelength, out var parameters)) return;
@@ -708,6 +710,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private void SaveToFile()
     {
         if (this.ModelId == Guid.Empty) return;
+        if (this.parameters is null) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
@@ -764,6 +767,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private void ExportToOrigin()
     {
         if (this.ModelId == Guid.Empty) return;
+        if (this.parameters is null) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
@@ -871,14 +875,14 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         // This condition depends on the fact that the number of wavelengths may be changed but thrir values are never changed.
         // If they can be changed in the future, a more robust check is required.
-        if (this.parameters.Count != parameters.Count)
+        if ((this.parameters?.Count ?? -1) != parameters.Count)
         {
             // clear cached masking points
             this.maskedPoints = null;
             this.nextOfMaskedPoints = null;
         }
 
-        this.parameters = parameters.ToDictionary();
+        this.parameters = parameters;
         
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
@@ -892,6 +896,8 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// <returns><see langword="true"/> if the parameters match; otherwise, <see langword="false"/>.</returns>
     private bool CheckParametersMatching(IReadOnlyDictionary<double, double[]> newParameters)
     {
+        if (this.parameters is null) return newParameters.Count == 0;
+
         if (this.parameters.Count != newParameters.Count) return false;
 
         foreach ((var wavelength, var parameters) in newParameters)
@@ -1173,6 +1179,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private void PrintSummary()
     {
         if (this.ModelId == Guid.Empty) return;
+        if (this.parameters is null) return;
         if (this.parameters.Count == 0) return;
         if (this.timeTable.Rows.Count == 0) return;
 
