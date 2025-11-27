@@ -1047,25 +1047,30 @@ internal sealed partial class SpectraPreviewWindow : Form
     {
         if (sender is not ToolStripMenuItem item) return;
         if (item.Tag is not SyncSpectraSource source) return;
+
         if (this.syncSpectraSeries.ContainsKey(source))
         {
-            StopSync(source.HostName, source.SpectraId);
+            StopSync(source);
             item.Checked = false;
         }
         else
         {
-            StartSync(source.HostName, source.SpectraId);
+            StartSync(source);
             item.Checked = true;
         }
     } // private void ToggleSync (object?, EventArgs)
 
-    private async void StartSync(string hostName, int spectraId)
+    /// <summary>
+    /// Initiates synchronization of spectra data from the specified source if it is not already in progress.
+    /// </summary>
+    /// <remarks>If synchronization is already active for the specified source, this method does nothing.
+    /// Displays a fading message if synchronization fails.</remarks>
+    /// <param name="source">The source from which spectra data will be synchronized.</param>
+    private async void StartSync(SyncSpectraSource source)
     {
-        var source = new SyncSpectraSource(hostName, spectraId);
         if (this.syncSpectraSeries.ContainsKey(source)) return;  // Already syncing
-        
 
-        var spectra = await SyncManager.RequestSyncSpectra(hostName, spectraId);
+        var spectra = await SyncManager.RequestSyncSpectra(source.HostName, source.SpectraId);
         if (spectra is null)
         {
             FadingMessageBox.Show("Failed to sync spectra.", 0.8, 1000, 75, 0.1);
@@ -1074,17 +1079,28 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         this.syncSpectraSeries[source] = [];
         ReceiveSpectra(source, spectra.Wavelengths, new(spectra.MaskRanges), spectra.Spectra);
-    } // private async void StartSync (string, int)
+    } // private async void StartSync (SyncSpectraSource)
 
-    private void StopSync(string hostName, int spectraId)
+    /// <summary>
+    /// Stops synchronization for the specified spectra source, removing it from the active sync list.
+    /// </summary>
+    /// <param name="source">The spectra source to stop synchronizing.</param>
+    private void StopSync(SyncSpectraSource source)
     {
-        var source = new SyncSpectraSource(hostName, spectraId);
-        if (!this.syncSpectraSeries.ContainsKey(source)) return;
+        if (!this.syncSpectraSeries.ContainsKey(source)) return;  // Not syncing
+
         RemoveSyncSeries(source);
         this.syncSpectraSeries.Remove(source);
-        _ = SyncManager.StopSyncSpectra(hostName, spectraId);
-    } // private void StopSync (string, int)
+        _ = SyncManager.StopSyncSpectra(source.HostName, source.SpectraId);
+    } // private void StopSync ()
 
+    /// <summary>
+    /// Removes synchronized spectra series associated with the specified source.
+    /// </summary>
+    /// <param name="source">The source of the synchronized spectra to remove.</param>
+    /// <remarks>
+    /// This method removes all series associated with the given source from the chart and returns them to the series pool for reuse.
+    /// </remarks>
     private void RemoveSyncSeries(SyncSpectraSource source)
     {
         if (!this.syncSpectraSeries.TryGetValue(source, out var seriesList)) return;
