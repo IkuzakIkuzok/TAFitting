@@ -32,6 +32,64 @@ internal sealed class SeriesPool
     } // internal CacheSeries Rent ()
 
     /// <summary>
+    /// Rents and configures a cached series instance with the specified chart type, color, and optional styling parameters.
+    /// </summary>
+    /// <param name="chartType">The chart type to apply to the rented series. Determines how data points are visually represented.</param>
+    /// <param name="color">The color used to render the series in the chart.</param>
+    /// <param name="dashStyle">The dash style for the series border. Defaults to <see cref="ChartDashStyle.NotSet"/> if not specified.</param>
+    /// <param name="markerStyle">The marker style for data points in the series. Defaults to <see cref="MarkerStyle.None"/> if not specified.</param>
+    /// <param name="borderWidth">The width, in pixels, of the series border. Must be non-negative. Defaults to 0.</param>
+    /// <param name="markerSize">The size, in pixels, of the markers for data points. Must be non-negative. Defaults to 0.</param>
+    /// <param name="legendText">The text to display for the series in the chart legend. Defaults to an empty string if not specified.</param>
+    /// <returns>A <see cref="CacheSeries"/> instance configured with the specified chart type, color, and styling options.</returns>
+    internal CacheSeries Rent(
+        SeriesChartType chartType, Color color,
+        ChartDashStyle dashStyle = ChartDashStyle.NotSet,
+        MarkerStyle markerStyle = MarkerStyle.None,
+        int borderWidth = 0, int markerSize = 0,
+        string legendText = ""
+    )
+    {
+        var series = Rent();
+
+        series.ChartType = chartType;
+        series.Color = color;
+        series.BorderDashStyle = dashStyle;
+        series.MarkerStyle = markerStyle;
+        series.BorderWidth = borderWidth;
+        series.MarkerSize = markerSize;
+        series.LegendText = legendText;
+
+        return series;
+    } // internal CacheSeries Rent (SeriesChartType chartType, Color color, [ChartDashStyle], [MarkerStyle], [int], [int], [string])
+
+    /// <summary>
+    /// Rents a line chart series configured with the specified color, border width, dash style, marker style, marker size, and legend text.
+    /// </summary>
+    /// <param name="color">The color used to render the line series.</param>
+    /// <param name="borderWidth">The width, in pixels, of the line's border. Must be greater than zero.</param>
+    /// <param name="dashStyle">The dash style applied to the line. Defaults to <see cref="ChartDashStyle.Solid"/>.</param>
+    /// <param name="markerStyle">The style of marker displayed at each data point. Defaults to <see cref="MarkerStyle.None"/>.</param>
+    /// <param name="markerSize">The size, in pixels, of the marker. Must be zero or greater. If zero, no marker is shown.</param>
+    /// <param name="legendText">The text to display for the series in the chart legend. If empty, no legend entry is created.</param>
+    /// <returns>A <see cref="CacheSeries"/> instance representing the configured line chart series.</returns>
+    internal CacheSeries RentLine(
+        Color color, int borderWidth,
+        ChartDashStyle dashStyle = ChartDashStyle.Solid,
+        MarkerStyle markerStyle = MarkerStyle.None,
+        int markerSize = 0,
+        string legendText = ""
+    )
+        => Rent(
+            SeriesChartType.Line, color,
+            dashStyle  : dashStyle,
+            markerStyle: markerStyle,
+            borderWidth: borderWidth,
+            markerSize : markerSize,
+            legendText : legendText
+        );
+
+    /// <summary>
     /// Returns a <see cref="CacheSeries"/> instance to the pool for reuse after resetting its state.
     /// </summary>
     /// <remarks>This method clears the points and legend text of the provided Series before returning it to the pool.

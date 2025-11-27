@@ -508,12 +508,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             if (this.steadyStateSpectrum is not null)
             {
                 var scale = sigMax == 0.0 ? Math.Abs(sigMin) : sigMax;
-                var s_sss = this.seriesPool.Rent();
-                s_sss.Color = Color.Black;
-                s_sss.ChartType = SeriesChartType.Line;
-                s_sss.BorderDashStyle = ChartDashStyle.Dot;
-                s_sss.BorderWidth = 2;
-                s_sss.LegendText = "Steady-state";
+                var s_sss = this.seriesPool.RentLine(Color.Black, 2, dashStyle: ChartDashStyle.Dot, legendText: "Steady-state");
                 try
                 {
                     foreach ((var wl, var a) in this.steadyStateSpectrum.Normalize(wlMin, wlMax, scale))
@@ -552,14 +547,13 @@ internal sealed partial class SpectraPreviewWindow : Form
         var count = 0;
         CacheSeries MakeSeries()
         {
-            var series = this.seriesPool.Rent();
-            series.ChartType = SeriesChartType.Line;
-            series.MarkerStyle = MarkerStyle.Circle;
-            series.MarkerSize = Program.SpectraMarkerSize;
-            series.Color = color;
-            series.BorderWidth = Program.SpectraLineWidth;
-            series.LegendText = $"{time:F2} {this.TimeUnit}";
-            series.IsVisibleInLegend = count++ == 0;
+            var series = this.seriesPool.RentLine(
+                color, Program.SpectraLineWidth,
+                markerStyle: MarkerStyle.Circle,
+                markerSize : Program.SpectraMarkerSize,
+                legendText : count++ == 0 ? $"{time:F2} {this.TimeUnit}" : string.Empty
+            );
+            series.IsVisibleInLegend = count == 1;
             return series;
         }
 
@@ -595,11 +589,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void DrawHorizontalLine(double wlMin, double wlMax)
     {
-        var horizontal = this.seriesPool.Rent();
-        horizontal.ChartType = SeriesChartType.Line;
-        horizontal.Color = Color.Black;
-        horizontal.BorderWidth = 2;
-        horizontal.MarkerStyle = MarkerStyle.None;
+        var horizontal = this.seriesPool.RentLine(Color.Black, 2);
         horizontal.IsVisibleInLegend = false;
 
         horizontal.AddPositivePoints([wlMin, wlMax], [0, 0]);
@@ -639,12 +629,11 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private void HighlightWavelength(double wavelength, double signal, Color color)
     {
-        var series = this.seriesPool.Rent();
-        series.ChartType = SeriesChartType.Line;
-        series.MarkerStyle = MarkerStyle.Cross;
-        series.MarkerSize = Program.SpectraMarkerSize + 10;
-        series.Color = color;
-        series.BorderWidth = 2;
+        var series = this.seriesPool.RentLine(
+            color, Program.SpectraLineWidth + 2,
+            markerStyle: MarkerStyle.Cross,
+            markerSize : Program.SpectraMarkerSize + 10
+        );
         series.IsVisibleInLegend = false;
         series.AddPoint(wavelength, signal);
         this.chart.Series.Add(series);
@@ -1021,14 +1010,13 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         CacheSeries MakeSeries()
         {
-            var series = this.seriesPool.Rent();
-            series.ChartType = SeriesChartType.Line;
-            series.MarkerStyle = MarkerStyle.Circle;
-            series.BorderDashStyle = ChartDashStyle.Dash;
-            series.MarkerSize = Program.SpectraMarkerSize;
-            series.Color = color;
-            series.BorderWidth = Program.SpectraLineWidth;
-            series.LegendText = $"{time:F2} {this.TimeUnit}";
+            var series = this.seriesPool.RentLine(
+                color, Program.SpectraLineWidth,
+                markerStyle: MarkerStyle.Circle,
+                dashStyle  : ChartDashStyle.Dash,
+                markerSize : Program.SpectraMarkerSize,
+                legendText : $"{time:F2} {this.TimeUnit}"
+            );
             series.IsVisibleInLegend = false;
             return series;
         }
