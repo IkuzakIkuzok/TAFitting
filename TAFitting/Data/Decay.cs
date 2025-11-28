@@ -673,16 +673,17 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Finds the time origin.
     /// </summary>
-    /// <returns>The time origin and its index.</returns>
+    /// <returns>The index, time, and signal at the time origin.</returns>
     /// <remarks>
-    /// The time origin is the time at which the signal is minimum.</remarks>
-    internal (int, double) FilndT0()
+    /// The time origin is the time at which the signal is minimum.
+    /// </remarks>
+    internal (int, double, double) FilndT0()
     {
         var span = this.signals.AsSpan();
         var min = span.Min();
         var index = span.IndexOf(min);
-        return (index, this.times[index]);
-    } // internal (int, double) FilndT0 ()
+        return (index, this.times[index], min);
+    } // internal (int, double, double) FilndT0 ()
 
     /// <summary>
     /// Removes the NaN.

@@ -187,10 +187,10 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             var decay_ab = Decay.FromFile(file_ab, timeUnit, signalUnit, loader.GetAMinusBFileData(wavelength));
             dict.TryAdd(wavelength, decay_ab);
 
-            (var i_t0, var b_t0) = decay_b.FilndT0();
+            var (i_t0, b_t0, s_t0) = decay_b.FilndT0();
             var baseline = decay_b.GetSignalsAsSpan(i_t0 >> 1);  // Time enough earlier than the pulse
             var noise = baseline.StandardDeviation();  // Noise level is estimated from the baseline
-            var signal = Math.Abs(decay_b[b_t0]);
+            var signal = Math.Abs(s_t0);
             var snr = signal / noise;
             if (snr >= min_snr)
                 l_t0[Interlocked.Increment(ref count)] = b_t0;
