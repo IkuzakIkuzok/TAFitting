@@ -197,15 +197,14 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
             else
                 Debug.WriteLine($"Signal-to-noise ratio is too low at {wavelength} nm: {snr} < {min_snr}");
         });
-        foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
-            decays.decays.Add(wavelength, decay);
 
         if ((++count) == 0)  // count starts from -1, so increment first
             throw new IOException($"No data found in {path}");
 
-        //var t0 = l_t0.SmirnovGrubbs().Average();
-        var s_t0 = l_t0.AsSpan(0, count);
-        var t0 = s_t0.SmirnovGrubbs().Average();
+        foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
+            decays.decays.Add(wavelength, decay);
+
+        var t0 = l_t0.AsSpan(0, count).SmirnovGrubbs().Average();
         decays.Time0 = t0;
 
         return decays;
