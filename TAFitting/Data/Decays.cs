@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using TAFitting.Stats;
 
 namespace TAFitting.Data;
@@ -22,9 +21,6 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
 {
     private double time0 = 0.0;
     private readonly Dictionary<double, Decay> decays = [];
-
-    [GeneratedRegex(@"(\d+).*")]
-    private static partial Regex RegexWavelength { get; }
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
@@ -128,8 +124,32 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool TryGetWavelength(string basename, out double wavelength)
     {
-        var wl = RegexWavelength.Match(basename).Groups[1].Value;
-        return double.TryParse(wl, out wavelength);
+        var len = 0;
+        for (; len < basename.Length; len++)
+        {
+            var c = basename[len];
+            if (c == '.')
+                goto ScanDecimal;
+            if (c is < '0' or > '9')
+                goto ParseDouble;
+        }
+        goto ParseDouble;
+
+    ScanDecimal:
+        for (len += 1; len < basename.Length; len++)
+        {
+            var c = basename[len];
+            if (c is < '0' or > '9')
+                break;
+        }
+
+    ParseDouble:
+        if (len == 0)
+        {
+            wavelength = 0.0;
+            return false;
+        }
+        return double.TryParse(basename.AsSpan(0, len), out wavelength);
     } // internal static bool TryGetWavelength (string, out double)
 
     /// <summary>
