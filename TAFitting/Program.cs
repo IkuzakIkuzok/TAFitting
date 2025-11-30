@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Resources;
+using System.Runtime.CompilerServices;
 using TAFitting.Config;
 using TAFitting.Controls;
 using TAFitting.Controls.Toast;
@@ -50,7 +51,10 @@ internal static partial class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        typeof(Form).GetField("s_defaultIcon", BindingFlags.NonPublic | BindingFlags.Static)?.SetValue(null, Resources.Icon);
+        [UnsafeAccessor(UnsafeAccessorKind.StaticField, Name = "s_defaultIcon")]
+        extern static ref Icon DefaultIcon(Form? _ = null);
+        DefaultIcon() = Resources.Icon;
+
         NegativeSignHandler.SetMinusSign();
 
         if (args.Length > 0)
