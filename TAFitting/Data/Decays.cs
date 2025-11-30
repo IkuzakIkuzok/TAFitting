@@ -20,7 +20,7 @@ namespace TAFitting.Data;
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
     private double time0 = 0.0;
-    private readonly Dictionary<double, Decay> decays = [];
+    private readonly OrderedDictionary<double, Decay> decays = [];
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
