@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace TAFitting.Data;
 
@@ -33,26 +34,31 @@ internal sealed class ParametersList : IDictionary<double, IReadOnlyList<double>
         return hash;
     } // private long ComputeDeepHash ()
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static long ComputeListHash(IReadOnlyList<double> list)
     {
-        if (list == null || list.Count == 0) return 0;
+        if (list is null || list.Count == 0) return 0;
 
-        if (list.TryGetSpan(out var span))
-        {
-            var byteSpan = MemoryMarshal.AsBytes(span);
-            var hash = new HashCode();
-            hash.AddBytes(byteSpan);
-            return hash.ToHashCode();
-        }
+        // `list` is expected to be List<double> or double[], which provide Span<T>.
+        // Other types fall back to cold path.
+        if (!list.TryGetSpan(out var span))
+            return ComputeListHashLoop(list);
 
-        else
-        {
-            var hash = new HashCode();
-            foreach (var item in list)
-                hash.Add(item);
-            return hash.ToHashCode();
-        }
+        var byteSpan = MemoryMarshal.AsBytes(span);
+        var hash = new HashCode();
+        hash.AddBytes(byteSpan);
+        return hash.ToHashCode();
     } // private static long ComputeListHash (IReadOnlyList<double> list)
+
+    // Do not inline cold path to keep hot path small, improving overall performance.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static long ComputeListHashLoop(IReadOnlyList<double> list)
+    {
+        var hash = new HashCode();
+        foreach (var item in list)
+            hash.Add(item);
+        return hash.ToHashCode();
+    } // private static long ComputeListHashLoop (IReadOnlyList<double> list)
 
     #region IDictionary<double, IReadOnlyList<double>>
 
