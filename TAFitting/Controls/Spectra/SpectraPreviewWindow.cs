@@ -43,7 +43,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
     private SteadyStateSpectrum? steadyStateSpectrum;
 
-    private IReadOnlyDictionary<double, double[]>? parameters;
+    private IReadOnlyDictionary<double, IReadOnlyList<double>>? parameters;
     private double[]? maskedPoints, nextOfMaskedPoints;
     private MaskingRanges? maskingRanges;
 
@@ -368,10 +368,10 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class with specified parameters.
     /// </summary>
     /// <param name="parameters">The parameters to set.</param>
-    internal SpectraPreviewWindow(IReadOnlyDictionary<double, double[]> parameters) : this()
+    internal SpectraPreviewWindow(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters) : this()
     {
         SetParameters(parameters);
-    } // ctor (IReadOnlyDictionary<double, double[]>)
+    } // ctor (IReadOnlyDictionary<double, IReadOnlyList<double>>)
 
     override protected void OnFormClosing(FormClosingEventArgs e)
     {
@@ -869,7 +869,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// Sets the parameters for the spectra preview.
     /// </summary>
     /// <param name="parameters"></param>
-    internal void SetParameters(IReadOnlyDictionary<double, double[]> parameters)
+    internal void SetParameters(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters)
     {
         if (CheckParametersMatching(parameters)) return;
 
@@ -887,14 +887,14 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
         DrawSpectra();
-    } // internal void SetParameters (IDictionary<double, double[]>)
+    } // internal void SetParameters (IDictionary<double, IReadOnlyList<double>>)
 
     /// <summary>
     /// Checks if the new parameters match the existing parameters.
     /// </summary>
     /// <param name="newParameters">The new parameters to check.</param>
     /// <returns><see langword="true"/> if the parameters match; otherwise, <see langword="false"/>.</returns>
-    private bool CheckParametersMatching(IReadOnlyDictionary<double, double[]> newParameters)
+    private bool CheckParametersMatching(IReadOnlyDictionary<double, IReadOnlyList<double>> newParameters)
     {
         if (this.parameters is null) return newParameters.Count == 0;
 
@@ -904,15 +904,19 @@ internal sealed partial class SpectraPreviewWindow : Form
         {
             if (!this.parameters.TryGetValue(wavelength, out var existingParameters)) return false;
 
-            //Length check can be skipped since the `SequenceEqual` method will handle it
-            // if (parameters.Length != existingParameters.Length) return false;
-            var e = MemoryMarshal.AsBytes(existingParameters.AsSpan());
-            var n = MemoryMarshal.AsBytes(parameters.AsSpan());
-            if (!e.SequenceEqual(n)) return false;
+            if (existingParameters.TryGetSpan(out var e) && parameters.TryGetSpan(out var n))
+            {
+                if (!e.SequenceEqual(n)) return false;
+            }
+            else
+            {
+                if (parameters.Count != existingParameters.Count) return false;
+                if (!existingParameters.SequenceEqual(parameters)) return false;
+            }
         }
 
         return true;
-    } // private bool CheckParametersMatching (IReadOnlyDictionary<double, double[]>)
+    } // private bool CheckParametersMatching (IReadOnlyDictionary<double, IReadOnlyList<double>>)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {

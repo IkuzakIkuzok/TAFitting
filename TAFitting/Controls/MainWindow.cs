@@ -70,14 +70,6 @@ internal sealed partial class MainWindow : Form
         => this.sampleName;
 
     /// <summary>
-    /// Gets the parameters list corresponding to the wavelengths.
-    /// </summary>
-    /// <value>A dictionary that contains the wavelengths as the keys and the parameters as the values.</value>
-    private IReadOnlyDictionary<double, double[]> ParametersList
-        => this.parametersTable.ParameterRows
-               .ToDictionary(row => row.Wavelength, row => row.Parameters.ToArray());
-
-    /// <summary>
     /// Gets the selected wavelength.
     /// </summary>
     private double SelectedWavelength => this.row?.Wavelength ?? double.NaN;
@@ -2054,7 +2046,7 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     private void ShowSpectraPreview()
     {
-        var preview = new SpectraPreviewWindow(this.ParametersList)
+        var preview = new SpectraPreviewWindow(this.parametersTable.ParametersList)
         {
             ModelId = this.selectedModel,
             SelectedWavelength = this.SelectedWavelength,
@@ -2093,7 +2085,7 @@ internal sealed partial class MainWindow : Form
              */
             if (preview.ModelId != this.selectedModel)
                 preview.ModelId = Guid.Empty;
-            preview.SetParameters(this.ParametersList);
+            preview.SetParameters(this.parametersTable.ParametersList);
             preview.ModelId = this.selectedModel;
 
             SetTimeTable(preview);

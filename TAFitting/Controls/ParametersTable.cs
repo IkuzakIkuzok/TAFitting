@@ -39,6 +39,14 @@ internal sealed partial class ParametersTable : DataGridView
         => this.Rows.OfType<ParametersTableRow>();
 
     /// <summary>
+    /// Gets the parameters list corresponding to the wavelengths.
+    /// </summary>
+    /// <value>A dictionary that contains the wavelengths as the keys and the parameters as the values.</value>
+    internal IReadOnlyDictionary<double, IReadOnlyList<double>> ParametersList
+        => this.ParameterRows
+               .ToDictionary(row => row.Wavelength, row => row.Parameters);
+
+    /// <summary>
     /// Gets the not edited rows.
     /// </summary>
     internal IEnumerable<ParametersTableRow> NotEditedRows

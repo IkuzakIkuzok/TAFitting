@@ -17,7 +17,7 @@ internal sealed class SpectraSummaryDocument : Document
 
     private readonly Bitmap plot;
     private readonly IReadOnlyList<string> parameters;
-    private readonly IReadOnlyDictionary<double, double[]> values;
+    private readonly IReadOnlyDictionary<double, IReadOnlyList<double>> values;
 
     /// <summary>
     /// Gets or sets the baseline skip.
@@ -30,12 +30,12 @@ internal sealed class SpectraSummaryDocument : Document
     /// <param name="plot">The plot.</param>
     /// <param name="parameters">The parameters.</param>
     /// <param name="values">The values.</param>
-    internal SpectraSummaryDocument(Bitmap plot, IReadOnlyList<string> parameters, IReadOnlyDictionary<double, double[]> values)
+    internal SpectraSummaryDocument(Bitmap plot, IReadOnlyList<string> parameters, IReadOnlyDictionary<double, IReadOnlyList<double>> values)
     {
         this.plot = plot;
         this.parameters = parameters;
         this.values = values;
-    } // ctor (Bitmap, IReadOnlyList<string>, IReadOnlyDictionary<double, double[]>)
+    } // ctor (Bitmap, IReadOnlyList<string>, IReadOnlyDictionary<double, IReadOnlyList<double>>)
 
     override protected void OnPrintPage(PrintPageEventArgs e)
     {
