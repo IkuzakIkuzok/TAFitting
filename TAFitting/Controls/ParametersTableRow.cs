@@ -12,6 +12,7 @@ namespace TAFitting.Controls;
 internal sealed partial class ParametersTableRow : DataGridViewRow
 {
     private bool inverted = false;
+    private readonly List<double> parameters = [];
     private int[] magnitudeColumns = [];
 
     private static RSquaredColorTable ColorTable => field ??= new(Program.Config.AppearanceConfig.RSquaredThresholds);
@@ -65,10 +66,11 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         get
         {
             var count = this.ParametersCount;
-            var parameters = new List<double>(count);
+            this.parameters.Clear();
+            this.parameters.EnsureCapacity(count);
             for (var i = 0; i < count; i++)
-                parameters.Add(this[i]);
-            return parameters;
+                this.parameters.Add(this[i]);
+            return this.parameters;
         }
         set
         {

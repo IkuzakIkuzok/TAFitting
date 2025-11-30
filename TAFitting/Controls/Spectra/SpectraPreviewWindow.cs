@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.Toast;
+using TAFitting.Data;
 using TAFitting.Data.SteadyState;
 using TAFitting.Excel;
 using TAFitting.Model;
@@ -44,6 +45,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private SteadyStateSpectrum? steadyStateSpectrum;
 
     private IReadOnlyDictionary<double, IReadOnlyList<double>>? parameters;
+    private long parametersStateToken = 0;
     private double[]? maskedPoints, nextOfMaskedPoints;
     private MaskingRanges? maskingRanges;
 
@@ -368,10 +370,10 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class with specified parameters.
     /// </summary>
     /// <param name="parameters">The parameters to set.</param>
-    internal SpectraPreviewWindow(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters) : this()
+    internal SpectraPreviewWindow(ParametersList parameters) : this()
     {
-        SetParameters(parameters);
-    } // ctor (IReadOnlyDictionary<double, IReadOnlyList<double>>)
+        SetParameters(parameters, parameters.CurrentStateToken);
+    } // ctor (ParametersList)
 
     override protected void OnFormClosing(FormClosingEventArgs e)
     {
@@ -868,10 +870,11 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// <summary>
     /// Sets the parameters for the spectra preview.
     /// </summary>
-    /// <param name="parameters"></param>
-    internal void SetParameters(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters)
+    /// <param name="parameters">The parameters to set.</param>
+    /// <param name="token">The state token of the parameters.</param>
+    internal void SetParameters(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters, long token)
     {
-        if (CheckParametersMatching(parameters)) return;
+        if (this.parametersStateToken == token) return;
 
         // This condition depends on the fact that the number of wavelengths may be changed but thrir values are never changed.
         // If they can be changed in the future, a more robust check is required.
@@ -883,40 +886,12 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
 
         this.parameters = parameters;
-        
+        this.parametersStateToken = token;
+
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
         DrawSpectra();
-    } // internal void SetParameters (IDictionary<double, IReadOnlyList<double>>)
-
-    /// <summary>
-    /// Checks if the new parameters match the existing parameters.
-    /// </summary>
-    /// <param name="newParameters">The new parameters to check.</param>
-    /// <returns><see langword="true"/> if the parameters match; otherwise, <see langword="false"/>.</returns>
-    private bool CheckParametersMatching(IReadOnlyDictionary<double, IReadOnlyList<double>> newParameters)
-    {
-        if (this.parameters is null) return newParameters.Count == 0;
-
-        if (this.parameters.Count != newParameters.Count) return false;
-
-        foreach ((var wavelength, var parameters) in newParameters)
-        {
-            if (!this.parameters.TryGetValue(wavelength, out var existingParameters)) return false;
-
-            if (existingParameters.TryGetSpan(out var e) && parameters.TryGetSpan(out var n))
-            {
-                if (!e.SequenceEqual(n)) return false;
-            }
-            else
-            {
-                if (parameters.Count != existingParameters.Count) return false;
-                if (!existingParameters.SequenceEqual(parameters)) return false;
-            }
-        }
-
-        return true;
-    } // private bool CheckParametersMatching (IReadOnlyDictionary<double, IReadOnlyList<double>>)
+    } // internal void SetParameters (IReadOnlyDictionary<double, IReadOnlyList<double>>, long)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {

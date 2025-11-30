@@ -2070,6 +2070,10 @@ internal sealed partial class MainWindow : Form
     /// </summary>
     private void UpdatePreviewsParameters()
     {
+        if (this.previewWindows.Count == 0) return;
+
+        var parameters = this.parametersTable.ParametersList;
+        var token = parameters.CurrentStateToken;
         foreach (var preview in this.previewWindows)
         {
             /*
@@ -2085,7 +2089,7 @@ internal sealed partial class MainWindow : Form
              */
             if (preview.ModelId != this.selectedModel)
                 preview.ModelId = Guid.Empty;
-            preview.SetParameters(this.parametersTable.ParametersList);
+            preview.SetParameters(parameters, token);
             preview.ModelId = this.selectedModel;
 
             SetTimeTable(preview);

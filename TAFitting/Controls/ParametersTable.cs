@@ -18,6 +18,7 @@ internal sealed partial class ParametersTable : DataGridView
     private int[] magnitudeColumns = [];
     private double time_min, time_max;
     private bool stopUpdateRSquared = false;
+    private readonly ParametersList parametersList = [];
 
     private readonly UndoBuffer<ParamsEditCommand> undoBuffer = new();
     private double oldValue, newValue;
@@ -42,9 +43,8 @@ internal sealed partial class ParametersTable : DataGridView
     /// Gets the parameters list corresponding to the wavelengths.
     /// </summary>
     /// <value>A dictionary that contains the wavelengths as the keys and the parameters as the values.</value>
-    internal IReadOnlyDictionary<double, IReadOnlyList<double>> ParametersList
-        => this.ParameterRows
-               .ToDictionary(row => row.Wavelength, row => row.Parameters);
+    internal ParametersList ParametersList
+        => this.parametersList;
 
     /// <summary>
     /// Gets the not edited rows.
@@ -274,6 +274,13 @@ internal sealed partial class ParametersTable : DataGridView
         CalculateRSquared(row);
     } // override protected void OnCellValueChanged (DataGridViewCellEventArgs)
 
+    override protected void OnUserDeletedRow(DataGridViewRowEventArgs e)
+    {
+        if (e.Row is ParametersTableRow row)
+            this.parametersList.Remove(row.Wavelength);
+        base.OnUserDeletedRow(e);
+    } // override protected void OnUserDeletedRow (DataGridViewRowEventArgs)
+
     /// <inheritdoc/>
     override protected void OnDragEnter(DragEventArgs drgevent)
     {
@@ -323,6 +330,7 @@ internal sealed partial class ParametersTable : DataGridView
     {
         this.Rows.Clear();
         this.Columns.Clear();
+        this.parametersList.Clear();
 
         if (model is null) return;
 
@@ -501,6 +509,7 @@ internal sealed partial class ParametersTable : DataGridView
         row.RSquared = 0.0;
         row.FreezeEditedState = false;
         this.Rows.Add(row);
+        this.parametersList[wavelength] = row.Parameters;
         return row;
     } // internal ParametersTableRow Add (double, Decay)
 
