@@ -88,7 +88,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     override protected object? GetFormattedValue(object? value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter? valueTypeConverter, TypeConverter? formattedValueTypeConverter, DataGridViewDataErrorContexts context)
     {
         if (value is double d)
-            return d.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
+            return NegativeSignHandler.ToMinusSign(d.ToString("N2", System.Globalization.CultureInfo.InvariantCulture));
         return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
     } // override protected object? GetFormattedValue (object?, int, ref DataGridViewCellStyle, TypeConverter?, TypeConverter?, DataGridViewDataErrorContexts)
 
@@ -96,7 +96,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     override protected bool SetValue(int rowIndex, object? value)
     {
         if (!this.FreezeEditedState) this.Edited = true;
-        if (value is string s && double.TryParse(s, out var d))
+        if (value is string s && NegativeSignHandler.TryParseDouble(s, out var d))
         {
             d = Math.Clamp(d, this.Minimum, this.Maximum);
             return base.SetValue(rowIndex, d);
