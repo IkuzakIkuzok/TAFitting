@@ -88,7 +88,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     override protected object? GetFormattedValue(object? value, int rowIndex, ref DataGridViewCellStyle cellStyle, TypeConverter? valueTypeConverter, TypeConverter? formattedValueTypeConverter, DataGridViewDataErrorContexts context)
     {
         if (value is double d)
-            return NegativeSignHandler.ToMinusSign(d.ToString("N2", System.Globalization.CultureInfo.InvariantCulture));
+            return NegativeSignHandler.FormatWithMinusSign(d, "N2");
         return base.GetFormattedValue(value, rowIndex, ref cellStyle, valueTypeConverter, formattedValueTypeConverter, context);
     } // override protected object? GetFormattedValue (object?, int, ref DataGridViewCellStyle, TypeConverter?, TypeConverter?, DataGridViewDataErrorContexts)
 

@@ -88,7 +88,7 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         set
         {
             var cell = this.Cells[this.Cells.Count - 1];
-            cell.Value = NegativeSignHandler.ToMinusSign(value.ToInvariantString("F3"));
+            cell.Value = NegativeSignHandler.FormatWithMinusSign(value, "F3");
             cell.Style.BackColor = GetRSquaredColor(value);
             this.DataGridView?.InvalidateCell(cell);
         }

@@ -104,6 +104,8 @@ internal sealed partial class NegativeSignHandler : IDisposable
     internal static string? ToMinusSign(string? text)
         => text?.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
 
+    #region parse
+
     /// <summary>
     /// Tries to parse the string as a double, considering both minus sign variants.
     /// </summary>
@@ -204,4 +206,32 @@ internal sealed partial class NegativeSignHandler : IDisposable
         }
         return count;
     } // internal static int ParseDoubles (ReadOnlySpan<char>, char, Span<double>)
+
+    #endregion parse
+
+    #region format
+
+    /// <summary>
+    /// Formats a double-precision floating-point value as a string, replacing a leading minus sign with a Unicode minus character if present.
+    /// </summary>
+    /// <remarks>This method uses the invariant culture for formatting.
+    /// The Unicode minus character (U+2212) is used instead of the standard ASCII hyphen-minus for negative values,
+    /// which may improve typographic appearance in some contexts.</remarks>
+    /// <param name="value">The double-precision floating-point value to format.</param>
+    /// <param name="format">A read-only span of characters that specifies the format to use when converting the value to a string.</param>
+    /// <returns>A string representation of the value, formatted according to the specified format.
+    /// If the value is negative, the leading minus sign is replaced with the Unicode minus character (U+2212).</returns>
+    internal static string FormatWithMinusSign(double value, ReadOnlySpan<char> format)
+    {
+        var buffer = (stackalloc char[256]);
+        var formattedLength = value.TryFormat(buffer, out var charsWritten, format, CultureInfo.InvariantCulture);
+        buffer = buffer[..charsWritten];
+
+        if (buffer[0] == '-')
+            buffer[0] = '\u2212';
+
+        return new(buffer);
+    } // internal static string FormatWithMinusSign (double, ReadOnlySpan<char>)
+
+    #endregion format
 } // internal sealed partial class NegativeSignHandler : IDisposable
