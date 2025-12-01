@@ -25,7 +25,7 @@ internal sealed class ParametersList : IDictionary<double, IReadOnlyList<double>
     /// The implementation may be hash-based or versioning-based, or any other suitable method.
     /// </remarks>
     // NOTE: Change implementation to versioning if changed can be detected easily.
-    internal long CurrentStateToken => ComputeDeepHash();
+    internal ParametersListStateToken CurrentStateToken => new(ComputeDeepHash());
 
     /// <summary>
     /// Calculates a hash code that represents the current state of all parameters in the dictionary, including their keys and associated values.

@@ -45,7 +45,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     private SteadyStateSpectrum? steadyStateSpectrum;
 
     private IReadOnlyDictionary<double, IReadOnlyList<double>>? parameters;
-    private long parametersStateToken = 0;
+    private ParametersListStateToken parametersStateToken;
     private double[]? maskedPoints, nextOfMaskedPoints;
     private MaskingRanges? maskingRanges;
 
@@ -370,10 +370,10 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class with specified parameters.
     /// </summary>
     /// <param name="parameters">The parameters to set.</param>
-    internal SpectraPreviewWindow(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters) : this()
+    internal SpectraPreviewWindow(ParametersList parameters) : this()
     {
-        SetParameters(parameters, this.parametersStateToken + 1);  // Ensure the state token is different from the initial value
-    } // ctor (IReadOnlyDictionary<double, IReadOnlyList<double>>)
+        SetParameters(parameters, parameters.CurrentStateToken);
+    } // ctor (ParametersList)
 
     override protected void OnFormClosing(FormClosingEventArgs e)
     {
@@ -872,7 +872,7 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// </summary>
     /// <param name="parameters">The parameters to set.</param>
     /// <param name="token">The state token of the parameters.</param>
-    internal void SetParameters(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters, long token)
+    internal void SetParameters(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters, ParametersListStateToken token)
     {
         if (this.parametersStateToken == token) return;
 
@@ -891,7 +891,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         if (string.IsNullOrWhiteSpace(this.maskingRangeBox.Text))
             this.maskingRangeBox.Text = string.Join(",", DetermineMaskingPoints([.. this.parameters.Keys]).Select(wl => wl.ToInvariantString("F1")));
         DrawSpectra();
-    } // internal void SetParameters (IReadOnlyDictionary<double, IReadOnlyList<double>>, long)
+    } // internal void SetParameters (IReadOnlyDictionary<double, IReadOnlyList<double>>, ParametersListStateToken)
 
     private static IEnumerable<double> DetermineMaskingPoints(IReadOnlyList<double> wavelengths)
     {
