@@ -118,9 +118,7 @@ internal sealed partial class NegativeSignHandler : IDisposable
             return false;
         }
 
-        if (double.TryParse(ToMinusSign(s), out value)) return true;
-        if (double.TryParse(ToHyphenMinus(s), out value)) return true;
-        return false;
+        return TryParseDouble(s.AsSpan(), out value);
     } // internal static bool TryParseDouble (string?, out double)
 
     internal static bool TryParseDouble(ReadOnlySpan<char> s, out double value)
