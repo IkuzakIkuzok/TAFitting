@@ -13,7 +13,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
     {
         var sources = context.SyntaxProvider.ForAttributeWithMetadataName(
             AttributesGenerator.Namespace + "." + AttributesGenerator.AutoDisposalAttributeName,
-            static (node, token) => true,
+            static (node, token) => node is ClassDeclarationSyntax or StructDeclarationSyntax,
             static (context, token) => context
         ).Collect();
         context.RegisterSourceOutput(sources, Execute);
