@@ -1822,7 +1822,7 @@ internal sealed partial class MainWindow : Form
         if (this.selectedModel == Guid.Empty) return;
         if (this.decays is null) return;
         if (this.row is null) return;
-         await LevenbergMarquardtEstimation([this.row]);
+        await LevenbergMarquardtEstimation([this.row]);
     } // async private void LevenbergMarquardtEstimationSelectedRow (object?, EventArgs)
 
     async private void LevenbergMarquardtEstimationAllRows(object? sender, EventArgs e)
@@ -1918,17 +1918,18 @@ internal sealed partial class MainWindow : Form
 
         var elapsed = Stopwatch.GetElapsedTime(start);
 
-        var selected = this.parametersTable.SelectedRow;
-        if (selected is not null)
-            this.row = selected;
-        else
-            ShowPlots();
-
         this.Text = text;
         FadingMessageBox.Show(
             $"Fitting completed in {elapsed.TotalSeconds:F1} seconds.",
             0.8, 1000, 75, 0.1
         );
+
+        var selected = this.parametersTable.SelectedRow;
+        if (selected is not null)
+            this.row = selected;
+
+        ShowPlots();
+        UpdatePreviewsParameters();
     } // private async Task LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
 
     /// <summary>
