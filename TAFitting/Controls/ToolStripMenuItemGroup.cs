@@ -80,6 +80,8 @@ internal sealed class ToolStripMenuItemGroup<T>
     /// <param name="item">The menu item that was clicked. This item will be selected or deselected based on the current selection rules.</param>
     internal void NotifyItemClicked(GenericToolStripMenuItem<T> item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+
         var originalCheckedState = item.Checked;
         foreach (var i in this.items)
             i.Checked = false;
