@@ -1227,9 +1227,8 @@ internal sealed partial class MainWindow : Form
 
             foreach ((var guid, var model) in category)
             {
-                var modelItem = new ToolStripMenuItem(model.Model.Name, null, SelectModel)
+                var modelItem = new GenericToolStripMenuItem<Guid>(model.Model.Name, guid, SelectModel)
                 {
-                    Tag = guid,
                     ToolTipText = model.Model.Description,
                     Checked = guid == this.selectedModel,
                 };
@@ -1313,8 +1312,8 @@ internal sealed partial class MainWindow : Form
 
     private void SelectModel(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not Guid guid) return;
+        if (sender is not GenericToolStripMenuItem<Guid> item) return;
+        var guid = item.Tag;
 
         if (guid == this.selectedModel) return;
 
