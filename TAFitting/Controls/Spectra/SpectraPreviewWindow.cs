@@ -370,10 +370,10 @@ internal sealed partial class SpectraPreviewWindow : Form
     /// Initializes a new instance of the <see cref="SpectraPreviewWindow"/> class with specified parameters.
     /// </summary>
     /// <param name="parameters">The parameters to set.</param>
-    internal SpectraPreviewWindow(ParametersList parameters) : this()
+    internal SpectraPreviewWindow(IReadOnlyDictionary<double, IReadOnlyList<double>> parameters) : this()
     {
-        SetParameters(parameters, parameters.CurrentStateToken);
-    } // ctor (ParametersList)
+        SetParameters(parameters, this.parametersStateToken + 1);  // Ensure the state token is different from the initial value
+    } // ctor (IReadOnlyDictionary<double, IReadOnlyList<double>>)
 
     override protected void OnFormClosing(FormClosingEventArgs e)
     {
