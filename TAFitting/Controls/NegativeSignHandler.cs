@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace TAFitting.Controls;
 
@@ -36,8 +36,8 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// </summary>
     internal const string MinusSign = "\u2212";
 
-    private static readonly FieldInfo? negativeSign
-        = typeof(NumberFormatInfo).GetField("_negativeSign", BindingFlags.Instance | BindingFlags.NonPublic);
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_negativeSign")]
+    extern private static ref string NegativeSignString(NumberFormatInfo numberFormatInfo);
 
     private readonly string originalSign;
 
@@ -70,8 +70,7 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <param name="sign">The new negative sign.</param>
     internal static void ChangeNegativeSign(string sign)
     {
-        if (negativeSign is null) return;
-        negativeSign?.SetValue(NumberFormatInfo.CurrentInfo, sign);
+        NegativeSignString(NumberFormatInfo.CurrentInfo) = sign;
     } // internal static void ChangeNegativeSign(string sign)
 
     /// <summary>
