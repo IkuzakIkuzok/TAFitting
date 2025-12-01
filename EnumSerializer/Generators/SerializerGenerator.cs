@@ -16,7 +16,7 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
     {
         var sources = context.SyntaxProvider.ForAttributeWithMetadataName(
             AttributeFullName,
-            static (node, token) => true,
+            static (node, token) => node is EnumDeclarationSyntax,
             static (context, token) => context
         ).Collect();
         context.RegisterSourceOutput(sources, Execute);
