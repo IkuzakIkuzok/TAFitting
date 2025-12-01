@@ -51,6 +51,7 @@ internal sealed partial class MainWindow : Form
     private readonly ToolStripMenuItem menu_filter, menu_model;
     private readonly ToolStripMenuItem menu_autoApplyFilter, menu_hideOriginal, menu_unfilter;
     private Guid selectedModel = Guid.Empty;
+    private readonly ToolStripMenuItemGroup<Guid> modelItemGroup;
 
     private Decays? decays;
     private readonly CacheSeries s_observed, s_filtered, s_fit, s_compare;
@@ -345,10 +346,13 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewObserved.DropDownItems.Add(menu_viewObservedSize);
 
+        var overservedSizeGroup = new ToolStripMenuItemGroup<int>(ChangeObservedSize);
         for (var i = 1; i <= 10; i++)
         {
-            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeObservedSize);
-            menu_viewObserved.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.ObservedSize;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, overservedSizeGroup)
+            {
+                Checked = i == Program.ObservedSize,
+            };
             menu_viewObservedSize.DropDownItems.Add(item);
         }
 
@@ -371,10 +375,13 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFiltered.DropDownItems.Add(menu_viewFilteredWidth);
 
+        var filteredWidthGroup = new ToolStripMenuItemGroup<int>(ChangeFilteredWidth);
         for (var i = 1; i <= 10; i++)
         {
-            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeFilteredWidth);
-            menu_viewFiltered.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.FilteredWidth;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, filteredWidthGroup)
+            {
+                Checked = i == Program.FilteredWidth,
+            };
             menu_viewFilteredWidth.DropDownItems.Add(item);
         }
 
@@ -397,10 +404,13 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFit.DropDownItems.Add(menu_viewFitWidth);
 
+        var fitWidthGroup = new ToolStripMenuItemGroup<int>(ChangeFitWidth);
         for (var i = 1; i <= 10; i++)
         {
-            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, ChangeFitWidth);
-            menu_viewFit.DropDownOpening += (sender, e) => item.Checked = item.Tag == Program.FitWidth;
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, fitWidthGroup)
+            {
+                Checked = i == Program.FitWidth,
+            };
             menu_viewFitWidth.DropDownItems.Add(item);
         }
 
@@ -560,6 +570,7 @@ internal sealed partial class MainWindow : Form
         this.menu_model = new ToolStripMenuItem("&Model");
         this.MainMenuStrip.Items.Add(this.menu_model);
         ModelManager.ModelsChanged += UpdateModelList;
+        this.modelItemGroup = new(SelectModel);
         UpdateModelList();
 
         #endregion menu.model
@@ -1216,6 +1227,7 @@ internal sealed partial class MainWindow : Form
     private void UpdateModelList()
     {
         this.menu_model.DropDownItems.Clear();
+        this.modelItemGroup.RemoveAll();
         var models = ModelManager.Models.GroupBy(m => m.Value.Category);
         foreach (var category in models)
         {
@@ -1227,7 +1239,7 @@ internal sealed partial class MainWindow : Form
 
             foreach ((var guid, var model) in category)
             {
-                var modelItem = new GenericToolStripMenuItem<Guid>(model.Model.Name, guid, SelectModel)
+                var modelItem = new GenericToolStripMenuItem<Guid>(model.Model.Name, guid, this.modelItemGroup)
                 {
                     ToolTipText = model.Model.Description,
                     Checked = guid == this.selectedModel,
@@ -1310,10 +1322,10 @@ internal sealed partial class MainWindow : Form
         }
     } // private void AddModel (object?, EventArgs)
 
-    private void SelectModel(object? sender, EventArgs e)
+    private void SelectModel(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<Guid> e)
     {
-        if (sender is not GenericToolStripMenuItem<Guid> item) return;
-        var guid = item.Tag;
+        if (e.SelectedItem is null) return;
+        var guid = e.SelectedItem.Tag;
 
         if (guid == this.selectedModel) return;
 
@@ -1337,17 +1349,6 @@ internal sealed partial class MainWindow : Form
             Program.WarnBeforeChangeModel = !page.Verification.Checked;
         }
 
-        foreach (var child in this.menu_model.DropDownItems)
-        {
-            if (child is not ToolStripMenuItem categoryItem) continue;
-            foreach (var i in categoryItem.DropDownItems)
-            {
-                if (i is not ToolStripMenuItem modelItem) continue;
-                modelItem.Checked = false;
-            }
-        }
-
-        item.Checked = true;
         _ = SelectModel(guid);
     } // private void SelectModel (object?, EventArgs)
 
@@ -2224,23 +2225,26 @@ internal sealed partial class MainWindow : Form
 
     #region change width/size
 
-    private void ChangeObservedSize(object? sender, EventArgs e)
+    private void ChangeObservedSize(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
     {
-        if (sender is not GenericToolStripMenuItem<int> item) return;
-        this.s_observed.MarkerSize = Program.ObservedSize = item.Tag;
-    } // private void ChangeObservedSize (object?, EventArgs)
+        if (e.SelectedItem is null) return;
+        var size = e.SelectedItem.Tag;
+        this.s_observed.MarkerSize = Program.ObservedSize = size;
+    } // private void ChangeObservedSize (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
 
-    private void ChangeFilteredWidth(object? sender, EventArgs e)
+    private void ChangeFilteredWidth(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
     {
-        if (sender is not GenericToolStripMenuItem<int> item) return;
-        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = item.Tag;
-    } // private void ChangeFilteredWidth (object?, EventArgs)
+        if(e.SelectedItem is null) return;
+        var width = e.SelectedItem.Tag;
+        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = width;
+    } // private void ChangeFilteredWidth (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
 
-    private void ChangeFitWidth(object? sender, EventArgs e)
+    private void ChangeFitWidth(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
     {
-        if (sender is not GenericToolStripMenuItem<int> item) return;
-        this.s_fit.BorderWidth = Program.FitWidth = item.Tag;
-    } // private void ChangeFitWidth (object?, EventArgs)
+        if (e.SelectedItem is null) return;
+        var width = e.SelectedItem.Tag;
+        this.s_fit.BorderWidth = Program.FitWidth = width;
+    } // private void ChangeFitWidth (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
 
     #endregion change width/size
 
