@@ -25,7 +25,7 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
     {
         var sources = context.SyntaxProvider.ForAttributeWithMetadataName(
             this.AttributeName,
-            static (node, token) => true,
+            static (node, token) => node is ClassDeclarationSyntax,
             static (context, token) => context
         ).Collect();
         context.RegisterSourceOutput(sources, Execute);
