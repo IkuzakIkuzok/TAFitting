@@ -21,8 +21,8 @@ internal class GenericToolStripMenuItem<T> : ToolStripMenuItem where T : struct
     /// <param name="text">The text to display on the menu item.</param>
     /// <param name="tag">The value to associate with the menu item. This value is assigned to the <see cref="Tag"/> property.</param>
     /// <param name="onClick">The event handler to invoke when the menu item is clicked.</param>
-    internal GenericToolStripMenuItem(string text, T tag, EventHandler onClick) : base(text, null, onClick)
+    internal GenericToolStripMenuItem(string text, T tag, EventHandler? onClick) : base(text, null, onClick)
     {
         this.Tag = tag;
-    } // ctor (string, T, EventHandler)
+    } // ctor (string, T, EventHandler?)
 } // internal class GenericToolStripMenuItem<T> : ToolStripMenuItem
