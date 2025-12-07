@@ -49,16 +49,9 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         {
             var index = GetKeyIndex(key);
             if (index < 0)
-            {
-                // Key does not exist; insert new key-value pair
-                this.keys.Insert(~index, key);
-                this.values.Insert(~index, value);
-            }
+                InsertAt(~index, key, value);
             else
-            {
-                // Key exists; update the existing value
                 this.values[index] = value;
-            }
         }
     } // public TValue this[TKey]
 
@@ -113,6 +106,18 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         foreach (var (key, value) in source.OrderBy(kv => kv.Key))
             Add(key, value);
     } // public void AddRange (IEnumerable<KeyValuePair<TKey, TValue>>)
+
+    /// <summary>
+    /// Inserts a key and value at the specified index within the collection.
+    /// </summary>
+    /// <param name="index">The zero-based index at which the key and value should be inserted.</param>
+    /// <param name="key">The key to insert at the specified index.</param>
+    /// <param name="value">The value to insert at the specified index.</param>
+    protected void InsertAt(int index, TKey key, TValue value)
+    {
+        this.keys.Insert(index, key);
+        this.values.Insert(index, value);
+    } // protected void InsertAt (int, TKey, TValue)
 
     public bool Remove(TKey key)
     {
