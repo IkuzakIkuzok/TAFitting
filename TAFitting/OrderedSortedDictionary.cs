@@ -48,8 +48,17 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         set
         {
             var index = GetKeyIndex(key);
-            if (index < 0) ThrowKeyNotFoundException(key);
-            this.values[index] = value;
+            if (index < 0)
+            {
+                // Key does not exist; insert new key-value pair
+                this.keys.Insert(~index, key);
+                this.values.Insert(~index, value);
+            }
+            else
+            {
+                // Key exists; update the existing value
+                this.values[index] = value;
+            }
         }
     } // public TValue this[TKey]
 
