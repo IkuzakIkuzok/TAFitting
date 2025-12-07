@@ -318,6 +318,11 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         internal EnumerableStruct(List<T> list)
             => this.list = list;
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>A <see cref="List{T}.Enumerator"/> for the collection.</returns>
+        /// <remarks>This method provides a value-type enumerator to avoid heap allocations during iteration.</remarks>
         public readonly List<T>.Enumerator GetEnumerator()
             => this.list.GetEnumerator();
 
