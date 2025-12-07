@@ -84,6 +84,18 @@ internal class OrderedSortedDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     public void Add(KeyValuePair<TKey, TValue> item)
         => Add(item.Key, item.Value);
 
+    /// <summary>
+    /// Adds the elements of the specified collection to the current dictionary in ascending key order.
+    /// </summary>
+    /// <remarks>Elements are added in order of ascending key, as determined by the default comparer for the key type.
+    /// If any key in the source collection already exists in the dictionary, an exception will be thrown for that key and the operation will not be atomic.</remarks>
+    /// <param name="source">The collection of key/value pairs to add to the dictionary. Each key must not already exist in the dictionary.</param>
+    public void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> source)
+    {
+        foreach (var (key, value) in source.OrderBy(kv => kv.Key))
+            Add(key, value);
+    } // public void AddRange (IEnumerable<KeyValuePair<TKey, TValue>>)
+
     public bool Remove(TKey key)
     {
         var index = GetKeyIndex(key);

@@ -225,8 +225,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         if ((++count) == 0)  // count starts from -1, so increment first
             throw new IOException($"No data found in {path}");
 
-        foreach ((var wavelength, var decay) in dict.OrderBy(kv => kv.Key))
-            decays.decays.Add(wavelength, decay);
+        decays.decays.AddRange(dict);
 
         var t0 = l_t0.AsSpan(0, count).SmirnovGrubbs().Average();
         decays.Time0 = t0;
