@@ -223,7 +223,11 @@ internal sealed partial class NegativeSignHandler : IDisposable
     internal static string FormatWithMinusSign(double value, ReadOnlySpan<char> format)
     {
         var buffer = (stackalloc char[256]);
-        var formattedLength = value.TryFormat(buffer, out var charsWritten, format, CultureInfo.InvariantCulture);
+        var success = value.TryFormat(buffer, out var charsWritten, format, CultureInfo.InvariantCulture);
+        if (!success)
+            // Falling back to standard formatting if the buffer is insufficient.
+            return value.ToString(format.ToString(), CultureInfo.InvariantCulture);
+
         buffer = buffer[..charsWritten];
 
         if (buffer[0] == '-')
