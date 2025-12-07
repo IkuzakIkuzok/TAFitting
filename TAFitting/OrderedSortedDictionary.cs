@@ -16,10 +16,11 @@ namespace TAFitting;
 /// It is not thread-safe and does not support concurrent modifications.</remarks>
 /// <typeparam name="TKey">The type of keys in the dictionary. Must implement <see cref="IComparable{TKey}"/> to support ordering.</typeparam>
 /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
-internal class OrderedSortedDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
+/// <param name="capacity">The initial capacity of the dictionary.</param>
+internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
 {
-    private readonly List<TKey> keys = [];
-    private readonly List<TValue> values = [];
+    private readonly List<TKey> keys = new(capacity);
+    private readonly List<TValue> values = new(capacity);
 
     /// <summary>
     /// Gets the number of entries contained in the collection.

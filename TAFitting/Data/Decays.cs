@@ -20,7 +20,7 @@ namespace TAFitting.Data;
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
     private double time0 = 0.0;
-    private readonly OrderedSortedDictionary<double, Decay> decays = [];
+    private readonly OrderedSortedDictionary<double, Decay> decays;
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
@@ -113,10 +113,11 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         }
     }
 
-    private Decays(TimeUnit timeUnit, SignalUnit signalUnit)
+    private Decays(TimeUnit timeUnit, SignalUnit signalUnit, int capacity)
     {
         this.TimeUnit = timeUnit;
         this.SignalUnit = signalUnit;
+        this.decays = new OrderedSortedDictionary<double, Decay>(capacity);
     } // ctor (TimeUnit, SignalUnit)
 
     /// <summary>
@@ -172,8 +173,6 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var simple_ab = FileNameHandler.IsSimpleFormat(format_ab);
         var simple_b = FileNameHandler.IsSimpleFormat(format_b);
 
-        var decays = new Decays(timeUnit, signalUnit);
-
         var folders = Directory.EnumerateDirectories(path);
         var loader = new FileLoader();
         Parallel.ForEach(folders, (folder) =>
@@ -225,6 +224,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         if ((++count) == 0)  // count starts from -1, so increment first
             throw new IOException($"No data found in {path}");
 
+        var decays = new Decays(timeUnit, signalUnit, dict.Count);
         decays.decays.AddRange(dict);
 
         var t0 = l_t0.AsSpan(0, count).SmirnovGrubbs().Average();
@@ -248,7 +248,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         var header = lines[0].Split(',')[1..];
         var times = header.Select(double.Parse).ToArray();
 
-        var decays = new Decays(timeUnit, signalUnit);
+        var decays = new Decays(timeUnit, signalUnit, lines.Length - 1);
         foreach (var line in lines[1..])
         {
             var parts = line.Split(',');
@@ -329,7 +329,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         if (tc != timeCount) throw new IOException("Invalid time count.");
 
         var signalUnit = SignalUnit.MilliOD;
-        var decays = new Decays(timeUnit, signalUnit);
+        var decays = new Decays(timeUnit, signalUnit, wavelengthCount);
 
         for (var i = 0; i < wavelengthCount; i++)
         {
