@@ -20,7 +20,7 @@ namespace TAFitting.Data;
 internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
 {
     private double time0 = 0.0;
-    private readonly OrderedDictionary<double, Decay> decays = [];
+    private readonly OrderedSortedDictionary<double, Decay> decays = [];
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
@@ -54,12 +54,16 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         => this.decays.ContainsKey(key);
 
     /// <inheritdoc/>
-    public IEnumerator<KeyValuePair<double, Decay>> GetEnumerator()
+    public OrderedSortedDictionary<double, Decay>.Enumerator GetEnumerator()
         => this.decays.GetEnumerator();
 
     /// <inheritdoc/>
     public bool TryGetValue(double key, [MaybeNullWhen(false)] out Decay value)
         => this.decays.TryGetValue(key, out value);
+
+    /// <inheritdoc/>
+    IEnumerator<KeyValuePair<double, Decay>> IEnumerable<KeyValuePair<double, Decay>>.GetEnumerator()
+        => this.decays.GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()

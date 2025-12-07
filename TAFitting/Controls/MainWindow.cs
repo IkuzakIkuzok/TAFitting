@@ -1412,9 +1412,8 @@ internal sealed partial class MainWindow : Form
             this.parametersTable.StopUpdateRSquared = true;
 
             this.parametersTable.Rows.Clear();
-            foreach (var wl in this.decays.Keys)
+            foreach (var (wl, decay) in this.decays)
             {
-                var decay = this.decays[wl];
                 var row = this.parametersTable.Add(wl, decay);
                 row.Inverted = decay.SignalsAfterT0.Average() < 0;
             }
