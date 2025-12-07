@@ -111,8 +111,9 @@ internal static partial class FileNameHandler
     /// <param name="format">The format.</param>
     /// <returns>The filename from the basename and the format.</returns>
     /// <remarks>
-    /// This method only supports a simple string replacements in the format '<BASENAME|old/new>'.
-    /// Sequential replacements and regular expression replacements are not supported.
+    /// This method only supports a simple string replacements in the format '&lt;BASENAME|old/new&gt;'.
+    /// This method does not check for simplicity of the format.
+    /// Use <see cref="IsSimpleFormat(string)"/> to check if the format is simple before calling this method.
     /// </remarks>
     internal static string GetFileNameFastMode(string basename, string format)
     {
@@ -166,6 +167,20 @@ internal static partial class FileNameHandler
         return new(dst);
     } // internal static string GetFileNameFastMode (string, string)
 
+    /// <summary>
+    /// Checks whether the format is a simple format.
+    /// </summary>
+    /// <param name="format">The format to check.</param>
+    /// <returns><see langword="true"/> if the format is simple; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>
+    /// Simple format means:
+    /// <list type="bullet">
+    /// <item>Zero or one placeholder only.</item>
+    /// <item>If one placeholder exists, it contains zero or one simple string replacement only.</item>
+    /// <item>Regular expression or sequential replacements are not allowed.</item>
+    /// </list>
+    /// If the format is simple, consider using <see cref="GetFileNameFastMode(string, string)"/> instead of <see cref="GetFileName(string, string)"/> for better performance.
+    /// </remarks>
     internal static bool IsSimpleFormat(string format)
     {
         var span = format.AsSpan();
