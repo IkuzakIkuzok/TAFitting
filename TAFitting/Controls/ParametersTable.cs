@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using TAFitting.Collections;
 using TAFitting.Data;
 using TAFitting.Model;
 using TAFitting.Stats;

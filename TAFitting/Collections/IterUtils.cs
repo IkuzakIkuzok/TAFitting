@@ -3,8 +3,10 @@
 
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using TAFitting;
+using TAFitting.Collections;
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 internal delegate bool ConditionalSelector<TSource, TResult>(TSource source, out TResult result);
 

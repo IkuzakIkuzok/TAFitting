@@ -3,7 +3,7 @@
 
 using System.Collections;
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 /// <summary>
 /// Represents a first-in, first-out (FIFO) collection with a fixed maximum size.

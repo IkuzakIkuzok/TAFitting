@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024-2025 Kazuki Kohzuki
 
+using TAFitting.Collections;
+
 namespace TAFitting.Controls.Spectra;
 
 /// <summary>

@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using System.Diagnostics;
+using TAFitting.Collections;
 
 namespace TAFitting.Sync;
 

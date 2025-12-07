@@ -1,7 +1,6 @@
-﻿
-// (c) 2025 Kazuki KOHZUKI
+﻿// (c) 2025 Kazuki KOHZUKI
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 /// <summary>
 /// Provides extension methods for working with <see cref="Dictionary{TKey, TValue}"/>.

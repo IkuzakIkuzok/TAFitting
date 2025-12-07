@@ -12,7 +12,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 /// <summary>
 /// Provides helper methods for collections. 

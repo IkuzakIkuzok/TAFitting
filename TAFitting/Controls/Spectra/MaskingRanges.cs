@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using System.Collections;
+using TAFitting.Collections;
 
 namespace TAFitting.Controls.Spectra;
 

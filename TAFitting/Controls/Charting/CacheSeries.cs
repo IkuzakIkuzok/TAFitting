@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki KOHZUKI
 
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Collections;
 using TAFitting.Data;
 
 namespace TAFitting.Controls.Charting;

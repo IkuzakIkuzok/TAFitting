@@ -4,8 +4,9 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using TAFitting.Collections;
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 /// <summary>
 /// Represents a generic dictionary that maintains its entries in strictly increasing key order, enforcing that each new key added is greater than all previously added keys.

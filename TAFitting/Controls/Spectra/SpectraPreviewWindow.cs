@@ -5,6 +5,7 @@ using DisposalGenerator;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Collections;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.Toast;
 using TAFitting.Data;

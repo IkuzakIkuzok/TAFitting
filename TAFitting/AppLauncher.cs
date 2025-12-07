@@ -4,6 +4,7 @@
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using TAFitting.Collections;
 
 namespace TAFitting;
 

@@ -3,7 +3,7 @@
 
 using System.Numerics;
 
-namespace TAFitting;
+namespace TAFitting.Collections;
 
 /// <summary>
 /// Represents an ordered, sorted dictionary whose keys are numeric types supporting arithmetic and comparison operations.

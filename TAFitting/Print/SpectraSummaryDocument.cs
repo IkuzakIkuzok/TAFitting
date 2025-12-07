@@ -3,6 +3,7 @@
 
 using System.Drawing.Printing;
 using System.Globalization;
+using TAFitting.Collections;
 
 namespace TAFitting.Print;
 
