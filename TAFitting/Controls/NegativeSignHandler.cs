@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -92,7 +93,7 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <returns>The converted text.</returns>
     [return: NotNullIfNotNull(nameof(text))]
     internal static string? ToHyphenMinus(string? text)
-        => text?.Replace(MinusSign, HyphenMinus, StringComparison.Ordinal);
+        => ReplaceSign(text, MinusSign, HyphenMinus);
 
     /// <summary>
     /// Converts the text to use the minus sign.
@@ -101,7 +102,21 @@ internal sealed partial class NegativeSignHandler : IDisposable
     /// <returns>The converted text.</returns>
     [return: NotNullIfNotNull(nameof(text))]
     internal static string? ToMinusSign(string? text)
-        => text?.Replace(HyphenMinus, MinusSign, StringComparison.Ordinal);
+        => ReplaceSign(text, HyphenMinus, MinusSign);
+
+    [return: NotNullIfNotNull(nameof(text))]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string? ReplaceSign(string? text, string from, string to)
+    {
+        Debug.Assert(from.Length == to.Length);
+        if (string.IsNullOrEmpty(text)) return text;
+        if (!text.AsSpan(0, from.Length).SequenceEqual(from)) return text;
+
+        var buffer = (stackalloc char[text.Length]);
+        to.AsSpan().CopyTo(buffer);
+        text.AsSpan(from.Length).CopyTo(buffer[to.Length..]);
+        return new(buffer);
+    } // private static string? ReplaceSign(string? text, string from, string to)
 
     #region parse
 
