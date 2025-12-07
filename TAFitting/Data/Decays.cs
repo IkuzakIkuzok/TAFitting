@@ -17,7 +17,7 @@ namespace TAFitting.Data;
 #if DEBUG
 [DebuggerTypeProxy(typeof(DecaysDebugView))]
 #endif
-internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
+internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
 {
     private double time0 = 0.0;
     private readonly OrderedSortedDictionary<double, Decay> decays;
@@ -69,9 +69,12 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     IEnumerator IEnumerable.GetEnumerator()
         => this.decays.GetEnumerator();
 
-    /// <inheritdoc/>
-    IEnumerator<Decay> IEnumerable<Decay>.GetEnumerator()
-        => this.Values.GetEnumerator();
+    /// <summary>
+    /// Returns an enumerable collection of all decay objects in the dictionary, ordered by their associated keys.
+    /// </summary>
+    /// <returns>An enumerable structure containing each <see cref="Decay"/> instance in key order.</returns>
+    internal OrderedSortedDictionary<double, Decay>.EnumerableStruct<Decay> GetDecaysEnumerable()
+        => this.decays.GetValueEnumerable();
 
     /// <summary>
     /// Gets the time unit.
@@ -90,14 +93,38 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// </summary>
     /// <value>The maximum time in the unit specified by <see cref="TimeUnit"/>.</value>
     internal double MaxTime
-        => this.Values.Max(d => d.TimeMax);
+    {
+        get
+        {
+            var max = double.NegativeInfinity;
+            foreach (var decay in GetDecaysEnumerable())
+            {
+                var t = decay.TimeMax;
+                if (t > max)
+                    max = t;
+            }
+            return max;
+        }
+    }
 
     /// <summary>
     /// Gets the maximum value of the absolute signal.
     /// </summary>
     /// <value>The maximum value of the absolute signal.</value>
     internal double MaxAbsSignal
-        => this.Values.Max(d => d.SignalFiniteAbsMax);
+    {
+        get
+        {
+            var max = double.NegativeInfinity;
+            foreach (var decay in GetDecaysEnumerable())
+            {
+                var s = decay.SignalFiniteAbsMax;
+                if (s > max)
+                    max = s;
+            }
+            return max;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the time zero.
@@ -394,4 +421,4 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
         }
     } // private sealed class DecaysDebugView (Decays)
 #endif
-} // internal sealed class Decays : IEnumerable<Decay>, IReadOnlyDictionary<double, Decay>
+} // internal sealed class Decays : IReadOnlyDictionary<double, Decay>

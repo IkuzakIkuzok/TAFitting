@@ -870,7 +870,7 @@ internal sealed partial class MainWindow : Form
                         var filter = FilterManager.DefaultFilter;
                         if (filter is not null)
                         {
-                            foreach (var decay in this.decays.Values)
+                            foreach (var decay in this.decays.GetDecaysEnumerable())
                                 decay.Filter(filter);
                         }
                     }
