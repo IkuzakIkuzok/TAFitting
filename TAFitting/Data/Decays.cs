@@ -347,7 +347,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     {
         var diff = time0 - this.time0;
         this.time0 = time0;
-        foreach (var decay in this.Values)
+        foreach (var decay in this.decays.GetValueEnumerable())
             decay.AddTime(-diff);
     } // private void ChangeTime0 (double)
 
@@ -364,7 +364,7 @@ internal sealed partial class Decays : IEnumerable<Decay>, IReadOnlyDictionary<d
     /// </summary>
     internal void Interpolate()
     {
-        foreach (var decay in this.Values)
+        foreach (var decay in this.decays.GetValueEnumerable())
             decay.Interpolate();
     } // internal void Interpolate ()
 

@@ -62,8 +62,16 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         }
     } // public TValue this[TKey]
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Use <see cref="GetKeyEnumerable"/> to get an enumerable collection of keys without allocations.
+    /// </remarks>
     public ICollection<TKey> Keys => this.keys;
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Use <see cref="GetValueEnumerable"/> to get an enumerable collection of values without allocations.
+    /// </remarks>
     public ICollection<TValue> Values => this.values;
 
     /// <summary>
@@ -220,6 +228,20 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
     IEnumerator IEnumerable.GetEnumerator()
         => this.Count == 0 ? Enumerable.Empty<KeyValuePair<TKey, TValue>>().GetEnumerator() : GetEnumerator();
 
+    /// <summary>
+    /// Returns an enumerable collection that iterates over all keys in the current instance.
+    /// </summary>
+    /// <returns>An <see cref="EnumerableStruct{TKey}"/> that provides enumeration of the keys contained in this instance.</returns>
+    public EnumerableStruct<TKey> GetKeyEnumerable()
+        => new(this.keys);
+
+    /// <summary>
+    /// Returns an enumerable struct that provides a value-based iteration over the collection.
+    /// </summary>
+    /// <returns>An <see cref="EnumerableStruct{TValue}"/> that can be used to enumerate the values in the collection.</returns>
+    public EnumerableStruct<TValue> GetValueEnumerable()
+        => new(this.values);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int GetKeyIndex(TKey key)
         => this.keys.BinarySearch(key);
@@ -279,4 +301,30 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
 
         public readonly void Dispose() { }
     } // public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator
+
+    /// <summary>
+    /// Provides a value type wrapper around a list, enabling enumeration of its elements using standard .NET collection interfaces.
+    /// </summary>   
+    /// <typeparam name="T">The type of elements contained in the collection.</typeparam>
+    public readonly struct EnumerableStruct<T> : IEnumerable<T>
+    {
+        private readonly List<T> list;
+
+        /// <summary>
+        /// Initializes a new instance of the EnumerableStruct<T> struct using the specified list as the underlying
+        /// collection.
+        /// </summary>
+        /// <param name="list">The list of elements to be wrapped by the struct.</param>
+        internal EnumerableStruct(List<T> list)
+            => this.list = list;
+
+        public readonly List<T>.Enumerator GetEnumerator()
+            => this.list.GetEnumerator();
+
+        readonly IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            => this.list.GetEnumerator();
+
+        readonly IEnumerator IEnumerable.GetEnumerator()
+            => this.list.GetEnumerator();
+    } // public struct EnumerableStruct<T> : IEnumerable<T>
 } // internal class OrderedSortedDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
