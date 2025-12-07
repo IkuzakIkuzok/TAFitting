@@ -1613,7 +1613,7 @@ internal sealed partial class MainWindow : Form
             .Where(x => x.Cell.Selected)
             .FirstOrDefault().Index ?? 0;
 
-        var closest = this.decays.Keys.OrderBy(wl => Math.Abs(wl - wavelength)).First();
+        var closest = this.decays.GetClosestWavelength(wavelength);
         var row = this.parametersTable[closest];
         if (row is null) return;
         foreach (var r in this.parametersTable.ParameterRows)

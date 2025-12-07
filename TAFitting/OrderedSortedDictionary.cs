@@ -19,8 +19,8 @@ namespace TAFitting;
 /// <param name="capacity">The initial capacity of the dictionary.</param>
 internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
 {
-    private readonly List<TKey> keys = new(capacity);
-    private readonly List<TValue> values = new(capacity);
+    protected readonly List<TKey> keys = new(capacity);
+    protected readonly List<TValue> values = new(capacity);
 
     /// <summary>
     /// Gets the number of entries contained in the collection.
@@ -248,7 +248,7 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         => new(this.values);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int GetKeyIndex(TKey key)
+    protected int GetKeyIndex(TKey key)
         => this.keys.BinarySearch(key);
 
     [DoesNotReturn]

@@ -20,7 +20,7 @@ namespace TAFitting.Data;
 internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
 {
     private double time0 = 0.0;
-    private readonly OrderedSortedDictionary<double, Decay> decays;
+    private readonly NumericOrderedSortedDictionary<double, Decay> decays;
 
     /// <summary>
     /// Gets or sets the decay data at the specified wavelength.
@@ -144,7 +144,7 @@ internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
     {
         this.TimeUnit = timeUnit;
         this.SignalUnit = signalUnit;
-        this.decays = new OrderedSortedDictionary<double, Decay>(capacity);
+        this.decays = new(capacity);
     } // ctor (TimeUnit, SignalUnit)
 
     /// <summary>
@@ -377,6 +377,14 @@ internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
         foreach (var decay in this.decays.GetValueEnumerable())
             decay.AddTime(-diff);
     } // private void ChangeTime0 (double)
+
+    /// <summary>
+    /// Finds the wavelength value in the collection that is closest to the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength to compare against the collection.</param>
+    /// <returns>The wavelength value from the collection that is nearest to the specified wavelength.</returns>
+    internal double GetClosestWavelength(double wavelength)
+        => this.decays.FindNearestKey(wavelength);
 
     /// <summary>
     /// Removes the decay data.
