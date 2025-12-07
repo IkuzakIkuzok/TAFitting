@@ -226,7 +226,7 @@ internal sealed partial class NegativeSignHandler : IDisposable
         var success = value.TryFormat(buffer, out var charsWritten, format, CultureInfo.InvariantCulture);
         if (!success)
             // Falling back to standard formatting if the buffer is insufficient.
-            return value.ToString(format.ToString(), CultureInfo.InvariantCulture);
+            return ToMinusSign(value.ToString(format.ToString(), CultureInfo.InvariantCulture));
 
         buffer = buffer[..charsWritten];
 
