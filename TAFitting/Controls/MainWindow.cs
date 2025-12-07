@@ -1525,6 +1525,8 @@ internal sealed partial class MainWindow : Form
                 if (tableRow is null) continue;
                 tableRow.Parameters = row.Parameters;
             }
+
+            UpdatePreviewsParameters();
         }
         catch (Exception ex)
         {
