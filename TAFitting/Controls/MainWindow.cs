@@ -1121,7 +1121,7 @@ internal sealed partial class MainWindow : Form
         ApplyFilter(filter, this.parametersTable.ParameterRows);
     } // private void ApplyFilterAllRows (object?, EventArgs)
 
-    private void ApplyFilter(IFilter filter, IEnumerable<ParametersTableRow> rows)
+    private void ApplyFilter(IFilter filter, ParametersTableRowsEnumerable rows)
     {
         foreach (var row in rows)
         {
@@ -1131,7 +1131,7 @@ internal sealed partial class MainWindow : Form
 
         ShowPlots();
         UpdateAnalyzers();
-    } // private void ApplyFilter (IFilter, IEnumerable<ParametersTableRow>)
+    } // private void ApplyFilter (IFilter, ParametersTableRowsEnumerable)
 
     private void AddFilter(object? sender, EventArgs e)
     {
@@ -1175,13 +1175,13 @@ internal sealed partial class MainWindow : Form
     private void UnfilterAll(object? sender, EventArgs e)
         => Unfilter(this.parametersTable.ParameterRows);
 
-    private void Unfilter(IEnumerable<ParametersTableRow> rows)
+    private void Unfilter(ParametersTableRowsEnumerable rows)
     {
         foreach (var row in rows)
             row.Decay?.RestoreOriginal();
         ShowPlots();
         UpdateAnalyzers();
-    } // private void Unfilter (IEnumerable<ParametersTableRow>)
+    } // private void Unfilter (ParametersTableRowsEnumerable)
 
     private void InterpolateSelectedRow(object? sender, EventArgs e)
     {
@@ -1198,7 +1198,7 @@ internal sealed partial class MainWindow : Form
         Interpolate(this.parametersTable.ParameterRows, mode);
     } // private void InterpolateAll (object?, EventArgs)
 
-    private void Interpolate(IEnumerable<ParametersTableRow> rows, InterpolationMode mode)
+    private void Interpolate(ParametersTableRowsEnumerable rows, InterpolationMode mode)
     {
         var filter = Program.AutoApplyFilter ? FilterManager.DefaultFilter : null;
 
@@ -1212,7 +1212,7 @@ internal sealed partial class MainWindow : Form
         }
         ShowObserved();
         UpdateAnalyzers();
-    } // private void Interpolate (IEnumerable<ParametersTableRow>, InterpolationMode)
+    } // private void Interpolate (ParametersTableRowsEnumerable, InterpolationMode)
 
     #endregion filters
 
@@ -1844,7 +1844,7 @@ internal sealed partial class MainWindow : Form
     /// Fits the specified rows using the Levenberg-Marquardt algorithm.
     /// </summary>
     /// <param name="rows">The rows to fit.</param>
-    private async Task LevenbergMarquardtEstimation(IEnumerable<ParametersTableRow> rows)
+    private async Task LevenbergMarquardtEstimation(ParametersTableRowsEnumerable rows)
     {
         var cols =
             this.parametersTable.Columns.OfType<DataGridViewNumericBoxColumn>().ToArray();
@@ -1932,7 +1932,7 @@ internal sealed partial class MainWindow : Form
 
         ShowPlots();
         UpdatePreviewsParameters();
-    } // private async Task LevenbergMarquardtEstimation (IEnumerable<ParametersTableRow>)
+    } // private async Task LevenbergMarquardtEstimation (ParametersTableRowsEnumerable)
 
     /// <summary>
     /// Fits the specified row using the Levenberg-Marquardt algorithm.
@@ -1980,7 +1980,7 @@ internal sealed partial class MainWindow : Form
         EstimateParameters(estimateProvider, this.parametersTable.NotEditedRows);
     } // private void EstimateParametersNotEditedRows (object?, EventArgs)
 
-    private void EstimateParameters(IEstimateProvider estimateProvider, IEnumerable<ParametersTableRow> rows)
+    private void EstimateParameters(IEstimateProvider estimateProvider, ParametersTableRowsEnumerable rows)
     {
         foreach (var row in rows)
         {
@@ -1989,7 +1989,7 @@ internal sealed partial class MainWindow : Form
             var parameters = estimateProvider.EstimateParameters(decay.Times, decay.Signals, this.selectedModel);
             row.Parameters = parameters;
         }
-    } // private void EstimateParametersAllRows (IEstimateProvider)
+    } // private void EstimateParametersAllRows (IEstimateProvider, ParametersTableRowsEnumerable)
 
     #endregion Estimate parameters
 

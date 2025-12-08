@@ -37,8 +37,8 @@ internal sealed partial class ParametersTable : DataGridView
     /// <summary>
     /// Gets the parameter rows.
     /// </summary>
-    internal IEnumerable<ParametersTableRow> ParameterRows
-        => this.Rows.OfType<ParametersTableRow>();
+    internal ParametersTableRowsEnumerable ParameterRows
+        => new(this.Rows);
 
     /// <summary>
     /// Gets the parameters list corresponding to the wavelengths.
@@ -50,8 +50,8 @@ internal sealed partial class ParametersTable : DataGridView
     /// <summary>
     /// Gets the not edited rows.
     /// </summary>
-    internal IEnumerable<ParametersTableRow> NotEditedRows
-        => this.ParameterRows.Where(row => !row.Edited);
+    internal ParametersTableRowsEnumerable NotEditedRows
+        => new(this.Rows, row => !row.Edited);
 
     /// <summary>
     /// Gets the selected row.
@@ -444,7 +444,7 @@ internal sealed partial class ParametersTable : DataGridView
     /// </summary>
     /// <param name="column">The column.</param>
     /// <param name="rows">The rows.</param>
-    private void BatchInput(DataGridViewNumericBoxColumn column, IEnumerable<ParametersTableRow> rows)
+    private void BatchInput(DataGridViewNumericBoxColumn column, ParametersTableRowsEnumerable rows)
     {
         // Casting decimal.MinValue and decimal.MaxValue to double results in the OverflowException.
         // Therefore, the approximate values of them are used.
@@ -471,7 +471,7 @@ internal sealed partial class ParametersTable : DataGridView
         foreach (var row in rows)
             row.Cells[index].Value = value;
         SetFreezeEditedState(false);
-    } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, IEnumerable<ParametersTableRow>)
+    } // private void BatchInputAllRows (DataGridViewNumericBoxColumn, ParametersTableRowsEnumerable)
 
     private static void ToggleFixed(object? sender, EventArgs e)
     {
