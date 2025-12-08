@@ -65,7 +65,7 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
     {
         get
         {
-            ThrowIndexOutOfRangeExceptionIfIndexOutOfRange(index);
+            IndexOutOfRangeException.ThorwIfIndexOutOfRange(index, this.keys.Count);
             return new(this.keys[index], this.values[index]);
         }
     } // public KeyValuePair<TKey, TValue> this[int]
@@ -337,12 +337,6 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
     {
         throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
     } // private static void ThrowKeyNotFoundException (TKey)
-
-    private void ThrowIndexOutOfRangeExceptionIfIndexOutOfRange(int index)
-    {
-        if ((uint)index >= (uint)this.keys.Count)
-            throw new ArgumentOutOfRangeException(nameof(index), index, "Index is out of range.");
-    } // private void ThrowIndexOutOfRangeExceptionIfIndexOutOfRange (int)
 
     /// <summary>
     /// Enumerates the key/value pairs of a collection represented by separate key and value lists.
