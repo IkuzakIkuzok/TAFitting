@@ -5,6 +5,7 @@ using DisposalGenerator;
 using System.Diagnostics;
 using System.Numerics;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Controls.Charting;
 using TAFitting.Data;
 using TAFitting.Filter.Fourier;
 
@@ -22,7 +23,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
     private Decay? decay;
     private FourierSpectrumType spectrumType = Program.FourierSpectrumType;
-    private readonly Series series;
+    private readonly CacheSeries series;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FourierAnalyzer"/> class.
@@ -215,7 +216,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
             if (this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel && a <= 0) continue;
             if (double.IsNaN(a) || double.IsInfinity(a)) continue;
             a = Math.Clamp(a, -1e28, 1e28);
-            this.series.Points.AddXY(f, a);
+            this.series.AddPoint(f, a);
             amp_min = Math.Min(amp_min, a);
             amp_max = Math.Max(amp_max, a);
         }
