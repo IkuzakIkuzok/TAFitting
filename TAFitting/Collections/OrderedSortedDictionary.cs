@@ -56,6 +56,20 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
         }
     } // public TValue this[TKey]
 
+    /// <summary>
+    /// Gets the key/value pair at the specified index in the collection.
+    /// </summary>
+    /// <param name="index">The zero-based index of the element to retrieve. Must be within the bounds of the collection.</param>
+    /// <returns>A <see cref="KeyValuePair{TKey, TValue}"/> representing the key and value at the specified index.</returns>
+    public KeyValuePair<TKey, TValue> this[int index]
+    {
+        get
+        {
+            ThrowIndexOutOfRangeExceptionIfIndexOutOfRange(index);
+            return new(this.keys[index], this.values[index]);
+        }
+    } // public KeyValuePair<TKey, TValue> this[int]
+
     /// <inheritdoc/>
     /// <remarks>
     /// Use <see cref="GetKeyEnumerable"/> to get an enumerable collection of keys without allocations.
@@ -323,6 +337,12 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
     {
         throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
     } // private static void ThrowKeyNotFoundException (TKey)
+
+    private void ThrowIndexOutOfRangeExceptionIfIndexOutOfRange(int index)
+    {
+        if ((uint)index >= (uint)this.keys.Count)
+            throw new ArgumentOutOfRangeException(nameof(index), index, "Index is out of range.");
+    } // private void ThrowIndexOutOfRangeExceptionIfIndexOutOfRange (int)
 
     /// <summary>
     /// Enumerates the key/value pairs of a collection represented by separate key and value lists.
