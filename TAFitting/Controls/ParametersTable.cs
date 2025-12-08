@@ -446,6 +446,8 @@ internal sealed partial class ParametersTable : DataGridView
     /// <param name="rows">The rows.</param>
     private void BatchInput(DataGridViewNumericBoxColumn column, ParametersTableRowsEnumerable rows)
     {
+        if (!rows.Any()) return;
+
         // Casting decimal.MinValue and decimal.MaxValue to double results in the OverflowException.
         // Therefore, the approximate values of them are used.
         const double DecimalMin = UIUtils.DecimalMin;
