@@ -248,9 +248,75 @@ internal class OrderedSortedDictionary<TKey, TValue>(int capacity) : IDictionary
     public EnumerableStruct<TValue> GetValueEnumerable()
         => new(this.values);
 
+    /// <summary>
+    /// Searches for the specified key and returns the zero-based index within the sorted key collection.
+    /// </summary>
+    /// <param name="key">The key to locate in the collection.</param>
+    /// <returns>The zero-based index of the key if found;
+    /// otherwise, a negative number that is the bitwise complement of the index of the next element that is larger than the key,
+    /// or, if there is no larger element, the bitwise complement of the collection's count.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected int GetKeyIndex(TKey key)
+    internal int GetKeyIndex(TKey key)
         => this.keys.BinarySearch(key);
+
+    /// <summary>
+    /// Attempts to get the key that precedes the specified key in the collection.
+    /// </summary>
+    /// <param name="key">The key for which to find the preceding key in the collection.</param>
+    /// <param name="previousKey">When this method returns, contains the previous key if found; otherwise, the default value for <typeparamref name="TKey"/>.</param>
+    /// <returns><see langword="true"/> if a previous key was found; otherwise, <see langword="false"/>.</returns>
+    internal bool TryGetPreviousKey(TKey key, [MaybeNullWhen(false)] out TKey previousKey)
+    {
+        var index = GetKeyIndex(key);
+        if (index > 0)
+        {
+            previousKey = this.keys[index - 1];
+            return true;
+        }
+        else if (index < 0)
+        {
+            var insertIndex = ~index;
+            if (insertIndex > 0)
+            {
+                previousKey = this.keys[insertIndex - 1];
+                return true;
+            }
+        }
+
+        previousKey = default;
+        return false;
+    } // internal bool TryGetPreviousKey (TKey, out TKey)
+
+    /// <summary>
+    /// Attempts to retrieve the key that immediately follows the specified key in the collection.
+    /// </summary>
+    /// <param name="key">The key for which to find the next sequential key in the collection.</param>
+    /// <param name="nextKey">When this method returns, contains the next key in sequence if found; otherwise, the default value for <typeparamref name="TKey"/>.</param>
+    /// <returns><see langword="true"/> if a next key exists and was returned in <paramref name="nextKey"/>; otherwise, <see langword="false"/>.</returns>
+    internal bool TryGetNextKey(TKey key, [MaybeNullWhen(false)] out TKey nextKey)
+    {
+        var index = GetKeyIndex(key);
+        if (index >= 0)
+        {
+            if (index + 1 < this.keys.Count)
+            {
+                nextKey = this.keys[index + 1];
+                return true;
+            }
+        }
+        else
+        {
+            var insertIndex = ~index;
+            if (insertIndex < this.keys.Count)
+            {
+                nextKey = this.keys[insertIndex];
+                return true;
+            }
+        }
+
+        nextKey = default;
+        return false;
+    } // internal bool TryGetNextKey (TKey, out TKey)
 
     [DoesNotReturn]
     private static void ThrowKeyNotFoundException(TKey key)
