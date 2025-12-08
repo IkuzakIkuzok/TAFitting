@@ -210,6 +210,9 @@ internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
             loader.Register(folder, wavelength);
         });
 
+        if (loader.Count == 0)
+            throw new IOException($"No data found in {path}");
+
         var dict = new ConcurrentDictionary<double, Decay>();
         var l_t0 = new double[loader.Count];
         var count = -1;  // start from -1 to use Interlocked.Increment as index
