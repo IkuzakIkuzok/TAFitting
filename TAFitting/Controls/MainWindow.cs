@@ -2007,29 +2007,29 @@ internal sealed partial class MainWindow : Form
     {
         if (this.decays is null) return;
         var wl = row.Wavelength;
-        var prev = this.decays.Keys.Where(w => w < wl);
-        var next = this.decays.Keys.Where(w => w > wl);
+        var prev = this.decays.TryGetNearestLowerWavelength(wl, out var prevWl);
+        var next = this.decays.TryGetNearestLargerWavelength(wl, out var nextWl);
 
-        if (!(prev.Any() || next.Any())) return;  // Only one row exists
+        if (!(prev || next)) return;  // Only one row exists
 
-        if (prev.Any() && next.Any())
+        if (prev && next)
         {
-            var p = this.parametersTable[prev.Max()];
-            var n = this.parametersTable[next.Min()];
+            var p = this.parametersTable[prevWl];
+            var n = this.parametersTable[nextWl];
             if (p is null || n is null) return;
 
             for (var i = 0; i < row.Parameters.Count; i++)
                 row[i] = (p[i] + n[i]) / 2;
         }
-        else if (prev.Any())
+        else if (prev)
         {
-            var p = this.parametersTable[prev.Max()];
+            var p = this.parametersTable[prevWl];
             if (p is null) return;
             row.Parameters = p.Parameters;
         }
         else
         {
-            var n = this.parametersTable[next.Min()];
+            var n = this.parametersTable[nextWl];
             if (n is null) return;
             row.Parameters = n.Parameters;
         }

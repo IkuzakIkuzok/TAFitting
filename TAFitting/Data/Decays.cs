@@ -388,6 +388,24 @@ internal sealed partial class Decays : IReadOnlyDictionary<double, Decay>
         => this.decays.FindNearestKey(wavelength);
 
     /// <summary>
+    /// Attempts to find the nearest lower wavelength value that is less than the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength value to compare against.</param>
+    /// <param name="previous">When this method returns, contains the nearest lower wavelength found, if any; otherwise, the value is undefined.</param>
+    /// <returns><see langword="true"/> if a lower wavelength value was found; otherwise, <see langword="false"/>.</returns>
+    internal bool TryGetNearestLowerWavelength(double wavelength, out double previous)
+        => this.decays.TryGetPreviousKey(wavelength, out previous);
+
+    /// <summary>
+    /// Attempts to find the nearest larger wavelength value that is greater than the specified wavelength.
+    /// </summary>
+    /// <param name="wavelength">The wavelength value to compare against.</param>
+    /// <param name="next">When this method returns, contains the nearest larger wavelength found, if any; otherwise, the value is undefined.</param>
+    /// <returns><see langword="true"/> if a larger wavelength value was found; otherwise, <see langword="false"/>.</returns>
+    internal bool TryGetNearestLargerWavelength(double wavelength, out double next)
+        => this.decays.TryGetNextKey(wavelength, out next);
+
+    /// <summary>
     /// Removes the decay data.
     /// </summary>
     /// <param name="wavelength">The wavelength.</param>
