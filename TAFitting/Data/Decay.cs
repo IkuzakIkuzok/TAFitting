@@ -698,7 +698,17 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     {
         try
         {
-            filter.Filter(this.RawTimes, this.signals, this.filtered);
+            using var pooled = new PooledBuffer<double>(this.times.Length);
+            var buffer = this.times.Length <= 0x1000 ? stackalloc double[this.times.Length] : pooled.GetSpan();
+            this.times.CopyTo(buffer);
+            if (this.TimeUnit != TimeUnit.Second)
+            {
+                var tu = (double)this.TimeUnit;
+                for (var i = 0; i < buffer.Length; i++)
+                    buffer[i] *= tu;
+            }
+
+            filter.Filter(buffer, this.signals, this.filtered);
             this.HasFiltered = true;
         }
         catch (Exception e)
