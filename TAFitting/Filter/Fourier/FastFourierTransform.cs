@@ -281,23 +281,24 @@ internal static class FastFourierTransform
         return result;
     } // public static double[] InverseReal (Span<Complex>)
 
+    
     /// <summary>
-    /// Returns the frequency scale.
+    /// Populates the specified frequency span with frequency bin values corresponding to the given sample rate, using either a full or positive-only scale.
     /// </summary>
-    /// <param name="length">The number of points.</param>
-    /// <param name="sampleRate">The sample rate.</param>
-    /// <param name="positiveOnly">A value indicating whether to return only positive frequencies.</param>
-    /// <returns>The frequency scale.</returns>
-    internal static double[] FrequencyScale(int length, double sampleRate, bool positiveOnly)
+    /// <param name="freq">The span to be filled with calculated frequency bin values. Each element will be set to the frequency corresponding to its index.</param>
+    /// <param name="sampleRate">The sample rate, in hertz, used to determine the frequency bin spacing.</param>
+    /// <param name="positiveOnly">If <see langword="true"/>, only positive frequency values are calculated; otherwise, both positive and negative frequencies are included.</param>
+    internal static void FrequencyScale(Span<double> freq, double sampleRate, bool positiveOnly)
     {
-        var freq = new double[length];
+        var length = freq.Length;
+        if (length == 0) return;
 
         if (positiveOnly)
         {
             var a = sampleRate / (length - 1) / 2;
             for (var i = 0; i < length; ++i)
                 freq[i] = a * i;
-            return freq;
+            return;
         }
    
         var b = sampleRate / length;
@@ -306,8 +307,7 @@ internal static class FastFourierTransform
             freq[i] = b * i;
         for (var i = half; i < length; ++i)
             freq[i] = b * (i - length);
-        return freq;
-    } // internal static double[] FrequencyScale (int, double, bool)
+    } // internal static void FrequencyScale (Span<double>, double, bool)
 
     /// <summary>
     /// Checks whether the specified values are evenly spaced.

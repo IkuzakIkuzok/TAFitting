@@ -61,7 +61,8 @@ internal abstract class FourierFilter : IFilter
             buffer[i + offset] = new(signal[i], 0);
 
         FastFourierTransform.ForwardSplitRadix(buffer);
-        var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);
+        var freq = n <= 0x4000 ? stackalloc double[n] : new double[n];
+        FastFourierTransform.FrequencyScale(freq, sampleRate, false);
 
         for (var i = 0; i < n; ++i)
         {

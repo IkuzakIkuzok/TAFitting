@@ -18,6 +18,13 @@ namespace TAFitting.Controls.Analyzers;
 [AutoDisposal]
 internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 {
+    /*
+     * The stack size is 1 MiB by default.
+     * A complex number consists of two double values, which requires 16 bytes.
+     * 16384 elements require 256 KiB, which is far less than 1 MiB.
+     */
+    private const int STACK_ALLOC_THRESHOLD = 0x4000;
+
     private readonly Chart chart;
     private readonly Axis axisX_freq, axisX_time, axisY;
 
@@ -192,16 +199,12 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         var n = time.Count;
         var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
 
-        /*
-         * The stack size is 1 MiB by default.
-         * A complex number consists of two double values, which requires 16 bytes.
-         * 16384 elements require 256 KiB, which is far less than 1 MiB.
-         */
-        var buffer = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
+        var buffer = n <= STACK_ALLOC_THRESHOLD ? stackalloc Complex[n] : new Complex[n];
         for (var i = 0; i < n; ++i) buffer[i] = new(signal[i], 0);
 
         FastFourierTransform.Forward(buffer);
-        var freq = FastFourierTransform.FrequencyScale(n, sampleRate, false);
+        var freq = n <= STACK_ALLOC_THRESHOLD ? stackalloc double[n] : new double[n];
+        FastFourierTransform.FrequencyScale(freq, sampleRate, false);
 
         n >>= 1;  // Only positive frequencies, i.e., the half of the spectrum, have physical meanings.
         freq = freq[..n];
