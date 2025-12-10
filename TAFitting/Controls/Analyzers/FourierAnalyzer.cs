@@ -194,16 +194,20 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.series.Points.Clear();
 
         var time = this.decay.RawTimes;
-        var signal = this.decay.Filtered.RawSignals;
+        var signal = this.decay.FilteredSignals;
+        var scale = (double)this.decay.SignalUnit;
 
         var n = time.Length;
         var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
 
-        var buffer = n <= STACK_ALLOC_THRESHOLD ? stackalloc Complex[n] : new Complex[n];
-        for (var i = 0; i < n; ++i) buffer[i] = new(signal[i], 0);
+        using var complex_buffer = new PooledBuffer<Complex>(n);
+        var buffer = n <= STACK_ALLOC_THRESHOLD ? stackalloc Complex[n] : complex_buffer.GetSpan();
+        for (var i = 0; i < n; ++i) buffer[i] = new(signal[i] * scale, 0);
 
         FastFourierTransform.Forward(buffer);
-        var freq = n <= STACK_ALLOC_THRESHOLD ? stackalloc double[n] : new double[n];
+
+        using var freq_buffer = new PooledBuffer<double>(n);
+        var freq = n <= STACK_ALLOC_THRESHOLD ? stackalloc double[n] : freq_buffer.GetSpan();
         FastFourierTransform.FrequencyScale(freq, sampleRate, false);
 
         n >>= 1;  // Only positive frequencies, i.e., the half of the spectrum, have physical meanings.

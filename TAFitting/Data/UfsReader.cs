@@ -69,7 +69,8 @@ internal sealed class UfsReader : UfsIOHelper
         var length = ReadInt32();
         if (length == 0) return string.Empty;
 
-        var bytes = length <= 1024 ? stackalloc byte[length] : new byte[length];
+        using var pooled = new PooledBuffer<byte>(length);
+        var bytes = length <= 1024 ? stackalloc byte[length] : pooled.GetSpan();
         this._stream.ReadExactly(bytes);
         return NormNewLineInput(BytesConverter.ToString(bytes));
     } // internal string ReadString ()

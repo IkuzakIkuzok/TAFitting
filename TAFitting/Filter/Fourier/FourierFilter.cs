@@ -51,7 +51,8 @@ internal abstract class FourierFilter : IFilter
         var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
 
         // Max stackalloc size is 256 KiB.
-        var buffer = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
+        using var pooled = new PooledBuffer<Complex>(n);
+        var buffer = n <= 0x4000 ? stackalloc Complex[n] : pooled.GetSpan();
         for (var i = 0; i < time.Length; ++i)
             buffer[i] = new(signal[i], 0);
 

@@ -49,7 +49,8 @@ internal static class FastFourierTransform
         var theta = -2 * Math.PI / n;
 
         // Max stackalloc size is limited to 256 KiB, which is far less than the stack size (1 MiB).
-        var temp = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
+        using var pooled = new PooledBuffer<Complex>(n);
+        var temp = n <= 0x4000 ? stackalloc Complex[n] : pooled.GetSpan();
 
         ForwardCooleyTukey(n, buffer, theta, temp);
     } // internal static void ForwardCooleyTukey (Span<Complex>)
