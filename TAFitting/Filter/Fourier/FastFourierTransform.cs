@@ -260,13 +260,16 @@ internal static class FastFourierTransform
     /// Performs an inverse Fourier transform on the specified buffer.
     /// </summary>
     /// <param name="fft">The buffer to transform.</param>
-    /// <returns>The real part of the inverse Fourier transform.</returns>
+    /// <param name="output">The output buffer to store the real part of the inverse Fourier transform.</param>
     /// <remarks>
     /// The inverse FFT is performed on <paramref name="fft"/> in place,
     /// and its elements are modified by calling this method.
     /// </remarks>
-    public static double[] InverseReal(Span<Complex> fft)
+    public static void InverseReal(Span<Complex> fft, Span<double> output)
     {
+        if (fft.Length != output.Length)
+            throw new ArgumentException("The lengths of the input and output spans must be the same.");
+
         for (var i = 0; i < fft.Length; ++i)
             fft[i] = Complex.Conjugate(fft[i]);
 
@@ -275,13 +278,10 @@ internal static class FastFourierTransform
         // Actual inverse FFT is the complex conjugate of the forward FFT divided by the number of points.
         // However, we only need the real part of the result.
         // Therefore, computation of the complex conjugate is omitted.
-        var result = new double[fft.Length];
         for (var i = 0; i < fft.Length; ++i)
-            result[i] = fft[i].Real / fft.Length;
-        return result;
-    } // public static double[] InverseReal (Span<Complex>)
+            output[i] = fft[i].Real / fft.Length;
+    } // public static void InverseReal (Span<Complex>, Span<double>)
 
-    
     /// <summary>
     /// Populates the specified frequency span with frequency bin values corresponding to the given sample rate, using either a full or positive-only scale.
     /// </summary>
@@ -315,9 +315,9 @@ internal static class FastFourierTransform
     /// <param name="values">The values to check.</param>
     /// <param name="threshold">The threshold for the difference between the values.</param>
     /// <returns><see langword="true"/> if the values are evenly spaced; otherwise, <see langword="false"/>.</returns>
-    internal static bool CheckEvenlySpaced(IReadOnlyList<double> values, double threshold = 1e-6)
+    internal static bool CheckEvenlySpaced(ReadOnlySpan<double> values, double threshold = 1e-6)
     {
-        var n = values.Count;
+        var n = values.Length;
         if (n <= 2) return true;
 
         var dt = values[1] - values[0];
@@ -325,7 +325,7 @@ internal static class FastFourierTransform
             if (Math.Abs(values[i] - values[i - 1] - dt) > threshold)
                 return false;
         return true;
-    } // internal static bool CheckEvenlySpaced (IReadOnlyList<double>, [double])
+    } // internal static bool CheckEvenlySpaced (ReadOnlySpan<double>, [double])
 
     /// <summary>
     /// Checks whether the specified number is a power of two.

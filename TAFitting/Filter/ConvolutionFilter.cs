@@ -41,33 +41,28 @@ internal abstract class ConvolutionFilter : IFilter
     abstract protected void Initialize();
 
     /// <inheritdoc/>
-    public IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
+    public void Filter(ReadOnlySpan<double> time, ReadOnlySpan<double> signal, Span<double> output)
     {
-        if (time.Count != signal.Count)
+        if (time.Length != signal.Length)
             throw new ArgumentException("The number of time points and signal points must be the same.");
 
-        if (time.Count < this.n)
+        if (time.Length < this.n)
             throw new ArgumentException($"The number of points must be greater than or equal to {this.n}.");
 
-        // Handling the signal as a span improves the performance of indexing.
-        var span = CollectionsMarshal.AsSpan([.. signal]);
-        var filtered = new double[time.Count];
-        for (var i = 0; i < filtered.Length; ++i)
+        for (var i = 0; i < output.Length; ++i)
         {
-            if (i < this.n || i >= time.Count - this.n)
+            if (i < this.n || i >= time.Length - this.n)
             {
-                filtered[i] = span[i];
+                output[i] = signal[i];
                 continue;
             }
 
-            filtered[i] = span[i] * this.coefficient0;
+            output[i] = signal[i] * this.coefficient0;
             for (var j = 0; j < this.coefficients.Length; ++j)
             {
-                filtered[i] += span[i - this.n + j] * this.coefficients[j];
-                filtered[i] += span[i + this.n - j] * this.coefficients[j];
+                output[i] += signal[i - this.n + j] * this.coefficients[j];
+                output[i] += signal[i + this.n - j] * this.coefficients[j];
             }
         }
-
-        return filtered;
-    } // public IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
+    } // public void Filter (ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>)
 } // internal abstract class ConvolutionFilter : IFilter

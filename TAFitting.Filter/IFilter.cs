@@ -23,6 +23,6 @@ public interface IFilter
     /// </summary>
     /// <param name="time">The time.</param>
     /// <param name="signal">The signal.</param>
-    /// <returns>The filtered signal.</returns>
-    public IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal);
+    /// <param name="output">The output buffer.</param>
+    public void Filter(ReadOnlySpan<double> time, ReadOnlySpan<double> signal, Span<double> output);
 } // public interface IFilter

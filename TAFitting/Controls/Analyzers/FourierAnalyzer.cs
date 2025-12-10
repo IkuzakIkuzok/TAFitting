@@ -196,8 +196,8 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         var time = this.decay.RawTimes;
         var signal = this.decay.Filtered.RawSignals;
 
-        var n = time.Count;
-        var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
+        var n = time.Length;
+        var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
 
         var buffer = n <= STACK_ALLOC_THRESHOLD ? stackalloc Complex[n] : new Complex[n];
         for (var i = 0; i < n; ++i) buffer[i] = new(signal[i], 0);

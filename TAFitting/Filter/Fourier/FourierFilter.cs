@@ -37,46 +37,38 @@ internal abstract class FourierFilter : IFilter
         => $"A filter that uses Fourier transform with a cutoff frequency of {GetScaled(this.cutoff, "Hz")} ({GetScaled(1 / this.cutoff, "s")}).";
 
     /// <inheritdoc/>
-    public virtual IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
+    public virtual void Filter(ReadOnlySpan<double> time, ReadOnlySpan<double> signal, Span<double> output)
     {
-        if (time.Count != signal.Count)
+        if (time.Length != signal.Length)
             throw new ArgumentException("The number of time points and signal points must be the same.");
 
-        if (time.Count < 2)
+        if (time.Length < 2)
             throw new ArgumentException($"The number of points must be greater than or equal to 2.");
 
         Debug.Assert(FastFourierTransform.CheckEvenlySpaced(time), "The time points must be evenly spaced.");
 
-        // FFT works only significantly fast when the number of points that is a power of 2.
-        // Extend the number of points to the nearest power of 2.
-        var n = 1 << (int)Math.Ceiling(Math.Log2(time.Count));
-        var sampleRate = (time.Count - 1) / (time[^1] - time[0]);
+        var n = time.Length;
+        var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
 
-        // Pad before and after the signal with zeros.
-        // This reduces the discontinuity at the edges and improves the result especially at the edges.
-        var offset = (n - time.Count) >> 1;
         // Max stackalloc size is 256 KiB.
         var buffer = n <= 0x4000 ? stackalloc Complex[n] : new Complex[n];
-        for (var i = 0; i < time.Count; ++i)
-            buffer[i + offset] = new(signal[i], 0);
+        for (var i = 0; i < time.Length; ++i)
+            buffer[i] = new(signal[i], 0);
 
-        FastFourierTransform.ForwardSplitRadix(buffer);
-        var freq = n <= 0x4000 ? stackalloc double[n] : new double[n];
-        FastFourierTransform.FrequencyScale(freq, sampleRate, false);
+        FastFourierTransform.Forward(buffer);
+        // Use `output` to store frequency scale as temporary buffer.
+        FastFourierTransform.FrequencyScale(output, sampleRate, false);
 
         for (var i = 0; i < n; ++i)
         {
-            var f = Math.Abs(freq[i]);
+            var f = Math.Abs(output[i]);
             if (f > this.cutoff)
                 buffer[i] = 0;
         }
 
-        var filtered = FastFourierTransform.InverseReal(buffer);
-        var result = new double[time.Count];
-        Array.Copy(filtered, offset, result, 0, time.Count);
-
-        return result;
-    } // public virtual IReadOnlyList<double> Filter (IReadOnlyList<double>, IReadOnlyList<double>)
+        // Store the result back to output buffer.
+        FastFourierTransform.InverseReal(buffer, output);
+    } // public virtual void Filter (ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>)
 
     private static readonly string[] SI_PREFIXES = [
         "Q", "R", "Y", "Z", "E", "P", "T", "G", "M", "k", "", "m", "μ", "n", "p", "f", "a", "z", "y", "r", "q"

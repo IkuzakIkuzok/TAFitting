@@ -61,7 +61,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw times.
     /// </summary>
-    internal IReadOnlyList<double> RawTimes
+    internal ReadOnlySpan<double> RawTimes
     {
         get
         {
@@ -106,7 +106,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <summary>
     /// Gets the raw signals.
     /// </summary>
-    internal IReadOnlyList<double> RawSignals
+    internal ReadOnlySpan<double> RawSignals
     {
         get
         {
@@ -710,8 +710,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     {
         try
         {
-            var filtered = filter.Filter(this.RawTimes, this.filtered).ToArray();
-            Array.Copy(filtered, this.filtered, this.times.Length);
+            filter.Filter(this.RawTimes, this.signals, this.filtered);
             this.HasFiltered = true;
         }
         catch (Exception e)

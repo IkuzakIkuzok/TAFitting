@@ -19,9 +19,9 @@ internal abstract class FourierFilterAuto : FourierFilter
         => $"A filter that uses Fourier transform with a cutoff frequency of {this.ratio * 100}% of time bandwidth.";
 
     /// <inheritdoc/>
-    override public IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
+    override public void Filter(ReadOnlySpan<double> time, ReadOnlySpan<double> signal, Span<double> output)
     {
         this.cutoff = 1 / ((time[^1] - time[0]) * this.ratio);
-        return base.Filter(time, signal);
-    } // public override IReadOnlyList<double> Filter(IReadOnlyList<double> time, IReadOnlyList<double> signal)
+        base.Filter(time, signal, output);
+    } // override public void Filter (ReadOnlySpan<double>, ReadOnlySpan<double>, Span<double>)
 } // internal abstract class FourierFilterAuto : FourierFilter
