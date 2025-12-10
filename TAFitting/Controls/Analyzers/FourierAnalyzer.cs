@@ -193,16 +193,18 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
         this.series.Points.Clear();
 
-        var time = this.decay.RawTimes;
+        var time = this.decay.Times;
         var signal = this.decay.FilteredSignals;
-        var scale = (double)this.decay.SignalUnit;
+        var timeScale = (double)this.decay.TimeUnit;
+        var signalScale = (double)this.decay.SignalUnit;
 
-        var n = time.Length;
-        var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
+        var n = time.Count;
+        var sampleRate = (time.Count - 1) / ((time[^1] - time[0]) * timeScale);
 
         using var complex_buffer = new PooledBuffer<Complex>(n);
         var buffer = n <= STACK_ALLOC_THRESHOLD ? stackalloc Complex[n] : complex_buffer.GetSpan();
-        for (var i = 0; i < n; ++i) buffer[i] = new(signal[i] * scale, 0);
+        for (var i = 0; i < n; ++i)
+            buffer[i] = new(signal[i] * signalScale, 0);
 
         FastFourierTransform.Forward(buffer);
 
