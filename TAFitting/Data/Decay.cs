@@ -59,6 +59,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     internal IReadOnlyList<double> Times => this.times;
 
     /// <summary>
+    /// Gets the signals.
+    /// </summary>
+    internal IReadOnlyList<double> Signals => this.signals;
+
+    /// <summary>
     /// Gets the raw times.
     /// </summary>
     internal ReadOnlySpan<double> RawTimes
@@ -68,40 +73,11 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             if (this.TimeUnit == TimeUnit.Second) return this.times;
 
             var times = new double[this.times.Length];
-            var i = 0;
             var tu = (double)this.TimeUnit;
-
-            if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
-            {
-                var v_tu = Vector256.Create(tu);
-                
-                ref var begin = ref MemoryMarshal.GetArrayDataReference(this.times);
-                ref var to = ref Unsafe.Add(ref begin, this.times.Length - Vector256<double>.Count);
-
-                ref var current = ref begin;
-                ref var current_raw = ref MemoryMarshal.GetArrayDataReference(times);
-
-                while (Unsafe.IsAddressLessThan(ref current, ref to))
-                {
-                    var v_current = Vector256.LoadUnsafe(ref current);
-                    Vector256.Multiply(v_current, v_tu).StoreUnsafe(ref current_raw);
-                    current = ref Unsafe.Add(ref current, Vector256<double>.Count);
-                    current_raw = ref Unsafe.Add(ref current_raw, Vector256<double>.Count);
-                    i += Vector256<double>.Count;
-                }
-            }
-
-            for (; i < this.times.Length; i++)
-                times[i] = this.times[i] * tu;
-
+            RestoreRawValues(this.times, times, tu);
             return times;
         }
     }
-
-    /// <summary>
-    /// Gets the signals.
-    /// </summary>
-    internal IReadOnlyList<double> Signals => this.signals;
 
     /// <summary>
     /// Gets the raw signals.
@@ -113,32 +89,44 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             if (this.SignalUnit == SignalUnit.OD) return this.signals;
 
             var signals = new double[this.signals.Length];
-            var i = 0;
             var su = (double)this.SignalUnit;
-
-            if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
-            {
-                var v_su = Vector256.Create(su);
-                
-                ref var begin = ref MemoryMarshal.GetArrayDataReference(this.signals);
-                ref var to = ref Unsafe.Add(ref begin, this.signals.Length - Vector256<double>.Count);
-                ref var current = ref begin;
-                ref var current_raw = ref MemoryMarshal.GetArrayDataReference(signals);
-                while (Unsafe.IsAddressLessThan(ref current, ref to))
-                {
-                    var v_current = Vector256.LoadUnsafe(ref current);
-                    Vector256.Multiply(v_current, v_su).StoreUnsafe(ref current_raw);
-                    current = ref Unsafe.Add(ref current, Vector256<double>.Count);
-                    current_raw = ref Unsafe.Add(ref current_raw, Vector256<double>.Count);
-                    i += Vector256<double>.Count;
-                }
-            }
-
-            for (; i < this.signals.Length; i++)
-                signals[i] = this.signals[i] * su;
+            RestoreRawValues(this.signals, signals, su);
             return signals;
         }
     }
+
+    /// <summary>
+    /// Multiplies each element in the specified input array by the given scale factor and writes the results to the output array.
+    /// </summary>
+    /// <remarks>If hardware acceleration is available, vectorized operations are used for improved performance.
+    /// The method does not allocate new arrays; results are written directly to the provided output array.</remarks>
+    /// <param name="values">The array of input values to be scaled.</param>
+    /// <param name="output">The array that receives the scaled values. Must be at least as long as <paramref name="values"/>.</param>
+    /// <param name="scale">The factor by which each input value is multiplied.</param>
+    private static void RestoreRawValues(double[] values, double[] output, double scale)
+    {
+        var i = 0;
+        if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
+        {
+            var v_su = Vector256.Create(scale);
+
+            ref var begin = ref MemoryMarshal.GetArrayDataReference(values);
+            ref var to = ref Unsafe.Add(ref begin, values.Length - Vector256<double>.Count);
+            ref var current = ref begin;
+            ref var current_raw = ref MemoryMarshal.GetArrayDataReference(output);
+            while (Unsafe.IsAddressLessThan(ref current, ref to))
+            {
+                var v_current = Vector256.LoadUnsafe(ref current);
+                Vector256.Multiply(v_current, v_su).StoreUnsafe(ref current_raw);
+                current = ref Unsafe.Add(ref current, Vector256<double>.Count);
+                current_raw = ref Unsafe.Add(ref current_raw, Vector256<double>.Count);
+                i += Vector256<double>.Count;
+            }
+        }
+
+        for (; i < values.Length; i++)
+            output[i] = values[i] * scale;
+    } // private static void RestoreRawValues (double[], double[], double)
 
     /// <summary>
     /// Gets the minimum time.
