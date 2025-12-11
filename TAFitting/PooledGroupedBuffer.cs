@@ -10,7 +10,9 @@ namespace TAFitting;
 /// Provides a pooled buffer that manages multiple contiguous groups of elements of type T, enabling efficient allocation and reuse of memory for grouped data operations.
 /// </summary>
 /// <remarks>This ref struct is intended for high-performance scenarios where multiple groups of elements need to be managed together using a single pooled buffer.
-/// The buffer is allocated from the shared array pool on demand and should be released by calling Dispose when no longer needed.</remarks>
+/// The buffer is allocated from the shared array pool on demand and should be released by calling Dispose when no longer needed.
+/// Consifer using <see cref="PooledBuffer{T}"/> instead if only a single buffer is required, as it may be simpler and more efficient in such cases.
+/// </remarks>
 /// <typeparam name="T">The type of elements stored in each group within the buffer.</typeparam>
 internal ref struct PooledGroupedBuffer<T>
 {
