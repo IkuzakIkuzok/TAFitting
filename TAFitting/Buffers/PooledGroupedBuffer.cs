@@ -43,15 +43,19 @@ internal ref struct PooledGroupedBuffer<T>
     internal Span<T> GetSpan(int index)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, this._count, nameof(index));
-        if (this._buffer is null)
-        {
-            var length = this._length * this._count;
-            InvalidOperationException.ThrowIf(length > Array.MaxLength, "The requested buffer size exceeds the maximum allowable array length.");
-            this._buffer = ArrayPool<T>.Shared.Rent(length);
-        }
+        this._buffer ??= RentArray();
         var offset = index * this._length;
         return this._buffer.AsSpan(offset, this._length);
     } // GetSpan (int)
+
+    // No inlining to reduce the size of the hot path
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private readonly T[] RentArray()
+    {
+        var length = this._length * this._count;
+        InvalidOperationException.ThrowIf(length > Array.MaxLength, "The requested buffer size exceeds the maximum allowable array length.");
+        return ArrayPool<T>.Shared.Rent(length);
+    } // private readonly T[] Rent ()
 
     /// <summary>
     /// Releases resources used by the instance and returns the underlying buffer to the shared array pool.
