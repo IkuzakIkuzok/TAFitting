@@ -741,10 +741,9 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             return;
         }
 
-        using var pooled_times = new PooledBuffer<double>(n);
-        using var pooled_signals = new PooledBuffer<double>(n);
-        var new_times = n <= 0x1000 ? stackalloc double[n] : pooled_times.GetSpan();
-        var new_signals = n <= 0x1000 ? stackalloc double[n] : pooled_signals.GetSpan();
+        using var pooled = new PooledGroupedBuffer<double>(n, 2);
+        var new_times = n <= 0x1000 ? stackalloc double[n] : pooled.GetSpan(0);
+        var new_signals = n <= 0x1000 ? stackalloc double[n] : pooled.GetSpan(1);
 
         Interpolation.Interpolate(mode, this.times, this.signals, new_times, new_signals);
 

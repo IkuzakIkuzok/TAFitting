@@ -12,7 +12,8 @@ namespace TAFitting;
 /// <remarks>A <see cref="PooledBuffer{T}"/> enables efficient temporary allocation of arrays by renting from the shared array pool.
 /// The buffer is returned to the pool when the instance is disposed.
 /// It is strongly recommended to use a <see langword="using"/> statement or a <see langword="using"/> declaration to ensure proper disposal of the instance.
-/// This type is intended for internal use to minimize memory allocations in performance-critical scenarios.</remarks>
+/// This type is intended for internal use to minimize memory allocations in performance-critical scenarios.
+/// Consider using <see cref="PooledGroupedBuffer{T}"/> if multiple buffers with the same length are needed simultaneously.</remarks>
 /// <typeparam name="T">The type of elements stored in the buffer.</typeparam>
 internal ref struct PooledBuffer<T>
 {
