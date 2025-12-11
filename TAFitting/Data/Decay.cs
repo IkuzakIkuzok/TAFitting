@@ -741,13 +741,15 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             return;
         }
 
-        var new_times = new double[n];
-        var new_signals = new double[n];
+        using var pooled_times = new PooledBuffer<double>(n);
+        using var pooled_signals = new PooledBuffer<double>(n);
+        var new_times = n <= 0x1000 ? stackalloc double[n] : pooled_times.GetSpan();
+        var new_signals = n <= 0x1000 ? stackalloc double[n] : pooled_signals.GetSpan();
 
         Interpolation.Interpolate(mode, this.times, this.signals, new_times, new_signals);
 
-        Array.Copy(new_times, this.times, n);
-        Array.Copy(new_signals, this.signals, n);
+        new_times.CopyTo(this.times);
+        new_signals.CopyTo(this.signals);
         RestoreOriginal(true);
     } // internal void Interpolate ()
 } // internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
