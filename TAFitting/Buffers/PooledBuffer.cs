@@ -3,8 +3,9 @@
 
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using TAFitting;
 
-namespace TAFitting;
+namespace TAFitting.Buffers;
 
 /// <summary>
 /// Provides a buffer of a specified length that is rented from a shared array pool and released when disposed.

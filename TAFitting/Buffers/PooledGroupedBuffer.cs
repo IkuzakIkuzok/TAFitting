@@ -3,8 +3,9 @@
 
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using TAFitting;
 
-namespace TAFitting;
+namespace TAFitting.Buffers;
 
 /// <summary>
 /// Provides a pooled buffer that manages multiple contiguous groups of elements of type T, enabling efficient allocation and reuse of memory for grouped data operations.

@@ -5,6 +5,7 @@ using DisposalGenerator;
 using System.Diagnostics;
 using System.Numerics;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Buffers;
 using TAFitting.Controls.Charting;
 using TAFitting.Data;
 using TAFitting.Filter.Fourier;

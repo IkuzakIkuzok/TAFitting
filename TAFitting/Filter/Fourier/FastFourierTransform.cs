@@ -3,6 +3,7 @@
 
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using TAFitting.Buffers;
 
 namespace TAFitting.Filter.Fourier;
 

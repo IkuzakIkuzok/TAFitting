@@ -1,6 +1,8 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
+using TAFitting.Buffers;
+
 namespace TAFitting.Data;
 
 /// <summary>
