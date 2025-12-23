@@ -171,7 +171,8 @@ namespace {ns}
         {
             builder.Append($"\t\t\t\t{key}");
             builder.Append(' ', length - key.Length);
-            builder.AppendLine($" => \"{value}\",");
+            var s_value = string.IsNullOrEmpty(value) ? "string.Empty" : $"\"{value}\"";
+            builder.AppendLine($" => {s_value},");
         }
 
         builder.AppendLine("\t\t\t\t_ => value.ToString(),");
