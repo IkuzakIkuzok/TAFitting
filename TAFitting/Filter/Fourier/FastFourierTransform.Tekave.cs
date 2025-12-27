@@ -78,7 +78,7 @@ internal static partial class FastFourierTransform
     {
         for (var k = 0; k < stride; k++)
         {
-            var baseAngle = -Math.Tau * k / (double)nSize;
+            var baseAngle = -Math.Tau * k / nSize;
             for (var m = 1; m <= 6; m++) // W^1k ... W^6k
             {
                 // Table layout: [m-1 * stride + k]
