@@ -15,7 +15,7 @@ namespace TAFitting.Filter.Fourier;
 /// <summary>
 /// Provides methods for fast Fourier transform.
 /// </summary>
-internal static class FastFourierTransform
+internal static partial class FastFourierTransform
 {
     /// <summary>
     /// Performs a forward Fourier transform on the specified buffer.
@@ -29,6 +29,14 @@ internal static class FastFourierTransform
     internal static void Forward(Span<Complex> buffer)
     {
         var n = buffer.Length;
+
+        if (n == TekaveSize)
+        {
+            // Optimized FFT for 2499 points (Tekave data size).
+            ForwardTekave(buffer);
+            return;
+        }
+
         if (CheckPowerOfTwo(n))
         {
             // Split-Radix FFT is significanly faster than Cooley-Tukey FFT for n = 2^k.
@@ -36,6 +44,7 @@ internal static class FastFourierTransform
             return;
         }
 
+        // Fall back to Cooley-Tukey FFT for other sizes.
         ForwardCooleyTukey(buffer);
     } // internal static void Forward (Span<Complex>)
 
@@ -337,4 +346,4 @@ internal static class FastFourierTransform
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool CheckPowerOfTwo(int n)
         => ((n & (n - 1)) == 0) && (n > 0);
-} // internal static class FastFourierTransform
+} // internal static partial class FastFourierTransform
