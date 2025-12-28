@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
 using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Collections;
 using TAFitting.Data;
@@ -63,19 +64,21 @@ internal class CacheSeries : Series
         this.DataPointsCache.Clear();
     } // private void ClearCache ()
 
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "isEmptyPoint")]
+    private static extern ref bool IsEmptyPoint(DataPointCustomProperties point);
+
     /// <summary>
     /// Retrieves the data point at the specified index, creating and initializing it if it does not already exist.
     /// </summary>
     /// <param name="index">The zero-based index of the data point to retrieve or create. Must be greater than or equal to zero.</param>
-    /// <returns>The data point at the specified index. If the data point does not exist or is empty, a new data point is created and returned.</returns>
+    /// <returns>The data point at the specified index. If the data point does not exist, a new data point is created and returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private DataPoint GetOrCreateDataPoint(int index)
     {
         var p = this.DataPointsCache[index];
 
-        // Setting DataPoint.IsEmpty property raises redrawing and is computationally more expensive than creating a new DataPoint.
-        // Therefore, a new instance is created to replace the empty one.
-        if (p?.IsEmpty ?? true)
-            p = this.DataPointsCache[index] = new(this);
+        p ??= this.DataPointsCache[index] = new(this);
+        IsEmptyPoint(p) = false;
 
         return p;
     } // internal DataPoint GetOrCreateDataPoint (int index)
