@@ -131,26 +131,26 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         var menu_viewWidth = new ToolStripMenuItem("Line &width");
         menu_view.DropDownItems.Add(menu_viewWidth);
 
+        var lineWidthGroup = new ToolStripMenuItemGroup<int>(ChangeLineWidth);
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString(), null, ChangeLineWidth)
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, lineWidthGroup)
             {
-                Tag = i,
+                Checked = i == Program.AnalyzerLineWidth,
             };
-            menu_viewWidth.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.AnalyzerLineWidth;
             menu_viewWidth.DropDownItems.Add(item);
         }
 
         var menu_viewMarker = new ToolStripMenuItem("Marker &size");
         menu_view.DropDownItems.Add(menu_viewMarker);
 
+        var markerSizeGroup = new ToolStripMenuItemGroup<int>(ChangeMarkerSize);
         for (var i = 0; i <= 10; i++)
         {
-            var item = new ToolStripMenuItem(i.ToInvariantString(), null, ChangeMarkerSize)
+            var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, markerSizeGroup)
             {
-                Tag = i,
+                Checked = i == Program.AnalyzerMarkerSize,
             };
-            menu_viewMarker.DropDownOpening += (sender, e) => item.Checked = (int)item.Tag == Program.AnalyzerMarkerSize;
             menu_viewMarker.DropDownItems.Add(item);
         }
 
@@ -347,17 +347,15 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.series.Color = Program.AnalyzerLineColor = colorDialog.Color;
     } // private void ChangeLineColor (object, EventArgs)
 
-    private void ChangeLineWidth(object? sender, EventArgs e)
+    private void ChangeLineWidth(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int width) return;
-        this.series.BorderWidth = Program.SpectraLineWidth = width;
+        if (e.SelectedItem is null) return;
+        this.series.BorderWidth = Program.AnalyzerLineWidth = e.SelectedItem.Tag;
     } // private void ChangeLineWidth (object, EventArgs)
 
-    private void ChangeMarkerSize(object? sender, EventArgs e)
+    private void ChangeMarkerSize(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not int size) return;
-        this.series.MarkerSize = Program.SpectraMarkerSize = size;
+        if (e.SelectedItem is null) return;
+        this.series.MarkerSize = Program.AnalyzerMarkerSize = e.SelectedItem.Tag;
     } // private void ChangeMarkerSize (object, EventArgs)
 } // internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
