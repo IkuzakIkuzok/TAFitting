@@ -226,7 +226,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
             if (this.spectrumType != FourierSpectrumType.PowerSpectralDensityDecibel && a <= 0) continue;
             if (double.IsNaN(a) || double.IsInfinity(a)) continue;
             a = Math.Clamp(a, -1e28, 1e28);
-            this.series.AddPoint(f, a);
+            this.series.AddPoint(f * timeScale, a);
             amp_min = Math.Min(amp_min, a);
             amp_max = Math.Max(amp_max, a);
         }
@@ -238,13 +238,15 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         var x_max = Math.Ceiling(Math.Log10(freq_max));
         var f_min = Math.Pow(10, x_min);
         var f_max = Math.Pow(10, x_max);
-        this.axisX_freq.Minimum = f_min;
-        this.axisX_freq.Maximum = f_max;
+        this.axisX_freq.Minimum = f_min * timeScale;
+        this.axisX_freq.Maximum = f_max * timeScale;
 
         // Set the same range for the time domain axis as the frequency domain axis.
         this.axisX_time.Minimum = f_min;
         this.axisX_time.Maximum = f_max;
 
+        var freq_scale = (SIPrefix)(-(int)this.decay.TimeUnit.Scale);
+        this.axisX_freq.Title = $"Frequency ({freq_scale.ToDefaultSerializeValue()}Hz)";
         this.axisX_time.Title = $"Period ({this.decay.TimeUnit})";
 
         if (this.spectrumType == FourierSpectrumType.PowerSpectralDensityDecibel)
@@ -277,7 +279,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.axisX_time.AdjustAxisIntervalLogarithmic();
         this.axisY.AdjustAxisInterval();
 
-        SetTimeLabels((int)x_min, (int)x_max, this.decay.TimeUnit);
+        SetTimeLabels((int)x_min, (int)x_max, timeScale);
     } // private void SetSpectrum ()
 
     private static double CalcYValue(FourierSpectrumType spectrumType, Complex y, double f)
