@@ -51,6 +51,19 @@ internal abstract class FourierFilter : IFilter
         var n = time.Length;
         var sampleRate = (time.Length - 1) / (time[^1] - time[0]);
 
+        var a = sampleRate / n;
+        var b = this.cutoff / a;
+        var i_min = (int)Math.Ceiling(b);
+        var i_max = (int)Math.Floor(n - b);
+
+        var half = n >> 1;
+        if (i_min >= half || i_max < half)
+        {
+            // No frequency points to filter. Just copy the input signal to output.
+            signal.CopyTo(output);
+            return;
+        }
+
         // Max stackalloc size is 256 KiB.
         using var pooled = new PooledBuffer<Complex>(n);
         var buffer = n <= 0x4000 ? stackalloc Complex[n] : pooled.GetSpan();
@@ -58,15 +71,7 @@ internal abstract class FourierFilter : IFilter
             buffer[i] = new(signal[i], 0);
 
         FastFourierTransform.Forward(buffer);
-        // Use `output` to store frequency scale as temporary buffer.
-        FastFourierTransform.FrequencyScale(output, sampleRate, false);
-
-        for (var i = 0; i < n; ++i)
-        {
-            var f = Math.Abs(output[i]);
-            if (f > this.cutoff)
-                buffer[i] = 0;
-        }
+        buffer[i_min..(i_max + 1)].Clear();
 
         // Store the result back to output buffer.
         FastFourierTransform.InverseReal(buffer, output);
