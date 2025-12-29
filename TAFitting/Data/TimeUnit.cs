@@ -39,5 +39,11 @@ internal sealed class TimeUnit : ValueUnit
 
     internal static readonly TimeUnit Femtosecond = new(SIPrefix.Femto);
 
+    /// <summary>
+    /// Gets the frequency unit that is the reciprocal of the current unit.
+    /// </summary>
+    internal FrequencyUnit Reciprocal
+        => new(this.Scale.Reciprocal);
+
     private TimeUnit(SIPrefix scale) : base($"{GetPrefixSymbol(scale)}s", scale) { }
 } // internal sealed class TimeUnit : ValueUnit
