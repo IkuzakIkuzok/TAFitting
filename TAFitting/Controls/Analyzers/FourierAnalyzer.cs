@@ -245,8 +245,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.axisX_time.Minimum = f_min;
         this.axisX_time.Maximum = f_max;
 
-        var freq_scale = (SIPrefix)(-(int)this.decay.TimeUnit.Scale);
-        this.axisX_freq.Title = $"Frequency ({freq_scale.ToDefaultSerializeValue()}Hz)";
+        this.axisX_freq.Title = $"Frequency ({this.decay.TimeUnit.Reciprocal})";
         this.axisX_time.Title = $"Period ({this.decay.TimeUnit})";
 
         if (this.spectrumType == FourierSpectrumType.PowerSpectralDensityDecibel)
