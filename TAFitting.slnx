@@ -1,0 +1,36 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="DisposalGenerator/DisposalGenerator.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="EnumSerializer/EnumSerializer.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="SourceGeneratorUtils/SourceGeneratorUtils.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="TAFitting.Filter/TAFitting.Filter.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="TAFitting.Model/TAFitting.Model.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+  <Project Path="TAFitting.ModelGenerator/TAFitting.ModelGenerator.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+  <Project Path="TAFitting/TAFitting.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+</Solution>
