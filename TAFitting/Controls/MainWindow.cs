@@ -1517,12 +1517,12 @@ internal sealed partial class MainWindow : Form
                 return;
             }
 
-            foreach (var row in reader.ReadRows())
+            var buffer = (stackalloc double[model.Parameters.Count]);
+            while (reader.ReadNextRow(out var wavelength, buffer))
             {
-                var wavelength = row.Wavelength;
                 var tableRow = this.parametersTable[wavelength];
                 if (tableRow is null) continue;
-                tableRow.Parameters = row.Parameters;
+                tableRow.SetParameters(buffer);
             }
 
             UpdatePreviewsParameters();

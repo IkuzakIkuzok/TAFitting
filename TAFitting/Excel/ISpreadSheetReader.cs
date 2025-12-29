@@ -1,7 +1,6 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
-using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -38,8 +37,12 @@ internal interface ISpreadSheetReader
     void Open(string path);
 
     /// <summary>
-    /// Reads the rows.
+    /// Attempts to read the next row of data and writes its parameter values into the specified span.
     /// </summary>
-    /// <returns>The rows.</returns>
-    IEnumerable<ParameterValues> ReadRows();
+    /// <param name="wavelength">When this method returns, contains the wavelength value for the next row, if a row was read; otherwise, <see cref="double.NaN"/>.</param>
+    /// <param name="parameters">A span of doubles that receives the parameter values for the next row.
+    /// The span's length must match the number of parameters expected by the selected model.</param>
+    /// <returns><see langword="true"/> if a row was read and parameter values were written to the span;
+    /// otherwise, <see langword="false"/> if there are no more rows to read.</returns>
+    bool ReadNextRow(out double wavelength, Span<double> parameters);
 } // internal interface ISpreadSheetReader

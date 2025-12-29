@@ -154,6 +154,12 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         this.Decay = decay;
     } // ctor (decay)
 
+    internal void SetParameters(ReadOnlySpan<double> parameters)
+    {
+        for (var i = 0; i < parameters.Length; i++)
+            this[i] = parameters[i];
+    } // internal void SetParameters (ReadOnlySpan<double>)
+
     /// <summary>
     /// Sets the magnitude columns.
     /// </summary>

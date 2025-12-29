@@ -82,35 +82,37 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         }
     } // public void Open (string)
 
-    /// <inheritdoc/>
-    public IEnumerable<ParameterValues> ReadRows()
+    public bool ReadNextRow(out double wavelength, Span<double> parameters)
     {
         if (this.reader is null)
             throw new InvalidOperationException("The CSV file is not opened.");
         if (!this.ModelMatched)
             throw new InvalidOperationException("The model does not match with the CSV file.");
+        if (parameters.Length != this.Parameters.Count)
+            throw new ArgumentException("The length of the parameters span does not match the number of parameters.", nameof(parameters));
 
-        var len = this.Parameters.Count;
-        string? line;
-        while ((line = this.reader.ReadLine()) is not null)
-        {
-            var span = line.AsSpan();
-            var sep = span.IndexOf(',');
+        var line = this.reader.ReadLine();
+        if (line is null)
+            goto Error;
 
-            var s_wavelength = span[..sep];
-            var s_values = span[(sep + 1)..];
+        var span = line.AsSpan();
+        var sep = span.IndexOf(',');
 
-            if (!double.TryParse(s_wavelength, out var wavelength))
-                continue;
+        var s_wavelength = span[..sep];
+        var s_values = span[(sep + 1)..];
 
-            var parameters = new double[len];
-            var values = parameters.AsSpan();
-            if (NegativeSignHandler.ParseDoubles(s_values, ',', values) != len)
-                continue;
+        if (!double.TryParse(s_wavelength, out wavelength))
+            goto Error;
 
-            yield return new(wavelength, parameters);
-        }
-    } // public IEnumerable<ParameterValues> ReadRows ()
+        if (NegativeSignHandler.ParseDoubles(s_values, ',', parameters) != parameters.Length)
+            goto Error;
+
+        return true;
+
+    Error:
+        wavelength = double.NaN;
+        return false;
+    } // public bool ReadNextRow (out double, Span<double>)
 
     public void Dispose()
     {

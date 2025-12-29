@@ -68,24 +68,27 @@ internal class ExcelReader : ISpreadSheetReader, IDisposable
     } // public void Open (string)
 
     /// <inheritdoc/>
-    public IEnumerable<ParameterValues> ReadRows()
+    public bool ReadNextRow(out double wavelength, Span<double> parameters)
     {
         if (this.worksheet is null)
             throw new InvalidOperationException("The workbook is not opened.");
         if (!this.ModelMatched)
             throw new InvalidOperationException("The model does not match with the spreadsheet.");
+        if (parameters.Length != this.Parameters.Count)
+            throw new ArgumentException("The length of the parameters span does not match the number of parameters.", nameof(parameters));
 
-        IXLRow row;
-        while (!(row = this.worksheet.Row(this.rowIndex)).IsEmpty())
+        var row = this.worksheet.Row(this.rowIndex++);
+        if (row.IsEmpty())
         {
-            var parameters = new double[this.Parameters.Count];
-            var wavelength = row.Cell(1).GetDouble();
-            for (var i = 0; i < this.Parameters.Count; i++)
-                parameters[i] = row.Cell(i + 2).GetDouble();
-            yield return new(wavelength, parameters);
-            this.rowIndex++;
+            wavelength = double.NaN;
+            return false;
         }
-    } // public IEnumerable<ParameterValues> ReadRows ()
+
+        wavelength = row.Cell(1).GetDouble();
+        for (var i = 0; i < this.Parameters.Count; i++)
+            parameters[i] = row.Cell(i + 2).GetDouble();
+        return true;
+    } // public bool ReadNextRow (out double, Span<double>)
 
     public void Dispose()
     {
