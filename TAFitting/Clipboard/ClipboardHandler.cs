@@ -11,14 +11,12 @@ internal static class ClipboardHandler
 {
     internal static IEnumerable<ParameterValues> GetRowsFromClipboard(IEnumerable<string> parameters)
     {
-        //if (!WinClipboard.ContainsData(DataFormats.CommaSeparatedValue)) yield break;
-        if (!WinClipboard.TryGetData(DataFormats.CommaSeparatedValue, out MemoryStream? stream)) yield break;
+        if (!WinClipboard.TryGetData(DataFormats.UnicodeText, out string? csv)) yield break;
 
-        var csv = stream.ToArray().GetText();
         var rows = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
-        var header = rows.First().Split(',');
-        var contents = rows.Skip(1).Select(row => row.Trim('\0').Split(','));
+        var header = rows.First().Split('\t');
+        var contents = rows.Skip(1).Select(row => row.Trim('\0').Split('\t'));
         
         var parameterIndices = parameters.Select(p => Array.IndexOf(header, p)).ToArray();
         if (parameterIndices.Any(i => i < 0)) yield break;
