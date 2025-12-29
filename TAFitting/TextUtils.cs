@@ -26,23 +26,30 @@ internal static class TextUtils
         CP932 = Encoding.GetEncoding(932);
     } // cctor ()
 
+    
     /// <summary>
-    /// Gets the text from the specified byte array.
+    /// Decodes the specified sequence of bytes into a string using the detected or default encoding.
     /// </summary>
-    /// <param name="bytes">The byte array to get the text from.</param>
-    /// <returns>The text decoded from the byte array.</returns>
-    internal static string GetText(this byte[] bytes)
+    /// <remarks>If the encoding cannot be determined from the byte sequence, a default encoding is used.
+    /// The method does not throw if the byte sequence is empty; it returns an empty string.</remarks>
+    /// <param name="bytes">The read-only span of bytes to decode into a string.</param>
+    /// <returns>A string representation of the decoded bytes.</returns>
+    internal static string GetText(this ReadOnlySpan<byte> bytes)
     {
         var encoding = bytes.GetEncoding() ?? DefaultEncoding;
         return encoding.GetString(bytes);
-    } // internal static string GetText (this byte[])
+    } // internal static string GetText (this ReadOnlySpan<byte>)
+
 
     /// <summary>
-    /// Gets the encoding of the specified byte array.
+    /// Attempts to detect the text encoding of the specified byte sequence, with a focus on common Japanese encodings.
     /// </summary>
-    /// <param name="bytes">The byte array to get the encoding of.</param>
-    /// <returns>The encoding of the byte array if it can be determined; otherwise, <see langword="null"/>.</returns>
-    internal static Encoding? GetEncoding(this byte[] bytes)
+    /// <remarks>This method heuristically distinguishes between several encodings, including ASCII, UTF-8, Shift_JIS, EUC-JP, JIS, and Unicode.
+    /// Detection is not guaranteed to be accurate for all inputs, especially for short or ambiguous byte sequences.
+    /// The method is primarily intended for Japanese text and may not reliably detect encodings for other languages.</remarks>
+    /// <param name="bytes">The byte sequence to analyze for encoding detection.</param>
+    /// <returns>An Encoding instance representing the detected encoding, or <see langword="null"/> if the encoding cannot be determined.</returns>
+    internal static Encoding? GetEncoding(this ReadOnlySpan<byte> bytes)
     {
         /*
          * https://dobon.net/vb/dotnet/string/detectcode.html
@@ -227,7 +234,7 @@ internal static class TextUtils
         }
 
         return null;
-    } // internal static Encoding? GetEncoding (this byte[])
+    } // internal static Encoding? GetEncoding (this ReadOnlySpan<byte>)
 
     #region Parse
 
