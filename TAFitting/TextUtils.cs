@@ -292,4 +292,53 @@ internal static class TextUtils
         var index = s.LastIndexOf(separator);
         return index >= 0 ? s[(index + 1)..] : s;
     } // internal static string GetLastPartition (this string, char)
+
+    /// <summary>
+    /// Reads a line of characters from the current stream and writes the data to the specified buffer.
+    /// </summary>
+    /// <remarks>A line is considered to be terminated by a carriage return (<c>'\r'</c>), a line feed (<c>'\n'</c>),
+    /// or a carriage return immediately followed by a line feed.
+    /// The terminating line break characters are not included in the buffer.
+    /// If the buffer is not large enough to hold the entire line, the method returns -1 and does not write a partial line.</remarks>
+    /// <param name="reader">The <see cref="StreamReader"/> instance to read from.</param>
+    /// <param name="buffer">The buffer that receives the characters read from the stream.</param>
+    /// <returns>The number of characters written to the buffer, or -1 if the buffer is too small to hold the entire line.
+    /// Returns 0 if the end of the stream is reached before any characters are read.</returns>
+    internal static int ReadLine(this StreamReader reader, Span<char> buffer)
+    {
+        var count = 0;
+        while (true)
+        {
+            var ch = reader.Read();
+            if (ch == -1)
+            {
+                // End of stream
+                break;
+            }
+            if (ch == '\n')
+            {
+                // Newline character
+                break;
+            }
+            if (ch == '\r')
+            {
+                // Carriage return, check for following newline
+                if (reader.Peek() == '\n')
+                {
+                    reader.Read(); // Consume the newline
+                }
+                break;
+            }
+            if (count < buffer.Length)
+            {
+                buffer[count++] = (char)ch;
+            }
+            else
+            {
+                // Buffer overflow
+                return -1;
+            }
+        }
+        return count;
+    } // internal static int ReadLine (this StreamReader, Span<char>)
 } // internal static class TextUtils

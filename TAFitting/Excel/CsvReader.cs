@@ -91,12 +91,16 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         if (parameters.Length != this.Parameters.Count)
             throw new ArgumentException("The length of the parameters span does not match the number of parameters.", nameof(parameters));
 
-        var line = this.reader.ReadLine();
-        if (line is null)
+        // Maximum 128 KB, 65536 characters
+        var buffer = (stackalloc char[0x10000]);
+        var l = this.reader.ReadLine(buffer);
+        if (l < 0)
             goto Error;
 
-        var span = line.AsSpan();
+        var span = buffer[..l];
         var sep = span.IndexOf(',');
+        if (sep < 0)
+            goto Error;
 
         var s_wavelength = span[..sep];
         var s_values = span[(sep + 1)..];
