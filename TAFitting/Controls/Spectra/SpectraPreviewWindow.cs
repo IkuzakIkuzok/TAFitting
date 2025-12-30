@@ -2,6 +2,7 @@
 // (c) 2024-2025 Kazuki Kohzuki
 
 using DisposalGenerator;
+using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -479,7 +480,7 @@ internal sealed partial class SpectraPreviewWindow : Form
             times = times[..timesCount];
             MemoryExtensions.Sort(times);
 
-            var funcs = this.parameters.ToDictionary(
+            var funcs = this.parameters.ToFrozenDictionary(
                 kv => kv.Key,
                 kv => model.GetFunction(kv.Value)
             );
@@ -552,7 +553,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
     } // private void DrawSpectra ()
 
-    private (double Min, double Max) DrawSpectrum(double time, Dictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
+    private (double Min, double Max) DrawSpectrum(double time, FrozenDictionary<double, Func<double, double>> funcs, Color color, IEnumerable<double> masked, IEnumerable<double> nextOfMasked)
     {
         var count = 0;
         CacheSeries MakeSeries()
@@ -595,7 +596,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         }
         this.chart.Series.Add(series);
         return (min, max);
-    } // private (double, double) DrawSpectrum (double, Dictionary<double, Func<double, double>>, Color, IEnumerable<double>, IEnumerable<double>)
+    } // private (double, double) DrawSpectrum (double, FrozenDictionary<double, Func<double, double>>, Color, IEnumerable<double>, IEnumerable<double>)
 
     private void DrawHorizontalLine(double wlMin, double wlMax)
     {
