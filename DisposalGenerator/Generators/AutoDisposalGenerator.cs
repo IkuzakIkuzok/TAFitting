@@ -120,18 +120,22 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine();
-        builder.AppendLine("\t\t\tdisposed = true;");
+        builder.AppendLine("\t\t\tif (disposing)\n\t\t\t{");
         foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
         {
             var name = field.Identifier.Text;
-            builder.AppendLine($"\t\t\tthis.{name}?.Dispose();");
+            builder.AppendLine($"\t\t\t\tthis.{name}?.Dispose();");
         }
+        builder.AppendLine("\t\t\t}"); // if (disposing)
 
         if (!string.IsNullOrEmpty(unmanaged))
         {
             builder.AppendLine();
             builder.AppendLine($"\t\t\t{unmanaged}();");
         }
+
+        builder.AppendLine();
+        builder.AppendLine("\t\t\tdisposed = true;");
 
         if (hasDisposeBool)
             builder.AppendLine("\t\t} // override protected void Dispose (bool)");
