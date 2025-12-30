@@ -149,11 +149,19 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
         }
     }
 
+    /// <summary>
+    /// Initializes a new instance of the ParametersTableRow class with the specified decay parameter.
+    /// </summary>
+    /// <param name="decay">The decay parameter to associate with this table row.</param>
     internal ParametersTableRow(Decay decay)
     {
         this.Decay = decay;
     } // ctor (decay)
 
+    /// <summary>
+    /// Sets the values of the parameters from the specified read-only span of doubles.
+    /// </summary>
+    /// <param name="parameters">A read-only span containing the parameter values to set. The length of the span must match the number of parameters.</param>
     internal void SetParameters(ReadOnlySpan<double> parameters)
     {
         for (var i = 0; i < parameters.Length; i++)
