@@ -737,7 +737,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         var extension = Path.GetExtension(filename);
         var writer = GetSpreadSheetWriter(extension);
 
-        var maskingRanges = this.maskingRangeBox.MaskingRanges.ToArray();
+        var maskingRanges = this.maskingRangeBox.MaskingRanges;
 
         try
         {
@@ -747,7 +747,7 @@ internal sealed partial class SpectraPreviewWindow : Form
 
             foreach ((var wavelength, var parameters) in this.parameters)
             {
-                if (maskingRanges.Any(r => r.Includes(wavelength))) continue;
+                if (maskingRanges.Include(wavelength)) continue;
                 writer.AddRow(wavelength, parameters);
             }
 

@@ -1,7 +1,6 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using System.Collections;
 using TAFitting.Collections;
 
 namespace TAFitting.Controls.Spectra;
@@ -9,7 +8,7 @@ namespace TAFitting.Controls.Spectra;
 /// <summary>
 /// Represents a collection of masking ranges.
 /// </summary>
-internal sealed class MaskingRanges : IEnumerable<MaskingRange>
+internal sealed class MaskingRanges
 {
     private readonly HashSet<MaskingRange> _maskingRanges;
 
@@ -50,16 +49,8 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
             this._maskingRanges.Add(lastRange);
     } // ctor (string)
 
-    /// <inheritdoc/>
-    public IEnumerator<MaskingRange> GetEnumerator()
-        => ((IEnumerable<MaskingRange>)this._maskingRanges).GetEnumerator();
-
-    /// <inheritdoc/>
-    IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable)this._maskingRanges).GetEnumerator();
-
-    private static bool CheckIncluded(MaskingRange range, double point)
-        => range.Includes(point);
+    public HashSet<MaskingRange>.Enumerator GetEnumerator()
+        => this._maskingRanges.GetEnumerator();
 
     /// <summary>
     /// Determines whether the specified point is contained within any of the masking ranges in the collection.
@@ -67,7 +58,15 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
     /// <param name="point">The value to test for inclusion within the masking ranges.</param>
     /// <returns><see langword="true"/> if the point is included in at least one masking range; otherwise, <see langword="false"/>.</returns>
     internal bool Include(double point)
-        => this._maskingRanges.Any(CheckIncluded, point);
+    {
+        // HashSet<T> has GetEnumerator() method that returns struct enumerator
+        foreach (var range in this._maskingRanges)
+        {
+            if (range.Includes(point))
+                return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// Gets the masked points.
@@ -76,7 +75,7 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
     /// <returns>The masked points.</returns>
     internal IEnumerable<double> GetMaskedPoints(IEnumerable<double> points)
     {
-        if (!this.Any()) return [];
+        if (this._maskingRanges.Count == 0) return [];
         return points.Where(Include);
     } // internal IEnumerable<double> GetMaskedPoints (IEnumerable<double>)
 
@@ -90,7 +89,7 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
         static double GetEnd(MaskingRange range) => range.End;
 
         using var iter = points.GetEnumerator();
-        foreach (var end in this.Select(GetEnd).Order())
+        foreach (var end in this._maskingRanges.Select(GetEnd).Order())
         {
             while (iter.MoveNext())
             {
@@ -103,4 +102,4 @@ internal sealed class MaskingRanges : IEnumerable<MaskingRange>
             }
         }
     } // internal IEnumerable<double> GetNextOfMaskedPoints (IEnumerable<double>)
-} // internal sealed class MaskingRanges : IEnumerable<MaskingRange>
+} // internal sealed class MaskingRanges
