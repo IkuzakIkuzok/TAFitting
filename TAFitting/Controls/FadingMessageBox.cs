@@ -2,7 +2,7 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using DisposalGenerator;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TAFitting.Controls;
@@ -14,13 +14,6 @@ namespace TAFitting.Controls;
 [AutoDisposal]
 internal partial class FadingMessageBox : Form
 {
-    private static readonly MethodInfo processCmdKey;
-
-    static FadingMessageBox()
-    {
-        processCmdKey = typeof(Form).GetMethod("ProcessCmdKey", BindingFlags.Instance | BindingFlags.NonPublic)!;
-    } // cctor ()
-
     private static FadingMessageBox? showing = null;
 
     private readonly Label label;
@@ -155,12 +148,13 @@ internal partial class FadingMessageBox : Form
     private void OnParentClosed(object? sender, EventArgs e)
         => Close();
 
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProcessCmdKey")]
+    private static extern bool FormProcessCmdKey(Form form, ref Message msg, Keys keyData);
+
     override protected bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
         // Send the key event to the parent form.
         msg.HWnd = this.parent.Handle;
-        var res = (bool)(processCmdKey.Invoke(this.parent, [msg, keyData]) ?? false);
-        if (res) return true;
-        return base.ProcessCmdKey(ref msg, keyData);
+        return FormProcessCmdKey(this.parent, ref msg, keyData) || base.ProcessCmdKey(ref msg, keyData);
     } // override protected bool ProcessCmdKey (ref Message, Keys)
 } // internal partial class FadingMessageBox : Form
