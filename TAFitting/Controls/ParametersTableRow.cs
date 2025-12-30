@@ -153,8 +153,10 @@ internal sealed partial class ParametersTableRow : DataGridViewRow
     /// Initializes a new instance of the ParametersTableRow class with the specified decay parameter.
     /// </summary>
     /// <param name="decay">The decay parameter to associate with this table row.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the <paramref name="decay"/> parameter is <see langword="null"/>.</exception>
     internal ParametersTableRow(Decay decay)
     {
+        ArgumentNullException.ThrowIfNull(decay);
         this.Decay = decay;
     } // ctor (decay)
 
