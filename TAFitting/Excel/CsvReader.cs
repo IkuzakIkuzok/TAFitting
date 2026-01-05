@@ -47,7 +47,7 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         {
 #pragma warning disable IDE0079
 #pragma warning disable IDISP003  // Assignment is safe as the reader is null here.
-            this.reader = new StreamReader(path, Encoding.UTF8);
+            this.reader = new(path, Encoding.UTF8);
 #pragma warning restore
 
             var header = this.reader.ReadLine();
@@ -57,21 +57,36 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
                 return;
             }
 
-            var columns = header.Split(',');
-            if (columns.Length - 1 < this.Parameters.Count)
+            var span = header.AsSpan();
+            var paramsCount = span.Count(',');
+            if (paramsCount < this.Parameters.Count)
             {
                 this.ModelMatched = false;
                 return;
             }
 
-            var parameters = columns.AsSpan(1, this.Parameters.Count);
-            for (var i = 0; i < this.Parameters.Count; i++)
+            var start = span.IndexOf(',') + 1;
+            var idx_p = 0;
+            for (var i = start; i < span.Length; i++)
             {
-                if (parameters[i] != this.Parameters[i])
+                if (i != span.Length && span[i] != ',')
+                    continue;
+
+                var length = i - start;
+                if (length == 0)
                 {
                     this.ModelMatched = false;
                     return;
                 }
+                var segment = span.Slice(start, length);
+                var name = this.Parameters[idx_p++];
+                if (!segment.SequenceEqual(name))
+                {
+                    this.ModelMatched = false;
+                    return;
+                }
+                if (idx_p == this.Parameters.Count) break;
+                start = i + 1;
             }
 
             this.ModelMatched = true;
