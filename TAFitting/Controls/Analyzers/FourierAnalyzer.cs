@@ -216,6 +216,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         n >>= 1;  // Only positive frequencies, i.e., the half of the spectrum, have physical meanings.
         freq = freq[..n];
         buffer = buffer[..n];
+        ApplyAdaptiveCutoff(buffer);
         var amp_min = double.PositiveInfinity;
         var amp_max = double.NegativeInfinity;
         for (var i = 0; i < n; ++i)
@@ -296,6 +297,61 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         Debug.Assert(spectrumType == FourierSpectrumType.PowerSpectralDensityDecibel);
         return 10 * Math.Log10(psd);
     } // private static double CalcYValue (FourierSpectrumType, Complex, double)
+
+    /// <summary>
+    /// Applies an adaptive cutoff to a buffer of complex values by zeroing out trailing elements whose magnitude falls below a calculated threshold.
+    /// </summary>
+    /// <remarks> Fourier spectrum of filtered signals often contains trailing noise components with very small magnitudes, which came from numerical errors.
+    /// To display a cleaner spectrum, this method identifies a cutoff point based on the maximum magnitude found in the initial segment of the buffer.
+    /// Elements beyond this cutoff point, where the magnitude drops below a specified ratio of the maximum, are set to zero.</remarks>
+    /// <param name="buffer">The buffer of complex values to process. Elements beyond the adaptive cutoff point may be set to zero.</param>
+    /// <param name="dropRatio">The ratio of the maximum magnitude used to determine the cutoff threshold. Default is 1e-10.</param>
+    private static void ApplyAdaptiveCutoff(Span<Complex> buffer, double dropRatio = 1e-10, double slopeTolerance = 0.01)
+    {
+        var n = buffer.Length;
+        // Scan only the initial part of the buffer to find the maximum magnitude.
+        var scanLeng = (n < 0x100) ? (n >> 1) : (n >> 3);
+
+        // Finding the maximum magnitude and determining the threshold are done in squared space to avoid unnecessary square root calculations.
+        var max = 0.0;
+        for (var i = 0; i < scanLeng; ++i)
+        {
+            var mSq = buffer[i].MagnitudeSquared;
+            if (mSq > max) max = mSq;
+        }
+
+        var thresholdSq = max * dropRatio * dropRatio;
+
+        var cutoffIndex = n - 1;
+        if (buffer[cutoffIndex].MagnitudeSquared >= thresholdSq) return;  // No cutoff needed.
+
+        // Search for the cutoff index from the end of the buffer to prevent unexpected zeroing of outliers.
+
+        while (cutoffIndex > 0)
+        {
+            var mSq = buffer[cutoffIndex].MagnitudeSquared;
+            if ((mSq >= thresholdSq)) break;
+            --cutoffIndex;
+        }
+
+        // Signals before the cutoff index can be considered reliable.
+        // For the subsequent elements, look for discontinuities in the magnitude to determine a more precise cutoff point to avoid cutting off gradual tails.
+
+        var prevSq = buffer[cutoffIndex].MagnitudeSquared;
+        while (++cutoffIndex < n)
+        {
+            var currSq = buffer[cutoffIndex].MagnitudeSquared;
+            // If the current magnitude drops significantly compared to the previous one, consider it a cutoff point.
+            if (currSq < prevSq * slopeTolerance)
+                break;
+            prevSq = currSq;
+        }
+
+        if (cutoffIndex >= n) return;  // No cutoff needed.
+
+        var cutoffSpan = buffer[cutoffIndex..];
+        cutoffSpan.Clear();
+    } // private static void ApplyAdaptiveCutoff (Span<Complex>, double, double)
 
     /// <summary>
     /// Sets the time labels.
