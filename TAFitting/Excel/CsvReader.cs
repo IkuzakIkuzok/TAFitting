@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
 using System.Text;
 using TAFitting.Controls;
 using TAFitting.Data;
@@ -50,14 +51,16 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
             this.reader = new(path, Encoding.UTF8);
 #pragma warning restore
 
-            var header = this.reader.ReadLine();
-            if (string.IsNullOrEmpty(header))
+            // Maximum 128 KB, 65536 characters
+            var buffer = (stackalloc char[0x10000]);
+            var l = this.reader.ReadLine(buffer);
+            if (l == 0)
             {
                 this.ModelMatched = false;
                 return;
             }
 
-            var span = header.AsSpan();
+            var span = l < 0 ? ReadRemainingLine(buffer).AsSpan() : buffer[..l];
             var paramsCount = span.Count(',');
             if (paramsCount < this.Parameters.Count)
             {
@@ -133,14 +136,26 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         return false;
     } // public bool ReadNextRow (out double, Span<double>)
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private string ReadRemainingLine(ReadOnlySpan<char> buffer)
     {
-        if (this.reader is null)
-            throw new InvalidOperationException("The CSV file is not opened.");
-
         var builder = new StringBuilder();
         builder.Append(buffer);
-        builder.Append(reader.ReadLine());
+        
+        var s = (stackalloc char[0x400]);
+        int read;
+        while ((read = this.reader!.ReadLine(s)) != 0)
+        {
+            if (read < 0)
+            {
+                builder.Append(s);
+                continue;
+            }
+            builder.Append(s[..read]);
+            if (read < s.Length)
+                break;
+        }
+
         return builder.ToString();
     } // private string ReadRemainingLine (ReadOnlySpan<char>)
 
