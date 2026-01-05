@@ -306,7 +306,7 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
     /// Elements beyond this cutoff point, where the magnitude drops below a specified ratio of the maximum, are set to zero.</remarks>
     /// <param name="buffer">The buffer of complex values to process. Elements beyond the adaptive cutoff point may be set to zero.</param>
     /// <param name="dropRatio">The ratio of the maximum magnitude used to determine the cutoff threshold. Default is 1e-10.</param>
-    /// <param name="slopeTolerance">The tolerance for slope discontinuity when determining the cutoff point. Default is 0.01.</param>
+    /// <param name="slopeTolerance">The tolerance for slope discontinuity when determining the cutoff point. Default is 0.1.</param>
     private static void ApplyAdaptiveCutoff(Span<Complex> buffer, double dropRatio = 1e-10, double slopeTolerance = 0.1)
     {
         var n = buffer.Length;
