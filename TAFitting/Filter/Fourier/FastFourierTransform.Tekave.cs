@@ -19,10 +19,8 @@ namespace TAFitting.Filter.Fourier;
  * All twiddle factors are precomputed and stored in static readonly arrays for performance.
  */
 
-internal static partial class FastFourierTransform
+file static class TekaveFftHelper
 {
-    private const int TekaveSize = 2499;
-
     // For Radix-3 Pass (Stage 1): Stride 833, 2 sets of twiddles -> 1666 elements
     // [0..832] for W^1, [833..1665] for W^2
     private static readonly Complex[] twiddles3 = new Complex[1666];
@@ -89,16 +87,8 @@ internal static partial class FastFourierTransform
         }
     } // private static void FillRadix7Table (Span<Complex>, int, int)
 
-    /// <summary>
-    /// Performs a forward Fourier transform on the specified buffer using the optimized algorithm for Tekave data.
-    /// </summary>
-    /// <param name="buffer">A span of complex numbers containing the input data to be transformed. The length of the span must be equal to 2499.</param>
-    /// <exception cref="ArgumentException">Thrown if the length of buffer is not equal to 2499.</exception>
     internal static void ForwardTekave(Span<Complex> buffer)
     {
-        if (buffer.Length != TekaveSize)
-            throw new ArgumentException($"The number of points must be {TekaveSize}.", nameof(buffer));
-
         // Stage 1: Radix-3 (2499 -> 3 x 833)
         PassRadix3(buffer, 833);
 
@@ -293,4 +283,27 @@ internal static partial class FastFourierTransform
             buffer[dest] = temp[i];
         }
     } // private static void Permute (Span<Complex>)
+} // file static class TekaveFftHelper
+
+internal static partial class FastFourierTransform
+{
+    private const int TekaveSize = 2499;
+
+    /// <summary>
+    /// Performs a forward Fourier transform on the specified buffer using the optimized algorithm for Tekave data.
+    /// </summary>
+    /// <param name="buffer">A span of complex numbers containing the input data to be transformed. The length of the span must be equal to 2499.</param>
+    /// <exception cref="ArgumentException">Thrown if the length of buffer is not equal to 2499.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void ForwardTekave(Span<Complex> buffer)
+    {
+        CheckBufferSize(buffer);
+        TekaveFftHelper.ForwardTekave(buffer);
+    } // internal static void ForwardTekave (Span<Complex>)
+
+    private static void CheckBufferSize(Span<Complex> buffer)
+    {
+        if (buffer.Length != TekaveSize)
+            throw new ArgumentException($"The number of points must be {TekaveSize}.", nameof(buffer));
+    } // private static void CheckBufferSize (Span<Complex>)
 } // internal static partial class FastFourierTransform
