@@ -94,12 +94,12 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         // Maximum 128 KB, 65536 characters
         var buffer = (stackalloc char[0x10000]);
         var l = this.reader.ReadLine(buffer);
-        if (l < 0)
+        if (l <= 0)
             goto Error;
 
         var span = buffer[..l];
         var sep = span.IndexOf(',');
-        if (sep < 0)
+        if (sep <= 0)
             goto Error;
 
         var s_wavelength = span[..sep];
