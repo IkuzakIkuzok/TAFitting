@@ -633,8 +633,7 @@ public sealed class AvxVector
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="count"/> must be greater than or equal to zero.</exception>
     public AvxVector(int count, double value, bool isReadonly)
     {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "The count must be greater than or equal to zero.");
+        ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
 
         this.IsReadonly = isReadonly;
         this._array = new double[count];
@@ -653,8 +652,7 @@ public sealed class AvxVector
     /// <remarks>All elements of the vector are initialized to zero.</remarks>
     public AvxVector(int count)
     {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "The count must be greater than or equal to zero.");
+        ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
 
         this._array = new double[count];
         this._offset = 0;
