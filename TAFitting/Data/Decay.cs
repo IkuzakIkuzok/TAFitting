@@ -74,8 +74,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             if (this.TimeUnit == TimeUnit.Second) return this.times;
 
             var times = new double[this.times.Length];
-            var tu = (double)this.TimeUnit;
-            RestoreRawValues(this.times, times, tu);
+            RestoreRawValues(this.times, times, this.TimeUnit);
             return times;
         }
     }
@@ -90,8 +89,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
             if (this.SignalUnit == SignalUnit.OD) return this.signals;
 
             var signals = new double[this.signals.Length];
-            var su = (double)this.SignalUnit;
-            RestoreRawValues(this.signals, signals, su);
+            RestoreRawValues(this.signals, signals, this.SignalUnit);
             return signals;
         }
     }
@@ -101,20 +99,27 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// </summary>
     /// <remarks>If hardware acceleration is available, vectorized operations are used for improved performance.
     /// The method does not allocate new arrays; results are written directly to the provided output array.</remarks>
-    /// <param name="values">The array of input values to be scaled.</param>
-    /// <param name="output">The array that receives the scaled values. Must be at least as long as <paramref name="values"/>.</param>
-    /// <param name="scale">The factor by which each input value is multiplied.</param>
-    private static void RestoreRawValues(double[] values, double[] output, double scale)
+    /// <param name="values">The input span containing the values to be scaled.</param>
+    /// <param name="output">The span where the scaled output values will be written.</param>
+    /// <param name="unit">The unit containing the scale factor.</param>
+    private static void RestoreRawValues(ReadOnlySpan<double> values, Span<double> output, ValueUnit unit)
     {
+        if (unit.Scale == SIPrefix.None)
+        {
+            values.CopyTo(output);
+            return;
+        }
+
+        var scale = (double)unit;
         var i = 0;
         if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
         {
             var v_su = Vector256.Create(scale);
 
-            ref var begin = ref MemoryMarshal.GetArrayDataReference(values);
+            ref var begin = ref MemoryMarshal.GetReference(values);
             ref var to = ref Unsafe.Add(ref begin, values.Length - Vector256<double>.Count);
             ref var current = ref begin;
-            ref var current_raw = ref MemoryMarshal.GetArrayDataReference(output);
+            ref var current_raw = ref MemoryMarshal.GetReference(output);
             while (Unsafe.IsAddressLessThan(ref current, ref to))
             {
                 var v_current = Vector256.LoadUnsafe(ref current);
@@ -127,7 +132,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
 
         for (; i < values.Length; i++)
             output[i] = values[i] * scale;
-    } // private static void RestoreRawValues (double[], double[], double)
+    } // private static void RestoreRawValues (ReadOnlySpan<double>, Span<double>, double)
 
     /// <summary>
     /// Gets the minimum time.
@@ -701,13 +706,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         {
             using var pooled = new PooledBuffer<double>(this.times.Length);
             var buffer = this.times.Length <= 0x1000 ? stackalloc double[this.times.Length] : pooled.GetSpan();
-            this.times.CopyTo(buffer);
-            if (this.TimeUnit != TimeUnit.Second)
-            {
-                var tu = (double)this.TimeUnit;
-                for (var i = 0; i < buffer.Length; i++)
-                    buffer[i] *= tu;
-            }
+            RestoreRawValues(this.times, buffer, this.TimeUnit);
 
             filter.Filter(buffer, this.signals, this.filtered);
             this.HasFiltered = true;
