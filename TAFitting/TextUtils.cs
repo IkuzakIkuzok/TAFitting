@@ -329,11 +329,9 @@ internal static class TextUtils
                 }
                 break;
             }
-            if (count < buffer.Length)
-            {
-                buffer[count++] = (char)ch;
-            }
-            else
+            buffer[count++] = (char)ch;
+
+            if (count == buffer.Length)
             {
                 // Buffer overflow
                 return -1;
