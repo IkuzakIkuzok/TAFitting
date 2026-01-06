@@ -995,18 +995,16 @@ internal sealed partial class MainWindow : Form
             };
             menu_interpolate.DropDownItems.Add(menu_interpolateMode);
 
-            var menu_interpolateSelectedRow = new ToolStripMenuItem("&Selected row")
+            var menu_interpolateSelectedRow = new GenericToolStripMenuItem<InterpolationMode>("&Selected row", mode)
             {
                 ToolTipText = "Interpolate the selected row",
-                Tag = mode,
             };
             menu_interpolateSelectedRow.Click += InterpolateSelectedRow;
             menu_interpolateMode.DropDownItems.Add(menu_interpolateSelectedRow);
 
-            var menu_interpolateAll = new ToolStripMenuItem("&All rows")
+            var menu_interpolateAll = new GenericToolStripMenuItem<InterpolationMode>("&All rows", mode)
             {
                 ToolTipText = "Interpolate all rows",
-                Tag = mode,
             };
             menu_interpolateAll.Click += InterpolateAll;
             menu_interpolateMode.DropDownItems.Add(menu_interpolateAll);
@@ -1115,16 +1113,14 @@ internal sealed partial class MainWindow : Form
     private void InterpolateSelectedRow(object? sender, EventArgs e)
     {
         if (this.row is null) return;
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not InterpolationMode mode) return;
-        Interpolate([this.row], mode);
+        if (sender is not GenericToolStripMenuItem<InterpolationMode> item) return;
+        Interpolate([this.row], item.Tag);
     } // private void InterpolateSelectedRow (object?, EventArgs)
 
     private void InterpolateAll(object? sender, EventArgs e)
     {
-        if (sender is not ToolStripMenuItem item) return;
-        if (item.Tag is not InterpolationMode mode) return;
-        Interpolate(this.parametersTable.ParameterRows, mode);
+        if (sender is not GenericToolStripMenuItem<InterpolationMode> item) return;
+        Interpolate(this.parametersTable.ParameterRows, item.Tag);
     } // private void InterpolateAll (object?, EventArgs)
 
     private void Interpolate(ParametersTableRowsEnumerable rows, InterpolationMode mode)
