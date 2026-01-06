@@ -4,7 +4,6 @@
 using DisposalGenerator;
 using Microsoft.Win32;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,8 +15,6 @@ using TAFitting.Controls.LinearCombination;
 using TAFitting.Controls.Spectra;
 using TAFitting.Controls.Toast;
 using TAFitting.Data;
-using TAFitting.Data.Solver;
-using TAFitting.Data.Solver.SIMD;
 using TAFitting.Excel;
 using TAFitting.Filter;
 using TAFitting.Model;
@@ -63,6 +60,8 @@ internal sealed partial class MainWindow : Form
 
     private readonly List<SpectraPreviewWindow> previewWindows = [];
     private readonly List<IDecayAnalyzer> analyzers = [];
+
+    private readonly LevenbergMarquardtEstimationHelper lmHelper;
 
     /// <summary>
     /// Gets the sample name.
@@ -651,6 +650,8 @@ internal sealed partial class MainWindow : Form
         #endregion menu.help
 
         #endregion menu
+
+        this.lmHelper = new(this.parametersTable);
 
         UpdateManager.NewerVersionFound += OnNewerReleaseFound;
 
@@ -1849,76 +1850,16 @@ internal sealed partial class MainWindow : Form
         var model = this.SelectedModel;
         if (model is null) return;
 
-        var cols =
-            this.parametersTable.Columns.OfType<DataGridViewNumericBoxColumn>().ToArray();
-
-        if (cols.All(c => c.Fixed))
-        {
-            FadingMessageBox.Show(
-                "All parameters are fixed.\nNothing to fit.",
-                0.8, 1000, 75, 0.1
-            );
-            return;
-        }
-
         var text = this.Text;
         this.Text += " - Fitting...";
-        var source = rows.ToArray();
 
-        var d = source.First().Decay;
-        var times = d.Times;
-        var range = d.GetRangeAfterT0();
-
-        var fixedCols =
-            cols.Select((c, i) => (c.Fixed, Index: i))
-                .Where(c => c.Fixed)
-                .Select(c => c.Index)
-                .ToArray();
-
-        Func<ILevenbergMarquardtSolver> initSolver =
-            Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel vectorized
-            ? () => new LevenbergMarquardtSIMD(vectorized, times, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, }
-            : () => new LevenbergMarquardt(model, times, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations, };
-
+        this.stopDrawing = true;
         var start = Stopwatch.GetTimestamp();
 
-        var stopRSquared = this.parametersTable.StopUpdateRSquared;
-        try
-        {
-            this.parametersTable.StopUpdateRSquared = true;
-            this.stopDrawing = true;
-            if (source.Length >= Program.ParallelThreshold && Program.ParallelThreshold >= 0)
-            {
-                var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
-                await Task.Run(() => Parallel.ForEach(source, initSolver, (row, _, solver) =>
-                {
-                    var parameters = LevenbergMarquardtEstimation(solver, row);
-                    results.TryAdd(row, [.. parameters]);  // Allocating a new array is necessary because the parameters array is reused.
-                    return solver;
-                }, (_) => { }));
-
-                // updating parameters on the UI thread
-                // Invoke() in each iteration is too slow
-                foreach (var (row, parameters) in results)
-                {
-                    if (row.DataGridView is null) continue;  // Removed from the table during the fitting
-                    row.Parameters = parameters;
-                }
-            }
-            else
-            {
-                var solver = initSolver();
-                foreach (var row in rows)
-                    row.Parameters = LevenbergMarquardtEstimation(solver, row);
-            }
-        }
-        finally
-        {
-            this.parametersTable.StopUpdateRSquared = stopRSquared;
-            this.stopDrawing = false;
-        }
+        await this.lmHelper.Estimate(rows, model);
 
         var elapsed = Stopwatch.GetElapsedTime(start);
+        this.stopDrawing = false;
 
         this.Text = text;
         FadingMessageBox.Show(
@@ -1933,20 +1874,6 @@ internal sealed partial class MainWindow : Form
         ShowPlots();
         UpdatePreviewsParameters();
     } // private async Task LevenbergMarquardtEstimation (ParametersTableRowsEnumerable)
-
-    /// <summary>
-    /// Fits the specified row using the Levenberg-Marquardt algorithm.
-    /// </summary>
-    /// <param name="solver">The solver to use.</param>
-    /// <param name="row">The row to fit.</param>
-    /// <returns>The estimated parameters.</returns>
-    private static IReadOnlyList<double> LevenbergMarquardtEstimation(ILevenbergMarquardtSolver solver, ParametersTableRow row)
-    {
-        var signals = row.Decay.Signals;
-        solver.Initialize(signals, row.Parameters);
-        solver.Fit();
-        return solver.Parameters;
-    } // private static void LevenbergMarquardtEstimation (ILevenbergMarquardtSolver, ParametersTableRow)
 
     private void ToggleAutoFit(object? sender, EventArgs e)
     {
