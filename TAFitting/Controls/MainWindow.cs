@@ -940,7 +940,7 @@ internal sealed partial class MainWindow : Form
             return;
         }
 
-        if (Program.WarnBeforeChangeModel && (!Decays.TryGetWavelength(basename, out var wavelength) || wavelength != this.row.Wavelength))
+        if (Program.WarnBeforeMismatchReplacement && (!Decays.TryGetWavelength(basename, out var wavelength) || wavelength != this.row.Wavelength))
         {
             var page = new TaskDialogPage()
             {
@@ -959,7 +959,7 @@ internal sealed partial class MainWindow : Form
             };
             var result = TaskDialog.ShowDialog(page);
             if (result != TaskDialogButton.Yes) return;
-            Program.WarnBeforeChangeModel = !page.Verification.Checked;
+            Program.WarnBeforeMismatchReplacement = !page.Verification.Checked;
         }
 
         var oldDecay = this.row.Decay;
