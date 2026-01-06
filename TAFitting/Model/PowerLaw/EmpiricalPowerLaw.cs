@@ -84,19 +84,18 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
 
         return (x, res) =>
         {
-            var temp = new AvxVector(x.Length); 
-            AvxVector.Multiply(x, a, temp);
-            AvxVector.Add(temp, 1, temp);
+            AvxVector.Multiply(x, a, res[2]);
+            AvxVector.Add(res[2], 1, res[2]);
 
-            AvxVector.Power(temp, -alpha, res[0]);           // (1 + ax)^-alpha
+            AvxVector.Power(res[2], -alpha, res[0]);           // (1 + ax)^-alpha
 
-            AvxVector.Power(temp, -1 - alpha, res[1]);       // (1 + ax)^(-1 - alpha)
-            AvxVector.Multiply(res[1], a0 * alpha, res[1]);  // a0 * alpha * (1 + ax)^(-1 - alpha)
-            AvxVector.Multiply(res[1], x, res[1]);           // a0 * alpha * x * (1 + ax)^(-1 - alpha)
+            AvxVector.Power(res[2], -1 - alpha, res[1]);       // (1 + ax)^(-1 - alpha)
+            AvxVector.Multiply(res[1], a0 * alpha, res[1]);    // a0 * alpha * (1 + ax)^(-1 - alpha)
+            AvxVector.Multiply(res[1], x, res[1]);             // a0 * alpha * x * (1 + ax)^(-1 - alpha)
 
-            AvxVector.Ln(temp, res[2]);                      // ln(1 + ax)
-            AvxVector.Multiply(res[2], -a0, res[2]);         // -a0 * ln(1 + ax)
-            AvxVector.Multiply(res[2], res[0], res[2]);      // -a0 * ln(1 + ax) / (1 + ax)^alpha
+            AvxVector.Ln(res[2], res[2]);                      // ln(1 + ax)
+            AvxVector.Multiply(res[2], -a0, res[2]);           // -a0 * ln(1 + ax)
+            AvxVector.Multiply(res[2], res[0], res[2]);        // -a0 * ln(1 + ax) / (1 + ax)^alpha
         };
     } // public Action<AvxVector, AvxVector[]> GetVectorizedDerivatives (IReadOnlyList<double>)
 } // internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable
