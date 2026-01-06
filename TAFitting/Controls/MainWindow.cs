@@ -1856,7 +1856,8 @@ internal sealed partial class MainWindow : Form
         this.stopDrawing = true;
         var start = Stopwatch.GetTimestamp();
 
-        await this.lmHelper.Estimate(rows, model);
+        var success = await this.lmHelper.Estimate(rows, model);
+        if (!success) return;
 
         var elapsed = Stopwatch.GetElapsedTime(start);
         this.stopDrawing = false;

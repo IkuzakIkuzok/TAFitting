@@ -27,8 +27,9 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
     /// Parameter updates are applied to each row after estimation completes.</remarks>
     /// <param name="rows">The collection of parameter table rows to estimate parameters for. Each row represents a set of data to be fitted.</param>
     /// <param name="model">The fitting model to use for parameter estimation. Defines the mathematical model applied to each row's data.</param>
-    /// <returns>A <see cref="Task"/> that represents the asynchronous estimation operation.</returns>
-    internal async Task Estimate(ParametersTableRowsEnumerable rows, IFittingModel model)
+    /// <returns>A task that represents the asynchronous operation.
+    /// The task result is <see langword="true"/> if estimation was performed; otherwise, <see langword="false"/> if all parameters were fixed.</returns>
+    internal async Task<bool> Estimate(ParametersTableRowsEnumerable rows, IFittingModel model)
     {
         var cols =
             this.parametersTable.Columns.OfType<DataGridViewNumericBoxColumn>().ToArray();
@@ -45,7 +46,7 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
                 "All parameters are fixed.\nNothing to fit.",
                 0.8, 1000, 75, 0.1
             );
-            return;
+            return false;
         }
 
         var source = rows.ToArray();
@@ -90,7 +91,9 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
         {
             this.parametersTable.StopUpdateRSquared = stopRSquared;
         }
-    } // internal async Task Estimate (ParametersTableRowsEnumerable, IFittingModel)
+
+        return true;
+    } // internal async Task<bool> Estimate (ParametersTableRowsEnumerable, IFittingModel)
 
     private static ILevenbergMarquardtSolver InitializeSolver(IFittingModel model, IReadOnlyList<double> x, Range range, int[] fixedCols)
     {
