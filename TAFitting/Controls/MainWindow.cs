@@ -1418,7 +1418,7 @@ internal sealed partial class MainWindow : Form
         if (model is null) return;
 
         var ext = Path.GetExtension(path);
-        var reader = GetSpreadSheetReader(ext);
+        using var reader = GetSpreadSheetReader(ext);
 
         try
         {
@@ -1460,11 +1460,6 @@ internal sealed partial class MainWindow : Form
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
             );
-        }
-        finally
-        {
-            if (reader is IDisposable disposable)
-                disposable.Dispose();
         }
     } // private void ReadSpreadSheet (string)
 

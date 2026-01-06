@@ -8,7 +8,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for a spreadsheet.
 /// </summary>
-internal interface ISpreadSheetReader
+internal interface ISpreadSheetReader : IDisposable
 {
     /// <summary>
     /// Gets the model.
@@ -45,4 +45,4 @@ internal interface ISpreadSheetReader
     /// <returns><see langword="true"/> if a row was read and parameter values were written to the span;
     /// otherwise, <see langword="false"/> if there are no more rows to read.</returns>
     bool ReadNextRow(out double wavelength, Span<double> parameters);
-} // internal interface ISpreadSheetReader
+} // internal interface ISpreadSheetReader : IDisposable

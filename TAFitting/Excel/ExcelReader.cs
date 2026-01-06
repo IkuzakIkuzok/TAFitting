@@ -10,7 +10,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for an Excel spreadsheet.
 /// </summary>
-internal class ExcelReader : ISpreadSheetReader, IDisposable
+internal class ExcelReader : ISpreadSheetReader
 {
     private XLWorkbook? workbook;
     private IXLWorksheet? worksheet;
@@ -104,4 +104,4 @@ internal class ExcelReader : ISpreadSheetReader, IDisposable
             this.workbook?.Dispose();
         this._disposed = true;
     } // protected virtual void Dispose (bool)
-} // internal class ExcelReader
+} // internal class ExcelReader : ISpreadSheetReader

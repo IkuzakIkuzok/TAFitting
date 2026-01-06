@@ -11,7 +11,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for a CSV file.
 /// </summary>
-internal sealed class CsvReader : ISpreadSheetReader, IDisposable
+internal sealed class CsvReader : ISpreadSheetReader
 {
     private StreamReader? reader;
     private bool _disposed = false;
@@ -177,4 +177,4 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
 
         this._disposed = true;
     } // private void Dispose (bool)
-} // internal sealed class CsvReader : ISpreadSheetReader, IDisposable
+} // internal sealed class CsvReader : ISpreadSheetReader
