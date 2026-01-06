@@ -44,13 +44,23 @@ internal sealed class CsvWriter : ISpreadSheetWriter
     public void Write(string path)
     {
         using var writer = new StreamWriter(path, false, Encoding.UTF8);
-        writer.Write("Wavelength (nm),");
-        writer.Write(string.Join(",", this.Parameters));
-        writer.Write(',');
-        writer.Write(string.Join(" µs,", this.Times));
-        writer.WriteLine(" µs");
+
+        writer.Write("Wavelength (nm)");
+        for (var i = 0; i < this.Parameters.Count; i++)
+        {
+            writer.Write(',');
+            writer.Write(this.Parameters[i]);
+        }
+        for (var i = 0; i < this.Times.Count; i++)
+        {
+            writer.Write(',');
+            writer.Write(this.Times[i]);
+            writer.Write(" µs");
+        }
+        writer.WriteLine();
+
         foreach (var row in this.rows)
-            writer.WriteLine(row.ToString());
+            row.WriteTo(writer);
     } // public void Write (string)
 
     private class RowData()
@@ -59,15 +69,21 @@ internal sealed class CsvWriter : ISpreadSheetWriter
         required internal double[] Parameters { get; init; }
         required internal double[] Values { get; init; }
 
-        override public string ToString()
+        internal void WriteTo(StreamWriter writer)
         {
-            var builder = new StringBuilder();
-            builder.Append(this.Wavelength);
-            builder.Append(',');
-            builder.Append(string.Join(",", this.Parameters));
-            builder.Append(',');
-            builder.Append(string.Join(",", this.Values));
-            return builder.ToString();
-        } // public override string ToString ()
+            writer.Write(this.Wavelength);
+            for (var i = 0; i < this.Parameters.Length; i++)
+            {
+                writer.Write(',');
+                writer.Write(this.Parameters[i]);
+                
+            }
+            for (var i = 0; i < this.Values.Length; i++)
+            {
+                writer.Write(',');
+                writer.Write(this.Values[i]);
+            }
+            writer.WriteLine();
+        } // internal void WriteTo (StreamWriter)
     } // private class RowData
 } // internal sealed class CsvWriter : ISpreadSheetWriter
