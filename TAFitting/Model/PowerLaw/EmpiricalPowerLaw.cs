@@ -69,10 +69,10 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
             var a = parameters[1];
             var alpha = parameters[2];
 
-            AvxVector.Multiply(x, a, res);
-            AvxVector.Add(res, 1, res);
-            AvxVector.Power(res, alpha, res);
-            AvxVector.Divide(a0, res, res);
+            AvxVector.Multiply(x, a, res);     // ax
+            AvxVector.Add(res, 1, res);  // 1 + ax
+            AvxVector.Power(res, alpha, res);  // (1 + ax)^alpha
+            AvxVector.Divide(a0, res, res);    // a0 / (1 + ax)^alpha
         };
 
     /// <inheritdoc/>
