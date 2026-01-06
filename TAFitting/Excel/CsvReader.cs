@@ -1,7 +1,6 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
-using System.Runtime.CompilerServices;
 using System.Text;
 using TAFitting.Controls;
 using TAFitting.Data;
@@ -142,7 +141,6 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         return false;
     } // public bool ReadNextRow (out double, Span<double>)
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private string ReadRemainingLine(ReadOnlySpan<char> buffer)
     {
         var builder = new StringBuilder();
