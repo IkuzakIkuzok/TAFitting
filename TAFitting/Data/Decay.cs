@@ -632,25 +632,19 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
     /// <param name="time">The time</param>
     internal void AddTime(double time)
     {
-        var i = 0;
-        if (Vector256.IsHardwareAccelerated && Vector256<double>.IsSupported)
+        if (AvxVector.IsSupported && this.times.Length > Vector256<double>.Count && false)
         {
-            var v_time = Vector256.Create(time);
-            ref var begin = ref MemoryMarshal.GetArrayDataReference(this.times);
-            ref var to = ref Unsafe.Add(ref begin, this.times.Length - Vector128<double>.Count);
-
-            ref var current = ref begin;
-            while (Unsafe.IsAddressLessThan(ref current, ref to))
-            {
-                var v_current = Vector256.LoadUnsafe(ref current);
-                Vector256.Add(v_current, v_time).StoreUnsafe(ref current);
-                current = ref Unsafe.Add(ref current, Vector256<double>.Count);
-                i += Vector256<double>.Count;
-            }
+            // Vectorized addition
+            var v = new AvxVector(this.times);
+#pragma warning disable IDE0059  // Unnecessary assignment of a value
+            v += time;
+#pragma warning restore
         }
-
-        for (; i < this.times.Length; i++)
-            this.times[i] += time;
+        else
+        {
+            for (var i = 0; i < this.times.Length; i++)
+                this.times[i] += time;
+        }
     } // internal Decay AddTime (double)
 
     /// <summary>
