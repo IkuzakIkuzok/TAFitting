@@ -53,14 +53,14 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
 
             // Maximum 128 KB, 65536 characters
             var buffer = (stackalloc char[0x10000]);
-            var l = this.reader.ReadLine(buffer);
+            var eol = this.reader.ReadLine(buffer, out var l);
             if (l == 0)
             {
                 this.ModelMatched = false;
                 return;
             }
 
-            var span = l < 0 ? ReadRemainingLine(buffer).AsSpan() : buffer[..l];
+            var span = eol ? buffer[..l] : ReadRemainingLine(buffer).AsSpan();
             var paramsCount = span.Count(',');
             if (paramsCount < this.Parameters.Count)
             {
@@ -111,11 +111,11 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
 
         // Maximum 128 KB, 65536 characters
         var buffer = (stackalloc char[0x10000]);
-        var l = this.reader.ReadLine(buffer);
+        var eol = this.reader.ReadLine(buffer, out var l);
         if (l == 0)
             goto Error;
 
-        var span = l < 0 ? ReadRemainingLine(buffer).AsSpan() : buffer[..l];
+        var span = eol ? buffer[..l] : ReadRemainingLine(buffer).AsSpan();
         var sep = span.IndexOf(',');
         if (sep <= 0)
             goto Error;
@@ -143,17 +143,17 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
         builder.Append(buffer);
         
         var s = (stackalloc char[0x400]);
-        int read;
-        while ((read = this.reader!.ReadLine(s)) != 0)
+        var eol = this.reader!.ReadLine(s, out var read);
+        while (read > 0)
         {
-            if (read < 0)
+            if (eol)
             {
-                builder.Append(s);
-                continue;
+                builder.Append(s[..read]);
+                if (read < s.Length)
+                    break;
             }
-            builder.Append(s[..read]);
-            if (read < s.Length)
-                break;
+            builder.Append(s);
+            eol = this.reader!.ReadLine(s, out read);
         }
 
         return builder.ToString();

@@ -294,19 +294,19 @@ internal static class TextUtils
     } // internal static string GetLastPartition (this string, char)
 
     /// <summary>
-    /// Reads a line of characters from the current stream and writes the data to the specified buffer.
+    /// Reads a line of characters from the current stream into the specified buffer.
     /// </summary>
-    /// <remarks>A line is considered to be terminated by a carriage return (<c>'\r'</c>), a line feed (<c>'\n'</c>),
-    /// or a carriage return immediately followed by a line feed.
-    /// The terminating line break characters are not included in the buffer.
-    /// If the buffer is not large enough to hold the entire line, the method returns -1 and does not write a partial line.</remarks>
+    /// <remarks>A line is considered to be terminated by a carriage return ('\r'), a line feed ('\n'), or a carriage return immediately followed by a line feed.
+    /// If the buffer is not large enough to contain the entire line, the method returns <see langword="false"/> and the buffer contains as many characters as fit.
+    /// The method does not allocate additional memory and does not return the line as a string.</remarks>
     /// <param name="reader">The <see cref="StreamReader"/> instance to read from.</param>
-    /// <param name="buffer">The buffer that receives the characters read from the stream.</param>
-    /// <returns>The number of characters written to the buffer, or -1 if the buffer is too small to hold the entire line.
-    /// Returns 0 if the end of the stream is reached before any characters are read.</returns>
-    internal static int ReadLine(this StreamReader reader, Span<char> buffer)
+    /// <param name="buffer">The buffer to receive the characters read from the stream. The method attempts to fill this buffer with the contents of a single line.</param>
+    /// <param name="read">When this method returns, contains the number of characters read into <paramref name="buffer"/>.</param>
+    /// <returns><see langword="true"/> if the entire line was read and fits within the buffer;
+    /// otherwise, <see langword="false"/> if the buffer was not large enough to hold the entire line.</returns>
+    internal static bool ReadLine(this StreamReader reader, Span<char> buffer, out int read)
     {
-        var count = 0;
+        read = 0;
         while (true)
         {
             var ch = reader.Read();
@@ -329,14 +329,14 @@ internal static class TextUtils
                 }
                 break;
             }
-            buffer[count++] = (char)ch;
+            buffer[read++] = (char)ch;
 
-            if (count == buffer.Length)
+            if (read == buffer.Length)
             {
                 // Buffer overflow
-                return -1;
+                return false;
             }
         }
-        return count;
-    } // internal static int ReadLine (this StreamReader, Span<char>)
+        return true;
+    } // internal static bool ReadLine (this StreamReader, Span<char> buffer, out int)
 } // internal static class TextUtils
