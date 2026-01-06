@@ -15,7 +15,7 @@ namespace TAFitting.Controls;
 /// <remarks>This class is intended for internal use to facilitate batch parameter fitting across multiple data rows.
 /// It manages parallel execution and applies parameter updates to the table after estimation completes.</remarks>
 /// <param name="parametersTable">The parameters table containing the data and configuration for parameter estimation operations.</param>
-internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTable)
+internal sealed class LevenbergMarquardtEstimationHelper(ParametersTable parametersTable)
 {
     private readonly ParametersTable parametersTable = parametersTable;
 
@@ -117,4 +117,4 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
         solver.Initialize(signals, row.Parameters);
         solver.Fit();
     } // private static void Estimate (ILevenbergMarquardtSolver, ParametersTableRow)
-} // internal class LevenbergMarquardtEstimationHelper
+} // internal sealed class LevenbergMarquardtEstimationHelper
