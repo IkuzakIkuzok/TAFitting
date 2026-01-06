@@ -11,7 +11,6 @@ using TAFitting.Clipboard;
 using TAFitting.Controls.Analyzers;
 using TAFitting.Controls.Charting;
 using TAFitting.Controls.LinearCombination;
-using TAFitting.Controls.Spectra;
 using TAFitting.Controls.Toast;
 using TAFitting.Data;
 using TAFitting.Excel;
@@ -57,10 +56,10 @@ internal sealed partial class MainWindow : Form
     private readonly CustomNumericUpDown nud_time0;
     private readonly Label lb_t0, lb_timeUnit;
 
-    private readonly List<SpectraPreviewWindow> previewWindows = [];
     private readonly List<IDecayAnalyzer> analyzers = [];
 
     private readonly LevenbergMarquardtEstimationHelper lmHelper;
+    private readonly SpectraPreviewHelper spectraPreviewHelper;
 
     /// <summary>
     /// Gets the sample name.
@@ -82,7 +81,7 @@ internal sealed partial class MainWindow : Form
     /// <summary>
     /// Gets the list of preview windows for the spectra.
     /// </summary>
-    internal IEnumerable<int> SpectraIds => this.previewWindows.Select(w => w.SerialNumber);
+    internal IEnumerable<int> SpectraIds => this.spectraPreviewHelper.SpectraIds;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainWindow"/> class.
@@ -651,6 +650,7 @@ internal sealed partial class MainWindow : Form
         #endregion menu
 
         this.lmHelper = new(this.parametersTable);
+        this.spectraPreviewHelper = new();
 
         UpdateManager.NewerVersionFound += OnNewerReleaseFound;
 
@@ -877,8 +877,8 @@ internal sealed partial class MainWindow : Form
 
                     await MakeTable();
                     this.parametersTable.ClearUndoBuffer();
-                    UpdatePreviewsTimeUnit();
-                    UpdatePreviewsSignalUnits();
+                    this.spectraPreviewHelper.UpdateTimeUnit(this.decays.TimeUnit);
+                    this.spectraPreviewHelper.UpdateSignalUnits(this.decays.SignalUnit);
                 });
             }
             catch (Exception e)
@@ -1428,7 +1428,7 @@ internal sealed partial class MainWindow : Form
         }
 
         // Clearing the cache is required to update the masked data after changing the data set or the model.
-        ClearSpectraMaskingCache();
+        this.spectraPreviewHelper.ClearSpectraMaskingCache();
         UpdatePreviewsParameters();
 
         this.s_observed.Points.Clear();
@@ -1596,7 +1596,7 @@ internal sealed partial class MainWindow : Form
         this.Text = GetTitle();
 
         ShowPlots();
-        UpdatePreviewsSelectedWavelength();
+        this.spectraPreviewHelper.UpdateSelectedWavelength(this.SelectedWavelength);
         UpdateAnalyzers();
     } // private void ChangeRow (ParametersTableRow?, bool)
 
@@ -1968,110 +1968,16 @@ internal sealed partial class MainWindow : Form
     #region Spectra preview
 
     private void ShowSpectraPreview(object? sender, EventArgs e)
-        => ShowSpectraPreview();
-
-    /// <summary>
-    /// Shows the spectra preview window.
-    /// </summary>
-    private void ShowSpectraPreview()
-    {
-        var preview = new SpectraPreviewWindow(this.parametersTable.ParametersList)
-        {
-            ModelId = this.selectedModel,
-            SelectedWavelength = this.SelectedWavelength,
-        };
-        if (this.decays is not null)
-        {
-            preview.TimeUnit = this.decays.TimeUnit;
-            preview.SignalUnit = this.decays.SignalUnit;
-        }
-        SetTimeTable(preview);
-        this.previewWindows.Add(preview);
-        preview.FormClosed += (_, _) => this.previewWindows.Remove(preview);
-        preview.Show();
-    } // private void ShowSpectraPreview ()
+        => this.spectraPreviewHelper.ShowPreviewWindow(this.selectedModel, this.SelectedWavelength, this.parametersTable.ParametersList, this.decays, (double)this.rangeSelector.Time.To);
 
     private void UpdatePreviewsParameters(object? sender, EventArgs e)
         => UpdatePreviewsParameters();
 
-    /// <summary>
-    /// Updates the parameters in the spectra preview windows.
-    /// </summary>
     private void UpdatePreviewsParameters()
-    {
-        if (this.previewWindows.Count == 0) return;
-
-        var parameters = this.parametersTable.ParametersList;
-        var token = parameters.CurrentStateToken;
-        foreach (var preview in this.previewWindows)
-        {
-            /*
-             * If preview.ModelId != this.selectedModel:
-             *   1. Set ModelId to Guid.Empty to clear the current model and stop updating spectra.
-             *   2. Set parameters. The spectra will not be updated because the model is not set.
-             *   3. Set the selected model to update spectra.
-             *   Note: Do NOT set the selected model at step 1, because setting the model raises spectra update automatically, which may cause parameters mismatch.
-             *  
-             * If preview.ModelId == this.selectedModel:
-             *   1. Set parameters. This step raises spectra update automatically.
-             *   2. Set the selected model. This step does not have any effect, because the setter method returns early.
-             */
-            if (preview.ModelId != this.selectedModel)
-                preview.ModelId = Guid.Empty;
-            preview.SetParameters(parameters, token);
-            preview.ModelId = this.selectedModel;
-
-            SetTimeTable(preview);
-        }
-    } // private void UpdatePreviewsParameters ()
-
-    /// <summary>
-    /// Clears the masking cache for all preview windows, ensuring that any cached masking data is removed.
-    /// </summary>
-    private void ClearSpectraMaskingCache()
-    {
-        foreach (var preview in this.previewWindows)
-            preview.ClearMaskingCache();
-    } // private void ClearSpectraMaskingCache ()
-
-    private void SetTimeTable(SpectraPreviewWindow preview)
-        => preview.SetTimeTable((double)this.rangeSelector.Time.To);
-
-    /// <summary>
-    /// Updates the selected wavelength in the spectra preview windows.
-    /// </summary>
-    private void UpdatePreviewsSelectedWavelength()
-    {
-        var wavelength = this.SelectedWavelength;
-        foreach (var preview in this.previewWindows)
-            preview.SelectedWavelength = wavelength;
-    } // private void UpdatePreviewsSelectedWavelength ()
-
-    private void UpdatePreviewsTimeUnit()
-    {
-        if (this.decays is null) return;
-        var unit = this.decays.TimeUnit;
-        foreach (var preview in this.previewWindows)
-            preview.TimeUnit = unit;
-    } // private void UpdatePreviewsTimeUnit ()
-
-    /// <summary>
-    /// Updates the signal unit in the spectra preview windows.
-    /// </summary>
-    private void UpdatePreviewsSignalUnits()
-    {
-        if (this.decays is null) return;
-        var unit = this.decays.SignalUnit;
-        foreach (var preview in this.previewWindows)
-            preview.SignalUnit = unit;
-    } // private void UpdatePreviewsSignalUnits ()
+        => this.spectraPreviewHelper.UpdateParameters(this.selectedModel, this.parametersTable.ParametersList, (double)this.rangeSelector.Time.To);
 
     internal SpectraSyncObject? GetSyncSpectra(int spectraId)
-    {
-        var window = this.previewWindows.FirstOrDefault(w => w.SerialNumber == spectraId);
-        if (window is null) return null;
-        return window.SpectraSyncObject;
-    } // internal SpectraSyncObject? GetSyncSpectra (int)
+        => this.spectraPreviewHelper.GetSyncSpectra(spectraId);
 
     #endregion Spectra preview
 
