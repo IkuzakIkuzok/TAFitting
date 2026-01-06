@@ -60,6 +60,12 @@ internal sealed class CsvReader : ISpreadSheetReader, IDisposable
                 return;
             }
 
+            /*
+             * If the number of columns is sufficient, it may not be necessary to read the remaining rows, but the last parameter name might be truncated.
+             * It is possible to implement a fallback that reads the rest of the line if the parameter name does not match and the length is insufficient,
+             * but the implementation cost is too high, so we read to the end of the line every time.
+             */
+
             var span = eol ? buffer[..l] : ReadRemainingLine(buffer).AsSpan();
             var paramsCount = span.Count(',');
             if (paramsCount < this.Parameters.Count)
