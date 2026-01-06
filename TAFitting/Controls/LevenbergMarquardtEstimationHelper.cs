@@ -95,8 +95,8 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
     private static ILevenbergMarquardtSolver InitializeSolver(IFittingModel model, IReadOnlyList<double> x, Range range, int[] fixedCols)
     {
         if (Program.Config.SolverConfig.UseSIMD && AvxVector.IsSupported && model is IVectorizedModel vectorized)
-            return new LevenbergMarquardtSIMD(vectorized, x, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations };
-        return new LevenbergMarquardt(model, x, range, model.Parameters.Count, fixedCols) { MaxIteration = Program.MaxIterations };
+            return new LevenbergMarquardtSIMD(vectorized, x, range, fixedCols) { MaxIteration = Program.MaxIterations };
+        return new LevenbergMarquardt(model, x, range, fixedCols) { MaxIteration = Program.MaxIterations };
     } // private static ILevenbergMarquardtSolver InitializeSolver (IFittingModel, IReadOnlyList<double>, Range, int[])
 
     /// <summary>

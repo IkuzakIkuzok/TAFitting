@@ -79,7 +79,7 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
     internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Numbers y, Range range, Numbers parameters, IReadOnlyList<int> fixedParameters)
-        : this(model, x, range, parameters.Count, fixedParameters)
+        : this(model, x, range, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
@@ -89,8 +89,10 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         Initialize(y, parameters);
     } // ctor (IVectorizedModel, Numbers, Numbers, Numbers, IReadOnlyList<int>)
 
-    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Range range, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    internal LevenbergMarquardtSIMD(IVectorizedModel model, Numbers x, Range range, IReadOnlyList<int> fixedParameters)
     {
+        var numberOfParameters = model.Parameters.Count;
+
         this.Model = model;
         (var _, var length) = range.GetOffsetAndLength(x.Count);
         this.numberOfDataPoints = length;
@@ -113,7 +115,7 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         this.derivatives = new AvxVector[this.numberOfParameters];
         for (var i = 0; i < this.numberOfParameters; ++i)
             this.derivatives[i] = AvxVector.Create(this.numberOfDataPoints);
-    } // ctor (IVectorizedModel, Numbers, int, IReadOnlyList<int>)
+    } // ctor (IVectorizedModel, Numbers, IReadOnlyList<int>)
 
     /// <inheritdoc/>
     public void Initialize(Numbers y, Numbers parameters)

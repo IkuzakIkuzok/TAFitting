@@ -123,7 +123,7 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
     /// <exception cref="ArgumentException">The number of <paramref name="x"/> and <paramref name="y"/> values must be the same.</exception>
     internal LevenbergMarquardt(IFittingModel model, Numbers x, Numbers y, Range range, Numbers parameters, IReadOnlyList<int> fixedParameters)
-        : this(model, x, range, parameters.Count, fixedParameters)
+        : this(model, x, range, fixedParameters)
     {
         if (x.Count != y.Count)
             throw new ArgumentException("The number of x and y values must be the same.");
@@ -137,10 +137,11 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
     /// <param name="model">The fitting model.</param>
     /// <param name="x"">The x values.</param>
     /// <param name="range">The range of data points to use.</param>
-    /// <param name="numberOfParameters">The number of parameters.</param>
     /// <param name="fixedParameters">The indices of the fixed parameters.</param>
-    internal LevenbergMarquardt(IFittingModel model, Numbers x, Range range, int numberOfParameters, IReadOnlyList<int> fixedParameters)
+    internal LevenbergMarquardt(IFittingModel model, Numbers x, Range range, IReadOnlyList<int> fixedParameters)
     {
+        var numberOfParameters = model.Parameters.Count;
+
         this.Model = model;
         (var o, var l) = range.GetOffsetAndLength(x.Count);
         this.numberOfDataPoints = l;
@@ -171,7 +172,7 @@ internal sealed class LevenbergMarquardt : ILevenbergMarquardtSolver
         this.derivatives = new double[this.numberOfDataPoints][];
         for (var i = 0; i < this.numberOfDataPoints; ++i)
             this.derivatives[i] = new double[this.numberOfParameters];
-    } // ctor (IFittingModel, Numbers, int, IReadOnlyList<int>)
+    } // ctor (IFittingModel, Numbers, IReadOnlyList<int>)
 
     /// <inheritdoc/>
     public void Initialize(Numbers y, Numbers parameters)
