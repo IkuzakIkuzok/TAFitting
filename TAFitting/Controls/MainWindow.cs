@@ -1846,6 +1846,9 @@ internal sealed partial class MainWindow : Form
     /// <param name="rows">The rows to fit.</param>
     private async Task LevenbergMarquardtEstimation(ParametersTableRowsEnumerable rows)
     {
+        var model = this.SelectedModel;
+        if (model is null) return;
+
         var cols =
             this.parametersTable.Columns.OfType<DataGridViewNumericBoxColumn>().ToArray();
 
@@ -1861,9 +1864,6 @@ internal sealed partial class MainWindow : Form
         var text = this.Text;
         this.Text += " - Fitting...";
         var source = rows.ToArray();
-
-        var model = this.SelectedModel;
-        if (model is null) return;
 
         var d = source.First().Decay;
         var times = d.Times;
