@@ -35,7 +35,7 @@ internal sealed partial class MainWindow : Form
     private readonly SplitContainer mainContainer, paramsContainer;
 
     private readonly CustomChart chart;
-    private readonly Axis axisX, axisY;
+    private readonly PlotHelper plotHelper;
     private readonly DisplayRangeSelector rangeSelector;
     private readonly CheckBox cb_invert;
     private bool suppressAutoInvert = false;
@@ -49,8 +49,7 @@ internal sealed partial class MainWindow : Form
     private readonly ToolStripMenuItemGroup<Guid> modelItemGroup;
 
     private Decays? decays;
-    private readonly CacheSeries s_observed, s_filtered, s_fit, s_compare;
-    private bool stopDrawing = false;
+
     private ParametersTableRow? row;
     private string sampleName = string.Empty;
     private readonly CustomNumericUpDown nud_time0;
@@ -113,79 +112,9 @@ internal sealed partial class MainWindow : Form
             Parent = this.mainContainer.Panel1,
         };
 
-        this.axisX = new()
-        {
-            Title = "Time (µs)",
-            Minimum = 0.05,
-            Maximum = 1000,
-            LogarithmBase = 10,
-            //Interval = 1,
-            LabelStyle = new() { Format = "#.0e+0" },
-        };
-        this.axisY = new()
-        {
-            Title = "ΔµOD",
-            Minimum = 10,
-            Maximum = 10000,
-            LogarithmBase = 10,
-            //Interval = 1,
-            LabelStyle = new() { Format = "#.0e+0" },
-        };
+        this.plotHelper = new(this.chart);
 
-        this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
-        //this.axisX_freq.MinorGrid.Interval = this.axisY.MinorGrid.Interval = 1;
-        this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
-
-        this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
-        this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
-
-        this.chart.ChartAreas.Add(new ChartArea()
-        {
-            AxisX = this.axisX,
-            AxisY = this.axisY,
-        });
-
-        AddDummySeries();
-
-        this.s_observed = new()
-        {
-            Color = Program.ObservedColor,
-            ChartType = SeriesChartType.Point,
-            MarkerSize = Program.ObservedSize,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        this.chart.Series.Add(this.s_observed);
-
-        this.s_filtered = new()
-        {
-            Color = Program.FilteredColor,
-            ChartType = SeriesChartType.Line,
-            BorderWidth = Program.FilteredWidth,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        this.chart.Series.Add(this.s_filtered);
-
-        this.s_fit = new()
-        {
-            Color = Program.FitColor,
-            ChartType = SeriesChartType.Line,
-            BorderWidth = Program.FitWidth,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        this.chart.Series.Add(this.s_fit);
-
-        this.s_compare = new()
-        {
-            Color = Color.FromArgb(64, Program.FilteredColor),
-            ChartType = SeriesChartType.Line,
-            BorderWidth = Program.FilteredWidth,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        this.chart.Series.Add(this.s_compare);
+        this.plotHelper.AddDummySeries();
 
         #endregion chart
 
@@ -214,7 +143,7 @@ internal sealed partial class MainWindow : Form
 
         #region view options
 
-        this.rangeSelector = new(this.axisX, this.axisY)
+        this.rangeSelector = new(this.plotHelper.AxisX, this.plotHelper.AxisY)
         {
             Top = 10,
             Left = 10,
@@ -334,7 +263,7 @@ internal sealed partial class MainWindow : Form
         {
             ToolTipText = "Change the color of the observed data",
         };
-        menu_viewObservedColor.Click += SetObservedColor;
+        menu_viewObservedColor.Click += this.plotHelper.SetObservedColor;
         menu_viewObserved.DropDownItems.Add(menu_viewObservedColor);
 
         var menu_viewObservedSize = new ToolStripMenuItem("&Size")
@@ -343,7 +272,7 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewObserved.DropDownItems.Add(menu_viewObservedSize);
 
-        var overservedSizeGroup = new ToolStripMenuItemGroup<int>(ChangeObservedSize);
+        var overservedSizeGroup = new ToolStripMenuItemGroup<int>(this.plotHelper.ChangeObservedSize);
         for (var i = 1; i <= 10; i++)
         {
             var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, overservedSizeGroup)
@@ -363,7 +292,7 @@ internal sealed partial class MainWindow : Form
         {
             ToolTipText = "Change the color of the filtered data",
         };
-        menu_viewFilteredColor.Click += SetFilteredColor;
+        menu_viewFilteredColor.Click += this.plotHelper.SetFilteredColor;
         menu_viewFiltered.DropDownItems.Add(menu_viewFilteredColor);
 
         var menu_viewFilteredWidth = new ToolStripMenuItem("&Width")
@@ -372,7 +301,7 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFiltered.DropDownItems.Add(menu_viewFilteredWidth);
 
-        var filteredWidthGroup = new ToolStripMenuItemGroup<int>(ChangeFilteredWidth);
+        var filteredWidthGroup = new ToolStripMenuItemGroup<int>(this.plotHelper.ChangeFilteredWidth);
         for (var i = 1; i <= 10; i++)
         {
             var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, filteredWidthGroup)
@@ -392,7 +321,7 @@ internal sealed partial class MainWindow : Form
         {
             ToolTipText = "Change the color of the fitting curve",
         };
-        menu_viewFitColor.Click += SetFitColor;
+        menu_viewFitColor.Click += this.plotHelper.SetFitColor;
         menu_viewFit.DropDownItems.Add(menu_viewFitColor);
 
         var menu_viewFitWidth = new ToolStripMenuItem("&Width")
@@ -401,7 +330,7 @@ internal sealed partial class MainWindow : Form
         };
         menu_viewFit.DropDownItems.Add(menu_viewFitWidth);
 
-        var fitWidthGroup = new ToolStripMenuItemGroup<int>(ChangeFitWidth);
+        var fitWidthGroup = new ToolStripMenuItemGroup<int>(this.plotHelper.ChangeFitWidth);
         for (var i = 1; i <= 10; i++)
         {
             var item = new GenericToolStripMenuItem<int>(i.ToInvariantString(), i, fitWidthGroup)
@@ -426,14 +355,14 @@ internal sealed partial class MainWindow : Form
             ToolTipText = "Change the font of the axis labels",
         };
         menu_viewFont.DropDownItems.Add(menu_viewFontAxisLabel);
-        menu_viewFontAxisLabel.Click += SelectAxisLabelFont;
+        menu_viewFontAxisLabel.Click += this.plotHelper.SelectAxisLabelFont;
 
         var menu_viewFontAxisTitle = new ToolStripMenuItem("&Axis Title")
         {
             ToolTipText = "Change the font of the axis titles",
         };
         menu_viewFont.DropDownItems.Add(menu_viewFontAxisTitle);
-        menu_viewFontAxisTitle.Click += SelectAxisTitleFont;
+        menu_viewFontAxisTitle.Click += this.plotHelper.SelectAxisTitleFont;
 
         #endregion menu.view.font
 
@@ -671,14 +600,14 @@ internal sealed partial class MainWindow : Form
     {
         base.OnShown(e);
 
-        this.rangeSelector.Time.FromChanged += AdjustXAxisInterval;
-        this.rangeSelector.Time.ToChanged += AdjustXAxisInterval;
-        this.rangeSelector.Time.LogarithmicChanged += AdjustXAxisInterval;
-        this.rangeSelector.Signal.FromChanged += AdjustYAxisInterval;
-        this.rangeSelector.Signal.ToChanged += AdjustYAxisInterval;
-        this.rangeSelector.Signal.LogarithmicChanged += AdjustYAxisInterval;
+        this.rangeSelector.Time.FromChanged += this.plotHelper.AdjustXAxisInterval;
+        this.rangeSelector.Time.ToChanged += this.plotHelper.AdjustXAxisInterval;
+        this.rangeSelector.Time.LogarithmicChanged += this.plotHelper.AdjustXAxisInterval;
+        this.rangeSelector.Signal.FromChanged += this.plotHelper.AdjustYAxisInterval;
+        this.rangeSelector.Signal.ToChanged += this.plotHelper.AdjustYAxisInterval;
+        this.rangeSelector.Signal.LogarithmicChanged += this.plotHelper.AdjustYAxisInterval;
 
-        this.chart.SizeChanged += AdjustAxesIntervals;
+        this.chart.SizeChanged += this.plotHelper.AdjustAxesIntervals;
     } // override protected void OnShown (EventArgs)
 
     override protected void OnKeyDown(KeyEventArgs e)
@@ -849,8 +778,8 @@ internal sealed partial class MainWindow : Form
                 {
                     this.Text = GetTitle();
 
-                    this.axisX.Title = $"Time ({this.decays.TimeUnit})";
-                    this.axisY.Title = this.decays.SignalUnit;
+                    this.plotHelper.AxisX.Title = $"Time ({this.decays.TimeUnit})";
+                    this.plotHelper.AxisY.Title = this.decays.SignalUnit;
                     this.rangeSelector.Time.Text = $"Time ({this.decays.TimeUnit}):";
                     this.rangeSelector.Signal.Text = $"{this.decays.SignalUnit}:";
                     this.lb_timeUnit.Text = this.decays.TimeUnit;
@@ -1210,7 +1139,7 @@ internal sealed partial class MainWindow : Form
             if (filter is not null)
                 decay.Filter(filter);
         }
-        ShowObserved();
+        this.plotHelper.ShowObserved(this.row, this.menu_hideOriginal.Checked);
         UpdateAnalyzers();
     } // private void Interpolate (ParametersTableRowsEnumerable, InterpolationMode)
 
@@ -1431,8 +1360,8 @@ internal sealed partial class MainWindow : Form
         this.spectraPreviewHelper.ClearSpectraMaskingCache();
         UpdatePreviewsParameters();
 
-        this.s_observed.Points.Clear();
-        this.s_fit.Points.Clear();
+        this.plotHelper.ClearObserved();
+        this.plotHelper.ClearFit();
 
         ChangeRow(this.parametersTable.ParameterRows.FirstOrDefault(), true);
     } // async private Task MakeTable ()
@@ -1566,7 +1495,7 @@ internal sealed partial class MainWindow : Form
         if (!compare)
             this.row = row;
 
-        this.s_compare.Points.Clear();
+        this.plotHelper.ClearCompare();
 
         if (movedToNewRow)
         {
@@ -1582,7 +1511,7 @@ internal sealed partial class MainWindow : Form
                 {
                     this.parametersTable.StopSelectionChanged = false;
                 }
-                ShowCompare(row);
+                this.plotHelper.ShowCompare(row);
                 return;
             }
             else
@@ -1696,23 +1625,6 @@ internal sealed partial class MainWindow : Form
 
     #endregion Data manipulation
 
-    #region Plots
-
-    /// <summary>
-    /// Adds a dummy series to the chart.
-    /// </summary>
-    private void AddDummySeries()
-    {
-        var dummy = new Series()
-        {
-            ChartType = SeriesChartType.Point,
-            IsVisibleInLegend = false,
-            IsXValueIndexed = false,
-        };
-        dummy.Points.AddXY(1e-6, 1e-6);
-        this.chart.Series.Add(dummy);
-    } // private void AddDummySeries ()
-
     #region Show plots
 
     private void ShowPlots(object? sender, EventArgs e)
@@ -1722,100 +1634,12 @@ internal sealed partial class MainWindow : Form
     /// Shows the observed and the fitting plots.
     /// </summary>
     private void ShowPlots()
-    {
-        ShowObserved();
-        ShowFit();
-    } // private void ShowPlots ()
-
-    /// <summary>
-    /// Shows the observed plot.
-    /// </summary>
-    private void ShowObserved()
-    {
-        if (this.stopDrawing) return;
-        if (this.row is null) return;
-        var decay = this.row.Decay;
-        var filtered = decay.FilteredSignals;
-
-        var invert = this.row.Inverted;
-
-        if (!this.menu_hideOriginal.Checked)
-            this.s_observed.AddDecay(decay, invert);
-
-        this.s_filtered.AddPositivePoints(decay.GetTimesAsSpan(), filtered, invert);
-    }// private void ShowObserved ()
-
-    /// <summary>
-    /// Shows the comparison plot.
-    /// </summary>
-    /// <param name="row">The row to show the comparison plot for.</param>
-    private void ShowCompare(ParametersTableRow row)
-    {
-        var decay = row.Decay;
-
-        var invert = row.Inverted;
-
-        var filtered = decay.FilteredSignals;
-        this.s_compare.AddPositivePoints(decay.GetTimesAsSpan(), filtered, invert);
-    } // private void ShowCompare (ParametersTableRow)
+        => this.plotHelper.ShowPlots(this.row, this.SelectedModel, this.menu_hideOriginal.Checked);
 
     private void ShowFit(object? sender, EventArgs e)
-        => ShowFit();
-
-    /// <summary>
-    /// Shows the fitting plot.
-    /// </summary>
-    private void ShowFit()
-    {
-        if (this.stopDrawing) return;
-        if (this.row is null) return;
-
-        var model = this.SelectedModel;
-        if (model is null) return;
-        
-        var decay = this.row.Decay;
-
-        var parameters = this.row.Parameters;
-        var func = model.GetFunction(parameters);
-        var invert = this.cb_invert.Checked;
-        this.s_fit.AddPositivePoints(decay.GetTimesAsSpan(), func, invert);
-    } // private void ShowFit ()
+        => this.plotHelper.ShowFit(this.row, this.SelectedModel);
 
     #endregion Show plots
-
-    #region Adjust axes
-
-    private void AdjustXAxisInterval(object? sender, EventArgs e)
-        => AdjustXAxisInterval();
-
-    private void AdjustYAxisInterval(object? sender, EventArgs e)
-        => AdjustYAxisInterval();
-
-    private void AdjustXAxisInterval()
-        => AdjustAxisInterval(this.axisX);
-
-    private void AdjustYAxisInterval()
-        => AdjustAxisInterval(this.axisY);
-
-    private void AdjustAxisInterval(Axis axis)
-    {
-        this.chart.ChartAreas[0].RecalculateAxesScale();
-        var pixelInterval = axis.IsLogarithmic ? 30 : 100;
-        axis.AdjustAxisInterval(pixelInterval);
-    } // private void AdjustAxisInterval (Axis)
-
-    private void AdjustAxesIntervals(object? sender, EventArgs e)
-        => AdjustAxesIntervals();
-
-    private void AdjustAxesIntervals()
-    {
-        AdjustXAxisInterval();
-        AdjustYAxisInterval();
-    } // private void AdjustAxesIntervals ()
-
-    #endregion Adjust axes
-
-    #endregion Plots
 
     #region Levenberg-Marquardt estimation
 
@@ -1852,14 +1676,14 @@ internal sealed partial class MainWindow : Form
         var text = this.Text;
         this.Text += " - Fitting...";
 
-        this.stopDrawing = true;
+        this.plotHelper.StopDrawing = true;
         var start = Stopwatch.GetTimestamp();
 
         var success = await this.lmHelper.Estimate(rows, model);
         if (!success) return;
 
         var elapsed = Stopwatch.GetElapsedTime(start);
-        this.stopDrawing = false;
+        this.plotHelper.StopDrawing = false;
 
         this.Text = text;
         FadingMessageBox.Show(
@@ -2019,94 +1843,6 @@ internal sealed partial class MainWindow : Form
         Program.AMinusBSignalFormat = dialog.AMinusBFormat;
         Program.BSignalFormat = dialog.BFormat;
     } // private static void EditFilenameFormat (object?, EventArgs)
-
-    #region change appearance
-
-    #region change color
-
-    private void SetObservedColor(object? sender, EventArgs e)
-    {
-        using var cd = new ColorDialog()
-        {
-            Color = Program.ObservedColor,
-        };
-        if (cd.ShowDialog() != DialogResult.OK) return;
-        this.s_observed.Color = Program.ObservedColor = cd.Color;
-    } // private void SetObservedColor (object?, EventArgs)
-
-    private void SetFilteredColor(object? sender, EventArgs e)
-    {
-        using var cd = new ColorDialog()
-        {
-            Color = Program.FilteredColor,
-        };
-        if (cd.ShowDialog() != DialogResult.OK) return;
-        this.s_filtered.Color = Program.FilteredColor = cd.Color;
-        this.s_compare.Color = Color.FromArgb(64, this.s_filtered.Color);
-    } // private void SetFilteredColor (object?, EventArgs)
-
-    private void SetFitColor(object? sender, EventArgs e)
-    {
-        using var cd = new ColorDialog()
-        {
-            Color = Program.FitColor,
-        };
-        if (cd.ShowDialog() != DialogResult.OK) return;
-        this.s_fit.Color = Program.FitColor = cd.Color;
-    } // private void SetFitColor (object?, EventArgs)
-
-    #endregion change color
-
-    #region change width/size
-
-    private void ChangeObservedSize(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
-    {
-        if (e.SelectedItem is null) return;
-        var size = e.SelectedItem.Tag;
-        this.s_observed.MarkerSize = Program.ObservedSize = size;
-    } // private void ChangeObservedSize (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
-
-    private void ChangeFilteredWidth(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
-    {
-        if(e.SelectedItem is null) return;
-        var width = e.SelectedItem.Tag;
-        this.s_filtered.BorderWidth = this.s_compare.BorderWidth = Program.FilteredWidth = width;
-    } // private void ChangeFilteredWidth (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
-
-    private void ChangeFitWidth(object? sender, ToolStripMenuItemGroupSelectionChangedEventArgs<int> e)
-    {
-        if (e.SelectedItem is null) return;
-        var width = e.SelectedItem.Tag;
-        this.s_fit.BorderWidth = Program.FitWidth = width;
-    } // private void ChangeFitWidth (object?, ToolStripMenuItemGroupSelectionChangedEventArgs<int>)
-
-    #endregion change width/size
-
-    #region change font
-
-    private void SelectAxisLabelFont(object? sender, EventArgs e)
-    {
-        using var fd = new FontDialog()
-        {
-            Font = Program.AxisLabelFont,
-        };
-        if (fd.ShowDialog() != DialogResult.OK) return;
-        this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont = fd.Font;
-    } // private void SelectAxisLabelFont (object?, EventArgs)
-
-    private void SelectAxisTitleFont(object? sender, EventArgs e)
-    {
-        using var fd = new FontDialog()
-        {
-            Font = Program.AxisTitleFont,
-        };
-        if (fd.ShowDialog() != DialogResult.OK) return;
-        this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont = fd.Font;
-    } // private void SelectAxisTitleFont (object?, EventArgs)
-
-    #endregion change font
-
-    #endregion change appearance
 
     #region update
 
