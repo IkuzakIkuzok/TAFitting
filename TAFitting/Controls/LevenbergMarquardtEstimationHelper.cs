@@ -67,8 +67,8 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
                 await Task.Run(() => Parallel.ForEach(source, initSolver, (row, _, solver) =>
                 {
-                    var parameters = Estimate(solver, row);
-                    results.TryAdd(row, [.. parameters]);  // Allocating a new array is necessary because the parameters array is reused.
+                    Estimate(solver, row);
+                    results.TryAdd(row, [.. solver.Parameters]);  // Allocating a new array is necessary because the parameters array is reused.
                     return solver;
                 }, (_) => { }));
 
@@ -84,7 +84,11 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
             {
                 var solver = initSolver();
                 foreach (var row in rows)
-                    row.Parameters = Estimate(solver, row);
+                {
+                    Estimate(solver, row);
+                    // Allocating a new array is not necessary here because the setter copies the values from the array.
+                    row.Parameters = solver.Parameters;
+                }
             }
         }
         finally
@@ -107,12 +111,10 @@ internal class LevenbergMarquardtEstimationHelper(ParametersTable parametersTabl
     /// </summary>
     /// <param name="solver">The solver to use.</param>
     /// <param name="row">The row to fit.</param>
-    /// <returns>The estimated parameters.</returns>
-    private static IReadOnlyList<double> Estimate(ILevenbergMarquardtSolver solver, ParametersTableRow row)
+    private static void Estimate(ILevenbergMarquardtSolver solver, ParametersTableRow row)
     {
         var signals = row.Decay.Signals;
         solver.Initialize(signals, row.Parameters);
         solver.Fit();
-        return solver.Parameters;
     } // private static void Estimate (ILevenbergMarquardtSolver, ParametersTableRow)
 } // internal class LevenbergMarquardtEstimationHelper
