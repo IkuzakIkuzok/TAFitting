@@ -636,9 +636,7 @@ internal sealed partial class Decay : IEnumerable<(double Time, double Signal)>
         {
             // Vectorized addition
             var v = new AvxVector(this.times);
-#pragma warning disable IDE0059  // Unnecessary assignment of a value
             v += time;
-#pragma warning restore
         }
         else
         {
