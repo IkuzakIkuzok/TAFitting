@@ -203,4 +203,32 @@ internal static class UIUtils
         axis.IntervalOffset = offset;
         axis.MinorGrid.IntervalOffset = offset;
     } // internal static void AdjustAxisIntervalLogarithmic (this Axis, [double])
+
+    /// <summary>
+    /// Sets exponential labels for the specified logarithmic axis.
+    /// </summary>
+    /// <param name="axis">The axis.</param>
+    internal static void SetExpLabels(this Axis axis)
+    {
+        axis.CustomLabels.Clear();
+        if (!axis.IsLogarithmic) return;
+
+        var interval = axis.Interval;
+        var logBase = Math.Pow(axis.LogarithmBase, interval);
+
+        var logMin = axis.Minimum <= 0.0 ? 0.0 : Math.Ceiling(Math.Log(axis.Minimum, logBase));
+        var logMax = axis.Maximum <= 0.0 ? 0.0 : Math.Floor(Math.Log(axis.Maximum, logBase));
+        var n = logMax - logMin + 1;
+
+        for (var i = 0; i < n; ++i)
+        {
+            var offset = i * interval;
+            var center = logMin + offset;
+            var val = Math.Pow(logBase, logMin + i);
+            var label = ExpFormatter(val);
+            if (label.StartsWith("1.00×", StringComparison.Ordinal))
+                label = label[5..]; // Remove "1.00×"
+            axis.CustomLabels.Add(center - 1, center + 1, label);
+        }
+    } // internal static void SetExpLabels (this Axis)
 } // internal static class UIUtils

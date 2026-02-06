@@ -49,7 +49,7 @@ internal sealed class PlotHelper
             Maximum = 1000,
             LogarithmBase = 10,
             //Interval = 1,
-            LabelStyle = new() { Format = "#.0e+0" },
+            LabelStyle = new() { Format = "#,##0.00" },
         };
         this.axisY = new()
         {
@@ -58,7 +58,7 @@ internal sealed class PlotHelper
             Maximum = 10000,
             LogarithmBase = 10,
             //Interval = 1,
-            LabelStyle = new() { Format = "#.0e+0" },
+            LabelStyle = new() { Format = "#,##0.00" },
         };
 
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
@@ -234,6 +234,7 @@ internal sealed class PlotHelper
         this.chart.ChartAreas[0].RecalculateAxesScale();
         var pixelInterval = axis.IsLogarithmic ? 30 : 100;
         axis.AdjustAxisInterval(pixelInterval);
+        axis.SetExpLabels();
     } // private void AdjustAxisInterval (Axis)
 
     internal void AdjustAxesIntervals(object? sender, EventArgs e)
