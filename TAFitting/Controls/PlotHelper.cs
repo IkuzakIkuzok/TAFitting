@@ -61,18 +61,18 @@ internal sealed class PlotHelper
             LabelStyle = new() { Format = "#,##0.00" },
         };
 
+        this.chart.ChartAreas.Add(new ChartArea()
+        {
+            AxisX = this.axisX,
+            AxisY = this.axisY,
+        });
+
         this.axisX.MinorGrid.Enabled = this.axisY.MinorGrid.Enabled = true;
         //this.axisX_freq.MinorGrid.Interval = this.axisY.MinorGrid.Interval = 1;
         this.axisX.MinorGrid.LineColor = this.axisY.MinorGrid.LineColor = Color.LightGray;
 
         this.axisX.TitleFont = this.axisY.TitleFont = Program.AxisTitleFont;
         this.axisX.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
-
-        this.chart.ChartAreas.Add(new ChartArea()
-        {
-            AxisX = this.axisX,
-            AxisY = this.axisY,
-        });
 
         this.s_observed = new()
         {
