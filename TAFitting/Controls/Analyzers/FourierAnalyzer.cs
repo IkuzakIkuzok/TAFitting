@@ -76,6 +76,14 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
             // IsReversed = true,
             Enabled = AxisEnabled.True,
         };
+
+        this.chart.ChartAreas.Add(new ChartArea()
+        {
+            AxisX = this.axisX_freq,
+            AxisX2 = this.axisX_time,
+            AxisY = this.axisY,
+        });
+
         this.axisX_time.LabelStyle.Enabled = true;
         this.axisX_time.MajorGrid.Enabled = true;
         this.axisX_time.MajorTickMark.Enabled = true;
@@ -88,13 +96,6 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.axisX_freq.LabelStyle.Font = this.axisX_time.LabelStyle.Font = this.axisY.LabelStyle.Font = Program.AxisLabelFont;
         Program.AxisTitleFontChanged += SetAxisTitleFont;
         Program.AxisLabelFontChanged += SetAxisLabelFont;
-
-        this.chart.ChartAreas.Add(new ChartArea()
-        {
-            AxisX = this.axisX_freq,
-            AxisX2 = this.axisX_time,
-            AxisY = this.axisY,
-        });
 
         this.series = new()
         {
@@ -176,6 +177,19 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 
         #endregion menu
     } // ctor ()
+
+    override protected void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+
+        this.chart.ChartAreas[0].RecalculateAxesScale();
+        this.axisX_freq.AdjustAxisIntervalLogarithmic();
+        this.axisX_time.AdjustAxisIntervalLogarithmic();
+        this.axisY.AdjustAxisInterval();
+
+        this.axisX_freq.SetExpLabels();
+        this.axisY.SetExpLabels();
+    } // override protected void OnShown (EventArgs)
 
     override protected void OnFormClosing(FormClosingEventArgs e)
     {
@@ -279,6 +293,9 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         this.axisX_time.AdjustAxisIntervalLogarithmic();
         this.axisY.AdjustAxisInterval();
 
+        this.axisX_freq.SetExpLabels();
+        this.axisY.SetExpLabels();
+
         SetTimeLabels((int)x_min, (int)x_max, timeScale);
     } // private void SetSpectrum ()
 
@@ -370,7 +387,8 @@ internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
         {
             var f = Math.Pow(10, freq_min_log + i);
             var t = 1 / f / timeUnit;
-            this.axisX_time.CustomLabels.Add(freq_min_log + i - 1, freq_min_log + i + 1, $"{t:#.0e+0}");
+            var label = UIUtils.ExpFormatter(t, "1.00×");
+            this.axisX_time.CustomLabels.Add(freq_min_log + i - 1, freq_min_log + i + 1, label);
         }
     } // private void SetTimeLabels (int, int)
 
