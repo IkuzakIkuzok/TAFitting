@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki Kohzuki
+// (c) 2024-2026 Kazuki Kohzuki
 
 using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -15,10 +15,10 @@ internal static class UIUtils
     internal const double DecimalMax = +7.9e28;
 
     /// <summary>
-    /// Formats the specified value in exponential notation.
+    /// Formats the specified decimal value as a string in scientific (exponential) notation with two decimal places.
     /// </summary>
-    /// <param name="value">The value.</param>
-    /// <returns>String representation of the value in exponential notation.</returns>
+    /// <param name="value">The decimal value to format.</param>
+    /// <returns>A string representation of the value in scientific notation with two decimal places.</returns>
     internal static string ExpFormatter(decimal value)
     {
         // +0.00x10⁻⁰⁰⁰ = 12 characters max, allocate with some margin for safety
@@ -26,6 +26,26 @@ internal static class UIUtils
         if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
             return value.ToInvariantString();
 
+        return ExpFormatterInternal(s, len);
+    } // internal static string ExpFormatter (decimal)
+
+    /// <summary>
+    /// Formats the specified double-precision floating-point value as a string in scientific (exponential) notation with two decimal places.
+    /// </summary>
+    /// <param name="value">The double-precision floating-point value to format.</param>
+    /// <returns>A string representation of the value in scientific notation with two decimal places.</returns>
+    internal static string ExpFormatter(double value)
+    {
+        // +0.00x10⁻⁰⁰⁰ = 12 characters max, allocate with some margin for safety
+        var s = (stackalloc char[16]);
+        if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
+            return value.ToInvariantString();
+
+        return ExpFormatterInternal(s, len);
+    } // internal static string ExpFormatter (double)
+
+    private static string ExpFormatterInternal(Span<char> s, int len)
+    {
         var expIndex = s.IndexOf('E');
         var exponent = (stackalloc char[len - expIndex - 1]);
         s[(expIndex + 1)..(len)].CopyTo(exponent);  // copy exponent part to separate buffer, as `s` will be modified in-place
@@ -65,7 +85,7 @@ internal static class UIUtils
 
         s = s[..index];
         return new(s);
-    } // internal static string ExpFormatter (decimal)
+    } // private static string ExpFormatterInternal (Span<char>, int)
 
     /// <summary>
     /// Gets the range of the specified series.
