@@ -26,8 +26,8 @@ internal static class UIUtils
         if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
             return value.ToInvariantString();
 
-        return ExpFormatterInternal(s, len);
-    } // internal static string ExpFormatter (decimal)
+        return ExpFormatterInternal(s, len, []);
+    } // internal static string ExpFormatter (decimal, string?)
 
     /// <summary>
     /// Formats the specified double-precision floating-point value as a string in scientific (exponential) notation with two decimal places.
@@ -41,10 +41,33 @@ internal static class UIUtils
         if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
             return value.ToInvariantString();
 
-        return ExpFormatterInternal(s, len);
+        return ExpFormatterInternal(s, len, []);
     } // internal static string ExpFormatter (double)
 
-    private static string ExpFormatterInternal(Span<char> s, int len)
+    /// <summary>
+    /// Formats the specified double-precision floating-point value as a string in scientific (exponential) notation with two decimal places.
+    /// </summary>
+    /// <param name="value">The double-precision floating-point value to format.</param>
+    /// <param name="unnecessaryPrefix">A prefix string to be removed from the formatted result, if present.</param>
+    /// <returns>A string representation of the value in scientific notation with two decimal places.</returns>
+    internal static string ExpFormatter(double value, string unnecessaryPrefix)
+    {
+        // +0.00x10⁻⁰⁰⁰ = 12 characters max, allocate with some margin for safety
+        var s = (stackalloc char[16]);
+        if (!value.TryFormat(s, out var len, "E2", CultureInfo.InvariantCulture))
+            return value.ToInvariantString();
+
+        return ExpFormatterInternal(s, len, unnecessaryPrefix);
+    } // internal static string ExpFormatter (double, string)
+
+    /// <summary>
+    /// Formats a numeric string in scientific notation by replacing the exponent part with a Unicode superscript representation.
+    /// </summary>
+    /// <param name="s">A span of characters containing the numeric string to format. The span is modified in place to contain the formatted result.</param>
+    /// <param name="len">The length of the valid data in the span <paramref name="s"/> to consider for formatting.</param>
+    /// <param name="unnecessaryPrefix">A read-only span of characters representing a prefix to remove from the formatted result if present. If empty, no prefix is removed.</param>
+    /// <returns>A string containing the formatted numeric value with the exponent expressed using Unicode superscript characters.</returns>
+    private static string ExpFormatterInternal(Span<char> s, int len, ReadOnlySpan<char> unnecessaryPrefix)
     {
         var expIndex = s.IndexOf('E');
         var exponent = (stackalloc char[len - expIndex - 1]);
@@ -84,8 +107,12 @@ internal static class UIUtils
         }
 
         s = s[..index];
+
+        if (!unnecessaryPrefix.IsEmpty && s.StartsWith(unnecessaryPrefix, StringComparison.Ordinal))
+            s = s[unnecessaryPrefix.Length..];
+
         return new(s);
-    } // private static string ExpFormatterInternal (Span<char>, int)
+    } // private static string ExpFormatterInternal (Span<char>, int, ReadOnlySpan<char>)
 
     /// <summary>
     /// Gets the range of the specified series.
@@ -237,9 +264,7 @@ internal static class UIUtils
             var offset = i * interval;
             var center = logMin + offset;
             var val = Math.Pow(logBase, logMin + i);
-            var label = ExpFormatter(val);
-            if (label.StartsWith("1.00×", StringComparison.Ordinal))
-                label = label[5..]; // Remove "1.00×"
+            var label = ExpFormatter(val, "1.00×");
             axis.CustomLabels.Add(center - 1, center + 1, label);
         }
     } // internal static void SetExpLabels (this Axis)
