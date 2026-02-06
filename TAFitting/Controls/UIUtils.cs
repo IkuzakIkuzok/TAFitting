@@ -216,8 +216,20 @@ internal static class UIUtils
         var interval = axis.Interval;
         var logBase = Math.Pow(axis.LogarithmBase, interval);
 
-        var logMin = axis.Minimum <= 0.0 ? 0.0 : Math.Ceiling(Math.Log(axis.Minimum, logBase));
-        var logMax = axis.Maximum <= 0.0 ? 0.0 : Math.Floor(Math.Log(axis.Maximum, logBase));
+        /*
+         * Simple ceiling or flooring does not work due to floating-point precision issues:
+         * e.g.,
+         *  Math.Log(1e-9, 10) == -8.9999999999999982
+         *  Math.Log(1e3, 10) == 2.9999999999999996
+         * To address this, we round the logarithmic values first, then adjust them if necessary.
+         */
+
+        var logMin = axis.Minimum <= 0.0 ? 0.0 : Math.Round(Math.Log(axis.Minimum, logBase));
+        if (Math.Pow(10, logMin) < axis.Minimum) logMin += interval;
+
+        var logMax = axis.Maximum <= 0.0 ? 0.0 : Math.Round(Math.Log(axis.Maximum, logBase));
+        if (Math.Pow(10, logMax) > axis.Maximum) logMax -= interval;
+
         var n = logMax - logMin + 1;
 
         for (var i = 0; i < n; ++i)
