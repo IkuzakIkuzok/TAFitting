@@ -608,6 +608,8 @@ internal sealed partial class MainWindow : Form
         this.rangeSelector.Signal.LogarithmicChanged += this.plotHelper.AdjustYAxisInterval;
 
         this.chart.SizeChanged += this.plotHelper.AdjustAxesIntervals;
+
+        this.plotHelper.AdjustAxesIntervals();
     } // override protected void OnShown (EventArgs)
 
     override protected void OnKeyDown(KeyEventArgs e)

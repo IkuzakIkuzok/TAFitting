@@ -239,11 +239,11 @@ internal sealed class PlotHelper
     internal void AdjustAxesIntervals(object? sender, EventArgs e)
         => AdjustAxesIntervals();
 
-    private void AdjustAxesIntervals()
+    internal void AdjustAxesIntervals()
     {
         AdjustXAxisInterval();
         AdjustYAxisInterval();
-    } // private void AdjustAxesIntervals ()
+    } // internal void AdjustAxesIntervals ()
 
     #endregion Adjust axes
 
