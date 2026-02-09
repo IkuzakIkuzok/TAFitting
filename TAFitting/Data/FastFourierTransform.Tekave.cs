@@ -301,9 +301,9 @@ internal static partial class FastFourierTransform
         TekaveFftHelper.ForwardTekave(buffer);
     } // internal static void ForwardTekave (Span<Complex>)
 
-    private static void CheckBufferSize(Span<Complex> buffer)
+    private static void CheckBufferSize(ReadOnlySpan<Complex> buffer)
     {
         if (buffer.Length != TekaveSize)
             throw new ArgumentException($"The number of points must be {TekaveSize}.", nameof(buffer));
-    } // private static void CheckBufferSize (Span<Complex>)
+    } // private static void CheckBufferSize (ReadOnlySpan<Complex>)
 } // internal static partial class FastFourierTransform
