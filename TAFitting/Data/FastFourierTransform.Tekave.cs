@@ -4,7 +4,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace TAFitting.Filter.Fourier;
+namespace TAFitting.Data;
 
 /*
  * Optimized FFT implementation for Tekave data (size = 2499 = 3 x 7 x 7 x 17).

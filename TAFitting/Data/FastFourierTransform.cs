@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using TAFitting.Buffers;
 
-namespace TAFitting.Filter.Fourier;
+namespace TAFitting.Data;
 
 /*
  * Because the forward FFT is called twice in the inverse FFT, normalization is carried out in the inverse FFT.
