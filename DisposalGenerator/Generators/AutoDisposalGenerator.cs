@@ -109,7 +109,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         if (hasDispose)
             builder.AppendLine($"\t}} // partial class {className} : {baseNames}");
         else
-            builder.AppendLine($"\t}} // partial class {className} : global::.System.IDisposable");
+            builder.AppendLine($"\t}} // partial class {className} : global::System.IDisposable");
 
         builder.AppendLine("} // namespace " + nameSpace);
     } // private static void Generate(StringBuilder, string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
@@ -156,8 +156,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine(@"
         override protected void Dispose(bool disposing)
         {
-            if (this.__generated_disposed) return;
-            base.Dispose(disposing);");
+            if (this.__generated_disposed) return;");
         }
         else
         {
@@ -167,26 +166,40 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             if (this.__generated_disposed) return;");
         }
 
+        builder.Append(@"
+            try
+            {");
+
         if (fields.Count > 0)
         {
             builder.AppendLine();
-            builder.AppendLine("\t\t\tif (disposing)\n\t\t\t{");
+            builder.AppendLine("\t\t\t\tif (disposing)\n\t\t\t\t{");
             foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
             {
                 var name = field.Identifier.Text;
-                builder.AppendLine($"\t\t\t\tthis.{name}?.Dispose();");
+                builder.AppendLine($"\t\t\t\t\tthis.{name}?.Dispose();");
             }
-            builder.AppendLine("\t\t\t}"); // if (disposing)
+            builder.Append("\t\t\t\t}"); // if (disposing)
         }
         
         if (!string.IsNullOrEmpty(unmanaged))
         {
             builder.AppendLine();
-            builder.AppendLine($"\t\t\t{unmanaged}();");
+            builder.Append($"\t\t\t\t{unmanaged}();");
         }
 
-        builder.AppendLine();
-        builder.AppendLine("\t\t\tthis.__generated_disposed = true;");
+        builder.AppendLine(@"
+            }
+            finally
+            {
+                this.__generated_disposed = true;");
+
+        if (hasDisposeBool)
+        {
+            builder.AppendLine("\t\t\t\tbase.Dispose(disposing);");
+        }
+
+        builder.AppendLine("\t\t\t}");
 
         if (hasDisposeBool)
             builder.AppendLine("\t\t} // override protected void Dispose (bool)");
