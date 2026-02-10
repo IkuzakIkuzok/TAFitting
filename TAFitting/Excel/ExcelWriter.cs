@@ -60,6 +60,9 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
 
     public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {
+        if (parameters.Count != this.Model.Parameters.Count)
+            throw new ArgumentException("The number of parameters does not match the model.", nameof(parameters));
+
         var formulaTemplate = this.Model.ExcelFormula;
         foreach ((var name, var index) in this.parametersindices)
         {
