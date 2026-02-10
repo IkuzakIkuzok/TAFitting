@@ -2,6 +2,7 @@
 // (c) 2024 Kazuki KOHZUKI
 
 using ClosedXML.Excel;
+using DisposalGenerator;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -9,7 +10,8 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a writer for an Excel spreadsheet.
 /// </summary>
-internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
+[AutoDisposal]
+internal sealed partial class ExcelWriter : ISpreadSheetWriter
 {
     private readonly XLWorkbook workbook;
     private readonly IXLWorksheet worksheet;
@@ -120,9 +122,4 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
     {
         this.workbook.SaveAs(path);
     } // public void Write (string)
-
-    public void Dispose()
-    {
-        ((IDisposable)this.workbook).Dispose();
-    } // public void Dispose ()
-} // internal sealed partial class ExcelWriter : ISpreadSheetWriter, IDisposable
+} // internal sealed partial class ExcelWriter : ISpreadSheetWriter
