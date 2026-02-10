@@ -1,6 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using System.Text;
 using TAFitting.Controls;
 using TAFitting.Data;
@@ -11,15 +12,15 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for a CSV file.
 /// </summary>
-internal sealed class CsvReader : ISpreadSheetReader
+[AutoDisposal]
+internal sealed partial class CsvReader : ISpreadSheetReader
 {
     private StreamReader? reader;
-    private bool _disposed = false;
 
     /// <inheritdoc/>
     public IFittingModel Model { get; init; }
 
-    public bool IsOpened => this.reader is not null && !this._disposed;
+    public bool IsOpened => this.reader is not null && !this.disposed;
 
     /// <inheritdoc/>
     public bool ModelMatched { get; private set; }
@@ -162,19 +163,4 @@ internal sealed class CsvReader : ISpreadSheetReader
 
         return builder.ToString();
     } // private string ReadRemainingLine (ReadOnlySpan<char>)
-
-    public void Dispose()
-    {
-        Dispose(true);
-    } // public void Dispose ()
-
-    private void Dispose(bool disposing)
-    {
-        if (this._disposed) return;
-
-        if (disposing)
-            this.reader?.Dispose();
-
-        this._disposed = true;
-    } // private void Dispose (bool)
-} // internal sealed class CsvReader : ISpreadSheetReader
+} // internal sealed partial class CsvReader : ISpreadSheetReader
