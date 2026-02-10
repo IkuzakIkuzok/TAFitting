@@ -110,7 +110,7 @@ internal enum SIPrefix
     /// <summary>
     /// Micro (μ, 10^-6)
     /// </summary>
-    [DefaultSerializeValue("μ")]
+    [DefaultSerializeValue("\u00b5")]
     Micro = -6,
 
     /// <summary>
