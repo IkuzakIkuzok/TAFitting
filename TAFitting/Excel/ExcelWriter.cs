@@ -61,6 +61,11 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {
         var formulaTemplate = this.Model.ExcelFormula;
+        foreach ((var name, var index) in this.parametersindices)
+        {
+            var cell = "$" + GetColumnLetter(index) + this.rowIndex;
+            formulaTemplate = formulaTemplate.Replace($"[{name}]", cell, StringComparison.Ordinal);
+        }
 
         this.worksheet.Cell(this.rowIndex, 1).Value = wavelength;
 
@@ -73,23 +78,18 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         for (var i = 0; i < this.times.Count; i++)
         {
             var col = this.Model.Parameters.Count + i + 2;
-            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = GetFormula(formulaTemplate, this.rowIndex, col);
+            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = GetFormula(formulaTemplate, col);
         }
 
         this.rowIndex++;
     } // public void AddRow (double, IEnumerable<double>)
 
-    private string GetFormula(string template, int row, int column)
+    private static string GetFormula(string template, int column)
     {
         var time = GetColumnLetter(column) + "$1";
         template = template.Replace("$X", time, StringComparison.Ordinal);
-        foreach ((var name, var index) in this.parametersindices)
-        {
-            var cell = "$" + GetColumnLetter(index) + row;
-            template = template.Replace($"[{name}]", cell, StringComparison.Ordinal);
-        }
         return template;
-    } // private string GetFormula (string, int, int)
+    } // private static string GetFormula (string, int)
 
     private static string GetColumnLetter(int column)
     {
