@@ -216,7 +216,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         }
     } // private static void GenerateInheritableDispose (StringBuilder, IReadOnlyCollection<FieldDeclarationSyntax>, bool, bool, bool, string?)
 
-    private static readonly string[] attrs = [AttributesGenerator.NotToBeDisposedAttributeName, AttributesGenerator.NotToBeDisposedAttributeShortName];
+    private static readonly string[] attrs = [AttributesGenerator.DoNotDisposeAttributeName, AttributesGenerator.DoNotDisposeAttributeShortName];
     private static bool IsDisposable(FieldDeclarationSyntax field, SemanticModel model, INamedTypeSymbol interfaceSymbol)
     {
         var isStatic = field.Modifiers.Any(SyntaxKind.StaticKeyword);

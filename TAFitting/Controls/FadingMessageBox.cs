@@ -20,7 +20,7 @@ internal partial class FadingMessageBox : Form
     private Timer? timer;
     private bool flag = false;
 
-    [NotToBeDisposed]  // The parent form must NOT be disposed when the current instance is disposed.
+    [DoNotDispose]  // The parent form must NOT be disposed when the current instance is disposed.
     private readonly Form parent;
 
     private int initialInterval;

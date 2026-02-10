@@ -13,7 +13,7 @@ namespace TAFitting.Controls.Spectra;
 [AutoDisposal]
 internal sealed partial class SummaryPreviewWindow : Form
 {
-    [NotToBeDisposed]  // The document should be disposed by the caller.
+    [DoNotDispose]  // The document should be disposed by the caller.
     private readonly SpectraSummaryDocument document;
 
     private readonly SplitContainer main_container;
