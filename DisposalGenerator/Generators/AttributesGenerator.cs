@@ -57,9 +57,18 @@ namespace DisposalGenerator;
 internal sealed class DoNotDisposeAttribute : global::System.Attribute
 {
     /// <summary>
+    /// Gets the reason why the field must not be disposed automatically.
+    /// </summary>
+    public string? Reason { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref=""DoNotDisposeAttribute""/> class.
     /// </summary>
-    internal DoNotDisposeAttribute() { }
+    /// <param name=""reason"">The reason why the field must not be disposed automatically.</param>
+    internal DoNotDisposeAttribute(string reason = """")
+    {
+        this.Reason = reason;
+    } // ctor ([string])
 } // internal sealed class DoNotDisposeAttribute : global::System.Attribute
 ";
 } // internal sealed class AttributesGenerator : IIncrementalGenerator
