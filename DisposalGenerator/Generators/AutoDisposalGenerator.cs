@@ -1,5 +1,5 @@
 ﻿
-// (c) 2025 Kazuki Kohzuki
+// (c) 2025-2026 Kazuki Kohzuki
 
 using SourceGeneratorUtils;
 using System.Collections.Immutable;
@@ -51,7 +51,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
                 if (fields.Count == 0 && string.IsNullOrEmpty(unmanagedDisposalMethod)) continue;
 
-                var hasDisposeMethod = HasDisposeMethod(classDeclaration, model, disposableInterfaceSymbol);
+                var hasDisposeMethod = HasDisposeMethod(classDeclaration, model);
                 var hasDisposeMethodWithBool = HasDisposeMethodWithBool(classDeclaration, model);
 
                 var isSealed = classDeclaration.Modifiers.Any(SyntaxKind.SealedKeyword);
@@ -92,13 +92,12 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
         builder.AppendLine("\t\tprivate bool disposed = false;");
 
-        if (!hasDispose)
+        if (!hasDispose && !hasDisposeBool)
         {
             builder.AppendLine(@"
         public void Dispose()
         {
             Dispose(true);
-            global::System.GC.SuppressFinalize(this);
         }");
         }
 
@@ -165,16 +164,14 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         return type is not null && type.AllInterfaces.Contains(interfaceSymbol);
     } //  private static bool IsDisposable (FieldDeclarationSyntax, SemanticModel, INamedTypeSymbol)
 
-    private static bool HasDisposeMethod(ClassDeclarationSyntax cls, SemanticModel model, INamedTypeSymbol interfaceSymbol)
+    private static bool HasDisposeMethod(ClassDeclarationSyntax cls, SemanticModel model)
     {
-        foreach (var t in cls.BaseList?.Types.Select(t => t.Type) ?? [])
-        {
-            var type = model.GetTypeInfo(t).Type;
-            if (type is null) continue;
-            if (type.AllInterfaces.Contains(interfaceSymbol)) return true;
-        }
-        return false;
-    } // private static bool HasDisposeMethod (ClassDeclarationSyntax, SemanticModel, INamedTypeSymbol)
+        var methods =
+            cls.Members.OfType<MethodDeclarationSyntax>()
+                       .Where(m => m.Identifier.Text == "Dispose")
+                       .Select(m => model.GetDeclaredSymbol(m));
+        return methods.Any(m => m is not null && m.ReturnsVoid && m.Parameters.Length == 0);
+    } // private static bool HasDisposeMethod (ClassDeclarationSyntax, SemanticModel)
 
     private static bool HasDisposeMethodWithBool(ClassDeclarationSyntax cls, SemanticModel model)
     {
@@ -182,11 +179,15 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         {
             var baseType = model.GetTypeInfo(t).Type;
             if (baseType is null) return false;
-            var disposeMethod = baseType.GetMembers("Dispose").OfType<IMethodSymbol>().FirstOrDefault();
-            if (disposeMethod is null) continue;
-            if (disposeMethod.ReturnsVoid && disposeMethod.Parameters.Length == 1 && disposeMethod.Parameters[0].Type.SpecialType == SpecialType.System_Boolean)
-                return true;
+            var disposeMethod = baseType.GetMembers().OfType<IMethodSymbol>().Where(IsDisposeMethodWithBool);
+            if (disposeMethod.Any()) return true;
         }
         return false;
     } // private static bool HasDisposeMethodWithBool (ClassDeclarationSyntax, SemanticModel, INamedTypeSymbol)
+
+    private static bool IsDisposeMethodWithBool(IMethodSymbol method)
+        => method.Name == "Dispose"
+        && method.ReturnsVoid
+        && method.Parameters.Length == 1
+        && method.Parameters[0].Type.SpecialType == SpecialType.System_Boolean;
 } // internal sealed class AutoDisposalGenerator : IIncrementalGenerator
