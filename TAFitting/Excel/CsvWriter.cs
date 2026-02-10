@@ -1,6 +1,7 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2026 Kazuki KOHZUKI
 
+using DisposalGenerator;
 using System.Text;
 using TAFitting.Model;
 
@@ -9,81 +10,57 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a writer for a CSV file.
 /// </summary>
-internal sealed class CsvWriter : ISpreadSheetWriter
+[AutoDisposal]
+internal sealed partial class CsvWriter : ISpreadSheetWriter
 {
-    private readonly List<RowData> rows = [];
+    private readonly StreamWriter writer;
+    private readonly IReadOnlyList<double> times;
 
     public IFittingModel Model { get; init; }
-
-    public IReadOnlyList<string> Parameters { get; set; } = [];
-
-    public IReadOnlyList<double> Times { get; set; } = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CsvWriter"/> class.
     /// </summary>
+    /// <param name="path">The file path.</param>
     /// <param name="model">The model.</param>
-    internal CsvWriter(IFittingModel model)
+    /// <param name="times">The times.</param>
+    internal CsvWriter(string path, IFittingModel model, IReadOnlyList<double> times)
     {
+        this.writer = new StreamWriter(path, false, Encoding.UTF8);
         this.Model = model;
+        this.times = times;
+
+        this.writer.Write("Wavelength (nm)");
+        for (var i = 0; i < model.Parameters.Count; i++)
+        {
+            this.writer.Write(',');
+            this.writer.Write(model.Parameters[i].Name);
+        }
+
+        for (var i = 0; i < times.Count; i++)
+        {
+            this.writer.Write(',');
+            this.writer.Write(times[i]);
+            this.writer.Write(" µs");
+        }
+        this.writer.WriteLine();
     } // internal CsvWriter (IFittingModel)
 
-    public void AddRow(double wavelength, IEnumerable<double> parameters)
+    public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {
-        var paramValues = parameters.ToArray();
-        var func = this.Model.GetFunction(paramValues);
-        var rowData = new RowData
+        this.writer.Write(wavelength);
+        for (var i = 0; i < this.Model.Parameters.Count; i++)
         {
-            Wavelength = wavelength,
-            Parameters = paramValues,
-            Values = [.. this.Times.Select(func)],
-        };
-        this.rows.Add(rowData);
-    } // public void AddRow (double, IEnumerable<double>)
-
-    public void Write(string path)
-    {
-        using var writer = new StreamWriter(path, false, Encoding.UTF8);
-
-        writer.Write("Wavelength (nm)");
-        for (var i = 0; i < this.Parameters.Count; i++)
-        {
-            writer.Write(',');
-            writer.Write(this.Parameters[i]);
+            this.writer.Write(',');
+            this.writer.Write(parameters[i]);
         }
-        for (var i = 0; i < this.Times.Count; i++)
+
+        var func = this.Model.GetFunction(parameters);
+        for (var i = 0; i < this.times.Count; i++)
         {
-            writer.Write(',');
-            writer.Write(this.Times[i]);
-            writer.Write(" µs");
+            this.writer.Write(',');
+            this.writer.Write(func(this.times[i]));
         }
-        writer.WriteLine();
-
-        foreach (var row in this.rows)
-            row.WriteTo(writer);
-    } // public void Write (string)
-
-    private class RowData()
-    {
-        required internal double Wavelength { get; init; }
-        required internal double[] Parameters { get; init; }
-        required internal double[] Values { get; init; }
-
-        internal void WriteTo(StreamWriter writer)
-        {
-            writer.Write(this.Wavelength);
-            for (var i = 0; i < this.Parameters.Length; i++)
-            {
-                writer.Write(',');
-                writer.Write(this.Parameters[i]);
-                
-            }
-            for (var i = 0; i < this.Values.Length; i++)
-            {
-                writer.Write(',');
-                writer.Write(this.Values[i]);
-            }
-            writer.WriteLine();
-        } // internal void WriteTo (StreamWriter)
-    } // private class RowData
-} // internal sealed class CsvWriter : ISpreadSheetWriter
+        this.writer.WriteLine();
+    } // public void AddRow (double, IReadOnlyList<double>)
+} // internal sealed partial class CsvWriter : ISpreadSheetWriter

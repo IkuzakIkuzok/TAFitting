@@ -1,8 +1,7 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2026 Kazuki KOHZUKI
 
 using ClosedXML.Excel;
-using DisposalGenerator;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -10,83 +9,70 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a writer for an Excel spreadsheet.
 /// </summary>
-[AutoDisposal]
 internal sealed partial class ExcelWriter : ISpreadSheetWriter
 {
+    private bool _disposed = false;
+
+    private readonly string path;
     private readonly XLWorkbook workbook;
     private readonly IXLWorksheet worksheet;
 
-    private int parametersCount = 0;
-    private int timesCount = 0;
+    private readonly IReadOnlyList<double> times;
     private int rowIndex = 2;
 
     private readonly Dictionary<string, int> parametersindices = [];
 
     public IFittingModel Model { get; init; }
 
-    public IReadOnlyList<string> Parameters
-    {
-        get => [
-            .. this.worksheet.Range(1, 2, 1, this.parametersCount + 1).Cells()
-            .Select(cell => cell.GetString())
-        ];
-        set
-        {
-            this.parametersCount = value.Count;
-            this.parametersindices.Clear();
-            for (var i = 0; i < value.Count; i++)
-            {
-                var index = i + 2;
-                var name = value[i];
-                this.worksheet.Cell(1, index).Value = name;
-                this.parametersindices[name] = index;
-            }
-        }
-    }
-
-    public IReadOnlyList<double> Times
-    {
-        get => [
-            .. this.worksheet.Range(1, this.parametersCount + 2, 1, this.parametersCount + this.timesCount + 2).Cells()
-            .Select(cell => cell.GetDouble())
-        ];
-        set
-        {
-            this.timesCount = value.Count;
-            for (var i = 0; i < value.Count; i++)
-                this.worksheet.Cell(1, this.parametersCount + i + 2).Value = value[i];
-        }
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ExcelWriter"/> class.
     /// </summary>
+    /// <param name="path">The file path.</param>
     /// <param name="model">The model.</param>
-    internal ExcelWriter(IFittingModel model)
+    /// <param name="times">The times.</param>
+    internal ExcelWriter(string path, IFittingModel model, IReadOnlyList<double> times)
     {
+        this.path = path;
         this.Model = model;
+        this.times = times;
+
+        // Do not specify the file path here to avoid appending to an existing file.
+        // Instead, save (overwrite) the file in Dispose().
         this.workbook = new();
         this.worksheet = this.workbook.AddWorksheet("TA Spectra");
         this.worksheet.Cell(1, 1).Value = "Wavelength / nm";
         this.worksheet.SheetView.Freeze(1, 1);
+
+        for (var i = 0; i < model.Parameters.Count; i++)
+        {
+            var col = i + 2;
+            var param = model.Parameters[i];
+            this.worksheet.Cell(1, col).Value = param.Name;
+            this.parametersindices[param.Name] = col;
+        }
+
+        for (var i = 0; i < times.Count; i++)
+        {
+            var col = model.Parameters.Count + i + 2;
+            this.worksheet.Cell(1, col).Value = times[i];
+        }
     } // internal ExcelWriter (IFittingModel)
 
-    public void AddRow(double wavelength, IEnumerable<double> parameters)
+    public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {
-        var parametersValues = parameters.ToArray();
         var formulaTemplate = this.Model.ExcelFormula;
 
         this.worksheet.Cell(this.rowIndex, 1).Value = wavelength;
 
-        for (var i = 0; i < this.parametersCount; i++)
+        for (var i = 0; i < this.Model.Parameters.Count; i++)
         {
             var col = i + 2;
-            this.worksheet.Cell(this.rowIndex, col).Value = parametersValues[i];
+            this.worksheet.Cell(this.rowIndex, col).Value = parameters[i];
         }
 
-        for (var i = 0; i < this.timesCount; i++)
+        for (var i = 0; i < this.times.Count; i++)
         {
-            var col = this.parametersCount + i + 2;
+            var col = this.Model.Parameters.Count + i + 2;
             this.worksheet.Cell(this.rowIndex, col).FormulaA1 = GetFormula(formulaTemplate, this.rowIndex, col);
         }
 
@@ -117,9 +103,14 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         }
         return letter;
     } // private static string GetColumnLetter (int)
-    
-    public void Write(string path)
+
+    public void Dispose()
     {
-        this.workbook.SaveAs(path);
-    } // public void Write (string)
+        if (this._disposed) return;
+
+        this.workbook.SaveAs(this.path);
+        this.workbook.Dispose();
+
+        this._disposed = true;
+    } // public void Dispose()
 } // internal sealed partial class ExcelWriter : ISpreadSheetWriter

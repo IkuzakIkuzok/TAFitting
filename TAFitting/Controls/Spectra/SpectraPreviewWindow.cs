@@ -735,25 +735,20 @@ internal sealed partial class SpectraPreviewWindow : Form
 
         var filename = dialog.FileName;
         var extension = Path.GetExtension(filename);
-        var writer = GetSpreadSheetWriter(extension);
 
         var maskingRanges = this.maskingRangeBox.MaskingRanges;
 
         try
         {
             using var _ = new NegativeSignHandler();
-            writer.Parameters = this.Model.Parameters.Names;
-            writer.Times = [.. this.timeTable.Times];
+
+            using var writer = GetSpreadSheetWriter(filename, [.. this.timeTable.Times]);
 
             foreach ((var wavelength, var parameters) in this.parameters)
             {
                 if (maskingRanges.Include(wavelength)) continue;
                 writer.AddRow(wavelength, parameters);
             }
-
-            writer.Write(filename);
-
-            ShowSavedNotification(filename);
         }
         catch (Exception e)
         {
@@ -763,12 +758,10 @@ internal sealed partial class SpectraPreviewWindow : Form
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
             );
+            return;
         }
-        finally
-        {
-            if (writer is IDisposable disposable)
-                disposable.Dispose();
-        }
+
+        ShowSavedNotification(filename);
     } // private void SaveToFile ()
 
     private void ExportToOrigin(object? sender, EventArgs e)
@@ -865,12 +858,11 @@ internal sealed partial class SpectraPreviewWindow : Form
         toast.Show();
     } // private static void ShowSavedNotification (string)
 
-    private ISpreadSheetWriter GetSpreadSheetWriter(string extension)
-        => extension.ToUpperInvariant() switch
+    private ISpreadSheetWriter GetSpreadSheetWriter(string filename, IReadOnlyList<double> times)
+        => Path.GetExtension(filename).ToUpperInvariant() switch
         {
-            ".CSV" => new CsvWriter(this.Model),
-            ".XLSX" => new ExcelWriter(this.Model),
-            _ => throw new NotSupportedException($"The extension '{extension}' is not supported."),
+            ".XLSX" => new ExcelWriter(filename, this.Model, times),
+            _ => new CsvWriter(filename, this.Model, times),
         }; // private static ISpreadSheetWriter GetSpreadSheetWriter (string
 
     #endregion Save/export
