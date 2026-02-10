@@ -20,7 +20,7 @@ internal sealed partial class CsvReader : ISpreadSheetReader
     /// <inheritdoc/>
     public IFittingModel Model { get; init; }
 
-    public bool IsOpened => this.reader is not null && !this.disposed;
+    public bool IsOpened => this.reader is not null && !this.__generated_disposed;
 
     /// <inheritdoc/>
     public bool ModelMatched { get; private set; }

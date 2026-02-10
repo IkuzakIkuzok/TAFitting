@@ -90,7 +90,10 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine($"\tpartial class {className} : global::System.IDisposable");
         builder.AppendLine("\t{");
 
-        builder.AppendLine("\t\tprivate bool disposed = false;");
+        builder.AppendLine("\t\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+        builder.AppendLine("\t\t[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]");
+        builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("\t\tprivate bool __generated_disposed = false;");
 
         var canBeSimple =
             !hasDispose &&                    // No Dispose() method
@@ -116,7 +119,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         builder.AppendLine(@"
         public void Dispose()
         {
-            if (this.disposed) return;
+            if (this.__generated_disposed) return;
         ");
 
         foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
@@ -125,7 +128,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine($"\t\t\tthis.{name}?.Dispose();");
         }
         builder.AppendLine(@"
-            disposed = true;
+            this.__generated_disposed = true;
         } // public void Dispose ()");
     } // private static void GenerateSimpleDispose (StringBuilder, IReadOnlyCollection<FieldDeclarationSyntax>)
 
@@ -153,7 +156,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine(@"
         override protected void Dispose(bool disposing)
         {
-            if (this.disposed) return;
+            if (this.__generated_disposed) return;
             base.Dispose(disposing);");
         }
         else
@@ -161,7 +164,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             builder.AppendLine($@"
         {m} void Dispose(bool disposing)
         {{
-            if (this.disposed) return;");
+            if (this.__generated_disposed) return;");
         }
 
         if (fields.Count > 0)
@@ -183,7 +186,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         }
 
         builder.AppendLine();
-        builder.AppendLine("\t\t\tdisposed = true;");
+        builder.AppendLine("\t\t\tthis.__generated_disposed = true;");
 
         if (hasDisposeBool)
             builder.AppendLine("\t\t} // override protected void Dispose (bool)");
