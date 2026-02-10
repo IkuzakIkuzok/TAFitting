@@ -56,7 +56,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
             var col = model.Parameters.Count + i + 2;
             this.worksheet.Cell(1, col).Value = times[i];
         }
-    } // internal ExcelWriter (IFittingModel)
+    } // internal ExcelWriter (string, IFittingModel, IReadOnlyList<double>)
 
     public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {

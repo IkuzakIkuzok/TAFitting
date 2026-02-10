@@ -3,6 +3,7 @@
 
 using DisposalGenerator;
 using System.Text;
+using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -24,7 +25,8 @@ internal sealed partial class CsvWriter : ISpreadSheetWriter
     /// <param name="path">The file path.</param>
     /// <param name="model">The model.</param>
     /// <param name="times">The times.</param>
-    internal CsvWriter(string path, IFittingModel model, IReadOnlyList<double> times)
+    /// <param name="timeUnit">The time unit.</param>
+    internal CsvWriter(string path, IFittingModel model, IReadOnlyList<double> times, string timeUnit)
     {
         this.writer = new StreamWriter(path, false, Encoding.UTF8);
         this.Model = model;
@@ -41,10 +43,11 @@ internal sealed partial class CsvWriter : ISpreadSheetWriter
         {
             this.writer.Write(',');
             this.writer.Write(times[i]);
-            this.writer.Write(" µs");
+            this.writer.Write(' ');
+            this.writer.Write(timeUnit);
         }
         this.writer.WriteLine();
-    } // internal CsvWriter (IFittingModel)
+    } // internal CsvWriter (string, IFittingModel, IReadOnlyList<double>, string)
 
     public void AddRow(double wavelength, IReadOnlyList<double> parameters)
     {

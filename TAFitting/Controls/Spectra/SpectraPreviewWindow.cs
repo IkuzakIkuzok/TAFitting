@@ -862,7 +862,7 @@ internal sealed partial class SpectraPreviewWindow : Form
         => Path.GetExtension(filename).ToUpperInvariant() switch
         {
             ".XLSX" => new ExcelWriter(filename, this.Model, times),
-            _ => new CsvWriter(filename, this.Model, times),
+            _ => new CsvWriter(filename, this.Model, times, this.TimeUnit),
         }; // private static ISpreadSheetWriter GetSpreadSheetWriter (string
 
     #endregion Save/export
