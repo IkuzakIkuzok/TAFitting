@@ -92,13 +92,59 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
         builder.AppendLine("\t\tprivate bool disposed = false;");
 
+        var canBeSimple =
+            !hasDispose &&                    // No Dispose() method
+            !hasDisposeBool &&                // No base Dispose(bool) method
+            isSealed &&                       // Sealed class (not inheritable)
+            string.IsNullOrEmpty(unmanaged);  // No unmanaged disposal method
+
+        if (canBeSimple)
+            GenerateSimpleDispose(builder, fields);
+        else
+            GenerateInheritableDispose(builder, className, fields, hasDispose, hasDisposeBool, isSealed, unmanaged);
+
+        if (hasDispose)
+            builder.AppendLine($"\t}} // partial class {className} : {baseNames}");
+        else
+            builder.AppendLine($"\t}} // partial class {className} : global::.System.IDisposable");
+
+        builder.AppendLine("} // namespace " + nameSpace);
+    } // private static void Generate(StringBuilder, string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
+
+    private static void GenerateSimpleDispose(StringBuilder builder, IReadOnlyCollection<FieldDeclarationSyntax> fields)
+    {
+        builder.AppendLine(@"
+        public void Dispose()
+        {
+            if (this.disposed) return;
+        ");
+
+        foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
+        {
+            var name = field.Identifier.Text;
+            builder.AppendLine($"\t\t\tthis.{name}?.Dispose();");
+        }
+        builder.AppendLine(@"
+            disposed = true;
+        } // public void Dispose ()");
+    } // private static void GenerateSimpleDispose (StringBuilder, IReadOnlyCollection<FieldDeclarationSyntax>)
+
+    private static void GenerateInheritableDispose(StringBuilder builder, string className, IReadOnlyCollection<FieldDeclarationSyntax> fields, bool hasDispose, bool hasDisposeBool, bool isSealed, string? unmanaged)
+    {
         if (!hasDispose && !hasDisposeBool)
         {
             builder.AppendLine(@"
         public void Dispose()
         {
-            Dispose(true);
-        }");
+            Dispose(true);");
+
+            if (!string.IsNullOrEmpty(unmanaged))
+            {
+                builder.Append("\t\t\tglobal::System.GC.SuppressFinalize(this);");
+            }
+
+            builder.AppendLine(@"
+        } // public void Dispose ()");
         }
 
         var m = isSealed ? "private" : "protected virtual";
@@ -118,15 +164,18 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             if (this.disposed) return;");
         }
 
-        builder.AppendLine();
-        builder.AppendLine("\t\t\tif (disposing)\n\t\t\t{");
-        foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
+        if (fields.Count > 0)
         {
-            var name = field.Identifier.Text;
-            builder.AppendLine($"\t\t\t\tthis.{name}?.Dispose();");
+            builder.AppendLine();
+            builder.AppendLine("\t\t\tif (disposing)\n\t\t\t{");
+            foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
+            {
+                var name = field.Identifier.Text;
+                builder.AppendLine($"\t\t\t\tthis.{name}?.Dispose();");
+            }
+            builder.AppendLine("\t\t\t}"); // if (disposing)
         }
-        builder.AppendLine("\t\t\t}"); // if (disposing)
-
+        
         if (!string.IsNullOrEmpty(unmanaged))
         {
             builder.AppendLine();
@@ -141,12 +190,15 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         else
             builder.AppendLine($"\t\t}} // {m} void Dispose (bool)");
 
-        if (hasDispose)
-            builder.AppendLine($"\t}} // partial class {className} : {baseNames}");
-        else
-            builder.AppendLine($"\t}} // partial class {className} : global::.System.IDisposable");
-        builder.AppendLine("} // namespace " + nameSpace);
-    } // private static void Generate(StringBuilder, string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
+        if (!string.IsNullOrEmpty(unmanaged))
+        {
+            builder.AppendLine($@"
+        ~{className}()
+        {{
+            Dispose(false);
+        }} // ~{className} ()");
+        }
+    } // private static void GenerateInheritableDispose (StringBuilder, IReadOnlyCollection<FieldDeclarationSyntax>, bool, bool, bool, string?)
 
     private static readonly string[] attrs = [AttributesGenerator.NotToBeDisposedAttributeName, AttributesGenerator.NotToBeDisposedAttributeShortName];
     private static bool IsDisposable(FieldDeclarationSyntax field, SemanticModel model, INamedTypeSymbol interfaceSymbol)
