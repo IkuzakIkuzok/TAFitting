@@ -1406,12 +1406,6 @@ internal sealed partial class MainWindow : Form
     private void ReadSpreadSheet(object? sender, FileDroppedEventArgs e)
         => ReadSpreadSheet(e.FilePath);
 
-#pragma warning disable IDE0079
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "IDisposableAnalyzers.Correctness",
-        "IDISP001:Dispose created",
-        Justification = "The spread sheet reader will be disposed in `finally` blick if its implement `IDisposable`.")]
-#pragma warning restore
     private void ReadSpreadSheet(string path)
     {
         if (this.decays is null) return;
@@ -1420,10 +1414,11 @@ internal sealed partial class MainWindow : Form
         if (model is null) return;
 
         var ext = Path.GetExtension(path);
-        using var reader = GetSpreadSheetReader(ext);
 
         try
         {
+            using var reader = GetSpreadSheetReader(ext);
+
             reader.Open(path);
 
             if (!reader.IsOpened)

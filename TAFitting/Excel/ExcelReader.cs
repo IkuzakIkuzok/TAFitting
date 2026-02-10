@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using ClosedXML.Excel;
+using DisposalGenerator;
 using TAFitting.Data;
 using TAFitting.Model;
 
@@ -10,18 +11,18 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for an Excel spreadsheet.
 /// </summary>
-internal class ExcelReader : ISpreadSheetReader
+[AutoDisposal]
+internal sealed partial class ExcelReader : ISpreadSheetReader
 {
     private XLWorkbook? workbook;
     private IXLWorksheet? worksheet;
     private int rowIndex = 2;
-    private bool _disposed = false;
 
     /// <inheritdoc/>
     public IFittingModel Model { get; init; }
 
     /// <inheritdoc/>
-    public bool IsOpened => this.workbook is not null && this.worksheet is not null && !this._disposed;
+    public bool IsOpened => this.workbook is not null && this.worksheet is not null;
 
     /// <inheritdoc/>
     public bool ModelMatched { get; private set; }
@@ -89,19 +90,4 @@ internal class ExcelReader : ISpreadSheetReader
             parameters[i] = row.Cell(i + 2).GetDouble();
         return true;
     } // public bool ReadNextRow (out double, Span<double>)
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    } // public void Dispose ()
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (this._disposed) return;
-
-        if (disposing)
-            this.workbook?.Dispose();
-        this._disposed = true;
-    } // protected virtual void Dispose (bool)
-} // internal class ExcelReader : ISpreadSheetReader
+} // internal sealed partial class ExcelReader : ISpreadSheetReader
