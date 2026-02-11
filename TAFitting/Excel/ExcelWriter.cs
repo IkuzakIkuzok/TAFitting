@@ -2,7 +2,6 @@
 // (c) 2024-2026 Kazuki KOHZUKI
 
 using ClosedXML.Excel;
-using TAFitting.Buffers;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -22,8 +21,6 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     private readonly IReadOnlyList<double> times;
     private int rowIndex = 2;
 
-    private readonly ParamToColumnMap parametersindices;
-
     public IFittingModel Model { get; init; }
 
     /// <summary>
@@ -36,8 +33,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     {
         this.path = path;
         this.Model = model;
-        this.parametersindices = new(model.Parameters.Count);
-        this.formulaTemplate = ExcelFormulaTemplate.GetInstance(model.ExcelFormula);
+        this.formulaTemplate = ExcelFormulaTemplate.GetInstance(model);
         this.times = times;
 
         // Do not specify the file path here to avoid appending to an existing file.
@@ -52,7 +48,6 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
             var col = i + 2;
             var param = model.Parameters[i];
             this.worksheet.Cell(1, col).Value = param.Name;
-            this.parametersindices.Add(param.Name.AsMemory(), col);
         }
 
         for (var i = 0; i < times.Count; i++)
@@ -67,12 +62,6 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         if (parameters.Count != this.Model.Parameters.Count)
             throw new ArgumentException("The number of parameters does not match the model.", nameof(parameters));
 
-        var count = this.formulaTemplate.SegmentCount;
-        using var pooled = new PooledBuffer<ModelFunctionSegment>(count);
-        var inlineBuffer = new ModelFunctionSegmentArray();
-        var buffer = count <= ModelFunctionSegmentArray.Capacity ? inlineBuffer : pooled.GetSpan();  // No need to slice when using inlineBuffer
-        var modelFuncTemplate = this.formulaTemplate.BindParameters(this.rowIndex, this.parametersindices, buffer);
-
         this.worksheet.Cell(this.rowIndex, 1).Value = wavelength;
 
         for (var i = 0; i < this.Model.Parameters.Count; i++)
@@ -84,7 +73,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         for (var i = 0; i < this.times.Count; i++)
         {
             var col = this.Model.Parameters.Count + i + 2;
-            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = modelFuncTemplate.ToFormula(col);
+            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = this.formulaTemplate.ToFormula(this.rowIndex, col);
         }
 
         this.rowIndex++;
