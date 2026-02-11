@@ -55,19 +55,21 @@ internal sealed class ExcelFormulaTemplate
         this._segments = ParseTemplateInternal(template);
     } // ctor (string)
 
-    private static ExcelFormulaSegment[] ParseTemplateInternal(ReadOnlySpan<char> template)
+    private static ExcelFormulaSegment[] ParseTemplateInternal(string template)
     {
+        var span = template.AsSpan();
         var list = new List<ExcelFormulaSegment>();
+        var read = 0;
 
-        while (!template.IsEmpty)
+        while (!span.IsEmpty)
         {
-            var timeIdx = template.IndexOf("$X");
-            var nameIdx = template.IndexOf('[');
+            var timeIdx = span.IndexOf("$X");
+            var nameIdx = span.IndexOf('[');
 
             if (timeIdx < 0 && nameIdx < 0)
             {
                 // No more placeholders; add the rest as a literal and break
-                list.Add(new(ExcelFormulaSegmentType.Literal, template.ToString()));
+                list.Add(new(ExcelFormulaSegmentType.Literal, template.AsMemory(read)));
                 break;
             }
 
@@ -75,28 +77,31 @@ internal sealed class ExcelFormulaTemplate
             {
                 if (timeIdx > 0)
                 {
-                    var literal = template[..timeIdx].ToString();
+                    var literal = template.AsMemory(read, timeIdx);
                     list.Add(new(ExcelFormulaSegmentType.Literal, literal));
                 }
                 list.Add(new(ExcelFormulaSegmentType.TimePlaceholder, null));
-                template = template[(timeIdx + 2)..];
+                span = span[(timeIdx + 2)..];
+                read += timeIdx + 2;
                 continue;
             }
             
             if (nameIdx > 0)
             {
-                var literal = template[..nameIdx].ToString();
+                var literal = template.AsMemory(read, nameIdx);
                 list.Add(new(ExcelFormulaSegmentType.Literal, literal));
             }
-            template = template[(nameIdx + 1)..]; // Skip '['
+            span = span[(nameIdx + 1)..]; // Skip '['
+            read += nameIdx + 1;
 
-            var endIdx = template.IndexOf(']');
+            var endIdx = span.IndexOf(']');
             if (endIdx < 0)
                 throw new FormatException("Unmatched '[' in the formula template.");
 
-            var name = template[..endIdx].ToString();
+            var name = template.AsMemory(read, endIdx);
             list.Add(new(ExcelFormulaSegmentType.ParameterPlaceholder, name));
-            template = template[(endIdx + 1)..]; // Skip ']'
+            span = span[(endIdx + 1)..]; // Skip ']'
+            read += endIdx + 1;
         }
 
         return [.. list];
@@ -113,26 +118,26 @@ internal sealed class ExcelFormulaTemplate
     /// <exception cref="ArgumentException">Thrown if the length of <paramref name="buffer"/> is less than the number of segments in the template.</exception>
     /// <exception cref="KeyNotFoundException">Thrown if a parameter placeholder in the template does not have a corresponding entry in <paramref name="paramToColumnMap"/>.</exception>
     /// <exception cref="InvalidOperationException">Thrown if a segment in the template has an unknown segment type.</exception>
-    internal ModelFunctionTemplate BindParameters(int rowIndex, IReadOnlyDictionary<string, int> paramToColumnMap, Span<ModelFunctionSegment> buffer)
+    internal ModelFunctionTemplate BindParameters(int rowIndex, ParamToColumnMap paramToColumnMap, Span<ModelFunctionSegment> buffer)
     {
         if (buffer.Length < this.SegmentCount)
             throw new ArgumentException("The buffer is too small to hold the segments.", nameof(buffer));
 
         for (var i = 0; i < this.SegmentCount; i++)
         {
-            var segment = this._segments[i];
+            ref readonly var segment = ref this._segments[i];
             buffer[i] = segment.Type switch
             {
                 ExcelFormulaSegmentType.Literal => new ModelFunctionSegment(segment.Value, -1),
                 ExcelFormulaSegmentType.ParameterPlaceholder =>
-                    paramToColumnMap.TryGetValue(segment.Value!, out var colIndex) && colIndex > 0
-                    ? new ModelFunctionSegment(null, colIndex)
+                    paramToColumnMap.TryGetValue(segment.Value, out var colIndex) && colIndex > 0
+                    ? new ModelFunctionSegment(ReadOnlyMemory<char>.Empty, colIndex)
                     : throw new KeyNotFoundException($"Parameter '{segment.Value}' not found in the parameter-to-column map."),
-                ExcelFormulaSegmentType.TimePlaceholder => new ModelFunctionSegment(null, 0),
+                ExcelFormulaSegmentType.TimePlaceholder => new ModelFunctionSegment(ReadOnlyMemory<char>.Empty, 0),
                 _ => throw new InvalidOperationException("Unknown segment type."),
             };
         }
 
         return new(buffer[..this.SegmentCount], rowIndex);
-    } // internal ModelFunctionTemplate BindParameters (int, IReadOnlyDictionary<string, int>)
+    } // internal ModelFunctionTemplate BindParameters (int, ParamToColumnMap, Span<ModelFunctionSegment>)
 } // internal sealed class ExcelFormulaTemplate

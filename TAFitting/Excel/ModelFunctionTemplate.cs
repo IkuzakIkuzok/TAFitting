@@ -25,7 +25,7 @@ internal readonly ref struct ModelFunctionTemplate
         this._rowIndex = rowIndex;
 
         this._maxLength = 0;
-        foreach (var segment in segments)
+        foreach (ref readonly var segment in segments)
             this._maxLength += segment.GetMaxLength();
     } // ctor (ReadOnlySpan<ModelFunctionSegment>, int)
 
@@ -81,11 +81,11 @@ internal readonly ref struct ModelFunctionTemplate
             return buffer[written..];
         } // Span<char> WriteValue<T> (Span<char>, T) where T : ISpanFormattable
 
-        foreach (var segment in this._segments)
+        foreach (ref readonly var segment in this._segments)
         {
             if (segment.IsLiteral)
             {
-                span = WriteLiteral(span, segment.Text);
+                span = WriteLiteral(span, segment.Text.Span);
                 continue;
             }
 

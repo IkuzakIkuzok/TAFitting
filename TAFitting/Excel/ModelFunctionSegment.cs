@@ -1,7 +1,6 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace TAFitting.Excel;
@@ -9,15 +8,14 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a segment of a model function, which may be either a literal text fragment or a placeholder for an argument.
 /// </summary>
-/// <param name="Text">The text content of the segment. If <paramref name="Text"/> is <see langword="null"/>, the segment represents an argument placeholder.</param>
-/// <param name="ArgIndex">The zero-based index of the argument associated with the segment. Ignored if <paramref name="Text"/> is not <see langword="null"/>.</param>
-internal readonly record struct ModelFunctionSegment(string? Text, int ArgIndex)
+/// <param name="Text">The text content of the segment. If <paramref name="Text"/> is empty, the segment represents an argument placeholder.</param>
+/// <param name="ArgIndex">The zero-based index of the argument associated with the segment. Ignored if <paramref name="Text"/> is not empty.</param>
+internal readonly record struct ModelFunctionSegment(ReadOnlyMemory<char> Text, int ArgIndex)
 {
     /// <summary>
     /// Gets a value indicating whether the current instance represents a literal value.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(Text))]
-    internal bool IsLiteral => this.Text is not null;
+    internal bool IsLiteral => !this.Text.IsEmpty;
 
     /// <summary>
     /// Calculates the maximum possible length of the formatted address or placeholder represented by this instance.

@@ -22,7 +22,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     private readonly IReadOnlyList<double> times;
     private int rowIndex = 2;
 
-    private readonly Dictionary<string, int> parametersindices = [];
+    private readonly ParamToColumnMap parametersindices;
 
     public IFittingModel Model { get; init; }
 
@@ -36,6 +36,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     {
         this.path = path;
         this.Model = model;
+        this.parametersindices = new(model.Parameters.Count);
         this.formulaTemplate = ExcelFormulaTemplate.GetInstance(model.ExcelFormula);
         this.times = times;
 
@@ -51,7 +52,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
             var col = i + 2;
             var param = model.Parameters[i];
             this.worksheet.Cell(1, col).Value = param.Name;
-            this.parametersindices[param.Name] = col;
+            this.parametersindices.Add(param.Name.AsMemory(), col);
         }
 
         for (var i = 0; i < times.Count; i++)
