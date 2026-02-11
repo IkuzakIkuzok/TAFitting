@@ -2,6 +2,7 @@
 // (c) 2024-2026 Kazuki KOHZUKI
 
 using ClosedXML.Excel;
+using TAFitting.Buffers;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -17,6 +18,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     private readonly XLWorkbook workbook;
     private readonly IXLWorksheet worksheet;
 
+    private readonly ExcelFormulaTemplate formulaTemplate;
     private readonly IReadOnlyList<double> times;
     private int rowIndex = 2;
 
@@ -34,6 +36,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     {
         this.path = path;
         this.Model = model;
+        this.formulaTemplate = ExcelFormulaTemplate.GetInstance(model.ExcelFormula);
         this.times = times;
 
         // Do not specify the file path here to avoid appending to an existing file.
@@ -63,12 +66,11 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         if (parameters.Count != this.Model.Parameters.Count)
             throw new ArgumentException("The number of parameters does not match the model.", nameof(parameters));
 
-        var formulaTemplate = this.Model.ExcelFormula;
-        foreach ((var name, var index) in this.parametersindices)
-        {
-            var cell = "$" + GetColumnLetter(index) + this.rowIndex;
-            formulaTemplate = formulaTemplate.Replace($"[{name}]", cell, StringComparison.Ordinal);
-        }
+        var count = this.formulaTemplate.SegmentCount;
+        using var pooled = new PooledBuffer<ModelFunctionSegment>(count);
+        var inlineBuffer = new ModelFunctionSegmentArray();
+        var buffer = count <= ModelFunctionSegmentArray.Capacity ? inlineBuffer : pooled.GetSpan();  // No need to slice when using inlineBuffer
+        var modelFuncTemplate = this.formulaTemplate.BindParameters(this.rowIndex, this.parametersindices, buffer);
 
         this.worksheet.Cell(this.rowIndex, 1).Value = wavelength;
 
@@ -81,31 +83,11 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
         for (var i = 0; i < this.times.Count; i++)
         {
             var col = this.Model.Parameters.Count + i + 2;
-            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = GetFormula(formulaTemplate, col);
+            this.worksheet.Cell(this.rowIndex, col).FormulaA1 = modelFuncTemplate.ToFormula(col);
         }
 
         this.rowIndex++;
     } // public void AddRow (double, IEnumerable<double>)
-
-    private static string GetFormula(string template, int column)
-    {
-        var time = GetColumnLetter(column) + "$1";
-        template = template.Replace("$X", time, StringComparison.Ordinal);
-        return template;
-    } // private static string GetFormula (string, int)
-
-    private static string GetColumnLetter(int column)
-    {
-        var letter = "";
-
-        while (column > 0)
-        {
-            var mod = (column - 1) % 26;
-            letter = (char)('A' + mod) + letter;
-            column = (column - mod) / 26;
-        }
-        return letter;
-    } // private static string GetColumnLetter (int)
 
     public void Dispose()
     {
