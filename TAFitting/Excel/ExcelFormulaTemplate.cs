@@ -10,16 +10,53 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a parsed Excel formula template that supports parameter and time placeholders for dynamic formula generation.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The <see cref="ExcelFormulaTemplate"/> class is designed to parse and store an Excel formula template string that may contain
+/// placeholders for parameters (denoted by square brackets, e.g., [ParameterName]) and time values (denoted by $X).
+/// It provides functionality to generate complete Excel formulas by substituting these placeholders with actual row and column indices.
+/// For example, given a template like "[A] * $X + [B]", the class can generate formulas such as "$B2 * D$1 + $C2" for specific rows and columns.
+/// Note that the row index for time placeholders is fixed at 1, as time values are typically located in the first row of the Excel sheet.
+/// This class does not care whether placeholders are present within the quote characters or not; this keeps the implementation simple and efficient.
+/// </para>
+/// <para>
+/// Generating formulas from a template consists of two main steps:
+/// <list type="number">
+/// <item>Parsing: The template string is parsed to identify literal segments and placeholders. This is done once when the template is created.</item>
+/// <item>Formula Generation: For each required formula, the parsed segments are combined, substituting placeholders with the appropriate row and column indices.</item>
+/// </list>
+/// The first step is computationally intensive and is optimized by caching the parsed template.
+/// </para>
+/// <para>
+/// The class needs only limited heap allocation:
+/// <list type="bullet">
+/// <item>An instance of the <see cref="ExcelFormulaTemplate"/> class itself</item>
+/// <item>An array of <see cref="ExcelFormulaSegment"/> objects representing the parsed segments of the formula template</item>
+/// <item>Final formula string instances generated on demand</item>
+/// </list>
+/// Any other intermediate data used during parsing or formula generation is allocated on the stack to minimize heap usage.
+/// Along with caching, this design significantly reduces memory allocations and improves performance
+/// when generating multiple formulas from the same template.
+/// </para>
+/// </remarks>
 internal sealed class ExcelFormulaTemplate
 {
     #region cache
+
+    /*
+     * The cache is currently designed to store only one instance of ExcelFormulaTemplate, 
+     * since only one model is used during the application lifetime in most scenarios.
+     * If cache misses are frequent and additional cache capacity is planned,
+     * a linear search with a small fixed-size array would be a simple and effective approach 
+     * than a more complex structure like Dictionary.
+     */
 
     private static volatile ExcelFormulaTemplate? _cache;
 
     /// <summary>
     /// Retrieves an instance of an Excel formula template for the specified template string.
     /// </summary>
-    /// <param name="template">The formula template string to retrieve or create an instance for.</param>
+    /// <param name="model">The fitting model containing the Excel formula template to be retrieved.</param>
     /// <returns>An instance of <see cref="ExcelFormulaTemplate"/> corresponding to the specified template string.</returns>
     internal static ExcelFormulaTemplate GetInstance(IFittingModel model)
     {
