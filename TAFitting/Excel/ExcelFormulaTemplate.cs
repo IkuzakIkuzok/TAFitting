@@ -125,46 +125,53 @@ internal sealed class ExcelFormulaTemplate
             var timeIdx = span.IndexOf("$X");
             var nameIdx = span.IndexOf('[');
 
-            if (timeIdx < 0 && nameIdx < 0)
-            {
-                // No more placeholders; add the rest as a literal and break
-                var literalSegment = template.AsLiteralSegment(read);
-                list.Add(literalSegment);
-                break;
-            }
+            /*
+             * Optimization Strategy:
+             * 1. Prioritize checking name placeholders as they are more frequent than time placeholders.
+             * 2. If both are non-negative, select the smaller value (earliest occurrence).
+             * 3. Cast negative values to 'uint' to treat them as large integers (> int.MaxValue).
+             *    This avoids explicit negative checks and reduces branch instructions.
+             * 4. The final 'else' handles the case where both are negative (expected at most once).
+             */
 
-            if (timeIdx >= 0 && (timeIdx < nameIdx || nameIdx < 0)) // Time placeholder found before parameter placeholder
+            if ((uint)nameIdx < (uint)timeIdx)
             {
-                if (timeIdx > 0)
-                {
-                    var literalSegment = template.AsLiteralSegment(read, timeIdx);
-                    list.Add(literalSegment);
-                }
+                // Name placeholder found before time placeholder (nameIdx < timeIdx),
+                // or only name placeholder found (timeIdx == -1)
+
+                list.Add(template.AsLiteralSegment(read, nameIdx));
+                span = span[(nameIdx + 1)..]; // Skip '['
+                read += nameIdx + 1;
+
+                var endIdx = span.IndexOf(']');
+                if (endIdx < 0)
+                    throw new FormatException("Unmatched '[' in the formula template.");
+
+                var name = template.AsMemory(read, endIdx);
+                var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
+                list.Add(parameterSegment);
+                span = span[(endIdx + 1)..]; // Skip ']'
+                read += endIdx + 1;
+            }
+            else if (timeIdx >= 0)
+            {
+                // Time placeholder found before parameter placeholder (nameIdx > timeIdx),
+                // or only time placeholder found (nameIdx == -1)
+
+                list.Add(template.AsLiteralSegment(read, timeIdx));
                 var timeSegment = ExcelFormulaSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
                 span = span[(timeIdx + 2)..];
                 read += timeIdx + 2;
-                continue;
             }
-
-            // Name placeholder found before time placeholder
-            if (nameIdx > 0)
+            else
             {
-                var literalSegment = template.AsLiteralSegment(read, nameIdx);
-                list.Add(literalSegment);
+                // No more placeholders (nameIdx == -1 && timeIdx == -1);
+                // add the rest as a literal and break
+
+                list.Add(template.AsLiteralSegment(read));
+                break;
             }
-            span = span[(nameIdx + 1)..]; // Skip '['
-            read += nameIdx + 1;
-
-            var endIdx = span.IndexOf(']');
-            if (endIdx < 0)
-                throw new FormatException("Unmatched '[' in the formula template.");
-
-            var name = template.AsMemory(read, endIdx);
-            var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
-            list.Add(parameterSegment);
-            span = span[(endIdx + 1)..]; // Skip ']'
-            read += endIdx + 1;
         }
 
         maxLength = list.TotalMaxLength;
