@@ -16,8 +16,6 @@ internal ref struct ExcelFormulaSegmentList
     private int _position;
     private int _totalMaxLength;
 
-    private bool _disposed = false;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ExcelFormulaSegmentList"/> class using the specified buffer of formula segments.
     /// </summary>
@@ -87,12 +85,10 @@ internal ref struct ExcelFormulaSegmentList
 
     public void Dispose()
     {
-        if (this._disposed) return;
-        
-        var pooled = this._pooled;
-        if (pooled is not null)
-            ArrayPool<ExcelFormulaSegment>.Shared.Return(pooled);
+        if (this._pooled is not null)
+            ArrayPool<ExcelFormulaSegment>.Shared.Return(this._pooled);
 
-        this._disposed = true;
+        this._pooled = null;
+        this._segments = default;
     } // public void Dispose ()
 } // internal ref struct ExcelFormulaSegmentList
