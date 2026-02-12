@@ -23,8 +23,8 @@ internal readonly struct ParameterMapEntry(string name, int columnIndex)
     /// <summary>
     /// Determines whether the current name matches the specified name using an ordinal, case-sensitive comparison.
     /// </summary>
-    /// <param name="otherName">The name to compare with the current name, represented as a read-only memory region of characters.</param>
+    /// <param name="otherName">The name to compare with the current name.</param>
     /// <returns><see langword="true"/> if the specified name matches the current name; otherwise, <see langword="false"/>.</returns>
-    internal bool Matches(ReadOnlyMemory<char> otherName)
-        => this.Name.AsSpan().SequenceEqual(otherName.Span);
+    internal bool Matches(ReadOnlySpan<char> otherName)
+        => this.Name.AsSpan().SequenceEqual(otherName);
 } // internal readonly struct ParameterMapEntry (ReadOnlyMemory<char>, int)

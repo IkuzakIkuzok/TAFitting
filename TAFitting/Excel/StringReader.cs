@@ -67,18 +67,18 @@ internal ref struct StringReader
     } // internal void Advance (int)
 
     /// <summary>
-    /// Returns a read-only memory segment containing the next specified number of characters from the underlying text buffer.
+    /// Reads a specified number of characters from the current position and advances the read cursor.
     /// </summary>
-    /// <param name="length">The number of characters to read from the current position.</param>
-    /// <returns>A read-only memory region of characters representing the requested segment.
-    /// The region will be empty if the specified length is zero.</returns>
+    /// <param name="length">The number of characters to read.</param>
+    /// <returns>A read-only span containing the characters read from the text.
+    /// The span will have a length equal to the specified number of characters.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ReadOnlyMemory<char> Read(int length)
+    internal ReadOnlySpan<char> Read(int length)
     {
         var start = this._read;
         Advance(length);
-        return this._text.AsMemory(start, length);
-    } // internal ReadOnlyMemory<char> Read (int)
+        return this._text.AsSpan(start, length);
+    } // internal ReadOnlySpan<char> Read (int)
 
     /// <summary>
     /// Reads a literal segment from the current formula text to the end of the span, returning it as an <see cref="ExcelFormulaSegment"/>.

@@ -180,7 +180,7 @@ internal sealed class ExcelFormulaTemplate
     /// <param name="parameterMap">A read-only span of parameter map entries to search for the specified parameter name.</param>
     /// <returns>The column index corresponding to the specified parameter name.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the <paramref name="name"/> does not exist in the <paramref name="parameterMap"/>.</exception>
-    private static int GetParameterColumnIndex(ReadOnlyMemory<char> name, ReadOnlySpan<ParameterMapEntry> parameterMap)
+    private static int GetParameterColumnIndex(ReadOnlySpan<char> name, ReadOnlySpan<ParameterMapEntry> parameterMap)
     {
         foreach (ref readonly var entry in parameterMap)
         {
@@ -188,7 +188,7 @@ internal sealed class ExcelFormulaTemplate
                 return entry.ColumnIndex;
         }
         throw new KeyNotFoundException($"Parameter '{name}' not found in the model.");
-    } // static int GetParameterColumnIndex (ReadOnlyMemory<char>, ReadOnlySpan<ParameterEntry>)
+    } // static int GetParameterColumnIndex (ReadOnlySpan<char>, ReadOnlySpan<ParameterEntry>)
 
     /// <summary>
     /// Generates a formula string representation for the specified row and column indices
