@@ -152,11 +152,12 @@ internal sealed class ExcelFormulaTemplate
     } // static int GetParameterColumnIndex (ReadOnlyMemory<char>, ReadOnlySpan<ParameterEntry>)
 
     /// <summary>
-    /// Generates a formula string representation for the specified column index.
+    /// Generates a formula string representation for the specified row and column indices
+    /// by substituting the placeholders in the template with the provided values.
     /// </summary>
     /// <param name="rowIndex">The index of the row for which to generate the formula.</param>
     /// <param name="columnIndex">The index of the column for which to generate the formula.</param>
-    /// <returns>A string containing the formula corresponding to the specified row and column index.</returns>
+    /// <returns>A string containing the formula corresponding to the specified row and column indices.</returns>
     internal string ToFormula(int rowIndex, int columnIndex)
     {
         using var pooled = new PooledBuffer<char>(this._maxLength);
