@@ -90,7 +90,7 @@ internal sealed class ExcelFormulaTemplate
             if (timeIdx < 0 && nameIdx < 0)
             {
                 // No more placeholders; add the rest as a literal and break
-                var literalSegment = new ExcelFormulaSegment(ExcelFormulaSegmentType.Literal, template.AsMemory(read));
+                var literalSegment = template.AsLiteralSegment(read);
                 list.Add(literalSegment);
                 maxLength += literalSegment.GetMaxLength();
                 break;
@@ -100,12 +100,11 @@ internal sealed class ExcelFormulaTemplate
             {
                 if (timeIdx > 0)
                 {
-                    var literal = template.AsMemory(read, timeIdx);
-                    var literalSegment = new ExcelFormulaSegment(ExcelFormulaSegmentType.Literal, literal);
+                    var literalSegment = template.AsLiteralSegment(read, timeIdx);
                     list.Add(literalSegment);
                     maxLength += literalSegment.GetMaxLength();
                 }
-                var timeSegment = new ExcelFormulaSegment(ExcelFormulaSegmentType.TimePlaceholder, default);
+                var timeSegment = ExcelFormulaSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
                 maxLength += timeSegment.GetMaxLength();
                 span = span[(timeIdx + 2)..];
@@ -116,8 +115,7 @@ internal sealed class ExcelFormulaTemplate
             // Name placeholder found before time placeholder
             if (nameIdx > 0)
             {
-                var literal = template.AsMemory(read, nameIdx);
-                var literalSegment = new ExcelFormulaSegment(ExcelFormulaSegmentType.Literal, literal);
+                var literalSegment = template.AsLiteralSegment(read, nameIdx);
                 list.Add(literalSegment);
                 maxLength += literalSegment.GetMaxLength();
             }
@@ -129,8 +127,7 @@ internal sealed class ExcelFormulaTemplate
                 throw new FormatException("Unmatched '[' in the formula template.");
 
             var name = template.AsMemory(read, endIdx);
-            var columnIndex = GetParameterColumnIndex(name, parameterMap);
-            var parameterSegment = new ExcelFormulaSegment(ExcelFormulaSegmentType.ParameterPlaceholder, columnIndex);
+            var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
             list.Add(parameterSegment);
             maxLength += parameterSegment.GetMaxLength();
             span = span[(endIdx + 1)..]; // Skip ']'
@@ -223,7 +220,7 @@ internal sealed class ExcelFormulaTemplate
             ref readonly var segment = ref this._segments[i];
             if (segment.Type == ExcelFormulaSegmentType.Literal)
             {
-                span = WriteLiteral(span, segment.Value.LiteralText.Span);
+                span = WriteLiteral(span, segment.Span);
                 continue;
             }
 
@@ -236,7 +233,7 @@ internal sealed class ExcelFormulaTemplate
 
             // Parameter placeholder
             span = WriteLiteral(span, "$");
-            span = WriteColumnLetters(span, segment.Value.ColumnIndex);
+            span = WriteColumnLetters(span, segment.ColumnIndex);
             span = WriteValue(span, rowIndex);
         }
 
