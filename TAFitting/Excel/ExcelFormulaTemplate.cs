@@ -146,7 +146,8 @@ internal sealed class ExcelFormulaTemplate
                     throw new FormatException("Unmatched '[' in the formula template.");
 
                 var name = reader.Read(endIdx);
-                var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
+                var columnIndex = GetParameterColumnIndex(name, parameterMap);
+                var parameterSegment = ExcelFormulaSegment.CreateParameterPlaceholder(columnIndex);
                 list.Add(parameterSegment);
                 reader.Advance(1); // Skip ']'
             }
