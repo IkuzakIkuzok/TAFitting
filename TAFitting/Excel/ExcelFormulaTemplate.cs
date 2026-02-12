@@ -111,10 +111,8 @@ internal sealed class ExcelFormulaTemplate
         for (var i = 0; i < parameters.Count; i++)
         {
             var param = parameters[i];
-            parameterMap[i] = new(param.Name.AsMemory(), i + 2); // +1 for wavelength column, +1 for 1-based index
+            parameterMap[i] = new(param.Name, i + 2); // +1 for wavelength column, +1 for 1-based index
         }
-
-        
 
         var segmentInlineBuffer = new StructInlineArray<ExcelFormulaSegment>();
         using var list = new ExcelFormulaSegmentList(segmentInlineBuffer);
