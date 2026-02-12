@@ -105,7 +105,7 @@ internal sealed class ExcelFormulaTemplate
         using var paramMapPooledBuffer = new PooledBuffer<ParameterMapEntry>(parameters.Count);
         var parameterMap =
             parameters.Count <= StructInlineArray<ParameterMapEntry>.Capacity
-            ? ((Span<ParameterMapEntry>)paramMapInlineBuffer)[..parameters.Count]
+            ? paramMapInlineBuffer.AsSpan(parameters.Count)
             : paramMapPooledBuffer.GetSpan();
 
         for (var i = 0; i < parameters.Count; i++)
