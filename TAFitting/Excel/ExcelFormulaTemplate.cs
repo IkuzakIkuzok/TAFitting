@@ -98,7 +98,7 @@ internal sealed class ExcelFormulaTemplate
     /// <exception cref="FormatException">Thrown if the formula template contains an unmatched '[' character, indicating a malformed placeholder.</exception>
     private static ExcelFormulaSegment[] ParseTemplateInternal(IFittingModel model, out int maxLength)
     {
-        var template = model.ExcelFormula;
+        var reader = new StringReader(model.ExcelFormula);
         var parameters = model.Parameters;
 
         var paramMapInlineBuffer = new StructInlineArray<ParameterMapEntry>();
@@ -114,16 +114,15 @@ internal sealed class ExcelFormulaTemplate
             parameterMap[i] = new(param.Name.AsMemory(), i + 2); // +1 for wavelength column, +1 for 1-based index
         }
 
-        var span = template.AsSpan();
+        
 
         var segmentInlineBuffer = new StructInlineArray<ExcelFormulaSegment>();
         using var list = new ExcelFormulaSegmentList(segmentInlineBuffer);
-        var read = 0;
 
-        while (!span.IsEmpty)
+        while (!reader.IsEnd)
         {
-            var timeIdx = span.IndexOf("$X");
-            var nameIdx = span.IndexOf('[');
+            var timeIdx = reader.IndexOf("$X");
+            var nameIdx = reader.IndexOf('[');
 
             /*
              * Optimization Strategy:
@@ -139,37 +138,34 @@ internal sealed class ExcelFormulaTemplate
                 // Name placeholder found before time placeholder (nameIdx < timeIdx),
                 // or only name placeholder found (timeIdx == -1)
 
-                list.Add(template.AsLiteralSegment(read, nameIdx));
-                span = span[(nameIdx + 1)..]; // Skip '['
-                read += nameIdx + 1;
+                list.Add(reader.ReadLiteralSegment(nameIdx));
+                reader.Advance(1); // Skip '['
 
-                var endIdx = span.IndexOf(']');
+                var endIdx = reader.IndexOf(']');
                 if (endIdx < 0)
                     throw new FormatException("Unmatched '[' in the formula template.");
 
-                var name = template.AsMemory(read, endIdx);
+                var name = reader.Read(endIdx);
                 var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
                 list.Add(parameterSegment);
-                span = span[(endIdx + 1)..]; // Skip ']'
-                read += endIdx + 1;
+                reader.Advance(1); // Skip ']'
             }
             else if (timeIdx >= 0)
             {
                 // Time placeholder found before parameter placeholder (nameIdx > timeIdx),
                 // or only time placeholder found (nameIdx == -1)
 
-                list.Add(template.AsLiteralSegment(read, timeIdx));
+                list.Add(reader.ReadLiteralSegment(timeIdx));
                 var timeSegment = ExcelFormulaSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
-                span = span[(timeIdx + 2)..];
-                read += timeIdx + 2;
+                reader.Advance(2); // Skip '$X'
             }
             else
             {
                 // No more placeholders (nameIdx == -1 && timeIdx == -1);
                 // add the rest as a literal and break
 
-                list.Add(template.AsLiteralSegment(read));
+                list.Add(reader.ReadLiteralSegment());
                 break;
             }
         }
