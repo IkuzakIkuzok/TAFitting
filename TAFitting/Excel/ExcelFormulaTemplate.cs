@@ -2,6 +2,7 @@
 // (c) 2026 Kazuki KOHZUKI
 
 using TAFitting.Buffers;
+using TAFitting.Collections;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -60,17 +61,15 @@ internal sealed class ExcelFormulaTemplate
     /// <exception cref="FormatException">Thrown if the formula template contains an unmatched '[' character, indicating a malformed placeholder.</exception>
     private static ExcelFormulaSegment[] ParseTemplateInternal(IFittingModel model, out int maxLength)
     {
-        maxLength = 0;
-
         var template = model.ExcelFormula;
         var parameters = model.Parameters;
 
-        var inline = new ParameterMapEntryArray();
-        using var pooled = new PooledBuffer<ParameterMapEntry>(parameters.Count);
+        var paramMapInlineBuffer = new StructInlineArray<ParameterMapEntry>();
+        using var paramMapPooledBuffer = new PooledBuffer<ParameterMapEntry>(parameters.Count);
         var parameterMap =
-            parameters.Count <= ParameterMapEntryArray.Capacity
-            ? ((Span<ParameterMapEntry>)inline)[..parameters.Count]
-            : pooled.GetSpan();
+            parameters.Count <= StructInlineArray<ParameterMapEntry>.Capacity
+            ? ((Span<ParameterMapEntry>)paramMapInlineBuffer)[..parameters.Count]
+            : paramMapPooledBuffer.GetSpan();
 
         for (var i = 0; i < parameters.Count; i++)
         {
@@ -79,7 +78,9 @@ internal sealed class ExcelFormulaTemplate
         }
 
         var span = template.AsSpan();
-        var list = new List<ExcelFormulaSegment>();
+
+        var segmentInlineBuffer = new StructInlineArray<ExcelFormulaSegment>();
+        using var list = new ExcelFormulaSegmentList(segmentInlineBuffer);
         var read = 0;
 
         while (!span.IsEmpty)
@@ -92,7 +93,6 @@ internal sealed class ExcelFormulaTemplate
                 // No more placeholders; add the rest as a literal and break
                 var literalSegment = template.AsLiteralSegment(read);
                 list.Add(literalSegment);
-                maxLength += literalSegment.GetMaxLength();
                 break;
             }
 
@@ -102,11 +102,9 @@ internal sealed class ExcelFormulaTemplate
                 {
                     var literalSegment = template.AsLiteralSegment(read, timeIdx);
                     list.Add(literalSegment);
-                    maxLength += literalSegment.GetMaxLength();
                 }
                 var timeSegment = ExcelFormulaSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
-                maxLength += timeSegment.GetMaxLength();
                 span = span[(timeIdx + 2)..];
                 read += timeIdx + 2;
                 continue;
@@ -117,7 +115,6 @@ internal sealed class ExcelFormulaTemplate
             {
                 var literalSegment = template.AsLiteralSegment(read, nameIdx);
                 list.Add(literalSegment);
-                maxLength += literalSegment.GetMaxLength();
             }
             span = span[(nameIdx + 1)..]; // Skip '['
             read += nameIdx + 1;
@@ -129,12 +126,12 @@ internal sealed class ExcelFormulaTemplate
             var name = template.AsMemory(read, endIdx);
             var parameterSegment = GetParameterColumnIndex(name, parameterMap).AsParameterPlaceholderSegment();
             list.Add(parameterSegment);
-            maxLength += parameterSegment.GetMaxLength();
             span = span[(endIdx + 1)..]; // Skip ']'
             read += endIdx + 1;
         }
 
-        return [.. list];
+        maxLength = list.TotalMaxLength;
+        return list.ToArray();
     } // static ExcelFormulaSegment[] ParseTemplateInternal (IFittingModel)
 
     /// <summary>
