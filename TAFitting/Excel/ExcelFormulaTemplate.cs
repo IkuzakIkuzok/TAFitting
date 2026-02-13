@@ -1,6 +1,7 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
 using TAFitting.Buffers;
 using TAFitting.Collections;
 using TAFitting.Model;
@@ -71,7 +72,7 @@ internal sealed class ExcelFormulaTemplate
     #endregion cache
 
     private readonly ExcelFormulaSegment[] _segments;
-    private readonly int _maxLength;
+    private readonly int _constLength, _paramCount, _timeCount;
 
     /// <summary>
     /// Gets the base string associated with the current instance.
@@ -85,18 +86,19 @@ internal sealed class ExcelFormulaTemplate
     internal ExcelFormulaTemplate(IFittingModel model)
     {
         this.BaseString = model.ExcelFormula;
-        this._segments = ParseTemplateInternal(model, out this._maxLength);
+        this._segments = ParseTemplateInternal(model, out this._constLength, out this._paramCount, out this._timeCount);
     } // ctor (IFittingModel)
 
     /// <summary>
     /// Parses the Excel formula template from the specified fitting model and returns an array of formula segments representing literals and placeholders.
     /// </summary>
     /// <param name="model">The fitting model containing the Excel formula template and its associated parameters to be parsed.</param>
-    /// <param name="maxLength">When this method returns, contains the maximum length of the resulting formula after all placeholders are expanded.
-    /// This parameter is passed uninitialized.</param>
+    /// <param name="constLength">Outputs the total length of constant segments in the parsed formula template.</param>
+    /// <param name="paramCount">Outputs the total number of parameter placeholders found in the parsed formula template.</param>
+    /// <param name="timeCount">Outputs the total number of time placeholders found in the parsed formula template.</param>
     /// <returns>An array of <see cref="ExcelFormulaSegment"/> objects representing the parsed segments of the formula template, including literals and parameter or time placeholders.</returns>
     /// <exception cref="FormatException">Thrown if the formula template contains an unmatched '[' character, indicating a malformed placeholder.</exception>
-    private static ExcelFormulaSegment[] ParseTemplateInternal(IFittingModel model, out int maxLength)
+    private static ExcelFormulaSegment[] ParseTemplateInternal(IFittingModel model, out int constLength, out int paramCount, out int timeCount)
     {
         var reader = new StringReader(model.ExcelFormula);
         var parameters = model.Parameters;
@@ -169,9 +171,11 @@ internal sealed class ExcelFormulaTemplate
             }
         }
 
-        maxLength = list.TotalMaxLength;
+        constLength = list.ConstantLength;
+        paramCount = list.ParameterPlaceholderCount;
+        timeCount = list.TimePlaceholderCount;
         return list.ToArray();
-    } // static ExcelFormulaSegment[] ParseTemplateInternal (IFittingModel)
+    } // static ExcelFormulaSegment[] ParseTemplateInternal (IFittingModel, out int, out int, out int)
 
     /// <summary>
     /// Retrieves the index associated with the specified parameter name from the provided parameter map.
@@ -199,82 +203,163 @@ internal sealed class ExcelFormulaTemplate
     /// <returns>A string containing the formula corresponding to the specified row and column indices.</returns>
     internal string ToFormula(int rowIndex, int columnIndex)
     {
-        using var pooled = new PooledBuffer<char>(this._maxLength);
-        var buffer = this._maxLength <= 1024 ? stackalloc char[this._maxLength] : pooled.GetSpan();
-        var length = WriteFormula(buffer, rowIndex, columnIndex, 2); // +1 for wavelength column, +1 for 1-based index
-        return new(buffer[..length]);
+        var row = (uint)rowIndex;
+        var col = (uint)columnIndex;
+
+        var totalLength =
+            this._constLength
+            + this._paramCount * ExcelFormulaFormattingHelper.GetRowIndexLength(row)
+            + this._timeCount * ExcelFormulaFormattingHelper.GetColumnIndexLength(col);
+
+        return string.Create(totalLength, new CreateState(this, row, col), WriteFormula);
     } // internal string ToFormula (int, int)
+
+    /// <summary>
+    /// Represents the state required to create an Excel formula at a specific cell location using a given template.
+    /// </summary>
+    /// <param name="Template">The template used to generate the Excel formula.</param>
+    /// <param name="RowIndex">The row index of the cell where the formula will be created.</param>
+    /// <param name="ColumnIndex">The column index of the cell where the formula will be created.</param>
+    private readonly record struct CreateState(ExcelFormulaTemplate Template, uint RowIndex, uint ColumnIndex);
 
     /// <summary>
     /// Writes the Excel formula represented by the current object into the specified character buffer, using the provided row and column indices for placeholder substitution.
     /// </summary>
     /// <param name="span">The character buffer to which the formula will be written.</param>
-    /// <param name="rowIndex">The row index to use when substituting row placeholders in the formula.</param>
-    /// <param name="columnIndex">The column index to use when substituting column placeholders in the formula.</param>
-    /// <param name="paramColumnsStart">The starting column index for parameters.</param>
+    /// <param name="state">The state containing the template, row index, and column index for formula generation.</param>
     /// <returns>The number of characters written to the buffer.</returns>
     /// <exception cref="FormatException">Thrown if a value in the formula cannot be formatted as a string.</exception>
-    private int WriteFormula(Span<char> span, int rowIndex, int columnIndex, int paramColumnsStart)
+    unsafe private static void WriteFormula(Span<char> span, CreateState state)
     {
-        var len = 0;
+        var template = state.Template;
+        var rowIndex = state.RowIndex;
+        var columnIndex = state.ColumnIndex;
 
-        Span<char> WriteLiteral(Span<char> buffer, ReadOnlySpan<char> text)
+        // Prepare row index string on stack
+        var rowDigit = ExcelFormulaFormattingHelper.GetRowIndexLength(rowIndex);
+        var rowIndexSpan = (stackalloc char[rowDigit]);
+        ref var refRow = ref MemoryMarshal.GetReference(rowIndexSpan);
+        fixed (char *pRow = &refRow)
         {
-            text.CopyTo(buffer);
-            len += text.Length;
-            return buffer[text.Length..];
-        } // Span<char> WriteLiteral (Span<char>, ReadOnlySpan<char>)
-
-        Span<char> WriteColumnLetters(Span<char> buffer, int col)
-        {
-            var letters = (stackalloc char[4]); // Excel columns go up to XFD (16384), +1 for safety
-            var pos = 0;
-            while (col > 0)
+            var p = pRow + rowDigit;
+            var d = rowDigit;
+            while (rowIndex != 0 && d > 0)
             {
-                var mod = (col - 1) % 26;
-                letters[pos++] = (char)('A' + mod);
-                col = (col - mod) / 26;
+                d--;
+                (rowIndex, var remainder) = Math.DivRem(rowIndex, 10);
+                *(--p) = (char)('0' + remainder);
             }
-            for (var i = pos - 1; i >= 0; i--)
-            {
-                buffer[0] = letters[i];
-                buffer = buffer[1..];
-            }
-            len += pos;
-            return buffer;
-        } // Span<char> WriteColumnLetters (Span<char>, int)
-
-        Span<char> WriteValue<T>(Span<char> buffer, T value) where T : ISpanFormattable
-        {
-            if (!value.TryFormat(buffer, out var written, format: null, provider: null))
-                throw new FormatException("Failed to format the value.");
-
-            len += written;
-            return buffer[written..];
-        } // Span<char> WriteValue<T> (Span<char>, T) where T : ISpanFormattable
-
-        for (var i = 0; i < this._segments.Length; i++)
-        {
-            ref readonly var segment = ref this._segments[i];
-            if (segment.Type == ExcelFormulaSegmentType.Literal)
-            {
-                span = WriteLiteral(span, segment.Span);
-                continue;
-            }
-
-            if (segment.Type == ExcelFormulaSegmentType.TimePlaceholder)
-            {
-                span = WriteColumnLetters(span, columnIndex);
-                span = WriteLiteral(span, "$1");
-                continue;
-            }
-
-            // Parameter placeholder
-            span = WriteLiteral(span, "$");
-            span = WriteColumnLetters(span, paramColumnsStart + segment.ParameterIndex);
-            span = WriteValue(span, rowIndex);
         }
 
+        // Prepare column letters on stack
+        var colLettersSpan = (stackalloc char[3]);
+        ref var refCol = ref MemoryMarshal.GetReference(colLettersSpan);
+        var colLettersLength = WriteColumnLetters(ref refCol, columnIndex);
+        
+        ref var refDst = ref MemoryMarshal.GetReference(span);
+        nint writtenChars = 0;
+
+        // Use Unsafe to avoid bounds checking on each iteration
+
+        var segments = template._segments;
+        ref var refSegment = ref segments[0];
+        ref var refEnd = ref Unsafe.Add(ref refSegment, segments.Length);
+
+        while (Unsafe.IsAddressLessThan(ref refSegment, ref refEnd))
+        {
+            /*
+             * Segment type occurrence (for most cases):
+             *   Literal > ParameterPlaceholder > TimePlaceholder
+             *   
+             * Branches are ordered accordingly to minimize mispredictions.
+             */
+
+            if (refSegment.Type == ExcelFormulaSegmentType.Literal)
+            {
+                var literal = refSegment.Span;
+                ref var refLiteral = ref MemoryMarshal.GetReference(literal);
+                ref var currentDst = ref Unsafe.Add(ref refDst, writtenChars);
+
+                Unsafe.CopyBlockUnaligned(
+                    ref Unsafe.As<char, byte>(ref currentDst),
+                    ref Unsafe.As<char, byte>(ref refLiteral),
+                    (uint)literal.Length * sizeof(char)
+                );
+
+                writtenChars += literal.Length;
+            }
+            else if (refSegment.Type == ExcelFormulaSegmentType.ParameterPlaceholder)
+            {
+                ref var currentDst = ref Unsafe.Add(ref refDst, writtenChars);
+                currentDst = '$';
+
+                currentDst = ref Unsafe.Add(ref currentDst, 1);
+                var colLen = WriteColumnLetters(ref currentDst, (uint)refSegment.ParameterIndex + 2u); // +1 for wavelength column, +1 for 1-based index
+
+                currentDst = ref Unsafe.Add(ref currentDst, colLen);
+                Unsafe.CopyBlockUnaligned(
+                    ref Unsafe.As<char, byte>(ref currentDst),
+                    ref Unsafe.As<char, byte>(ref refRow),
+                    (uint)rowDigit * sizeof(char)
+                );
+
+                writtenChars += 1 + colLen + rowDigit; // +1 for '$'
+            }
+            else // if (refSegment.Type == ExcelFormulaSegmentType.TimePlaceholder)
+            {
+                ref var currentDst = ref Unsafe.Add(ref refDst, writtenChars);
+                Unsafe.CopyBlockUnaligned(
+                    ref Unsafe.As<char, byte>(ref currentDst),
+                    ref Unsafe.As<char, byte>(ref refCol),
+                    (uint)colLettersLength * sizeof(char)
+                );
+
+                currentDst = ref Unsafe.Add(ref currentDst, colLettersLength);
+                currentDst = '$';
+                currentDst = ref Unsafe.Add(ref currentDst, 1);
+                currentDst = '1';
+
+                writtenChars += colLettersLength + 2; // +2 for "$1"
+            }
+
+            refSegment = ref Unsafe.Add(ref refSegment, 1);
+        }
+    } // unsafe private static void WriteFormula (Span<char>, CreateState)
+
+    /// <summary>
+    /// Writes the Excel-style column letter representation of the specified column index to the destination character reference.
+    /// </summary>
+    /// <param name="dst">A reference to the destination character buffer where the column letters will be written.</param>
+    /// <param name="col">The one-based column index to convert to column letters.</param>
+    /// <returns>The number of characters written to the destination buffer.</returns>
+    private static int WriteColumnLetters(ref char dst, uint col)
+    {
+        var len = ExcelFormulaFormattingHelper.GetColumnIndexLength(col);
+
+        ref var dstEnd = ref Unsafe.Add(ref dst, len - 1);
+        uint q, r;
+
+        // Loop unrolling + optimization to avoid division for the last character
+
+        if (len == 1) goto L1;
+        if (len == 2) goto L2;
+
+        q = (--col) / 26;
+        r = col - (q * 26);
+        col = q;
+        dstEnd = (char)('A' + r);
+        dstEnd = ref Unsafe.Subtract(ref dstEnd, 1);
+
+    L2:
+        q = (--col) / 26;
+        r = col - (q * 26);
+        col = q;
+        dstEnd = (char)('A' + r);
+        dstEnd = ref Unsafe.Subtract(ref dstEnd, 1);
+
+    L1:
+        dstEnd = (char)('A' + col - 1);
+
         return len;
-    } // private int WriteFormula (Span<char>, int, int)
+    } // private static int WriteColumnLetters (ref char, uint)
 } // internal sealed class ExcelFormulaTemplate

@@ -114,25 +114,23 @@ internal readonly struct ExcelFormulaSegment
         => new(null, -1, 0);
 
     /// <summary>
-    /// Calculates the maximum possible length of the formatted address or placeholder represented by this instance.
+    /// Calculates the constant length of the formula segment based on its type and properties.
     /// </summary>
-    /// <returns>The maximum length of the formatted address or placeholder.</returns>
+    /// <returns>The number of characters representing the segment in its constant form.
+    /// The value varies depending on whether the segment is a literal, a time placeholder, or a column reference.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal readonly int GetMaxLength()
+    internal readonly int GetConstLength()
     {
         if (this.IsLiteral)
             return this._length;
 
-        if (this.Type == ExcelFormulaSegmentType.TimePlaceholder)
+        if (this.Type == ExcelFormulaSegmentType.ParameterPlaceholder)
         {
-            // Possible max address is "XFD$1" (row index is always 1 for time)
-            // 3 for column letters + 1 for '$' + 1 for row number
-            return 5;
+            const uint columnOffset = 2u; // +1 for wavelength column, +1 for 1-based index
+            return ExcelFormulaFormattingHelper.GetColumnIndexLength((uint)this._index + columnOffset) + 1; // +1 for '$'
         }
 
-        // Parameter placeholder
-        // Possible max address is "$XFD1048576"
-        // 3 for column letters + 1 for '$' + 7 for row number
-        return 11;
-    } // internal int GetMaxLength ()
+        // "$1"
+        return 2;
+    } // internal readonly int GetConstLength()
 } // internal struct ExcelFormulaSegment

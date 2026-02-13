@@ -14,7 +14,10 @@ internal ref struct ExcelFormulaSegmentList
     private Span<ExcelFormulaSegment> _segments;
     private ExcelFormulaSegment[]? _pooled;
     private int _position;
-    private int _totalMaxLength;
+
+    private int _constLength;
+    private int _paramPlaceholderCount;
+    private int _timePlaceholderCount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExcelFormulaSegmentList"/> class using the specified buffer of formula segments.
@@ -26,7 +29,10 @@ internal ref struct ExcelFormulaSegmentList
         this._segments = initialBuffer;
         this._pooled = null;
         this._position = 0;
-        this._totalMaxLength = 0;
+
+        this._constLength = 0;
+        this._paramPlaceholderCount = 0;
+        this._timePlaceholderCount = 0;
     } // internal ExcelFormulaSegmentList (Span<ExcelFormulaSegment>)
 
     /// <summary>
@@ -35,9 +41,19 @@ internal ref struct ExcelFormulaSegmentList
     internal readonly int Count => this._position;
 
     /// <summary>
-    /// Gets the maximum total length of all segments in the collection.
+    /// Gets the total length of constant segments in the collection.
     /// </summary>
-    internal readonly int TotalMaxLength => this._totalMaxLength;
+    internal readonly int ConstantLength => this._constLength;
+
+    /// <summary>
+    /// Gets the number of parameter placeholders present in the format string.
+    /// </summary>
+    internal readonly int ParameterPlaceholderCount => this._paramPlaceholderCount;
+
+    /// <summary>
+    /// Gets the number of time placeholders present in the format string.
+    /// </summary>
+    internal readonly int TimePlaceholderCount => this._timePlaceholderCount;
 
     /// <summary>
     /// Adds the specified formula segment to the collection if it is not empty.
@@ -51,7 +67,17 @@ internal ref struct ExcelFormulaSegmentList
             Grow();
 
         this._segments[this._position++] = segment;
-        this._totalMaxLength += segment.GetMaxLength();
+
+        this._constLength += segment.GetConstLength();
+        switch (segment.Type)
+        {
+            case ExcelFormulaSegmentType.ParameterPlaceholder:
+                this._paramPlaceholderCount++;
+                break;
+            case ExcelFormulaSegmentType.TimePlaceholder:
+                this._timePlaceholderCount++;
+                break;
+        }
     } // internal void Add (ExcelFormulaSegment
 
     // Do not inline to keep the hot path small
