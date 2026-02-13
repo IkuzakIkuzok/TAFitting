@@ -7,8 +7,8 @@ namespace TAFitting.Excel;
 /// Represents a parameter entry with its name and positional index within a collection or sequence.
 /// </summary>
 /// <param name="name">The name of the parameter.</param>
-/// <param name="columnIndex">The column index of the parameter.</param>
-internal readonly struct ParameterMapEntry(string name, int columnIndex)
+/// <param name="paramIndex">The index of the parameter.</param>
+internal readonly struct ParameterMapEntry(string name, int paramIndex)
 {
     /// <summary>
     /// Gets the name represented as a read-only sequence of characters.
@@ -16,9 +16,9 @@ internal readonly struct ParameterMapEntry(string name, int columnIndex)
     internal string Name { get; } = name;
 
     /// <summary>
-    /// Gets the index of the column associated with this instance.
+    /// Gets the index of the parameter, indicating its position within a collection.
     /// </summary>
-    internal int ColumnIndex { get; } = columnIndex;
+    internal int ParameterIndex { get; } = paramIndex;
 
     /// <summary>
     /// Determines whether the current name matches the specified name using an ordinal, case-sensitive comparison.

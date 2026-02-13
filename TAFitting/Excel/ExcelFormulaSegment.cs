@@ -68,9 +68,9 @@ internal readonly struct ExcelFormulaSegment
     internal int Length => this._length;
 
     /// <summary>
-    /// Gets the column index for parameter placeholders; returns -1 for literals and time placeholders.
+    /// Gets the zero-based index of the parameter placeholder, if applicable.
     /// </summary>
-    internal int ColumnIndex
+    internal int ParameterIndex
     {
         get
         {

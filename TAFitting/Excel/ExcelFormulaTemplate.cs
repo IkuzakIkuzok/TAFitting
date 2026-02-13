@@ -111,7 +111,7 @@ internal sealed class ExcelFormulaTemplate
         for (var i = 0; i < parameters.Count; i++)
         {
             var param = parameters[i];
-            parameterMap[i] = new(param.Name, i + 2); // +1 for wavelength column, +1 for 1-based index
+            parameterMap[i] = new(param.Name, i); 
         }
 
         var segmentInlineBuffer = new StructInlineArray<ExcelFormulaSegment>();
@@ -144,8 +144,8 @@ internal sealed class ExcelFormulaTemplate
                     throw new FormatException("Unmatched '[' in the formula template.");
 
                 var name = reader.Read(endIdx);
-                var columnIndex = GetParameterColumnIndex(name, parameterMap);
-                var parameterSegment = ExcelFormulaSegment.CreateParameterPlaceholder(columnIndex);
+                var paramIndex = GetParameterIndex(name, parameterMap);
+                var parameterSegment = ExcelFormulaSegment.CreateParameterPlaceholder(paramIndex);
                 list.Add(parameterSegment);
                 reader.Advance(1); // Skip ']'
             }
@@ -174,21 +174,21 @@ internal sealed class ExcelFormulaTemplate
     } // static ExcelFormulaSegment[] ParseTemplateInternal (IFittingModel)
 
     /// <summary>
-    /// Retrieves the column index associated with the specified parameter name from the provided parameter map.
+    /// Retrieves the index associated with the specified parameter name from the provided parameter map.
     /// </summary>
     /// <param name="name">The name of the parameter to locate.</param>
     /// <param name="parameterMap">A read-only span of parameter map entries to search for the specified parameter name.</param>
-    /// <returns>The column index corresponding to the specified parameter name.</returns>
+    /// <returns>The zero-based index corresponding to the specified parameter name.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the <paramref name="name"/> does not exist in the <paramref name="parameterMap"/>.</exception>
-    private static int GetParameterColumnIndex(ReadOnlySpan<char> name, ReadOnlySpan<ParameterMapEntry> parameterMap)
+    private static int GetParameterIndex(ReadOnlySpan<char> name, ReadOnlySpan<ParameterMapEntry> parameterMap)
     {
         foreach (ref readonly var entry in parameterMap)
         {
             if (entry.Matches(name))
-                return entry.ColumnIndex;
+                return entry.ParameterIndex;
         }
         throw new KeyNotFoundException($"Parameter '{name}' not found in the model.");
-    } // static int GetParameterColumnIndex (ReadOnlySpan<char>, ReadOnlySpan<ParameterEntry>)
+    } // static int GetParameterIndex (ReadOnlySpan<char>, ReadOnlySpan<ParameterEntry>)
 
     /// <summary>
     /// Generates a formula string representation for the specified row and column indices
@@ -201,7 +201,7 @@ internal sealed class ExcelFormulaTemplate
     {
         using var pooled = new PooledBuffer<char>(this._maxLength);
         var buffer = this._maxLength <= 1024 ? stackalloc char[this._maxLength] : pooled.GetSpan();
-        var length = WriteFormula(buffer, rowIndex, columnIndex);
+        var length = WriteFormula(buffer, rowIndex, columnIndex, 2); // +1 for wavelength column, +1 for 1-based index
         return new(buffer[..length]);
     } // internal string ToFormula (int, int)
 
@@ -211,9 +211,10 @@ internal sealed class ExcelFormulaTemplate
     /// <param name="span">The character buffer to which the formula will be written.</param>
     /// <param name="rowIndex">The row index to use when substituting row placeholders in the formula.</param>
     /// <param name="columnIndex">The column index to use when substituting column placeholders in the formula.</param>
+    /// <param name="paramColumnsStart">The starting column index for parameters.</param>
     /// <returns>The number of characters written to the buffer.</returns>
     /// <exception cref="FormatException">Thrown if a value in the formula cannot be formatted as a string.</exception>
-    private int WriteFormula(Span<char> span, int rowIndex, int columnIndex)
+    private int WriteFormula(Span<char> span, int rowIndex, int columnIndex, int paramColumnsStart)
     {
         var len = 0;
 
@@ -270,7 +271,7 @@ internal sealed class ExcelFormulaTemplate
 
             // Parameter placeholder
             span = WriteLiteral(span, "$");
-            span = WriteColumnLetters(span, segment.ColumnIndex);
+            span = WriteColumnLetters(span, paramColumnsStart + segment.ParameterIndex);
             span = WriteValue(span, rowIndex);
         }
 
