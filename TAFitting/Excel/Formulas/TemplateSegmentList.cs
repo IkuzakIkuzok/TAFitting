@@ -7,12 +7,12 @@ using System.Runtime.CompilerServices;
 namespace TAFitting.Excel.Formulas;
 
 /// <summary>
-/// Represents a mutable, stack-allocated collection of Excel formula segments used to efficiently build or process formula expressions.
+/// Represents a mutable, stack-allocated collection of Excel formula segments used to efficiently build or process formula template.
 /// </summary>
-internal ref struct ExcelFormulaSegmentList
+internal ref struct TemplateSegmentList
 {
-    private Span<ExcelFormulaSegment> _segments;
-    private ExcelFormulaSegment[]? _pooled;
+    private Span<TemplateSegment> _segments;
+    private TemplateSegment[]? _pooled;
     private int _position;
 
     private int _constLength;
@@ -20,11 +20,11 @@ internal ref struct ExcelFormulaSegmentList
     private int _timePlaceholderCount;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExcelFormulaSegmentList"/> class using the specified buffer of formula segments.
+    /// Initializes a new instance of the <see cref="TemplateSegmentList"/> class using the specified buffer of formula segments.
     /// </summary>
     /// <param name="initialBuffer">A span containing the initial segments to be used for the list.
-    /// The span must remain valid for the lifetime of the <see cref="ExcelFormulaSegmentList"/> instance.</param>
-    internal ExcelFormulaSegmentList(Span<ExcelFormulaSegment> initialBuffer)
+    /// The span must remain valid for the lifetime of the <see cref="TemplateSegmentList"/> instance.</param>
+    internal TemplateSegmentList(Span<TemplateSegment> initialBuffer)
     {
         this._segments = initialBuffer;
         this._pooled = null;
@@ -33,7 +33,7 @@ internal ref struct ExcelFormulaSegmentList
         this._constLength = 0;
         this._paramPlaceholderCount = 0;
         this._timePlaceholderCount = 0;
-    } // internal ExcelFormulaSegmentList (Span<ExcelFormulaSegment>)
+    } // ctor (Span<TemplateSegment>)
 
     /// <summary>
     /// Gets the number of items currently contained in the collection.
@@ -59,7 +59,7 @@ internal ref struct ExcelFormulaSegmentList
     /// Adds the specified formula segment to the collection if it is not empty.
     /// </summary>
     /// <param name="segment">The formula segment to add.</param>
-    internal void Add(ExcelFormulaSegment segment)
+    internal void Add(TemplateSegment segment)
     {
         if (segment.IsEmpty) return;
 
@@ -71,14 +71,14 @@ internal ref struct ExcelFormulaSegmentList
         this._constLength += segment.GetConstLength();
         switch (segment.Type)
         {
-            case ExcelFormulaSegmentType.ParameterPlaceholder:
+            case TemplateSegmentType.ParameterPlaceholder:
                 this._paramPlaceholderCount++;
                 break;
-            case ExcelFormulaSegmentType.TimePlaceholder:
+            case TemplateSegmentType.TimePlaceholder:
                 this._timePlaceholderCount++;
                 break;
         }
-    } // internal void Add (ExcelFormulaSegment
+    } // internal void Add (TemplateSegment)
 
     // Do not inline to keep the hot path small
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -86,11 +86,11 @@ internal ref struct ExcelFormulaSegmentList
     {
         var newSize = this._segments.Length == 0 ? 32 : this._segments.Length << 1;
 
-        var newArray = ArrayPool<ExcelFormulaSegment>.Shared.Rent(newSize);
+        var newArray = ArrayPool<TemplateSegment>.Shared.Rent(newSize);
         this._segments.CopyTo(newArray);
 
         if (this._pooled is not null)
-            ArrayPool<ExcelFormulaSegment>.Shared.Return(this._pooled);
+            ArrayPool<TemplateSegment>.Shared.Return(this._pooled);
 
         this._segments = newArray;
         this._pooled = newArray;
@@ -99,22 +99,22 @@ internal ref struct ExcelFormulaSegmentList
     /// <summary>
     /// Returns an array containing all segments currently stored in the buffer.
     /// </summary>
-    /// <returns>An array of <see cref="ExcelFormulaSegment"/> objects representing the segments in the buffer.
+    /// <returns>An array of <see cref="TemplateSegment"/> objects representing the segments in the buffer.
     /// The array will be empty if no segments are present.</returns>
-    internal readonly ExcelFormulaSegment[] ToArray()
+    internal readonly TemplateSegment[] ToArray()
     {
         if (this._position == 0) return [];
-        var arr = new ExcelFormulaSegment[this._position];
+        var arr = new TemplateSegment[this._position];
         this._segments[..this._position].CopyTo(arr);
         return arr;
-    } // internal readonly ExcelFormulaSegment[] ToArray ()
+    } // internal readonly TemplateSegment[] ToArray ()
 
     public void Dispose()
     {
         if (this._pooled is not null)
-            ArrayPool<ExcelFormulaSegment>.Shared.Return(this._pooled);
+            ArrayPool<TemplateSegment>.Shared.Return(this._pooled);
 
         this._pooled = null;
         this._segments = default;
     } // public void Dispose ()
-} // internal ref struct ExcelFormulaSegmentList
+} // internal ref struct TemplateSegmentList

@@ -10,7 +10,7 @@ namespace TAFitting.Excel.Formulas;
 /// <summary>
 /// Represents a segment of an Excel formula, including its type and associated value.
 /// </summary>
-internal readonly struct ExcelFormulaSegment
+internal readonly struct TemplateSegment
 {
     private readonly string? _chars;
     private readonly int _index;
@@ -19,15 +19,15 @@ internal readonly struct ExcelFormulaSegment
     /// <summary>
     /// Gets the type of the segment.
     /// </summary>
-    internal ExcelFormulaSegmentType Type
+    internal TemplateSegmentType Type
     {
         get
         {
             if (this._chars is not null)
-                return ExcelFormulaSegmentType.Literal;
+                return TemplateSegmentType.Literal;
             if (this._index < 0)
-                return ExcelFormulaSegmentType.TimePlaceholder;
-            return ExcelFormulaSegmentType.ParameterPlaceholder;
+                return TemplateSegmentType.TimePlaceholder;
+            return TemplateSegmentType.ParameterPlaceholder;
         }
     }
 
@@ -80,7 +80,7 @@ internal readonly struct ExcelFormulaSegment
         }
     }
 
-    private ExcelFormulaSegment(string? chars, int index, int length)
+    private TemplateSegment(string? chars, int index, int length)
     {
         this._chars = chars;
         this._index = index;
@@ -95,23 +95,23 @@ internal readonly struct ExcelFormulaSegment
     /// Must be non-negative and within the bounds of <paramref name="chars"/>.</param>
     /// <param name="length">The number of characters to include in the literal segment.
     /// Must be non-negative and not exceed the length of <paramref name="chars"/> starting at <paramref name="index"/>.</param>
-    /// <returns>An <see cref="ExcelFormulaSegment"/> instance representing the specified substring as a literal segment.</returns>
-    internal static ExcelFormulaSegment CreateLiteral(string chars, int index, int length)
+    /// <returns>An <see cref="TemplateSegment"/> instance representing the specified substring as a literal segment.</returns>
+    internal static TemplateSegment CreateLiteral(string chars, int index, int length)
         => new(chars, index, length);
 
     /// <summary>
     /// Creates a placeholder segment for a formula parameter at the specified column index.
     /// </summary>
     /// <param name="columnIndex">The index of the column where the parameter placeholder will be positioned.</param>
-    /// <returns>An instance of <see cref="ExcelFormulaSegment"/> representing a parameter placeholder at the given column index.</returns>
-    internal static ExcelFormulaSegment CreateParameterPlaceholder(int columnIndex)
+    /// <returns>An instance of <see cref="TemplateSegment"/> representing a parameter placeholder at the given column index.</returns>
+    internal static TemplateSegment CreateParameterPlaceholder(int columnIndex)
         => new(null, columnIndex, 0);
 
     /// <summary>
     /// Creates a placeholder segment representing a time value within an Excel formula.
     /// </summary>
-    /// <returns>An <see cref="ExcelFormulaSegment"/> instance configured as a time placeholder segment.</returns>
-    internal static ExcelFormulaSegment CreateTimePlaceholder()
+    /// <returns>An <see cref="TemplateSegment"/> instance configured as a time placeholder segment.</returns>
+    internal static TemplateSegment CreateTimePlaceholder()
         => new(null, -1, 0);
 
     /// <summary>
@@ -125,13 +125,13 @@ internal readonly struct ExcelFormulaSegment
         if (this.IsLiteral)
             return this._length;
 
-        if (this.Type == ExcelFormulaSegmentType.ParameterPlaceholder)
+        if (this.Type == TemplateSegmentType.ParameterPlaceholder)
         {
             const uint columnOffset = 2u; // +1 for wavelength column, +1 for 1-based index
-            return ExcelFormulaFormattingHelper.GetColumnIndexLength((uint)this._index + columnOffset) + 1; // +1 for '$'
+            return FormattingHelper.GetColumnIndexLength((uint)this._index + columnOffset) + 1; // +1 for '$'
         }
 
         // "$1"
         return 2;
     } // internal readonly int GetConstLength()
-} // internal struct ExcelFormulaSegment
+} // internal struct TemplateSegment

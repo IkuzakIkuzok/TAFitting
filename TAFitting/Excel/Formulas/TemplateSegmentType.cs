@@ -1,11 +1,12 @@
-﻿// (c) 2026 Kazuki KOHZUKI
+﻿
+// (c) 2026 Kazuki KOHZUKI
 
 namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Specifies the type of segment within an Excel formula template, such as a literal value or a placeholder.
 /// </summary>
-internal enum ExcelFormulaSegmentType
+internal enum TemplateSegmentType
 {
     /// <summary>
     /// Lieteral text segment.
@@ -21,4 +22,4 @@ internal enum ExcelFormulaSegmentType
     /// Placeholder for time variable.
     /// </summary>
     TimePlaceholder
-} // enum ExcelFormulaSegmentType
+} // internal enum TemplateSegmentType

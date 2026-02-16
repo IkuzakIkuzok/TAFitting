@@ -18,7 +18,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     private readonly XLWorkbook workbook;
     private readonly IXLWorksheet worksheet;
 
-    private readonly ExcelFormulaTemplate formulaTemplate;
+    private readonly Template formulaTemplate;
     private readonly IReadOnlyList<double> times;
     private int rowIndex = 2;
 
@@ -34,7 +34,7 @@ internal sealed partial class ExcelWriter : ISpreadSheetWriter
     {
         this.path = path;
         this.Model = model;
-        this.formulaTemplate = ExcelFormulaTemplate.GetInstance(model);
+        this.formulaTemplate = Template.GetInstance(model);
         this.times = times;
 
         // Do not specify the file path here to avoid appending to an existing file.

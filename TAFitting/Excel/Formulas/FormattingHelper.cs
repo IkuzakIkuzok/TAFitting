@@ -8,7 +8,7 @@ namespace TAFitting.Excel.Formulas;
 /// <summary>
 /// Provides helper methods for calculating the length of row and column indices when formatting Excel formulas.
 /// </summary>
-internal static class ExcelFormulaFormattingHelper
+internal static class FormattingHelper
 {
     /// <summary>
     /// Calculates the number of decimal digits required to represent the specified unsigned integer value.
@@ -86,4 +86,4 @@ internal static class ExcelFormulaFormattingHelper
         if (index <= 702u) return 2; // ZZ = 26 * (26 + 1)
         return 3; // Maximum column index in Excel is 16384 ("XFD")
     } // internal static int GetColumnIndexLength (uint)
-} // internal static class ExcelFormulaFormattingHelper
+} // internal static class FormattingHelper

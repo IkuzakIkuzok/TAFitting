@@ -12,7 +12,7 @@ namespace TAFitting.Excel.Formulas;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The <see cref="ExcelFormulaTemplate"/> class is designed to parse and store an Excel formula template string that may contain
+/// The <see cref="Template"/> class is designed to parse and store an Excel formula template string that may contain
 /// placeholders for parameters (denoted by square brackets, e.g., [ParameterName]) and time values (denoted by $X).
 /// It provides functionality to generate complete Excel formulas by substituting these placeholders with actual row and column indices.
 /// For example, given a template like "[A] * $X + [B]", the class can generate formulas such as "$B2 * D$1 + $C2" for specific rows and columns.
@@ -30,8 +30,8 @@ namespace TAFitting.Excel.Formulas;
 /// <para>
 /// The class needs only limited heap allocation:
 /// <list type="bullet">
-/// <item>An instance of the <see cref="ExcelFormulaTemplate"/> class itself</item>
-/// <item>An array of <see cref="ExcelFormulaSegment"/> objects representing the parsed segments of the formula template</item>
+/// <item>An instance of the <see cref="Template"/> class itself</item>
+/// <item>An array of <see cref="TemplateSegment"/> objects representing the parsed segments of the formula template</item>
 /// <item>Final formula string instances generated on demand</item>
 /// </list>
 /// Any other intermediate data used during parsing or formula generation is allocated on the stack to minimize heap usage.
@@ -39,38 +39,38 @@ namespace TAFitting.Excel.Formulas;
 /// when generating multiple formulas from the same template.
 /// </para>
 /// </remarks>
-internal sealed class ExcelFormulaTemplate
+internal sealed class Template
 {
     #region cache
 
     /*
-     * The cache is currently designed to store only one instance of ExcelFormulaTemplate, 
+     * The cache is currently designed to store only one instance of Template, 
      * since only one model is used during the application lifetime in most scenarios.
      * If cache misses are frequent and additional cache capacity is planned,
      * a linear search with a small fixed-size array would be a simple and effective approach 
      * than a more complex structure like Dictionary.
      */
 
-    private static volatile ExcelFormulaTemplate? _cache;
+    private static volatile Template? _cache;
 
     /// <summary>
     /// Retrieves an instance of an Excel formula template for the specified template string.
     /// </summary>
     /// <param name="model">The fitting model containing the Excel formula template to be retrieved.</param>
-    /// <returns>An instance of <see cref="ExcelFormulaTemplate"/> corresponding to the specified template string.</returns>
-    internal static ExcelFormulaTemplate GetInstance(IFittingModel model)
+    /// <returns>An instance of <see cref="Template"/> corresponding to the specified template string.</returns>
+    internal static Template GetInstance(IFittingModel model)
     {
         var entry = _cache;
 
         if (string.Equals(model.ExcelFormula, entry?.BaseString, StringComparison.Ordinal))
             return entry!;
 
-        return _cache = new ExcelFormulaTemplate(model);
-    } // static ExcelFormulaTemplate GetInstance (IFittingModel)
+        return _cache = new Template(model);
+    } // static Template GetInstance (IFittingModel)
 
     #endregion cache
 
-    private readonly ExcelFormulaSegment[] _segments;
+    private readonly TemplateSegment[] _segments;
     private readonly int _constLength, _paramCount, _timeCount;
 
     /// <summary>
@@ -79,14 +79,14 @@ internal sealed class ExcelFormulaTemplate
     internal string BaseString { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExcelFormulaTemplate"/> class using the specified template string.
+    /// Initializes a new instance of the <see cref="Template"/> class using the specified template string.
     /// </summary>
     /// <param name="template">The template string that defines the structure of the Excel formula.</param>
-    internal ExcelFormulaTemplate(IFittingModel model)
+    internal Template(IFittingModel model)
     {
         this.BaseString = model.ExcelFormula;
 
-        var parser = new ExcelFormulaTemplateParser(model);
+        var parser = new TemplateParser(model);
         this._segments = parser.Parse();
         this._constLength = parser.ConstantLength;
         this._paramCount = parser.ParameterPlaceholderCount;
@@ -107,8 +107,8 @@ internal sealed class ExcelFormulaTemplate
 
         var totalLength =
             this._constLength
-            + this._paramCount * ExcelFormulaFormattingHelper.GetRowIndexLength(row)
-            + this._timeCount * ExcelFormulaFormattingHelper.GetColumnIndexLength(col);
+            + this._paramCount * FormattingHelper.GetRowIndexLength(row)
+            + this._timeCount * FormattingHelper.GetColumnIndexLength(col);
 
         return string.Create(totalLength, new CreateState(this, row, col), WriteFormula);
     } // internal string ToFormula (int, int)
@@ -119,7 +119,7 @@ internal sealed class ExcelFormulaTemplate
     /// <param name="Template">The template used to generate the Excel formula.</param>
     /// <param name="RowIndex">The row index of the cell where the formula will be created.</param>
     /// <param name="ColumnIndex">The column index of the cell where the formula will be created.</param>
-    private readonly record struct CreateState(ExcelFormulaTemplate Template, uint RowIndex, uint ColumnIndex);
+    private readonly record struct CreateState(Template Template, uint RowIndex, uint ColumnIndex);
 
     /// <summary>
     /// Writes the Excel formula represented by the current object into the specified character buffer, using the provided row and column indices for placeholder substitution.
@@ -135,7 +135,7 @@ internal sealed class ExcelFormulaTemplate
         var columnIndex = state.ColumnIndex;
 
         // Prepare row index string on stack
-        var rowDigit = ExcelFormulaFormattingHelper.GetRowIndexLength(rowIndex);
+        var rowDigit = FormattingHelper.GetRowIndexLength(rowIndex);
         var rowIndexSpan = (stackalloc char[rowDigit]);
         {
             ref var refRow = ref Unsafe.Add(ref MemoryMarshal.GetReference(rowIndexSpan), rowDigit);
@@ -171,7 +171,7 @@ internal sealed class ExcelFormulaTemplate
              * Branches are ordered accordingly to minimize mispredictions.
              */
 
-            if (refSegment.Type == ExcelFormulaSegmentType.Literal)
+            if (refSegment.Type == TemplateSegmentType.Literal)
             {
                 var literal = refSegment.Span;
                 ref var refLiteral = ref MemoryMarshal.GetReference(literal);
@@ -179,7 +179,7 @@ internal sealed class ExcelFormulaTemplate
                 Copy(ref refDst, literal);
                 refDst = ref Unsafe.Add(ref refDst, literal.Length);
             }
-            else if (refSegment.Type == ExcelFormulaSegmentType.ParameterPlaceholder)
+            else if (refSegment.Type == TemplateSegmentType.ParameterPlaceholder)
             {
                 Write(ref refDst, '$');
                 refDst = ref Unsafe.Add(ref refDst, 1);
@@ -190,7 +190,7 @@ internal sealed class ExcelFormulaTemplate
                 Copy(ref refDst, rowIndexSpan);
                 refDst = ref Unsafe.Add(ref refDst, rowDigit);
             }
-            else // if (refSegment.Type == ExcelFormulaSegmentType.TimePlaceholder)
+            else // if (refSegment.Type == TemplateSegmentType.TimePlaceholder)
             {
                 Copy(ref refDst, colLettersSpan, colLettersLength);
                 refDst = ref Unsafe.Add(ref refDst, colLettersLength);
@@ -253,7 +253,7 @@ internal sealed class ExcelFormulaTemplate
     /// <returns>The number of characters written to the destination buffer.</returns>
     private static int WriteColumnLetters(ref char refDst, uint col)
     {
-        var len = ExcelFormulaFormattingHelper.GetColumnIndexLength(col);
+        var len = FormattingHelper.GetColumnIndexLength(col);
 
         ref var dstEnd = ref Unsafe.Add(ref refDst, len - 1);
         uint q, r;
@@ -281,4 +281,4 @@ internal sealed class ExcelFormulaTemplate
 
         return len;
     } // private static int WriteColumnLetters (ref char, uint)
-} // internal sealed class ExcelFormulaTemplate
+} // internal sealed class Template

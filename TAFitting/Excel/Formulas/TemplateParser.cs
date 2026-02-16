@@ -10,7 +10,7 @@ namespace TAFitting.Excel.Formulas;
 /// <summary>
 /// Parses an Excel formula template into a sequence of segments, identifying literal text, parameter placeholders, and time placeholders for further processing.
 /// </summary>
-internal ref struct ExcelFormulaTemplateParser
+internal ref struct TemplateParser
 {
     private readonly IFittingModel _model;
     private int _constLength, _paramPlaceholderCount, _timePlaceholderCount;
@@ -31,10 +31,10 @@ internal ref struct ExcelFormulaTemplateParser
     internal readonly int TimePlaceholderCount => this._timePlaceholderCount;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExcelFormulaTemplateParser"/> class using the specified fitting model.
+    /// Initializes a new instance of the <see cref="TemplateParser"/> class using the specified fitting model.
     /// </summary>
     /// <param name="model">The fitting model to be used for formula parsing operations.</param>
-    internal ExcelFormulaTemplateParser(IFittingModel model)
+    internal TemplateParser(IFittingModel model)
     {
         this._model = model;
     } // ctor (IFittingModel)
@@ -42,11 +42,11 @@ internal ref struct ExcelFormulaTemplateParser
     /// <summary>
     /// Parses the Excel formula template and returns an array of segments representing literals and placeholders.
     /// </summary>
-    /// <returns>An array of <see cref="ExcelFormulaSegment"/> objects that represent the parsed segments of the formula.
+    /// <returns>An array of <see cref="TemplateSegment"/> objects that represent the parsed segments of the formula.
     /// The array contains both literal text and placeholders for parameters and time values, in the order they appear in the template.</returns>
     /// <exception cref="FormatException">Thrown if the formula template contains an unmatched '[' character,
     /// indicating a malformed parameter placeholder.</exception>
-    internal ExcelFormulaSegment[] Parse()
+    internal TemplateSegment[] Parse()
     {
         var reader = new TemplateReader(this._model.ExcelFormula);
         var parameters = this._model.Parameters;
@@ -64,8 +64,8 @@ internal ref struct ExcelFormulaTemplateParser
             parameterMap[i] = new(param.Name, i);
         }
 
-        var segmentInlineBuffer = new StructInlineArray<ExcelFormulaSegment>();
-        using var list = new ExcelFormulaSegmentList(segmentInlineBuffer);
+        var segmentInlineBuffer = new StructInlineArray<TemplateSegment>();
+        using var list = new TemplateSegmentList(segmentInlineBuffer);
 
         while (!reader.IsEnd)
         {
@@ -95,7 +95,7 @@ internal ref struct ExcelFormulaTemplateParser
 
                 var name = reader.Read(endIdx);
                 var paramIndex = GetParameterIndex(name, parameterMap);
-                var parameterSegment = ExcelFormulaSegment.CreateParameterPlaceholder(paramIndex);
+                var parameterSegment = TemplateSegment.CreateParameterPlaceholder(paramIndex);
                 list.Add(parameterSegment);
                 reader.Advance(1); // Skip ']'
             }
@@ -105,7 +105,7 @@ internal ref struct ExcelFormulaTemplateParser
                 // or only time placeholder found (nameIdx == -1)
 
                 list.Add(reader.ReadLiteralSegment(timeIdx));
-                var timeSegment = ExcelFormulaSegment.CreateTimePlaceholder(); ;
+                var timeSegment = TemplateSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
                 reader.Advance(2); // Skip '$X'
             }
@@ -123,7 +123,7 @@ internal ref struct ExcelFormulaTemplateParser
         this._paramPlaceholderCount = list.ParameterPlaceholderCount;
         this._timePlaceholderCount = list.TimePlaceholderCount;
         return list.ToArray();
-    } // internal ExcelFormulaSegment[] Parse ()
+    } // internal TemplateSegment[] Parse ()
 
     /// <summary>
     /// Retrieves the index associated with the specified parameter name from the provided parameter map.
@@ -141,4 +141,4 @@ internal ref struct ExcelFormulaTemplateParser
         }
         throw new KeyNotFoundException($"Parameter '{name}' not found in the model.");
     } // private static int GetParameterIndex (ReadOnlySpan<char>, ReadOnlySpan<ParameterEntry>)
-} // internal ref struct ExcelFormulaTemplateParser
+} // internal ref struct TemplateParser

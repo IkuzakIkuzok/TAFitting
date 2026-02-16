@@ -15,6 +15,9 @@ internal ref struct TemplateReader
     private ReadOnlySpan<char> _span;
     private int _read;
 
+    /// <summary>
+    /// Gets a value indicating whether the current span has reached its end.
+    /// </summary>
     internal readonly bool IsEnd => this._span.IsEmpty;
 
     /// <summary>
@@ -82,28 +85,28 @@ internal ref struct TemplateReader
     } // internal ReadOnlySpan<char> Read (int)
 
     /// <summary>
-    /// Reads a literal segment from the current formula text to the end of the span, returning it as an <see cref="ExcelFormulaSegment"/>.
+    /// Reads a literal segment from the current formula text to the end of the span, returning it as an <see cref="TemplateSegment"/>.
     /// </summary>
-    /// <returns>An <see cref="ExcelFormulaSegment"/> representing the literal segment extracted from the formula text.</returns>
+    /// <returns>An <see cref="TemplateSegment"/> representing the literal segment extracted from the formula text.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ExcelFormulaSegment ReadLiteralSegment()
+    internal TemplateSegment ReadLiteralSegment()
     {
         var start = this._read;
         var length = this._span.Length;
         Advance(length);
-        return ExcelFormulaSegment.CreateLiteral(this._text, start, length);
-    } // internal readonly ExcelFormulaSegment ReadLiteralSegment ()
+        return TemplateSegment.CreateLiteral(this._text, start, length);
+    } // internal readonly TemplateSegment ReadLiteralSegment ()
 
     /// <summary>
-    /// Reads a literal segment of the specified length from the current formula text, returning it as an <see cref="ExcelFormulaSegment"/>.
+    /// Reads a literal segment of the specified length from the current formula text, returning it as an <see cref="TemplateSegment"/>.
     /// </summary>
     /// <param name="length">The number of characters to include in the literal segment.</param>
-    /// <returns>An <see cref="ExcelFormulaSegment"/> representing the literal segment read from the formula text.</returns>
+    /// <returns>An <see cref="TemplateSegment"/> representing the literal segment read from the formula text.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ExcelFormulaSegment ReadLiteralSegment(int length)
+    internal TemplateSegment ReadLiteralSegment(int length)
     {
         var start = this._read;
         Advance(length);
-        return ExcelFormulaSegment.CreateLiteral(this._text, start, length);
-    } // internal readonly ExcelFormulaSegment ReadLiteralSegment (int)
+        return TemplateSegment.CreateLiteral(this._text, start, length);
+    } // internal readonly TemplateSegment ReadLiteralSegment (int)
 } // internal ref struct TemplateReader
