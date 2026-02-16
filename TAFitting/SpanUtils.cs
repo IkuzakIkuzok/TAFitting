@@ -21,6 +21,7 @@ internal static class SpanUtils
     /// <param name="source">The source span to slice.</param>
     /// <param name="start">The zero-based index at which to begin the slice. Must be less than or equal to the length of the source span.</param>
     /// <returns>A span containing the elements of the source span starting at the specified index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Span<T> UnsafeSlice<T>(this Span<T> source, int start)
     {
         Debug.Assert((uint)start <= (uint)source.Length, "Start index is out of range.");
@@ -38,6 +39,7 @@ internal static class SpanUtils
     /// <param name="source">The source span to slice.</param>
     /// <param name="start">The zero-based index at which to begin the slice. Must be less than or equal to the length of the source span.</param>
     /// <returns>A read-only span containing the elements of the source span starting at the specified index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ReadOnlySpan<T> UnsafeSlice<T>(this ReadOnlySpan<T> source, int start)
     {
         Debug.Assert((uint)start <= (uint)source.Length, "Start index is out of range.");
