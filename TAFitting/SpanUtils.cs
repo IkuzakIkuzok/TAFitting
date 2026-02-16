@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Runtime.Intrinsics;
+using System.Diagnostics;
 
 namespace TAFitting;
 
@@ -13,6 +14,40 @@ namespace TAFitting;
 /// </summary>
 internal static class SpanUtils
 {
+    /// <summary>
+    /// Creates a slice of the specified span, starting at the given index, without performing bounds checking.
+    /// </summary>
+    /// <typeparam name="T">The type of elements contained in the span.</typeparam>
+    /// <param name="source">The source span to slice.</param>
+    /// <param name="start">The zero-based index at which to begin the slice. Must be less than or equal to the length of the source span.</param>
+    /// <returns>A span containing the elements of the source span starting at the specified index.</returns>
+    internal static Span<T> UnsafeSlice<T>(this Span<T> source, int start)
+    {
+        Debug.Assert((uint)start <= (uint)source.Length, "Start index is out of range.");
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(source), start),
+            source.Length - start
+        );
+    } // internal static Span<T> UnsafeSlice (this Span<T>, int)
+
+    /// <summary>
+    /// Creates a read-only slice of the specified span, starting at the given index, without performing bounds checking.
+    /// </summary>
+    /// <typeparam name="T">The type of elements contained in the span.</typeparam>
+    /// <param name="source">The source span to slice.</param>
+    /// <param name="start">The zero-based index at which to begin the slice. Must be less than or equal to the length of the source span.</param>
+    /// <returns>A read-only span containing the elements of the source span starting at the specified index.</returns>
+    internal static ReadOnlySpan<T> UnsafeSlice<T>(this ReadOnlySpan<T> source, int start)
+    {
+        Debug.Assert((uint)start <= (uint)source.Length, "Start index is out of range.");
+
+        return MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(source), start),
+            source.Length - start
+        );
+    } // internal static ReadOnlySpan<T> UnsafeSlice (this ReadOnlySpan<T>, int)
+
     /// <summary>
     /// Tries to extract the <see cref="Span{T}"/> from the source.
     /// </summary>

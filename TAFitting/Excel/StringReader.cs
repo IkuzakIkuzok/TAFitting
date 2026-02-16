@@ -62,7 +62,7 @@ internal ref struct StringReader
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Advance(int count)
     {
-        this._span = this._span[count..];
+        this._span = this._span.UnsafeSlice(count);
         this._read += count;
     } // internal void Advance (int)
 
