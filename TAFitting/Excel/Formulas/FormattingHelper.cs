@@ -141,7 +141,7 @@ internal static class FormattingHelper
     /// <returns>The number of characters written to the destination buffer.</returns>
     internal static int WriteColumnLetters(ref char refDst, uint col)
     {
-        var len = FormattingHelper.GetColumnIndexLength(col);
+        var len = GetColumnIndexLength(col);
 
         ref var dstEnd = ref Unsafe.Add(ref refDst, len - 1);
         uint q, r;
