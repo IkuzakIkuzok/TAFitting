@@ -1,9 +1,9 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using TAFitting.Model;
+using static TAFitting.Excel.Formulas.FormattingHelper;
 
 namespace TAFitting.Excel.Formulas;
 
@@ -107,8 +107,8 @@ internal sealed class Template
 
         var totalLength =
             this._constLength
-            + this._paramCount * FormattingHelper.GetRowIndexLength(row)
-            + this._timeCount * FormattingHelper.GetColumnIndexLength(col);
+            + this._paramCount * GetRowIndexLength(row)
+            + this._timeCount * GetColumnIndexLength(col);
 
         return string.Create(totalLength, new CreateState(this, row, col), WriteFormula);
     } // internal string ToFormula (int, int)
@@ -135,7 +135,7 @@ internal sealed class Template
         var columnIndex = state.ColumnIndex;
 
         // Prepare row index string on stack
-        var rowDigit = FormattingHelper.GetRowIndexLength(rowIndex);
+        var rowDigit = GetRowIndexLength(rowIndex);
         var rowIndexSpan = (stackalloc char[rowDigit]);
         {
             ref var refRow = ref Unsafe.Add(ref MemoryMarshal.GetReference(rowIndexSpan), rowDigit);
@@ -176,109 +176,33 @@ internal sealed class Template
                 var literal = refSegment.Span;
                 ref var refLiteral = ref MemoryMarshal.GetReference(literal);
 
-                Copy(ref refDst, literal);
+                CopyChars(ref refDst, literal);
                 refDst = ref Unsafe.Add(ref refDst, literal.Length);
             }
             else if (refSegment.Type == TemplateSegmentType.ParameterPlaceholder)
             {
-                Write(ref refDst, '$');
+                WriteChar(ref refDst, '$');
                 refDst = ref Unsafe.Add(ref refDst, 1);
 
                 var len = WriteColumnLetters(ref refDst, (uint)refSegment.ParameterIndex + 2u); // +1 for wavelength column, +1 for 1-based index
                 refDst = ref Unsafe.Add(ref refDst, len);
 
-                Copy(ref refDst, rowIndexSpan);
+                CopyChars(ref refDst, rowIndexSpan);
                 refDst = ref Unsafe.Add(ref refDst, rowDigit);
             }
             else // if (refSegment.Type == TemplateSegmentType.TimePlaceholder)
             {
-                Copy(ref refDst, colLettersSpan, colLettersLength);
+                CopyChars(ref refDst, colLettersSpan, colLettersLength);
                 refDst = ref Unsafe.Add(ref refDst, colLettersLength);
 
                 // Time values are always in the first row
-                Write(ref refDst, '$');
+                WriteChar(ref refDst, '$');
                 refDst = ref Unsafe.Add(ref refDst, 1);
-                Write(ref refDst, '1');
+                WriteChar(ref refDst, '1');
                 refDst = ref Unsafe.Add(ref refDst, 1);
             }
 
             refSegment = ref Unsafe.Add(ref refSegment, 1);
         }
     } // private static void WriteFormula (Span<char>, CreateState)
-
-    /// <summary>
-    /// Writes the specified character to the destination.
-    /// </summary>
-    /// <param name="refDst">A reference to the destination character..</param>
-    /// <param name="c">The character to write to the destination.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Write(ref char refDst, char c)
-    {
-        refDst = c;
-    } // private static void Write (ref char, char)
-
-    /// <summary>
-    /// Copies the contents of the specified source span to the destination location.
-    /// </summary>
-    /// <param name="refDst">A reference to the destination character.</param>
-    /// <param name="src">The source span of characters to copy.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Copy(ref char refDst, ReadOnlySpan<char> src)
-        => Copy(ref refDst, src, src.Length);
-
-    /// <summary>
-    /// Copies a specified number of characters from the source span to the destination reference location.
-    /// </summary>
-    /// <param name="refDst">A reference to the destination memory location where characters will be copied.</param>
-    /// <param name="src">The source span containing the characters to copy.</param>
-    /// <param name="length">The number of characters to copy from the source span. Must be non-negative and not greater than the length of the source span.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Copy(ref char refDst, ReadOnlySpan<char> src, int length)
-    {
-        Debug.Assert((uint)length <= (uint)src.Length, "Length must be non-negative and not greater than the length of the source span.");
-
-        ref var refSrc = ref MemoryMarshal.GetReference(src);
-        Unsafe.CopyBlockUnaligned(
-            ref Unsafe.As<char, byte>(ref refDst),
-            ref Unsafe.As<char, byte>(ref refSrc),
-            (uint)length * sizeof(char)
-        );
-    } // private static void Copy (ref char, ReadOnlySpan<char>, int)
-
-    /// <summary>
-    /// Writes the Excel-style column letter representation of the specified column index to the destination character reference.
-    /// </summary>
-    /// <param name="refDst">A reference to the destination character buffer where the column letters will be written.</param>
-    /// <param name="col">The one-based column index to convert to column letters.</param>
-    /// <returns>The number of characters written to the destination buffer.</returns>
-    private static int WriteColumnLetters(ref char refDst, uint col)
-    {
-        var len = FormattingHelper.GetColumnIndexLength(col);
-
-        ref var dstEnd = ref Unsafe.Add(ref refDst, len - 1);
-        uint q, r;
-
-        // Loop unrolling + optimization to avoid division for the last character
-
-        if (len == 1) goto L1;
-        if (len == 2) goto L2;
-
-        q = (--col) / 26;
-        r = col - (q * 26);
-        col = q;
-        dstEnd = (char)('A' + r);
-        dstEnd = ref Unsafe.Subtract(ref dstEnd, 1);
-
-    L2:
-        q = (--col) / 26;
-        r = col - (q * 26);
-        col = q;
-        dstEnd = (char)('A' + r);
-        dstEnd = ref Unsafe.Subtract(ref dstEnd, 1);
-
-    L1:
-        dstEnd = (char)('A' - 1 + col);
-
-        return len;
-    } // private static int WriteColumnLetters (ref char, uint)
 } // internal sealed class Template
