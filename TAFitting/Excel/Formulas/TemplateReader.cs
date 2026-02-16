@@ -9,7 +9,7 @@ namespace TAFitting.Excel.Formulas;
 /// <summary>
 /// Provides sequential reading and span-based searching capabilities over a string, enabling efficient parsing and extraction of character segments.
 /// </summary>
-internal ref struct StringReader
+internal ref struct TemplateReader
 {
     private readonly string _text;
     private ReadOnlySpan<char> _span;
@@ -18,10 +18,10 @@ internal ref struct StringReader
     internal readonly bool IsEnd => this._span.IsEmpty;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StringReader"/> class that reads from the specified string.
+    /// Initializes a new instance of the <see cref="TemplateReader"/> class that reads from the specified string.
     /// </summary>
-    /// <param name="str">The string to be read by the <see cref="StringReader"/>.</param>
-    internal StringReader(string str)
+    /// <param name="str">The string to be read by the <see cref="TemplateReader"/>.</param>
+    internal TemplateReader(string str)
     {
         this._text = str;
         this._span = str.AsSpan();
@@ -106,4 +106,4 @@ internal ref struct StringReader
         Advance(length);
         return ExcelFormulaSegment.CreateLiteral(this._text, start, length);
     } // internal readonly ExcelFormulaSegment ReadLiteralSegment (int)
-} // internal ref struct StringReader
+} // internal ref struct TemplateReader

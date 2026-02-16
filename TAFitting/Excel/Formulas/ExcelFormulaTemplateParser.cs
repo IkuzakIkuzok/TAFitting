@@ -48,7 +48,7 @@ internal ref struct ExcelFormulaTemplateParser
     /// indicating a malformed parameter placeholder.</exception>
     internal ExcelFormulaSegment[] Parse()
     {
-        var reader = new StringReader(this._model.ExcelFormula);
+        var reader = new TemplateReader(this._model.ExcelFormula);
         var parameters = this._model.Parameters;
 
         var paramMapInlineBuffer = new StructInlineArray<ParameterMapEntry>();
