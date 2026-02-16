@@ -1,7 +1,6 @@
-﻿
-// (c) 2026 Kazuki KOHZUKI
+﻿// (c) 2026 Kazuki KOHZUKI
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Specifies the type of segment within an Excel formula template, such as a literal value or a placeholder.

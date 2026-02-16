@@ -2,8 +2,9 @@
 // (c) 2026 Kazuki KOHZUKI
 
 using System.Runtime.CompilerServices;
+using TAFitting;
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Provides sequential reading and span-based searching capabilities over a string, enabling efficient parsing and extraction of character segments.

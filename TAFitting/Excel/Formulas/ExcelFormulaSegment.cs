@@ -3,8 +3,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using TAFitting;
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Represents a segment of an Excel formula, including its type and associated value.

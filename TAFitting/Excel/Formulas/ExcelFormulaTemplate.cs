@@ -3,11 +3,12 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using TAFitting;
 using TAFitting.Buffers;
 using TAFitting.Collections;
 using TAFitting.Model;
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Represents a parsed Excel formula template that supports parameter and time placeholders for dynamic formula generation.

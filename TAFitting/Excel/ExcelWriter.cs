@@ -2,6 +2,7 @@
 // (c) 2024-2026 Kazuki KOHZUKI
 
 using ClosedXML.Excel;
+using TAFitting.Excel.Formulas;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;

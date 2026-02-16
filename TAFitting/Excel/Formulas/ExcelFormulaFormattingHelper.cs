@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Provides helper methods for calculating the length of row and column indices when formatting Excel formulas.

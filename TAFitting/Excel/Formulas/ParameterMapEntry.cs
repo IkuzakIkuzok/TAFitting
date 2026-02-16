@@ -1,7 +1,9 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
-namespace TAFitting.Excel;
+using TAFitting;
+
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Represents a parameter entry with its name and positional index within a collection or sequence.

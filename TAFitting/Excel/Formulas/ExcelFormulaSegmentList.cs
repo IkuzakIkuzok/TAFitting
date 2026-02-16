@@ -4,7 +4,7 @@
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace TAFitting.Excel;
+namespace TAFitting.Excel.Formulas;
 
 /// <summary>
 /// Represents a mutable, stack-allocated collection of Excel formula segments used to efficiently build or process formula expressions.
