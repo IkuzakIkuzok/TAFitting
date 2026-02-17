@@ -68,26 +68,47 @@ internal ref struct TemplateParser
         var segmentInlineBuffer = new StructInlineArray<TemplateSegment>();
         using var list = new TemplateSegmentList(segmentInlineBuffer);
 
+        /*
+         * Optimization Strategy:
+         * 1. Update absolute indices only when the current position surpasses them, ensuring efficient parsing without unnecessary scans of the template string.
+         * 2. Record whether a placeholder may exist afterward; if not, do not perform index updates, as they would be redundant.
+         * 3. Prioritize checking name placeholders as they are more frequent than time placeholders.
+         */
+
+        /*
+         * Absolute Indices Tracking:
+         *   -1          : Not found yet but may exist later (initial state)
+         *   >= 0        : Found at this absolute index
+         *   int.MaxValue: Not found and will not be found later (final state)
+         *   
+         * If the cursor position surpasses the absolute index (or -1, indicating that it may be found later),
+         * the next occurrence of the placeholder will be searched for and the absolute index will be updated.
+         * If the current absolute index is int.MaxValue, indicating that the placeholder will not be found later,
+         * the `absIdx < cursor` condition will always be false, and the check will be skipped.
+         */
+        var nameAbsIdx = -1;
+        var timeAbsIdx = -1;
         while (!reader.IsEnd)
         {
-            var timeIdx = reader.IndexOf("$X");
-            var nameIdx = reader.IndexOf('[');
-
-            /*
-             * Optimization Strategy:
-             * 1. Prioritize checking name placeholders as they are more frequent than time placeholders.
-             * 2. If both are non-negative, select the smaller value (earliest occurrence).
-             * 3. Cast negative values to 'uint' to treat them as large integers (> int.MaxValue).
-             *    This avoids explicit negative checks and reduces branch instructions.
-             * 4. The final 'else' handles the case where both are negative (expected at most once).
-             */
-
-            if ((uint)nameIdx < (uint)timeIdx)
+            var cursor = reader.Position;
+            if (nameAbsIdx < cursor)
             {
-                // Name placeholder found before time placeholder (nameIdx < timeIdx),
-                // or only name placeholder found (timeIdx == -1)
+                var rel = reader.IndexOf('[');
+                nameAbsIdx = rel >= 0 ? cursor + rel : int.MaxValue;
+            }
 
-                list.Add(reader.ReadLiteralSegment(nameIdx));
+            if (timeAbsIdx < cursor)
+            {
+                var rel = reader.IndexOf("$X");
+                timeAbsIdx = rel >= 0 ? cursor + rel : int.MaxValue;
+            }
+
+            if (nameAbsIdx < timeAbsIdx)
+            {
+                // Name placeholder found before time placeholder (nameIdx < timeIdx)
+
+                var nameRelIdx = nameAbsIdx - cursor;
+                list.Add(reader.ReadLiteralSegment(nameRelIdx));
                 reader.Advance(1); // Skip '['
 
                 var endIdx = reader.IndexOf(']');
@@ -100,20 +121,19 @@ internal ref struct TemplateParser
                 list.Add(parameterSegment);
                 reader.Advance(1); // Skip ']'
             }
-            else if (timeIdx >= 0)
+            else if (timeAbsIdx < int.MaxValue)
             {
-                // Time placeholder found before parameter placeholder (nameIdx > timeIdx),
-                // or only time placeholder found (nameIdx == -1)
+                // Time placeholder found before parameter placeholder (nameIdx > timeIdx)
 
-                list.Add(reader.ReadLiteralSegment(timeIdx));
+                var timeRelIdx = timeAbsIdx - cursor;
+                list.Add(reader.ReadLiteralSegment(timeRelIdx));
                 var timeSegment = TemplateSegment.CreateTimePlaceholder(); ;
                 list.Add(timeSegment);
                 reader.Advance(2); // Skip '$X'
             }
             else
             {
-                // No more placeholders (nameIdx == -1 && timeIdx == -1);
-                // add the rest as a literal and break
+                // No more placeholders; add the rest as a literal and break
 
                 list.Add(reader.ReadLiteralSegment());
                 break;

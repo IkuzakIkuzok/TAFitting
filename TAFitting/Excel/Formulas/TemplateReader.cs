@@ -16,6 +16,11 @@ internal ref struct TemplateReader
     private int _read;
 
     /// <summary>
+    /// Gets the current read position within the underlying data source.
+    /// </summary>
+    internal readonly int Position => this._read;
+
+    /// <summary>
     /// Gets a value indicating whether the current span has reached its end.
     /// </summary>
     internal readonly bool IsEnd => this._span.IsEmpty;
