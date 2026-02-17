@@ -1,6 +1,7 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
 using TAFitting.Buffers;
 using TAFitting.Collections;
 using TAFitting.Model;
@@ -132,6 +133,7 @@ internal ref struct TemplateParser
     /// <param name="parameterMap">A read-only span of parameter map entries to search for the specified parameter name.</param>
     /// <returns>The zero-based index corresponding to the specified parameter name.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the <paramref name="name"/> does not exist in the <paramref name="parameterMap"/>.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int GetParameterIndex(ReadOnlySpan<char> name, ReadOnlySpan<ParameterMapEntry> parameterMap)
     {
         foreach (ref readonly var entry in parameterMap)

@@ -96,6 +96,7 @@ internal readonly struct TemplateSegment
     /// <param name="length">The number of characters to include in the literal segment.
     /// Must be non-negative and not exceed the length of <paramref name="chars"/> starting at <paramref name="index"/>.</param>
     /// <returns>An <see cref="TemplateSegment"/> instance representing the specified substring as a literal segment.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static TemplateSegment CreateLiteral(string chars, int index, int length)
         => new(chars, index, length);
 
@@ -104,6 +105,7 @@ internal readonly struct TemplateSegment
     /// </summary>
     /// <param name="columnIndex">The index of the column where the parameter placeholder will be positioned.</param>
     /// <returns>An instance of <see cref="TemplateSegment"/> representing a parameter placeholder at the given column index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static TemplateSegment CreateParameterPlaceholder(int columnIndex)
         => new(null, columnIndex, 0);
 
@@ -111,6 +113,7 @@ internal readonly struct TemplateSegment
     /// Creates a placeholder segment representing a time value within an Excel formula.
     /// </summary>
     /// <returns>An <see cref="TemplateSegment"/> instance configured as a time placeholder segment.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static TemplateSegment CreateTimePlaceholder()
         => new(null, -1, 0);
 
