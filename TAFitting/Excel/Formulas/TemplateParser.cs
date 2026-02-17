@@ -1,6 +1,7 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using TAFitting.Buffers;
 using TAFitting.Collections;
@@ -161,6 +162,17 @@ internal ref struct TemplateParser
             if (entry.Matches(name))
                 return entry.ParameterIndex;
         }
-        throw new KeyNotFoundException($"Parameter '{name}' not found in the model.");
+
+        ThrowKeyNotFoundException(name);
+        return -1; // Unreachable, but required to satisfy the compiler's definite assignment rules
     } // private static int GetParameterIndex (ReadOnlySpan<char>, ReadOnlySpan<ParameterEntry>)
+
+    /// <summary>
+    /// Throws a <see cref="KeyNotFoundException"/> to indicate that a parameter with the specified name was not found in the model.
+    /// </summary>
+    /// <param name="name">The name of the parameter that could not be found.</param>
+    /// <exception cref="KeyNotFoundException">Always thrown to indicate that the specified parameter name does not exist in the model.</exception>
+    [DoesNotReturn]
+    private static void ThrowKeyNotFoundException(ReadOnlySpan<char> name)
+        => throw new KeyNotFoundException($"Parameter '{name}' not found in the model.");
 } // internal ref struct TemplateParser
