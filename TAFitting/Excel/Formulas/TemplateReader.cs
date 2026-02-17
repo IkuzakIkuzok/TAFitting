@@ -44,7 +44,7 @@ internal ref struct TemplateReader
     /// </summary>
     /// <param name="value">The character to locate within the span.</param>
     /// <returns>The zero-based index of the first occurrence of the specified character, or -1 if the character is not found.</returns>
-    [method:MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal readonly int IndexOf(char value)
         => this._span.IndexOf(value);
 
