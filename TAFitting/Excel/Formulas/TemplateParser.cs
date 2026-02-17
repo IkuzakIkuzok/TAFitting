@@ -87,21 +87,24 @@ internal ref struct TemplateParser
          * If the current absolute index is int.MaxValue, indicating that the placeholder will not be found later,
          * the `absIdx < cursor` condition will always be false, and the check will be skipped.
          */
-        var nameAbsIdx = -1;
-        var timeAbsIdx = -1;
+        const int NeedsSearch = -1;
+        const int Exhausted = int.MaxValue;
+
+        var nameAbsIdx = NeedsSearch;
+        var timeAbsIdx = NeedsSearch;
         while (!reader.IsEnd)
         {
             var cursor = reader.Position;
             if (nameAbsIdx < cursor)
             {
                 var rel = reader.IndexOf('[');
-                nameAbsIdx = rel >= 0 ? cursor + rel : int.MaxValue;
+                nameAbsIdx = rel >= 0 ? cursor + rel : Exhausted;
             }
 
             if (timeAbsIdx < cursor)
             {
                 var rel = reader.IndexOf("$X");
-                timeAbsIdx = rel >= 0 ? cursor + rel : int.MaxValue;
+                timeAbsIdx = rel >= 0 ? cursor + rel : Exhausted;
             }
 
             if (nameAbsIdx < timeAbsIdx)
@@ -122,7 +125,7 @@ internal ref struct TemplateParser
                 list.Add(parameterSegment);
                 reader.Advance(1); // Skip ']'
             }
-            else if (timeAbsIdx < int.MaxValue)
+            else if (timeAbsIdx < Exhausted)
             {
                 // Time placeholder found before parameter placeholder (nameIdx > timeIdx)
 
