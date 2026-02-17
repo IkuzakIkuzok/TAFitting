@@ -14,7 +14,7 @@ internal readonly struct TemplateSegment
 {
     private readonly string? _chars;
     private readonly int _index;
-    private readonly int _length;
+    private readonly int _length; // For literal segments, this represents the length of the substring. For placeholders, this represents the constant length of the segment in the formula.
 
     /// <summary>
     /// Gets the type of the segment.
@@ -44,7 +44,7 @@ internal readonly struct TemplateSegment
     /// </summary>
     /// <value><see langword="true"/> if the current instance represents an empty literal; otherwise, <see langword="false"/>.</value>
     internal bool IsEmpty
-        => this.IsLiteral && this._length == 0;
+        => this._length == 0;
 
     /// <summary>
     /// Gets a read-only span of characters representing the literal value, if available.
@@ -66,7 +66,7 @@ internal readonly struct TemplateSegment
     /// <summary>
     /// Gets the length of the segment.
     /// </summary>
-    internal int Length => this._length;
+    internal int Length => this.IsLiteral ? this._length : 0;
 
     /// <summary>
     /// Gets the zero-based index of the parameter placeholder, if applicable.
@@ -107,7 +107,12 @@ internal readonly struct TemplateSegment
     /// <returns>An instance of <see cref="TemplateSegment"/> representing a parameter placeholder at the given column index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static TemplateSegment CreateParameterPlaceholder(int columnIndex)
-        => new(null, columnIndex, 0);
+    {
+        const uint columnOffset = 2u; // +1 for wavelength column, +1 for 1-based index
+        var constLen = FormattingHelper.GetColumnIndexLength((uint)columnIndex + columnOffset) + 1; // +1 for '$';
+
+        return new(null, columnIndex, constLen);
+    } // internal static TemplateSegment CreateParameterPlaceholder (int)
 
     /// <summary>
     /// Creates a placeholder segment representing a time value within an Excel formula.
@@ -115,7 +120,7 @@ internal readonly struct TemplateSegment
     /// <returns>An <see cref="TemplateSegment"/> instance configured as a time placeholder segment.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static TemplateSegment CreateTimePlaceholder()
-        => new(null, -1, 0);
+        => new(null, -1, 2); // Const part = "$1", length = 2
 
     /// <summary>
     /// Calculates the constant length of the formula segment based on its type and properties.
@@ -124,17 +129,5 @@ internal readonly struct TemplateSegment
     /// The value varies depending on whether the segment is a literal, a time placeholder, or a column reference.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal readonly int GetConstLength()
-    {
-        if (this.IsLiteral)
-            return this._length;
-
-        if (this.Type == TemplateSegmentType.ParameterPlaceholder)
-        {
-            const uint columnOffset = 2u; // +1 for wavelength column, +1 for 1-based index
-            return FormattingHelper.GetColumnIndexLength((uint)this._index + columnOffset) + 1; // +1 for '$'
-        }
-
-        // "$1"
-        return 2;
-    } // internal readonly int GetConstLength()
+        => this._length;
 } // internal struct TemplateSegment
