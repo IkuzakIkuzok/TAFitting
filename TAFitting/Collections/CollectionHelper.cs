@@ -20,119 +20,41 @@ namespace TAFitting.Collections;
 internal static class CollectionHelper
 {
     /// <summary>
-    /// Adds the elements of the specified collection to the end of the <see cref="Collection{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the collection.</typeparam>
-    /// <param name="this">The collection to which the elements should be added.</param>
-    /// <param name="collection">
-    /// The collection whose elements should be added to the end of the <see cref="Collection{T}"/>.
-    /// The collection itself cannot be <see langword="null"/>,
-    /// but it can contain elements that are <see langword="null"/>,
-    /// if type <typeparamref name="T"/> is a reference type.
-    /// </param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void AddRange<T>(this Collection<T> @this, IEnumerable<T> collection)
-    {
-        /*
-         * Collection<T> does not have `AddRange` method, but its internal `items` field is `List<T>`, which has `AddRange` method.
-         * So we can use `Unsafe.As` to cast `Collection<T>` to a wrapper class that exposes the `AddRange` method.
-         * Getting the internal field via reflection is avoided for performance reasons.
-         */
-
-        var wrapper = Unsafe.As<CollectionWrapper<T>>(@this);
-        wrapper.AddRange(collection);
-    } // internal static void AddRange<T> (Collection<T>, IEnumerable<T>)
-
-    /// <summary>
     /// Adds the elements of the specified span to the end of the <see cref="Collection{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
-    /// <param name="this">The collection to which the elements should be added.</param>
+    /// <param name="collection">The collection to which the elements should be added.</param>
     /// <param name="span">The span whose elements should be added to the end of the <see cref="Collection{T}"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void AddRange<T>(this Collection<T> @this, ReadOnlySpan<T> span)
+    internal static void AddRange<T>(this Collection<T> collection, ReadOnlySpan<T> span)
     {
-        var wrapper = Unsafe.As<CollectionWrapper<T>>(@this);
-        wrapper.AddRange(span);
-    } // internal static void AddRange<T> (Collection<T>, ReadOnlySpan<T>)
+        var items = UnsafeAccessHelper<T>.GetItems(collection);
+#if SAFE_COLLECTION
+        if (items is List<T> list) list.AddRange(span);
+        // The fallback method should not be included here to avoid performance degradation due to inlining prevention.
+        else AddRangeForEach(items, span);
+#else
+        var list = Unsafe.As<List<T>>(items);
+        list.AddRange(span);
+#endif
+    } // internal static void AddRange<T> (this Collection<T>, ReadOnlySpan<T>)
 
-    /// <summary>
-    /// Wrapper class to expose the internal items of <see cref="Collection{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The type of elements in the collection.</typeparam>
-    private class CollectionWrapper<T>
+#if SAFE_COLLECTION
+
+    // No inlining to keep the hot path small
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void AddRangeForEach<T>(IList<T> items, ReadOnlySpan<T> span)
     {
-        private readonly IList<T> items = null!;
-
-        /// <summary>
-        /// Adds the elements of the specified collection to the end of the <see cref="Collection{T}"/>.
-        /// </summary>
-        /// <param name="collection">
-        /// The collection whose elements should be added to the end of the <see cref="Collection{T}"/>.
-        /// The collection itself cannot be <see langword="null"/>,
-        /// but it can contain elements that are <see langword="null"/>,
-        /// if type <typeparamref name="T"/> is a reference type.
-        /// </param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void AddRange(IEnumerable<T> collection)
-        {
-#if SAFE_COLLECTION
-            if (this.items is List<T> list) list.AddRange(collection);
-            // The fallback method shuld not be included here to avoid performance degradation due to inlining prevention.
-            else AddRangeForEach(collection);
-#else
-            var list = Unsafe.As<List<T>>(this.items);
-            list.AddRange(collection);
-#endif
-        } // internal void AddRange (IEnumerable<T>)
-
-        /// <summary>
-        /// Adds the elements of the specified span to the end of the <see cref="Collection{T}"/>.
-        /// </summary>
-        /// <param name="span">The span whose elements should be added to the end of the <see cref="Collection{T}"/>.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void AddRange(ReadOnlySpan<T> span)
-        {
-#if SAFE_COLLECTION
-            if (this.items is not List<T> list)
-            {
-                AddRangeForEach(span);
-                return;
-            }
-#else
-            var list = Unsafe.As<List<T>>(this.items);
-#endif
-            if (list.Capacity < list.Count + span.Length)
-                list.Capacity = list.Count + span.Length;
-
-            // list.AddRange(span);
-            /*
-             * CollectionExtensions.AddRange(List<T>, ReadOnlySpan<T>) fails with ExecutionEngineException; the reason is unknown.
-             * Still, using a simple loop here works correctly and efficiently.
-             * - Enlarging Capacity beforehand avoids multiple reallocations.
-             * - Avoiding unnecessary sub-array allocations improves performance in some cases.
-             * - Using a simple for-loop is faster than foreach-loop for IEnumerable<T>.
-             */
-
-            for (var i = 0; i < span.Length; i++)
-                list.Add(span[i]);
-
-        } // internal void AddRange (ReadOnlySpan<T>)
-
-#if SAFE_COLLECTION
-
-        private void AddRangeForEach(IEnumerable<T> collection)
-        {
-            foreach (var item in collection)
-                this.items.Add(item);
-        } // private void AddRangeForEach (IEnumerable<T>)
-
-        private void AddRangeForEach(ReadOnlySpan<T> span)
-        {
-            for (var i = 0; i < span.Length; i++)
-                this.items.Add(span[i]);
-        } // private void AddRangeForEach (ReadOnlySpan<T>)
+        for (var i = 0; i < span.Length; i++)
+            items.Add(span[i]);
+    } // private static void AddRangeForEach<T> (IList<T>, ReadOnlySpan<T>)
 
 #endif
-    } // internal class CollectionWrapper<T>
+
+    private static class UnsafeAccessHelper<T>
+    {
+        // The name of the filed will never be changed for binary serialization compatibility, so it is safe to hardcode the name here.
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "items")]
+        extern internal static ref IList<T> GetItems(Collection<T> c);
+    } // private static class UnsafeAccessHelper<T>
 } // internal static class CollectionHelper
