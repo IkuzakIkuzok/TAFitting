@@ -9,7 +9,7 @@ namespace TAFitting.Clipboard;
 
 internal static class ClipboardHandler
 {
-    internal static IEnumerable<ParameterValues> GetRowsFromClipboard(IEnumerable<string> parameters)
+    internal static IEnumerable<ParameterValues> GetParameterValuesFromClipboard(IEnumerable<string> parameters)
     {
         if (!WinClipboard.TryGetData(DataFormats.UnicodeText, out string? csv)) yield break;
 
@@ -30,5 +30,5 @@ internal static class ClipboardHandler
             var values = parameterIndices.Select(i => content[i].ParseDoubleInvariant()).ToArray();
             yield return new(wavelength, values);
         }
-    } // internal static IEnumerable<ParameterValues> GetRowsFromClipboard (IEnumerable<string>)
+    } // internal static IEnumerable<ParameterValues> GetParameterValuesFromClipboard (IEnumerable<string>)
 } // internal static class ClipboardHandler

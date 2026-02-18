@@ -1390,7 +1390,7 @@ internal sealed partial class MainWindow : Form
         var parameters = model.Parameters.Names;
         try
         {
-            var rows = ClipboardHandler.GetRowsFromClipboard(parameters);
+            var rows = ClipboardHandler.GetParameterValuesFromClipboard(parameters);
             foreach (var r in rows)
             {
                 var wavelength = r.Wavelength;
