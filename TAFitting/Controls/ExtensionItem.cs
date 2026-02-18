@@ -11,7 +11,7 @@ namespace TAFitting.Controls;
 /// <remarks>
 /// <see cref="Extension"/> should start with a period and without a leading asterisk (e.g., ".txt").
 /// </remarks>
-internal record ExtensionItem(string Name, string Extension)
+internal sealed record ExtensionItem(string Name, string Extension)
 {
     internal static ExtensionItem AllFiles => new("All files", ".*");
 
@@ -49,4 +49,4 @@ internal record ExtensionItem(string Name, string Extension)
 
         return new(dst);
     } // private static string AddAsterisk(string extension)
-} // internal record ExtensionItem (string, string)
+} // internal sealed record ExtensionItem (string, string)
