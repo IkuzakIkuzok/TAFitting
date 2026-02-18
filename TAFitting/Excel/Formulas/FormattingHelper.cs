@@ -165,6 +165,8 @@ internal static class FormattingHelper
         dstEnd = ref Unsafe.Subtract(ref dstEnd, 1);
 
     L1:
+        // 'A' - 1 = 64 is calculated at compile time, and `'A' - 1 + col` is equivalent to `64 + col`.
+        // `'A' + col - 1' is NOT optimized to `64 + col` by the compiler, so we use `'A' - 1 + col` to ensure optimal performance.
         dstEnd = (char)('A' - 1 + col);
 
         return len;
