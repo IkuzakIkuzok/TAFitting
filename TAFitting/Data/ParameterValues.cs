@@ -1,31 +1,11 @@
 ﻿
-// (c) 2025 Kazuki Kohzuki
+// (c) 2025-2026 Kazuki Kohzuki
 
 namespace TAFitting.Data;
 
 /// <summary>
 /// Represents parameter values at a specific wavelength.
 /// </summary>
-internal sealed class ParameterValues
-{
-    /// <summary>
-    /// Gets the wavelength.
-    /// </summary>
-    internal double Wavelength { get; }
-
-    /// <summary>
-    /// Gets the parameter values.
-    /// </summary>
-    internal IReadOnlyList<double> Parameters { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ParameterValues"/> class.
-    /// </summary>
-    /// <param name="wavelength">The wavelength.</param>
-    /// <param name="values">The parameter values.</param>
-    internal ParameterValues(double wavelength, IReadOnlyList<double> values)
-    {
-        this.Wavelength = wavelength;
-        this.Parameters = values;
-    } // ctor (double, IReadOnlyList<double>)
-} // internal sealed class ParameterValues
+/// <param name="Wavelength">The wavelength in nanometers.</param>
+/// <param name="Parameters">The parameter values corresponding to the wavelength. The order of values should match the order of parameters defined in the model.</param>
+internal sealed record ParameterValues(double Wavelength, IReadOnlyList<double> Parameters);
