@@ -214,6 +214,5 @@ TAFitting uses the following libraries (ordered by name):
 
 - [ClosedXML](https://github.com/ClosedXML/ClosedXML) by Jan Havlíček, Francois Botha, Aleksei Pankratev, Manuel de Leon, Amir Ghezelbash - [MIT License](https://github.com/ClosedXML/ClosedXML/blob/master/LICENSE)
 - [IDisposableAnalyzers](https://github.com/DotNetAnalyzers/IDisposableAnalyzers) by Johan Larsson, milleniumbug - [MIT License](https://github.com/DotNetAnalyzers/IDisposableAnalyzers/blob/master/LICENSE)
-- [Microsoft.Net.Compilers.Toolset](https://github.com/dotnet/roslyn) by Microsoft - [MIT License](https://github.com/dotnet/roslyn/blob/main/License.txt)
 - [Microsoft.Toolkit.Uwp.Notifications](https://github.com/CommunityToolkit/WindowsCommunityToolkit) by Microsoft.Toolkit,dotnetfoundation - [MIT License](https://github.com/CommunityToolkit/WindowsCommunityToolkit/blob/main/License.md)
 - [WinForms.DataVisualization](https://github.com/kirsan31/winforms-datavisualization) by Microsoft, Kirsan and contributors - [MIT License](https://github.com/kirsan31/winforms-datavisualization/blob/master/LICENSE.TXT)
