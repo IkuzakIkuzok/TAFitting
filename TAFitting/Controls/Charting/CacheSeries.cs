@@ -47,13 +47,10 @@ internal class CacheSeries : Series
     /// <param name="size">The minimum number of elements that the data points cache should contain. Must be non-negative.</param>
     private void EnsureCacheSize(int size)
     {
-        var toAdd = size - this.DataPointsCache.Count;
-        if (toAdd <= 0) return;
+        if (size < this.DataPointsCache.Count)
+            return;
 
-        this.DataPointsCache.EnsureCapacity(size);
-
-        for (var i = 0; i < toAdd; i++)
-            this.DataPointsCache.Add(null!);
+        this.DataPointsCache.AddDefaults(size - this.DataPointsCache.Count);
     } // private void EnsureCacheSize (int size)
 
     /// <summary>
