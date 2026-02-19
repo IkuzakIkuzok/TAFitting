@@ -115,25 +115,17 @@ internal sealed partial class CsvReader : ISpreadSheetReader
         if (parameters.Length != this.Parameters.Count)
             throw new ArgumentException("The length of the parameters span does not match the number of parameters.", nameof(parameters));
 
-        // Maximum 128 KB, 65536 characters
-        var buffer = (stackalloc char[0x10000]);
-        var eol = this.reader.ReadLine(buffer, out var l);
-        if (l == 0)
+        var readCols = this.Parameters.Count + 1;
+        var columns = (stackalloc double[readCols]);
+        var n = this.reader.ParseCsvLine(columns);
+        if (n != readCols)
+        {
+            // Failed to read the expected number of columns, which may indicate a malformed line or end of file.
             goto Error;
+        }
 
-        var span = eol ? buffer[..l] : ReadRemainingLine(buffer).AsSpan();
-        var sep = span.IndexOf(',');
-        if (sep <= 0)
-            goto Error;
-
-        var s_wavelength = span[..sep];
-        var s_values = span[(sep + 1)..];
-
-        if (!double.TryParse(s_wavelength, out wavelength))
-            goto Error;
-
-        if (NegativeSignHandler.ParseDoubles(s_values, ',', parameters) != parameters.Length)
-            goto Error;
+        wavelength = columns[0];
+        columns[1..].CopyTo(parameters);
 
         return true;
 

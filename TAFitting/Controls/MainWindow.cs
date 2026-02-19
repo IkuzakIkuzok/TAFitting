@@ -1417,6 +1417,7 @@ internal sealed partial class MainWindow : Form
 
         try
         {
+            using var _ = new NegativeSignHandler();
             using var reader = GetSpreadSheetReader(ext);
 
             reader.Open(path);
