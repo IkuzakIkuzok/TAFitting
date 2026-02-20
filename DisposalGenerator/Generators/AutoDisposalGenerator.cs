@@ -85,15 +85,15 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         builder.AppendLine("{");
 
         if (hasDisposeBool)
-            builder.AppendLine($"\tpartial class {className} : {baseNames}");
+            builder.AppendLine($"    partial class {className} : {baseNames}");
         else
-            builder.AppendLine($"\tpartial class {className} : global::System.IDisposable");
-        builder.AppendLine("\t{");
+            builder.AppendLine($"    partial class {className} : global::System.IDisposable");
+        builder.AppendLine("    {");
 
-        builder.AppendLine("\t\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
-        builder.AppendLine("\t\t[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]");
-        builder.AppendLine("\t\t[global::System.Runtime.CompilerServices.CompilerGenerated]");
-        builder.AppendLine("\t\tprivate bool __generated_disposed = false;");
+        builder.AppendLine("        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+        builder.AppendLine("        [global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]");
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private bool __generated_disposed = false;");
 
         var canBeSimple =
             !hasDispose &&                    // No Dispose() method
@@ -107,9 +107,9 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             GenerateInheritableDispose(builder, className, fields, hasDispose, hasDisposeBool, isSealed, unmanaged);
 
         if (hasDispose)
-            builder.AppendLine($"\t}} // partial class {className} : {baseNames}");
+            builder.AppendLine($"    }} // partial class {className} : {baseNames}");
         else
-            builder.AppendLine($"\t}} // partial class {className} : global::System.IDisposable");
+            builder.AppendLine($"    }} // partial class {className} : global::System.IDisposable");
 
         builder.AppendLine("} // namespace " + nameSpace);
     } // private static void Generate(StringBuilder, string, string, IReadOnlyCollection<FieldDeclarationSyntax>, string, bool, bool, bool, string?)
@@ -125,7 +125,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
         {
             var name = field.Identifier.Text;
-            builder.AppendLine($"\t\t\tthis.{name}?.Dispose();");
+            builder.AppendLine($"            this.{name}?.Dispose();");
         }
         builder.AppendLine(@"
             this.__generated_disposed = true;
@@ -136,14 +136,15 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
     {
         if (!hasDispose && !hasDisposeBool)
         {
-            builder.AppendLine(@"
+            builder.Append(@"
         public void Dispose()
         {
             Dispose(true);");
 
             if (!string.IsNullOrEmpty(unmanaged))
             {
-                builder.Append("\t\t\tglobal::System.GC.SuppressFinalize(this);");
+                builder.AppendLine();
+                builder.Append("            global::System.GC.SuppressFinalize(this);");
             }
 
             builder.AppendLine(@"
@@ -173,19 +174,19 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
         if (fields.Count > 0)
         {
             builder.AppendLine();
-            builder.AppendLine("\t\t\t\tif (disposing)\n\t\t\t\t{");
+            builder.AppendLine("                if (disposing)\n                {");
             foreach (var field in fields.SelectMany(f => f.Declaration.Variables))
             {
                 var name = field.Identifier.Text;
-                builder.AppendLine($"\t\t\t\t\tthis.{name}?.Dispose();");
+                builder.AppendLine($"                    this.{name}?.Dispose();");
             }
-            builder.Append("\t\t\t\t}"); // if (disposing)
+            builder.Append("                }"); // if (disposing)
         }
         
         if (!string.IsNullOrEmpty(unmanaged))
         {
             builder.AppendLine();
-            builder.Append($"\t\t\t\t{unmanaged}();");
+            builder.Append($"                {unmanaged}();");
         }
 
         builder.AppendLine(@"
@@ -196,15 +197,15 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
         if (hasDisposeBool)
         {
-            builder.AppendLine("\t\t\t\tbase.Dispose(disposing);");
+            builder.AppendLine("                base.Dispose(disposing);");
         }
 
-        builder.AppendLine("\t\t\t}");
+        builder.AppendLine("            }");
 
         if (hasDisposeBool)
-            builder.AppendLine("\t\t} // override protected void Dispose (bool)");
+            builder.AppendLine("        } // override protected void Dispose (bool)");
         else
-            builder.AppendLine($"\t\t}} // {m} void Dispose (bool)");
+            builder.AppendLine($"        }} // {m} void Dispose (bool)");
 
         if (!string.IsNullOrEmpty(unmanaged))
         {
