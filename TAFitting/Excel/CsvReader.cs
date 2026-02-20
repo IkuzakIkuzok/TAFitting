@@ -3,8 +3,7 @@
 
 using DisposalGenerator;
 using System.Text;
-using TAFitting.Controls;
-using TAFitting.Data;
+using TAFitting.IO;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -15,12 +14,12 @@ namespace TAFitting.Excel;
 [AutoDisposal]
 internal sealed partial class CsvReader : ISpreadSheetReader
 {
-    private StreamReader? reader;
+    private CsvParser? reader;
 
     /// <inheritdoc/>
     public IFittingModel Model { get; init; }
 
-    public bool IsOpened => this.reader is not null && !this.__generated_disposed;
+    public bool IsOpened => this.reader is not null;
 
     /// <inheritdoc/>
     public bool ModelMatched { get; private set; }
@@ -51,54 +50,8 @@ internal sealed partial class CsvReader : ISpreadSheetReader
             this.reader = new(path, Encoding.UTF8);
 #pragma warning restore
 
-            // Maximum 128 KB, 65536 characters
-            var buffer = (stackalloc char[0x10000]);
-            var eol = this.reader.ReadLine(buffer, out var l);
-            if (l == 0)
-            {
-                this.ModelMatched = false;
-                return;
-            }
-
-            /*
-             * If the number of columns is sufficient, it may not be necessary to read the remaining rows, but the last parameter name might be truncated.
-             * It is possible to implement a fallback that reads the rest of the line if the parameter name does not match and the length is insufficient,
-             * but the implementation cost is too high, so we read to the end of the line every time.
-             */
-
-            var span = eol ? buffer[..l] : ReadRemainingLine(buffer).AsSpan();
-            var paramsCount = span.Count(',');
-            if (paramsCount < this.Parameters.Count)
-            {
-                this.ModelMatched = false;
-                return;
-            }
-
-            var start = span.IndexOf(',') + 1;
-            var idx_p = 0;
-            for (var i = start; i < span.Length; i++)
-            {
-                if (i != span.Length && span[i] != ',')
-                    continue;
-
-                var length = i - start;
-                if (length == 0)
-                {
-                    this.ModelMatched = false;
-                    return;
-                }
-                var segment = span.Slice(start, length);
-                var name = this.Parameters[idx_p++];
-                if (!segment.SequenceEqual(name))
-                {
-                    this.ModelMatched = false;
-                    return;
-                }
-                if (idx_p == this.Parameters.Count) break;
-                start = i + 1;
-            }
-
-            this.ModelMatched = true;
+            this.reader.SkipColumns(1); // Skip the wavelength column
+            this.ModelMatched = this.reader.VerifyHeader(this.Model.Parameters.NamesAsSpan);
         }
         catch
         {
@@ -117,7 +70,7 @@ internal sealed partial class CsvReader : ISpreadSheetReader
 
         var readCols = this.Parameters.Count + 1;
         var columns = (stackalloc double[readCols]);
-        var n = this.reader.ParseCsvLine(columns);
+        var n = this.reader.ParseLine(columns);
         if (n != readCols)
         {
             // Failed to read the expected number of columns, which may indicate a malformed line or end of file.
@@ -133,26 +86,4 @@ internal sealed partial class CsvReader : ISpreadSheetReader
         wavelength = double.NaN;
         return false;
     } // public bool ReadNextRow (out double, Span<double>)
-
-    private string ReadRemainingLine(ReadOnlySpan<char> buffer)
-    {
-        var builder = new StringBuilder();
-        builder.Append(buffer);
-        
-        var s = (stackalloc char[0x400]);
-        var eol = this.reader!.ReadLine(s, out var read);
-        while (read > 0)
-        {
-            if (eol)
-            {
-                builder.Append(s[..read]);
-                if (read < s.Length)
-                    break;
-            }
-            builder.Append(s);
-            eol = this.reader!.ReadLine(s, out read);
-        }
-
-        return builder.ToString();
-    } // private string ReadRemainingLine (ReadOnlySpan<char>)
 } // internal sealed partial class CsvReader : ISpreadSheetReader

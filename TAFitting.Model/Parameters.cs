@@ -30,6 +30,12 @@ public sealed class Parameters(Parameter[] parameters) : IReadOnlyList<Parameter
     public IReadOnlyList<string> Names
         => this.names ??= Array.ConvertAll(this.parameters, p => p.Name);
 
+    /// <summary>
+    /// Gets a read-only span of the names of the parameters.
+    /// </summary>
+    public ReadOnlySpan<string> NamesAsSpan
+        => this.names ??= Array.ConvertAll(this.parameters, p => p.Name);
+
     public static Parameters Create(ReadOnlySpan<Parameter> parameters) =>
         new([.. parameters]);
 
