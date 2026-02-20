@@ -41,10 +41,17 @@ internal partial class CsvParser : IDisposable
     /// <param name="expected">The expected header column names, in order. If empty, the method returns <see langword="true"/> without reading from the input.</param>
     /// <param name="separator">The character used to separate columns. Cannot be a newline character. The default is ','.</param>
     /// <returns><see langword="true"/> if the current line matches the expected header columns; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>
+    /// This method advances the reader to the end of the current line regardless of whether the header verification succeeds or fails, ensuring that subsequent reads start from the next line.
+    /// </remarks>
     /// <exception cref="ArgumentException">Thrown if <paramref name="separator"/> is a newline character (either '\r' or '\n').</exception>
     internal bool VerifyHeader(ReadOnlySpan<string> expected, char separator = ',')
     {
-        if (expected.IsEmpty) return true;
+        if (expected.IsEmpty)
+        {
+            SkipToEndOfLine();
+            return true;
+        }
 
         if (separator is '\r' or '\n')
             throw new ArgumentException("Separator cannot be a newline character.", nameof(separator));
