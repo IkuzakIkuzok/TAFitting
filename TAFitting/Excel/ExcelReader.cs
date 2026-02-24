@@ -3,7 +3,6 @@
 
 using ClosedXML.Excel;
 using DisposalGenerator;
-using TAFitting.Data;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;

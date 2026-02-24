@@ -2,7 +2,6 @@
 // (c) 2026 Kazuki KOHZUKI
 
 using System.Runtime.CompilerServices;
-using TAFitting;
 
 namespace TAFitting.Excel.Formulas;
 

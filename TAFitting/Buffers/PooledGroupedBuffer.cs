@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Runtime.CompilerServices;
-using TAFitting;
 
 namespace TAFitting.Buffers;
 

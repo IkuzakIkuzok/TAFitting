@@ -4,7 +4,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using TAFitting;
-using TAFitting.Collections;
 
 namespace TAFitting.Collections;
 
