@@ -33,8 +33,6 @@ internal static class ModelManager
 
     static ModelManager()
     {
-        Load(Assembly.GetExecutingAssembly());
-
         foreach (var item in Program.Config.ModelConfig.LinearCombinations)
             item.Register();
 
@@ -78,7 +76,7 @@ internal static class ModelManager
     /// Add the specified type to the models if it is a fitting model or an estimate provider.
     /// </summary>
     /// <param name="type">The type.</param>
-    private static void AddType(Type type)
+    internal static void AddType(Type type)
     {
         var isModel = typeof(IFittingModel).IsAssignableFrom(type);
         var isProvider = typeof(IEstimateProvider).IsAssignableFrom(type);
@@ -105,7 +103,7 @@ internal static class ModelManager
                 AddEstimateProvider(provider);
             }
         }
-    } // private static void AddType (Type)
+    } // internal static void AddType (Type)
 
     /// <summary>
     /// Tries to create an instance of the specified type of the model.

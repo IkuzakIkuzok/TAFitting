@@ -1,6 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
 using TAFitting.Data;
 
 namespace TAFitting.Model.PowerLaw;
@@ -30,6 +31,12 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
 
     /// <inheritdoc/>
     public bool YLogScale => true;
+
+    [ModuleInitializer]
+    public static void Register()
+    {
+        ModelManager.AddType(typeof(EmpiricalPowerLaw));
+    } // public static void Register ()
 
     public Func<double, double> GetFunction(IReadOnlyList<double> parameters)
     {

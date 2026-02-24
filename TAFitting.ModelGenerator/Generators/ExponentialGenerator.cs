@@ -74,6 +74,14 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         #region methods
 
+        builder.AppendLine();
+        builder.AppendLine($@"
+        [global::System.Runtime.CompilerServices.ModuleInitializer]
+        public static void Register()
+        {{
+            global::TAFitting.Model.ModelManager.AddType(typeof(global::{nameSpace}.{className}));
+        }} // public static void Register ()");
+
         #region GetFunction
 
         builder.AppendLine();

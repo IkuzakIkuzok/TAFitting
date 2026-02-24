@@ -1,6 +1,8 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
+using System.Runtime.CompilerServices;
+
 namespace TAFitting.Model.PowerLaw;
 
 [Guid("25345F16-17DD-41F5-AC79-2E35B99D811D")]
@@ -31,6 +33,12 @@ internal sealed class PowerExp : IFittingModel, IAnalyticallyDifferentiable
 
     /// <inheritdoc/>
     public bool YLogScale => true;
+
+    [ModuleInitializer]
+    public static void Register()
+    {
+        ModelManager.AddType(typeof(PowerExp));
+    } // public static void Register ()
 
     /// <inheritdoc/>
     public Func<double, double> GetFunction(IReadOnlyList<double> parameters)
