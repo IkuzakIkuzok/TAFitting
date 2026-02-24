@@ -19,18 +19,18 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         builder.AppendLine($"namespace {nameSpace}");
         builder.AppendLine("{");
 
-        builder.AppendLine($"\t/// <summary>");
-        builder.AppendLine($"\t/// Represents a {n}{GetSuffix(n)}-order polynomial model.");
-        builder.AppendLine($"\t/// </summary>");
-        builder.AppendLine($"\tinternal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
-        builder.AppendLine("\t{");
+        builder.AppendLine($"    /// <summary>");
+        builder.AppendLine($"    /// Represents a {n}{GetSuffix(n)}-order polynomial model.");
+        builder.AppendLine($"    /// </summary>");
+        builder.AppendLine($"    internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
+        builder.AppendLine("    {");
 
         #region fields
 
-        builder.AppendLine("\t\tprivate static readonly global::TAFitting.Model.Parameters parameters = [");
+        builder.AppendLine("        private static readonly global::TAFitting.Model.Parameters parameters = [");
         for (var i = 0; i <= n; i++)
-            builder.AppendLine($"\t\t\tnew() {{ Name = \"A{i}\", InitialValue = {Math.Pow(-1, i)}e+{n - i}, IsMagnitude = true }},");
-        builder.AppendLine("\t\t];");
+            builder.AppendLine($"            new() {{ Name = \"A{i}\", InitialValue = {Math.Pow(-1, i)}e+{n - i}, IsMagnitude = true }},");
+        builder.AppendLine("        ];");
 
         #endregion fields
 
@@ -39,32 +39,32 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         if (!string.IsNullOrEmpty(name))
         {
             builder.AppendLine();
-            builder.AppendLine("\t\t/// <inheritdoc/>");
-            builder.AppendLine($"\t\tpublic string Name => \"{name}\";");
+            builder.AppendLine("        /// <inheritdoc/>");
+            builder.AppendLine($"        public string Name => \"{name}\";");
         }
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic string Description => \"" + n + GetSuffix(n) + "-order polynomial model\";");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public string Description => \"" + n + GetSuffix(n) + "-order polynomial model\";");
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
+        builder.AppendLine("        /// <inheritdoc/>");
         builder.AppendLine(
-            "\t\tpublic string ExcelFormula => \"[A0] + [A1] * $X"
+            "        public string ExcelFormula => \"[A0] + [A1] * $X"
             + string.Concat(Enumerable.Range(2, n - 1).Select(i => $" + [A{i}] * $X^{i}")) + "\";"
         );
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic global::TAFitting.Model.Parameters Parameters => parameters;");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public global::TAFitting.Model.Parameters Parameters => parameters;");
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic bool XLogScale => false;");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public bool XLogScale => false;");
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic bool YLogScale => false;");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public bool YLogScale => false;");
 
         #endregion properties
 
@@ -81,15 +81,15 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         #region GetFunction
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t{");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("        {");
         for (var i = 0; i <= n; i++)
-            builder.AppendLine($"\t\t\tvar a{i} = parameters[{i}];");
+            builder.AppendLine($"            var a{i} = parameters[{i}];");
         builder.AppendLine();
 
         if (n > 1)
-            builder.AppendLine("\t\t\t//Horner's method");
+            builder.AppendLine("            //Horner's method");
         var func = new StringBuilder($"a{n}");
         for (var i = n - 1; i >= 0; --i)
         {
@@ -100,8 +100,8 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
             }
             func.Append($" * x + a{i}");
         }
-        builder.AppendLine($"\t\t\treturn (x) => {func};");
-        builder.AppendLine("\t\t} // public global::System.Func<double, double> GetFunction (global::System.Collections.Generic.IReadOnlyList<double>)");
+        builder.AppendLine($"            return (x) => {func};");
+        builder.AppendLine("        } // public global::System.Func<double, double> GetFunction (global::System.Collections.Generic.IReadOnlyList<double>)");
 
         GenerateGetVectorizedFunc(builder, "global::TAFitting.Data.AvxVector", n);
 
@@ -110,25 +110,25 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
         #region GetDerivatives
 
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine("\t\tpublic global::System.Action<double, double[]> GetDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> Derivatives;");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine("        public global::System.Action<double, double[]> GetDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("            => Derivatives;");
 
         builder.AppendLine();
-        builder.AppendLine("\t\tprivate void Derivatives(double x, double[] res)");
-        builder.AppendLine("\t\t{");
-        builder.AppendLine("\t\t\tvar d_a0 = 1.0;");
+        builder.AppendLine("        private void Derivatives(double x, double[] res)");
+        builder.AppendLine("        {");
+        builder.AppendLine("            var d_a0 = 1.0;");
         for (var i = 1; i <= n; i++)
         {
             if (i == 1)
-                builder.AppendLine($"\t\t\tvar d_a{i} = x;");
+                builder.AppendLine($"            var d_a{i} = x;");
             else
-                builder.AppendLine($"\t\t\tvar d_a{i} = d_a{i - 1} * x;");
+                builder.AppendLine($"            var d_a{i} = d_a{i - 1} * x;");
         }
         builder.AppendLine();
-        builder.AppendLine("\t\t\tres[0] = d_a0;");
-        builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"\t\t\tres[{i}] = d_a{i};")));
-        builder.AppendLine("\n\t\t} // private void Derivatives (double, double[])");
+        builder.AppendLine("            res[0] = d_a0;");
+        builder.Append(string.Join("\n", Enumerable.Range(1, n).Select(i => $"            res[{i}] = d_a{i};")));
+        builder.AppendLine("\n        } // private void Derivatives (double, double[])");
 
         GenerateGetVectorizedDerivatives(builder, "global::TAFitting.Data.AvxVector", n);
 
@@ -136,22 +136,22 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
 
         #endregion methods
 
-        builder.AppendLine($"\t}} // internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
+        builder.AppendLine($"    }} // internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
         builder.AppendLine("} // namespace" + nameSpace);
     } // override protected void Generate (StringBuilder, string, string, int n, string?)
 
     private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
     {
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> (x, res) =>");
-        builder.AppendLine("\t\t\t{");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine($"        global::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("            => (x, res) =>");
+        builder.AppendLine("            {");
 
         // Horner's method
 
         var comment = new StringBuilder($"a{n}");
-        builder.AppendLine($"\t\t\t\tres.Load(parameters[{n}]);  // a{n}");
+        builder.AppendLine($"                res.Load(parameters[{n}]);  // a{n}");
 
         for (var i = n - 1; i >= 0; --i)
         {
@@ -166,28 +166,28 @@ internal sealed class PolynomialGenerator : ModelGeneratorBase
                 comment.Append(" * x");
             }
             comment.Append($" + a{i}");
-            builder.AppendLine($"\t\t\t\t// {comment}");
-            builder.AppendLine($"\t\t\t\tres *= x; res += parameters[{i}];");
+            builder.AppendLine($"                // {comment}");
+            builder.AppendLine($"                res *= x; res += parameters[{i}];");
         }
 
-        builder.AppendLine("\t\t\t};");
+        builder.AppendLine("            };");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 
     private static void GenerateGetVectorizedDerivatives(StringBuilder builder, string TVector, int n)
     {
         builder.AppendLine();
-        builder.AppendLine("\t\t/// <inheritdoc/>");
-        builder.AppendLine($"\t\tglobal::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("\t\t\t=> (x, res) =>");
-        builder.AppendLine("\t\t\t{");
-        builder.AppendLine("\t\t\t\tres[0].Load(1.0);");
+        builder.AppendLine("        /// <inheritdoc/>");
+        builder.AppendLine($"        global::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
+        builder.AppendLine("            => (x, res) =>");
+        builder.AppendLine("            {");
+        builder.AppendLine("                res[0].Load(1.0);");
         for (var i = 1; i <= n; i++)
         {
             if (i == 1)
-                builder.AppendLine($"\t\t\t\tres[{i}] = x;");
+                builder.AppendLine($"                res[{i}] = x;");
             else
-                builder.AppendLine($"\t\t\t\t{TVector}.Multiply(res[{i - 1}], x, res[{i}]);  // x^{i} = x^{i - 1} * x");
+                builder.AppendLine($"                {TVector}.Multiply(res[{i - 1}], x, res[{i}]);  // x^{i} = x^{i - 1} * x");
         }
-        builder.AppendLine("\t\t\t};");
+        builder.AppendLine("            };");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
 } // internal sealed class PolynomialGenerator : ModelGeneratorBase
