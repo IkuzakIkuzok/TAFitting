@@ -15,15 +15,14 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
     override protected void Generate(StringBuilder builder, string nameSpace, string className, int n, string? name)
     {
-        builder.AppendLine();
-        builder.AppendLine($"namespace {nameSpace}");
-        builder.AppendLine("{");
-
-        builder.AppendLine($"    /// <summary>");
-        builder.AppendLine($"    /// Represents a {n}-component exponential model.");
-        builder.AppendLine($"    /// </summary>");
-        builder.AppendLine($"    internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel");
-        builder.AppendLine("    {");
+        builder.AppendLine(@$"
+namespace {nameSpace}
+{{
+    /// <summary>
+    /// Represents a {n}-component exponential model.
+    /// </summary>
+    internal partial class {className} : global::TAFitting.Model.IFittingModel, global::TAFitting.Model.IAnalyticallyDifferentiable, global::TAFitting.Model.IVectorizedModel
+    {{");
 
         #region fields
 
@@ -42,56 +41,50 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         if (!string.IsNullOrEmpty(name))
         {
-            builder.AppendLine();
-            builder.AppendLine("        /// <inheritdoc/>");
-            builder.AppendLine($"        public string Name => \"{name}\";");
+            builder.AppendLine(@$"
+        /// <inheritdoc/>
+        public string Name => ""{name}"";");
         }
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public string Description => \"" + n + "-component exponential model\";");
+        builder.Append(@$"
+        /// <inheritdoc/>
+        public string Description => "" {n}-component exponential model"";
+        
+        /// <inheritdoc/>
+        public string ExcelFormula => ""[A0]");
+        builder.Append(string.Concat(Enumerable.Range(1, n).Select(i => $" + [A{i}] * EXP(-$X / [T{i}])")));
+        builder.AppendLine(@$""";
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine(
-            "        public string ExcelFormula => \"[A0]"
-            + string.Concat(Enumerable.Range(1, n).Select(i => $" + [A{i}] * EXP(-$X / [T{i}])")) + "\";"
-        );
+        /// <inheritdoc/>
+        public global::TAFitting.Model.Parameters Parameters => parameters;
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public global::TAFitting.Model.Parameters Parameters => parameters;");
+        /// <inheritdoc/>
+        public bool XLogScale => false;
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public bool XLogScale => false;");
+        /// <inheritdoc/>
+        public bool YLogScale => true;
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public bool YLogScale => true;");
-
-        #endregion properties
-
-        #region methods
-
-        builder.AppendLine($@"
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Register()
         {{
             global::TAFitting.Model.ModelManager.AddType(typeof(global::{nameSpace}.{className}));
         }} // public static void Register ()");
 
+        #endregion properties
+
+        #region methods
+
         #region GetFunction
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("        {");
-        builder.AppendLine("            var a0 = parameters[0];");
+        builder.AppendLine(@"
+        /// <inheritdoc/>
+        public global::System.Func<double, double> GetFunction(global::System.Collections.Generic.IReadOnlyList<double> parameters)
+        {
+            var a0 = parameters[0];");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine($"            var a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"            var t{i} = -1.0 / parameters[{2 * i}];");
+            builder.AppendLine(@$"            var a{i} = parameters[{2 * i - 1}];
+            var t{i} = -1.0 / parameters[{2 * i}];");
         }
         builder.AppendLine();
         builder.AppendLine("            return x => a0"
@@ -104,10 +97,10 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         #region GetDerivatives
 
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine("        public global::System.Action<double, double[]> GetDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("        {");
+        builder.AppendLine(@"
+        /// <inheritdoc/>
+        public global::System.Action<double, double[]> GetDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)
+        {");
         for (var i = 1; i <= n; i++)
         {
             builder.AppendLine($"            var a{i} = parameters[{2 * i - 1}];");
@@ -146,44 +139,41 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
     private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine($"        global::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-        builder.AppendLine("            => (x, res) =>");
-        builder.AppendLine("            {");
-        builder.AppendLine($"                res.Load(parameters[0]);");
+        builder.AppendLine(@$"
+        /// <inheritdoc/>
+        global::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)
+            => (x, res) =>
+            {{
+                res.Load(parameters[0]);");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine();
-            builder.AppendLine($"                var a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"                var t{i} = parameters[{2 * i}];");
-            builder.AppendLine($"                {TVector}.AddExpDecay(x, a{i}, t{i}, res);  // res += a{i} * exp(-x / t{i})");
+            builder.AppendLine(@$"
+                var a{i} = parameters[{2 * i - 1}];
+                var t{i} = parameters[{2 * i}];
+                {TVector}.AddExpDecay(x, a{i}, t{i}, res);  // res += a{i} * exp(-x / t{i});");
         }
         builder.AppendLine("            };");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 
     private static void GenerateGetVectorizedDerivatives(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine();
-        builder.AppendLine("        /// <inheritdoc/>");
-        builder.AppendLine($"        global::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)");
-
-        builder.AppendLine("            => (x, res) =>");
-        builder.AppendLine("            {");
-        builder.AppendLine("                // The first parameter is a constant term and its derivative is always 1.0.");
-        builder.AppendLine("                res[0].Load(1.0);");
+        builder.AppendLine(@$"
+        /// <inheritdoc/>
+        global::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)
+            => (x, res) =>
+            {{
+                // The first parameter is a constant term and its derivative is always 1.0.
+                res[0].Load(1.0);");
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine();
-            builder.AppendLine($"                var a{i} = parameters[{2 * i - 1}];");
-            builder.AppendLine($"                var t{i} = parameters[{2 * i - 0}];");
-
-            builder.AppendLine($"                // res[{2 * i - 1}] = exp(-x / t{i})");
-            builder.AppendLine($"                {TVector}.ExpDecay(x, 1.0, t{i}, res[{2 * i - 1}]);              // exp(-x / t{i})");
-
-            builder.AppendLine($"                // res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})");
-            builder.AppendLine($"                {TVector}.Multiply(res[{2 * i - 1}], a{i} / (t{i} * t{i}), res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})");
-            builder.AppendLine($"                res[{2 * i - 0}] *= x;                                                                // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($@"
+                var a{i} = parameters[{2 * i - 1}];
+                var t{i} = parameters[{2 * i - 0}];
+                // res[{2 * i - 1}] = exp(-x / t{i})
+                {TVector}.ExpDecay(x, 1.0, t{i}, res[{2 * i - 1}]);     // exp(-x / t{i})
+                // res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})
+                {TVector}.Multiply(res[{2 * i - 1}], a{i} / (t{i} * t{i}), res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})
+                res[{2 * i - 0}] *= x;                                                                // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
         }
         builder.AppendLine("            };");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
