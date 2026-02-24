@@ -74,7 +74,6 @@ internal sealed class ExponentialGenerator : ModelGeneratorBase
 
         #region methods
 
-        builder.AppendLine();
         builder.AppendLine($@"
         [global::System.Runtime.CompilerServices.ModuleInitializer]
         public static void Register()
