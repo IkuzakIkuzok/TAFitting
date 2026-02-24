@@ -80,12 +80,16 @@ internal static class ModelManager
     /// <param name="type">The type.</param>
     private static void AddType(Type type)
     {
+        var isModel = typeof(IFittingModel).IsAssignableFrom(type);
+        var isProvider = typeof(IEstimateProvider).IsAssignableFrom(type);
+        if (!isModel && !isProvider) return;
+
         var guid = type.GUID;
         if (models.ContainsKey(guid)) return;
 
         if (type.IsInterface || type.IsAbstract) return;
 
-        if (typeof(IFittingModel).IsAssignableFrom(type))
+        if (isModel)
         {
             if (TryGetModelInstance(type, out var model))
             {
@@ -94,7 +98,7 @@ internal static class ModelManager
             }
         }
 
-        if (typeof(IEstimateProvider).IsAssignableFrom(type))
+        if (isProvider)
         {
             if (TryGetEstimateProviderInstance(type, out var provider))
             {
