@@ -21,6 +21,7 @@
   <Project Path="TAFitting.Filter/TAFitting.Filter.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="TAFitting.Installer/TAFitting.Installer.vdproj" Type="Installer" />
   <Project Path="TAFitting.Model/TAFitting.Model.csproj">
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="*|x86" Project="x86" />
