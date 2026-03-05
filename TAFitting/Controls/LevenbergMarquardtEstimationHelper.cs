@@ -61,8 +61,12 @@ internal sealed class LevenbergMarquardtEstimationHelper(ParametersTable paramet
         try
         {
             this.parametersTable.StopUpdateRSquared = true;
-            
-            if (source.Length >= Program.ParallelThreshold && Program.ParallelThreshold >= 0)
+
+            // If ParallelThreshold is negative, never use parallel execution.
+            // If it is zero, always use parallel execution.
+            // If it is positive, use parallel execution only if the number of rows is greater than or equal to the threshold.
+            // Any negative value will be larger than int.MaxValue when cast to uint, so the condition will be false and parallel execution will not be used.
+            if ((uint)source.Length >= (uint)Program.ParallelThreshold)
             {
                 var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
                 await Task.Run(() => Parallel.ForEach(source, initSolver, (row, _, solver) =>
