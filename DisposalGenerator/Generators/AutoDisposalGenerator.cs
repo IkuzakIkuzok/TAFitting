@@ -56,7 +56,18 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
 
                 var isSealed = classDeclaration.Modifiers.Any(SyntaxKind.SealedKeyword);
 
-                var baseNames = classDeclaration.BaseList?.Types.Select(t => model.GetTypeInfo(t.Type).Type?.Name) ?? [];
+                string? GetBaseFullName(BaseTypeSyntax t)
+                {
+                    var type = model.GetTypeInfo(t.Type).Type;
+                    if (type is null) return null;
+                    return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+                }
+
+                var baseNames =
+                    classDeclaration.BaseList?.Types
+                                    .Select(GetBaseFullName)
+                                    .Where(n => !string.IsNullOrEmpty(n))
+                                    ?? [];
 
                 Generate(
                     builder,
@@ -182,7 +193,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
             }
             builder.Append("                }"); // if (disposing)
         }
-        
+
         if (!string.IsNullOrEmpty(unmanaged))
         {
             builder.AppendLine();
