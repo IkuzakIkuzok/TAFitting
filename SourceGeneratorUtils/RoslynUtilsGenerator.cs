@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024-2025 Kazuki Kohzuki
+// (c) 2024-2026 Kazuki Kohzuki
 
 namespace SourceGeneratorUtils;
 
@@ -38,47 +38,24 @@ internal static class RoslynUtils
     internal static string GetGetFullyQualifiedName(this AttributeSyntax attribute, SyntaxNodeAnalysisContext context)
     {
         var symbol = context.SemanticModel.GetSymbolInfo(attribute).Symbol;
-        return symbol?.GetFullyQualifiedName() ?? string.Empty;
+        return symbol?.GetFullName() ?? string.Empty;
     } // internal static string GetGetFullyQualifiedName (AttributeSyntax, SyntaxNodeAnalysisContext)
-
-    /// <summary>
-    /// Obtains the fully qualified name of the class.
-    /// </summary>
-    /// <param name="symbol">The symbol.</param>
-    /// <returns>The fully qualified name.</returns>
-    /// <remarks><see cref="ISymbol.ToDisplayParts(SymbolDisplayFormat?)"/> with argument <see cref="SymbolDisplayFormat.FullyQualifiedFormat"/>
-    /// does NOT work as expected. This problem is already reported on <a href="https://github.com/dotnet/roslyn/issues/50259">GitHub</a>.</remarks>
-    internal static string GetFullyQualifiedName(this ISymbol symbol)
-    {
-        var definition = symbol.OriginalDefinition.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
-        if (definition == null) return symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        var node = definition;
-        var names = new List<string>();
-        while ((node = node.Parent) != null)
-        {
-            if (node is NamespaceDeclarationSyntax ns)
-                names.Add(ns.Name.ToString());
-            if (node is ClassDeclarationSyntax @class)
-                names.Add(@class.ChildTokens().Where(token => token.IsKind(SyntaxKind.IdentifierToken)).First().Text);
-        }
-        names.Reverse();
-        return string.Join(".", names);
-    } // internal static string GetFullyQualifiedName (this ISymbol)
 
     /// <summary>
     /// Gets the full name of a named type symbol.
     /// </summary>
     /// <param name="symbol">The named type symbol.</param>
-    /// <returns>The full name of the symbol, or a <see cref="string.Empty"/> if the symbol is <see langword="null"/>.</returns>
-    internal static string GetFullName(this INamedTypeSymbol? symbol)
-        => symbol is null ? string.Empty : symbol.ContainingNamespace.ToDisplayString() + "." + symbol.Name;
+    /// <returns>The full name of the symbol without 'global::'.</returns>
+    internal static string? GetFullName(this ISymbol? symbol)
+        => symbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
 
-    internal static string NormalizeAttributeName(this string name)
-    {
-        if (name.EndsWith("Attribute", StringComparison.Ordinal)) return name;
-        return name + "Attribute";
-    } // internal static string NormalizeAttributeName (this string)
+    /// <summary>
+    /// Obtains the fully qualified name of the class, including 'global::' prefix.
+    /// </summary>
+    /// <param name="symbol">The symbol.</param>
+    /// <returns>The fully qualified name.</returns>
+    internal static string GetFullyQualifiedName(this ISymbol symbol)
+        => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
 } // internal static class SyntaxNodeUtils
 """;
 } // internal sealed class RoslynUtilsGenerator : IIncrementalGenerator

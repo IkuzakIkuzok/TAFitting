@@ -60,7 +60,7 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
                 {
                     var type = model.GetTypeInfo(t.Type).Type;
                     if (type is null) return null;
-                    return type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+                    return type.GetFullyQualifiedName();
                 }
 
                 var baseNames =
