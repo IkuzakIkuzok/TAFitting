@@ -51,8 +51,8 @@ internal abstract class ModelGeneratorBase : IIncrementalGenerator
                 var args = attr.ConstructorArguments;
                 if (args.Length == 0) continue;
                 var order = args[0].Value is int o ? o : throw new Exception("Failed to get the order parameter of the model.");
-                var namedArgs = attr.NamedArguments;
-                var name = namedArgs.FirstOrDefault(arg => arg.Key == "Name").Value.Value as string;
+                if (!attr.TryGetNamedArgumentValue("Name", out string? name))
+                    name = null;
 
                 Generate(builder, nameSpace, className, order, name);
             }
