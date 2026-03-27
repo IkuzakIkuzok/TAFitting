@@ -68,7 +68,7 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
             caseSensitive = cs;
 
         return new(enumType, caseSensitive);
-    } // private static EnumSerializationInfo GetEnumSerializationInfo (AttributeData)
+    } // private static EnumSerializationInfo? GetEnumSerializationInfo (AttributeData)
 
     private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<EnumSerializationInfo> targetTypes)
     {
@@ -84,7 +84,7 @@ namespace {{ns}}
     /// <summary>
     /// Provides extension methods for serialization of the <see cref="{{enumName}}"/> enum.
     /// </summary>
-    internal static class {{enumType.Name}}SerializationExtensions
+    internal static class {{enumShortName}}SerializationExtensions
     {
         /// <summary>
         /// Serializes the specified <see cref="{{enumName}}"/> value to a string using the specified serialization attribute.
@@ -116,7 +116,7 @@ namespace {{ns}}
         /// <typeparam name="TAttr">The serialization attribute type.</typeparam>
         /// <param name="text">The string representation of the enum value.</param>
         /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
-        internal static {{enumName}} Get{{enumType.Name}}FromString<TAttr>(this global::System.ReadOnlySpan<char> text) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        internal static {{enumName}} Get{{enumShortName}}FromString<TAttr>(this global::System.ReadOnlySpan<char> text) where TAttr : global::EnumSerializer.SerializeValueAttribute
         {
 """);
 
@@ -125,8 +125,8 @@ namespace {{ns}}
 
         builder.AppendLine($$"""
             // Fallback to default Enum.Parse if no matching attribute type is found
-            return ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text);
-        } // internal static {{enumName}} Get{{enumType.Name}}FromString<TAttr>(this global::System.ReadOnlySpan<char>) where TAttr : global::EnumSerializer.SerializeValueAttribute
+            return global::System.Enum.Parse<{{enumName}}>(text);
+        } // internal static {{enumName}} Get{{enumShortName}}FromString<TAttr>(this global::System.ReadOnlySpan<char>) where TAttr : global::EnumSerializer.SerializeValueAttribute
 """);
 
         foreach (var target in targetTypes)
@@ -141,7 +141,7 @@ namespace {{ns}}
         /// <typeparam name="TAttr">The serialization attribute type.</typeparam>
         /// <param name="text">The string representation of the enum value.</param>
         /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
-        internal static bool TryParse{{enumType.Name}}<TAttr>(this global::System.ReadOnlySpan<char> text, out {{enumName}} value) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        internal static bool TryParse{{enumShortName}}<TAttr>(this global::System.ReadOnlySpan<char> text, out {{enumName}} value) where TAttr : global::EnumSerializer.SerializeValueAttribute
         {
 """);
         foreach (var target in targetTypes)
@@ -151,14 +151,14 @@ namespace {{ns}}
             // No matching attribute type found
             value = default;
             return false;
-        } // internal static bool TryParse{{enumType.Name}}<TAttr>(this global::System.ReadOnlySpan<char>, out {{enumName}}) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        } // internal static bool TryParse{{enumShortName}}<TAttr>(this global::System.ReadOnlySpan<char>, out {{enumName}}) where TAttr : global::EnumSerializer.SerializeValueAttribute
 """);
 
         foreach (var target in targetTypes)
             GenerateTryParse(builder, enumName, enumType, target);
 
         builder.AppendLine($$"""
-    } // internal static class {{enumType.Name}}SerializationExtensions
+    } // internal static class {{enumShortName}}SerializationExtensions
 } // namespace {{ns}}
 """);
     } // private static void Generate (StringBuilder, INamedTypeSymbol, IEnumerable<INamedTypeSymbol>)
@@ -302,7 +302,7 @@ namespace {{ns}}
         internal static {{enumName}} {{methodName}}(this global::System.ReadOnlySpan<char> text)
         {
             if (text.Length > {{length}})
-                return ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text);
+                return global::System.Enum.Parse<{{enumName}}>(text);
 
 """);
         if (cs)
@@ -332,7 +332,7 @@ namespace {{ns}}
         }
 
         builder.AppendLine($$"""
-                            _ => ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text),
+                            _ => global::System.Enum.Parse<{{enumName}}>(text),
                         };
                     } // internal static {{enumName}} {{methodName}} (this global::System.ReadOnlySpan<char>)
             """);
