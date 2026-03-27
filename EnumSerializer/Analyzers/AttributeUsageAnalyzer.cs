@@ -1,5 +1,5 @@
 ﻿
-// (c) 2025 Kazuki Kohzuki
+// (c) 2025-2026 Kazuki Kohzuki
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using SourceGeneratorUtils;
@@ -20,11 +20,11 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 #pragma warning disable RS2008
 
     private static readonly DiagnosticDescriptor AttrInheritanceErr = new(
-        id                : AttrInheritanceErrId,
-        title             : "Invalid parameter inheritance",
-        messageFormat     : "The parameter '{0}' must inherit from 'EnumSerializer.SerializeValueAttribute'",
-        category          : "Usage",
-        defaultSeverity   : DiagnosticSeverity.Error,
+        id: AttrInheritanceErrId,
+        title: "Invalid parameter inheritance",
+        messageFormat: "The parameter '{0}' must inherit from 'EnumSerializer.SerializeValueAttribute'",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true
     );
 
@@ -62,17 +62,16 @@ internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer
 
         var args = attribute.ConstructorArguments;
         if (args.Length == 0) return;
-        var argValues = args[0].Values;
 
-        foreach (var argValue in argValues)
+        if (args[0].Value is TypedConstant argValue)
         {
-            if (argValue.Kind != TypedConstantKind.Type) continue;
-            if (argValue.Value is not INamedTypeSymbol c) continue;
-            if (CheckInheritance(c, ValueAttributeFullName)) continue;
+            if (argValue.Kind != TypedConstantKind.Type) return;
+            if (argValue.Value is not INamedTypeSymbol c) return;
+            if (CheckInheritance(c, ValueAttributeFullName)) return;
 
             var argLocation = attribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken).GetLocation()
                 ?? enumSyntax.GetLocation();
             context.ReportDiagnostic(Diagnostic.Create(AttrInheritanceErr, argLocation, c.Name));
         }
-    }
+    } // private static void AnalyzeAttribute (SyntaxNodeAnalysisContext, AttributeData, EnumDeclarationSyntax)
 } // internal sealed class AttributeUsageAnalyzer : DiagnosticAnalyzer

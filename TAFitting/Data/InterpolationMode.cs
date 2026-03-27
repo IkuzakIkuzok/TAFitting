@@ -8,7 +8,8 @@ namespace TAFitting.Data;
 /// <summary>
 /// Defines interpolation modes.
 /// </summary>
-[EnumSerializable(typeof(DefaultSerializeValueAttribute), typeof(DescriptionAttribute))]
+[EnumSerializable(typeof(DefaultSerializeValueAttribute))]
+[EnumSerializable(typeof(DescriptionAttribute))]
 internal enum InterpolationMode
 {
     /// <summary>

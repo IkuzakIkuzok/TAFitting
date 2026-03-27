@@ -39,14 +39,10 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
 
                 var attrs = type.Attributes.Where(a => a.AttributeClass.GetFullName() == AttributeFullName);
                 var args =
-                    attrs
-                    .SelectMany(a => a.ConstructorArguments)
-                    .SelectMany(c => c.Values)
-                    .Where(c => c.Kind == TypedConstantKind.Type)
-                    .Select(c => c.Value)
-                    .OfType<INamedTypeSymbol>()
-                    .Distinct(SymbolEqualityComparer.Default)
-                    .OfType<INamedTypeSymbol>();
+                    type.Attributes.Where(a => a.AttributeClass.GetFullName() == AttributeFullName)
+                                   .Select(GetEnumSerializationInfo)
+                                   .OfType<EnumSerializationInfo>()
+                                   .Distinct(new EnumSerializationInfo.EqualityComparer());
 
                 if (!args.Any()) continue;
 
@@ -61,7 +57,22 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
         context.AddSource("EnumSerializationExtensions.g.cs", builder.NormalizeNewLines().ToString());
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
-    private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<INamedTypeSymbol> targetTypes)
+    private static EnumSerializationInfo? GetEnumSerializationInfo(AttributeData arrtibute)
+    {
+        var args = arrtibute.ConstructorArguments;
+        if (args.Length == 0) return default;
+        if (args[0].Value is not INamedTypeSymbol enumType) return default;
+
+        var caseSensitive = true;
+        var namedArgs = arrtibute.NamedArguments;
+        var caseSensitiveArg = namedArgs.FirstOrDefault(kv => kv.Key == "CaseSensitive");
+        if (caseSensitiveArg.Value.Value is bool cs)
+            caseSensitive = cs;
+
+        return new(enumType, caseSensitive);
+    } // private static EnumSerializationInfo GetEnumSerializationInfo (AttributeData)
+
+    private static void Generate(StringBuilder builder, INamedTypeSymbol enumType, IEnumerable<EnumSerializationInfo> targetTypes)
     {
         var enumShortName = enumType.Name;
         var enumName = enumType.GetFullyQualifiedName();
@@ -88,7 +99,7 @@ namespace {{ns}}
 """);
 
         foreach (var target in targetTypes)
-            GenerateToString(builder, target);
+            GenerateToString(builder, target.EnumType);
 
         builder.AppendLine($$"""
             // Fallback to default ToString() if no matching attribute type is found
@@ -97,7 +108,7 @@ namespace {{ns}}
 """);
 
         foreach (var target in targetTypes)
-            GenerateSpecialToString(builder, enumName, enumType, target);
+            GenerateSpecialToString(builder, enumName, enumType, target.EnumType);
 
         builder.AppendLine($$"""
 
@@ -107,21 +118,46 @@ namespace {{ns}}
         /// <typeparam name="TAttr">The serialization attribute type.</typeparam>
         /// <param name="text">The string representation of the enum value.</param>
         /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
-        internal static {{enumName}} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        internal static {{enumName}} Get{{enumType.Name}}FromString<TAttr>(this global::System.ReadOnlySpan<char> text) where TAttr : global::EnumSerializer.SerializeValueAttribute
         {
 """);
 
         foreach (var target in targetTypes)
-            GenerateFromString(builder, target, enumShortName);
+            GenerateFromString(builder, target.EnumType, enumShortName);
 
         builder.AppendLine($$"""
             // Fallback to default Enum.Parse if no matching attribute type is found
             return ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text);
-        } // internal static {{enumName}} FromString<TAttr>(this string text) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        } // internal static {{enumName}} Get{{enumType.Name}}FromString<TAttr>(this global::System.ReadOnlySpan<char>) where TAttr : global::EnumSerializer.SerializeValueAttribute
 """);
 
         foreach (var target in targetTypes)
-            GenerateSpecialFromString(builder, enumName, enumType, target);
+            GenerateFromString(builder, enumName, enumType, target);
+
+
+        builder.AppendLine($$"""
+
+        /// <summary>
+        /// Deserializes the specified string to a <see cref="{{enumName}}"/> value using the specified serialization attribute.
+        /// </summary>
+        /// <typeparam name="TAttr">The serialization attribute type.</typeparam>
+        /// <param name="text">The string representation of the enum value.</param>
+        /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
+        internal static bool TryParse{{enumType.Name}}<TAttr>(this global::System.ReadOnlySpan<char> text, out {{enumName}} value) where TAttr : global::EnumSerializer.SerializeValueAttribute
+        {
+""");
+        foreach (var target in targetTypes)
+            GenerateTryParse(builder, target.EnumType, enumShortName);
+
+        builder.AppendLine($$"""
+            // No matching attribute type found
+            value = default;
+            return false;
+        } // internal static bool TryParse{{enumType.Name}}<TAttr>(this global::System.ReadOnlySpan<char>, out {{enumName}}) where TAttr : global::EnumSerializer.SerializeValueAttribute
+""");
+
+        foreach (var target in targetTypes)
+            GenerateTryParse(builder, enumName, enumType, target);
 
         builder.AppendLine($$"""
     } // internal static class {{enumType.Name}}SerializationExtensions
@@ -224,27 +260,17 @@ namespace {{ns}}
 """);
     } // private static void GenerateFromString (StringBuilder, INamedTypeSymbol, string)
 
-    private static void GenerateSpecialFromString(StringBuilder builder, string enumName, INamedTypeSymbol enumType, INamedTypeSymbol target)
+    private static void GenerateFromString(StringBuilder builder, string enumName, INamedTypeSymbol enumType, EnumSerializationInfo info)
     {
+        var target = info.EnumType;
         if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
             return;
 
         var targetName = target.GetFullName();
-        var targetFullName = $"global::{targetName}";
+        var targetFullName = target.GetFullyQualifiedName();
         var methodName = GetSpecialFromStringMethodName(target, enumType.Name);
 
-        builder.AppendLine($$"""
-
-        /// <summary>
-        /// Deserializes the specified string to a <see cref="{{enumName}}"/> value using the <see cref="{{targetFullName}}"/> attribute.
-        /// </summary>
-        /// <param name="text">The string representation of the enum value.</param>
-        /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
-        internal static {{enumName}} {{methodName}}(this string text)
-        {
-            return text switch
-            {
-""");
+        var cs = info.CaseSensitive;
 
         var fields = enumType.GetMembers().OfType<IFieldSymbol>().Where(f => f.IsStatic);
         var cases = new Dictionary<string, string>();
@@ -256,17 +282,53 @@ namespace {{ns}}
             var args = attr.ConstructorArguments;
             if (args.Length == 0) continue;
             var serializedValue = args[0].Value?.ToString() ?? string.Empty;
-            var value = $"{enumName}.{field.Name}";
+            if (!cs) serializedValue = serializedValue.ToLowerInvariant();
             if (cases.ContainsKey(serializedValue))
                 continue;
+            var value = $"{enumName}.{field.Name}";
             cases.Add(serializedValue, value);
             if (serializedValue.Length > length)
                 length = serializedValue.Length;
         }
 
+        var comment = cs ? "Comparison is case-sensitive." : "Comparison is case-insensitive.";
+
+        builder.AppendLine($$"""
+
+        /// <summary>
+        /// Deserializes the specified string to a <see cref="{{enumName}}"/> value using the <see cref="{{targetFullName}}"/> attribute.
+        /// {{comment}}
+        /// </summary>
+        /// <param name="text">The string representation of the enum value.</param>
+        /// <returns>The deserialized <see cref="{{enumName}}"/> value.</returns>
+        internal static {{enumName}} {{methodName}}(this global::System.ReadOnlySpan<char> text)
+        {
+            if (text.Length > {{length}})
+                return ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text);
+
+""");
+        if (cs)
+        {
+            builder.AppendLine($$"""
+            return text switch
+            {
+""");
+        }
+        else
+        {
+            builder.AppendLine($$"""
+            // `text.Length` never exceeds {{length}} here
+            var lowerBuffer = (stackalloc char[text.Length]);
+            text.ToLowerInvariant(lowerBuffer);
+
+            return lowerBuffer switch
+            {
+""");
+        }
+
         foreach ((var key, var value) in cases)
         {
-            builder.Append($"\t\t\t\t\"{key}\"");
+            builder.Append($"                \"{key}\"");
             builder.Append(' ', length - key.Length);
             builder.AppendLine($" => {value},");
         }
@@ -274,9 +336,9 @@ namespace {{ns}}
         builder.AppendLine($$"""
                             _ => ({{enumName}})global::System.Enum.Parse(typeof({{enumName}}), text),
                         };
-                    } // internal static {{enumName}} {{methodName}} (this string)
+                    } // internal static {{enumName}} {{methodName}} (this global::System.ReadOnlySpan<char>)
             """);
-    } // private static void GenerateSpecialFromString (StringBuilder, string, INamedTypeSymbol, INamedTypeSymbol)
+    } // private static void GenerateFromString (StringBuilder, string, INamedTypeSymbol, INamedTypeSymbol)
 
     private static string GetSpecialFromStringMethodName(INamedTypeSymbol target, string enumName)
     {
@@ -287,4 +349,112 @@ namespace {{ns}}
     } // private static string GetSpecialFromStringMethodName (INamedTypeSymbol, string)
 
     #endregion FromString
+
+    #region TryParse
+
+    private static void GenerateTryParse(StringBuilder builder, INamedTypeSymbol target, string enumName)
+    {
+        if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
+            return;
+
+        var targetFullName = target.GetFullyQualifiedName();
+        builder.AppendLine($$"""
+            if (typeof(TAttr) == typeof({{targetFullName}}))
+                return {{GetTryParseMethodName(target, enumName)}}(text, out value);
+
+""");
+    } // private static void GenerateTryParse (StringBuilder, INamedTypeSymbol, string)
+
+    private static void GenerateTryParse(StringBuilder builder, string enumName, INamedTypeSymbol enumType, EnumSerializationInfo info)
+    {
+        var target = info.EnumType;
+        if (!CheckInheritance(target, "EnumSerializer.SerializeValueAttribute"))
+            return;
+
+        var targetName = target.GetFullName();
+        var targetFullName = target.GetFullyQualifiedName();
+        var methodName = GetTryParseMethodName(target, enumType.Name);
+
+        var cs = info.CaseSensitive;
+
+        var fields = enumType.GetMembers().OfType<IFieldSymbol>().Where(f => f.IsStatic);
+        var cases = new Dictionary<string, string>();
+        var length = 0;
+        foreach (var field in fields)
+        {
+            var attr = field.GetAttributes().FirstOrDefault(a => a.AttributeClass.GetFullName() == targetName);
+            if (attr is null) continue;
+            var args = attr.ConstructorArguments;
+            if (args.Length == 0) continue;
+            var serializedValue = args[0].Value?.ToString() ?? string.Empty;
+            if (!cs) serializedValue = serializedValue.ToLowerInvariant();
+            if (cases.ContainsKey(serializedValue))
+                continue;
+            cases.Add(serializedValue, field.Name);
+            if (serializedValue.Length > length)
+                length = serializedValue.Length;
+        }
+
+        var comment = cs ? "Comparison is case-sensitive." : "Comparison is case-insensitive.";
+
+        builder.AppendLine($$"""
+
+        /// <summary>
+        /// Attempts to deserialize the specified string to a <see cref="{{enumName}}"/> value using the <see cref="{{targetFullName}}"/> attribute.
+        /// {{comment}}
+        /// </summary>
+        /// <param name="text">The string representation of the enum value.</param>
+        /// <param name="value">When this method returns, contains the deserialized <see cref="{{enumName}}"/> value if the parsing succeeded, or the default value if the parsing failed.</param>
+        /// <returns><see langword="true"/> if the parsing succeeded; otherwise, <see langword="false"/>.</returns>
+        internal static bool {{methodName}}(this global::System.ReadOnlySpan<char> text, out {{enumName}} value)
+        {
+            if (text.Length > {{length}})
+                goto ParseFailed;
+
+""");
+        if (cs)
+        {
+            builder.AppendLine($$"""
+            switch (text)
+            {
+""");
+        }
+        else
+        {
+            builder.AppendLine($$"""
+            // `text.Length` never exceeds {{length}} here
+            var lowerBuffer = (stackalloc char[text.Length]);
+            text.ToLowerInvariant(lowerBuffer);
+
+            switch (lowerBuffer)
+            {
+""");
+        }
+
+        foreach ((var key, var value) in cases)
+        {
+            builder.AppendLine($"                case \"{key}\":"); ;
+            builder.AppendLine($"                    value = {enumName}.{value};");
+            builder.AppendLine($"                    return true;");
+        }
+
+        builder.AppendLine($$"""
+            }
+
+        ParseFailed:
+            value = default;
+            return false;
+        } // internal static bool {{methodName}}(this global::System.ReadOnlySpan<char>, out {{enumName}})
+""");
+    } // private static void GenerateTryParse (StringBuilder, string, INamedTypeSymbol, INamedTypeSymbol)
+
+    private static string GetTryParseMethodName(INamedTypeSymbol target, string enumName)
+    {
+        var name = target.Name;
+        if (name.EndsWith("Attribute"))
+            name = name[..^"Attribute".Length];
+        return $"TryParse{enumName}From{name}";
+    } // private static string GetTryParseMethodName (INamedTypeSymbol, string)
+
+    #endregion TryParse
 } // internal sealed class SerializerGenerator : IIncrementalGenerator
