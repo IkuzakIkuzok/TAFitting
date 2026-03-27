@@ -46,8 +46,8 @@ internal sealed class AutoDisposalGenerator : IIncrementalGenerator
                                             .ToList();
 
                 var attr = type.Attributes.First(attr => attr.AttributeClass?.Name == AttributesGenerator.AutoDisposalAttributeName);
-                var namedArgs = attr.NamedArguments;
-                var unmanagedDisposalMethod = namedArgs.FirstOrDefault(a => a.Key == "UnmanagedDisposalMethod").Value.Value?.ToString();
+                if (!attr.TryGetNamedArgumentValue("UnmanagedDisposalMethod", out string? unmanagedDisposalMethod))
+                    unmanagedDisposalMethod = null;
 
                 if (fields.Count == 0 && string.IsNullOrEmpty(unmanagedDisposalMethod)) continue;
 
