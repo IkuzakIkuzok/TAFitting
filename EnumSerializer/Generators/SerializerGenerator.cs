@@ -57,16 +57,14 @@ internal sealed class SerializerGenerator : IIncrementalGenerator
         context.AddSource("EnumSerializationExtensions.g.cs", builder.NormalizeNewLines().ToString());
     } // private static void Execute (SourceProductionContext, ImmutableArray<GeneratorAttributeSyntaxContext>)
 
-    private static EnumSerializationInfo? GetEnumSerializationInfo(AttributeData arrtibute)
+    private static EnumSerializationInfo? GetEnumSerializationInfo(AttributeData attribute)
     {
-        var args = arrtibute.ConstructorArguments;
+        var args = attribute.ConstructorArguments;
         if (args.Length == 0) return default;
         if (args[0].Value is not INamedTypeSymbol enumType) return default;
 
         var caseSensitive = true;
-        var namedArgs = arrtibute.NamedArguments;
-        var caseSensitiveArg = namedArgs.FirstOrDefault(kv => kv.Key == "CaseSensitive");
-        if (caseSensitiveArg.Value.Value is bool cs)
+        if (attribute.TryGetNamedArgumentValue("CaseSensitive", out bool cs))
             caseSensitive = cs;
 
         return new(enumType, caseSensitive);

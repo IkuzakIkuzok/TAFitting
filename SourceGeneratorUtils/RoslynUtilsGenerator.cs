@@ -29,6 +29,8 @@ namespace SourceGeneratorUtils;
 /// </summary>
 internal static class RoslynUtils
 {
+    #region Symbol name
+
     /// <summary>
     /// Gets the fully qualified name of the attribute.
     /// </summary>
@@ -56,6 +58,33 @@ internal static class RoslynUtils
     /// <returns>The fully qualified name.</returns>
     internal static string GetFullyQualifiedName(this ISymbol symbol)
         => symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Included));
+
+    #endregion Symbol name
+
+    #region Attribute argument
+
+    /// <summary>
+    /// Tries to get the value of a named argument from an attribute.
+    /// </summary>
+    /// <typeparam name="T">The expected type of the argument value.</typeparam>
+    /// <param name="attribute">The attribute data.</param>
+    /// <param name="argumentName">The name of the argument to retrieve.</param>
+    /// <param name="value">When this method returns, contains the value of the named argument if found and successfully cast to the expected type; otherwise, the default value of <typeparamref name="T"/>.</param>
+    /// <returns><see langword="true"/> if the named argument is found and its value can be cast to the expected type; otherwise, <see langword="false"/>.</returns>
+    internal static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? value)
+    {
+        foreach (var namedArg in attribute.NamedArguments)
+        {
+            if (namedArg.Key != argumentName) continue;
+            if (namedArg.Value.Value is not T typedValue) break; // If the argument exists but cannot be cast to the expected type, treat it as not found.
+            value = typedValue;
+            return true;
+        }
+        value = default;
+        return false;
+    } // internal static bool TryGetNamedArgumentValue<T> (this AttributeData, string, out T)
+
+    #endregion Attribute argument
 } // internal static class SyntaxNodeUtils
 """;
 } // internal sealed class RoslynUtilsGenerator : IIncrementalGenerator
