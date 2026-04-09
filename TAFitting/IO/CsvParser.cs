@@ -1,7 +1,7 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using System.Text;
 
 namespace TAFitting.IO;
@@ -9,7 +9,7 @@ namespace TAFitting.IO;
 /// <summary>
 /// Provides methods for parsing and validating CSV-formatted data from a text stream using a specified separator character.
 /// </summary>
-[AutoDisposal]
+[AutoDispose]
 internal partial class CsvParser : IDisposable
 {
     protected readonly StreamReader _reader;

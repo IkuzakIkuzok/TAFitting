@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using System.Diagnostics;
 using System.Numerics;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -15,7 +15,7 @@ namespace TAFitting.Controls.Analyzers;
 /// Provides a form for Fourier analysis.
 /// </summary>
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class FourierAnalyzer : Form, IDecayAnalyzer
 {
     /*

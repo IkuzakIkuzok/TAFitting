@@ -8,7 +8,7 @@ namespace TAFitting.Controls.Analyzers;
 /// <summary>
 /// Represents the type of Fourier spectrum.
 /// </summary>
-[EnumSerializable(typeof(DefaultSerializeValueAttribute))]
+[EnumSerializable(typeof(DefaultSerializeValueAttribute), Methods = ExtensionMethods.ToString)]
 public enum FourierSpectrumType
 {
     /// <summary>

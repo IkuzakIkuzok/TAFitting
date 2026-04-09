@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki Kohzuki
 
-using DisposalGenerator;
+using Dirge;
 using TAFitting.Print;
 
 namespace TAFitting.Controls.Spectra;
@@ -10,10 +10,10 @@ namespace TAFitting.Controls.Spectra;
 /// Represents a window for previewing the summary of spectra for printing.
 /// </summary>
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class SummaryPreviewWindow : Form
 {
-    [DoNotDispose("The document should be disposed by the caller.")]
+    [DoNotDispose]
     private readonly SpectraSummaryDocument document;
 
     private readonly SplitContainer main_container;

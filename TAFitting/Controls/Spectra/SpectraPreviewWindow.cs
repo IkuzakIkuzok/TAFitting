@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024-2025 Kazuki Kohzuki
 
-using DisposalGenerator;
+using Dirge;
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Globalization;
@@ -23,7 +23,7 @@ namespace TAFitting.Controls.Spectra;
 /// Represents a window for previewing spectra.
 /// </summary>
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class SpectraPreviewWindow : Form
 {
     private static readonly Guid steadyStateDialog = new("AE0B2F4B-7A4E-425A-89DF-E81194032356");

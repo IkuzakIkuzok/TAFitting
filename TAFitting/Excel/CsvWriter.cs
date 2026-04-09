@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024-2026 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using System.Text;
 using TAFitting.Model;
 
@@ -10,7 +10,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a writer for a CSV file.
 /// </summary>
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class CsvWriter : ISpreadSheetWriter
 {
     private readonly StreamWriter writer;

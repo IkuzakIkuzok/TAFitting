@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024-2025 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -26,7 +26,7 @@ namespace TAFitting.Controls;
 /// Represents the main window.
 /// </summary>
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class MainWindow : Form
 {
     private static readonly Guid usTasDialog = new("E7757DD6-FDB0-4670-BD39-C499E9F46174");

@@ -9,12 +9,6 @@
     <File Path="LICENSE.txt" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="DisposalGenerator/DisposalGenerator.csproj">
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
-  <Project Path="EnumSerializer/EnumSerializer.csproj">
-    <Platform Solution="*|x64" Project="x64" />
-  </Project>
   <Project Path="SourceGeneratorUtils/SourceGeneratorUtils.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>

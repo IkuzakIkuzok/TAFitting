@@ -1,7 +1,7 @@
 ﻿
 // (c) 2025 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using System.Text;
 using TAFitting.IO;
 using TAFitting.Model;
@@ -11,7 +11,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for a CSV file.
 /// </summary>
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class CsvReader : ISpreadSheetReader
 {
     private CsvParser? reader;

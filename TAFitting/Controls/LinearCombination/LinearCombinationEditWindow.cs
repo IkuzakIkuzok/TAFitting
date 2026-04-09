@@ -1,13 +1,13 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using TAFitting.Model;
 
 namespace TAFitting.Controls.LinearCombination;
 
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class LinearCombinationEditWindow : Form
 {
     private readonly Label lb_filter, lb_model, lb_name, lb_category;

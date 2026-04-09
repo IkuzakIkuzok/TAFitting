@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using TAFitting.Data;
 
 namespace TAFitting.Controls;
@@ -10,7 +10,7 @@ namespace TAFitting.Controls;
 /// Represents a dialog for setting the filename format.
 /// </summary>
 [DesignerCategory("Code")]
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class FileNameFormatDialog : Form
 {
     private readonly Label lb_ab, lb_b, lb_basename;

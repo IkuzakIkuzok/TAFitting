@@ -1,7 +1,7 @@
 ﻿
 // (c) 2024 Kazuki KOHZUKI
 
-using DisposalGenerator;
+using Dirge;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TAFitting.Origin;
@@ -9,7 +9,7 @@ namespace TAFitting.Origin;
 /// <summary>
 /// Wraps an Origin project.
 /// </summary>
-[AutoDisposal(UnmanagedDisposalMethod = nameof(ReleaseUnmanagedResources))]
+[AutoDispose(ReleaseUnmanagedResources = nameof(ReleaseUnmanagedResources))]
 internal sealed partial class OriginProject
 {
     private const string ProgID = "Origin.ApplicationSI";

@@ -2,7 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using ClosedXML.Excel;
-using DisposalGenerator;
+using Dirge;
 using TAFitting.Model;
 
 namespace TAFitting.Excel;
@@ -10,7 +10,7 @@ namespace TAFitting.Excel;
 /// <summary>
 /// Represents a reader for an Excel spreadsheet.
 /// </summary>
-[AutoDisposal]
+[AutoDispose]
 internal sealed partial class ExcelReader : ISpreadSheetReader
 {
     private XLWorkbook? workbook;

@@ -8,7 +8,7 @@ namespace TAFitting.Data;
 /// <summary>
 /// Represents a SI prefix.
 /// </summary>
-[EnumSerializable(typeof(DefaultSerializeValueAttribute))]
+[EnumSerializable(typeof(DefaultSerializeValueAttribute), Methods = ExtensionMethods.ToString)]
 internal enum SIPrefix
 {
     /// <summary>
