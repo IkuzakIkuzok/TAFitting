@@ -33,6 +33,8 @@ internal static class ModelManager
 
     static ModelManager()
     {
+        Load(Assembly.GetExecutingAssembly());
+
         foreach (var item in Program.Config.ModelConfig.LinearCombinations)
             item.Register();
 

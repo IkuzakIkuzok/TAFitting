@@ -12,16 +12,19 @@ public sealed class AppConfig
 {
     private const string FILENAME = "TAFitting.config";
 
+    private static readonly string folder;
     private static readonly string FullPath;
 
     static AppConfig()
     {
         try
         {
-            FullPath = Path.Combine(Program.AppLocation, FILENAME);
+            folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TAFitting");
+            FullPath = Path.Combine(folder, FILENAME);
         }
         catch
         {
+            folder = Program.AppLocation;
             FullPath = FILENAME;
         }
     } // cctor ()
@@ -115,6 +118,7 @@ public sealed class AppConfig
     /// <exception cref="System.Security.SecurityException">The user does not have permission to save the file.</exception>
     internal void Save()
     {
+        Directory.CreateDirectory(folder);
         using var writer = new StreamWriter(FullPath, false, Encoding.UTF8);
         new XmlSerializer(typeof(AppConfig)).Serialize(writer, this);
     } // internal void Save ()

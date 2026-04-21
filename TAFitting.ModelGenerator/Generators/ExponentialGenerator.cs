@@ -62,13 +62,7 @@ namespace {nameSpace}
         public bool XLogScale => false;
 
         /// <inheritdoc/>
-        public bool YLogScale => true;
-
-        [global::System.Runtime.CompilerServices.ModuleInitializer]
-        public static void Register()
-        {{
-            global::TAFitting.Model.ModelManager.AddType(typeof(global::{nameSpace}.{className}));
-        }} // public static void Register ()");
+        public bool YLogScale => true;");
 
         #endregion properties
 
