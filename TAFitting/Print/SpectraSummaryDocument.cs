@@ -4,6 +4,7 @@
 using System.Drawing.Printing;
 using System.Globalization;
 using TAFitting.Collections;
+using TAFitting.Text;
 
 namespace TAFitting.Print;
 

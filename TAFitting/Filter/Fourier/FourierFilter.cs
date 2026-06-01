@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Numerics;
 using TAFitting.Buffers;
 using TAFitting.Data;
+using TAFitting.Text;
 
 namespace TAFitting.Filter.Fourier;
 

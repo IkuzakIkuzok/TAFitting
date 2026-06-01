@@ -17,6 +17,7 @@ using TAFitting.Excel;
 using TAFitting.Filter;
 using TAFitting.Model;
 using TAFitting.Sync;
+using TAFitting.Text;
 using TAFitting.Update;
 using Timer = System.Windows.Forms.Timer;
 

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using TAFitting.Collections;
+using TAFitting.Text;
 
 namespace TAFitting.Sync;
 

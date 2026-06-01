@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Windows.Forms.DataVisualization.Charting;
+using TAFitting.Text;
 
 namespace TAFitting.Controls;
 

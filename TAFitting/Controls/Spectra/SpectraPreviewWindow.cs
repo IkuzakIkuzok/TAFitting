@@ -16,6 +16,7 @@ using TAFitting.Model;
 using TAFitting.Origin;
 using TAFitting.Print;
 using TAFitting.Sync;
+using TAFitting.Text;
 
 namespace TAFitting.Controls.Spectra;
 

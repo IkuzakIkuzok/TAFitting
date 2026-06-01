@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Loader;
+using TAFitting.Text;
 
 namespace TAFitting.Model;
 

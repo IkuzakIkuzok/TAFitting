@@ -1,7 +1,7 @@
 ﻿
 // (c) 2026 Kazuki KOHZUKI
 
-namespace TAFitting;
+namespace TAFitting.Text;
 
 /// <summary>
 /// Provides extension methods for stream-based text reading.
@@ -54,8 +54,4 @@ internal static class TextStreamExtension
         }
         return true;
     } // internal static bool ReadLine (this StreamReader, Span<char> buffer, out int)
-
-    
-
-    
 } // internal class TextStreamExtension

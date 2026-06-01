@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text;
 using TAFitting.Controls;
+using TAFitting.Text;
 
 namespace TAFitting.Sync;
 

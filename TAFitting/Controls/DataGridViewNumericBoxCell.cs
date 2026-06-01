@@ -28,7 +28,7 @@ internal partial class DataGridViewNumericBoxCell : DataGridViewTextBoxCell
     /// </summary>
     internal int DecimalPlaces
     {
-        get => this.Style.Format[1..].ParseIntInvariant();
+        get => this.Style.Format.AsSpan()[1..].ParseIntInvariant();
         set => this.Style.Format = $"N{value}";
     }
 

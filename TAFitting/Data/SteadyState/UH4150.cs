@@ -2,6 +2,7 @@
 // (c) 2025 Kazuki Kohzuki
 
 using TAFitting.Controls;
+using TAFitting.Text;
 
 namespace TAFitting.Data.SteadyState;
 

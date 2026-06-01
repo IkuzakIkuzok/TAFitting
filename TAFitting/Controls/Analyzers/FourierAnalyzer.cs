@@ -8,6 +8,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using TAFitting.Buffers;
 using TAFitting.Controls.Charting;
 using TAFitting.Data;
+using TAFitting.Text;
 
 namespace TAFitting.Controls.Analyzers;
 

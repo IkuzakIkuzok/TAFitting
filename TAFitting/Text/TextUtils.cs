@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
-namespace TAFitting;
+namespace TAFitting.Text;
 
 /// <summary>
 /// Provides utility methods for text processing.

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using TAFitting.Collections;
 using TAFitting.Stats;
+using TAFitting.Text;
 
 namespace TAFitting.Data;
 
