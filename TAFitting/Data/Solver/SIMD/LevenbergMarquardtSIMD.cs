@@ -66,7 +66,6 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
     private readonly double[] gradient;
     private readonly AvxVector temp_vector;
     private readonly AvxVector[] derivatives;  // Cache for the partial derivatives
-    private Action<AvxVector, AvxVector> func = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LevenbergMarquardtSIMD{AvxVector}"/> class.
@@ -144,11 +143,10 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
         double chi2, incrementedChi2;
         do
         {
-            this.func = this.Model.GetVectorizedFunc(this.parameters);
-            this.func(this.x, this.est_vals);
+            this.Model.CalculateFunc(this.parameters, this.x, this.est_vals);
             chi2 = CalcChi2();
 
-            this.Model.GetVectorizedDerivatives(this.parameters)(this.x, this.derivatives);
+            this.Model.CalculateDerivatives(this.parameters, this.x, this.derivatives);
             for (var i = 0; i < this.fixedParameters.Count; ++i)
                 this.derivatives[this.fixedParameters[i]].Clear();
 
@@ -177,9 +175,7 @@ internal sealed class LevenbergMarquardtSIMD : ILevenbergMarquardtSolver
 
     private double CalcChi2(Numbers parameters)
     {
-        var func = this.Model.GetVectorizedFunc(parameters);
-        func(this.x, this.temp_vector);
-
+        this.Model.CalculateFunc(parameters, this.x, this.temp_vector);
         return AvxVector.SquareDistance(this.y, this.temp_vector);
     } // private double CalcChi2 (Numbers)
 

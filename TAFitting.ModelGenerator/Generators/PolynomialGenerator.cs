@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2026 Kazuki KOHZUKI
 
 namespace TAFitting.ModelGenerator.Generators;
 
@@ -127,12 +127,13 @@ namespace {nameSpace}
 
     private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine($@"
-        /// <inheritdoc/>
-        global::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)
-            => (x, res) =>
-            {{
-                res.Load(parameters[{n}]);  // a{n}");
+        builder.AppendLine($$"""
+
+                    /// <inheritdoc/>
+                    public void CalculateFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters, {{TVector}} x, {{TVector}} res)
+                    {
+                        res.Load(parameters[{{n}}]);  // a{{n}}
+            """);
 
         // Horner's method
 
@@ -151,28 +152,29 @@ namespace {nameSpace}
                 comment.Append(" * x");
             }
             comment.Append($" + a{i}");
-            builder.AppendLine($"                // {comment}");
-            builder.AppendLine($"                res *= x; res += parameters[{i}];");
+            builder.AppendLine($"            // {comment}");
+            builder.AppendLine($"            res *= x; res += parameters[{i}];");
         }
 
-        builder.AppendLine("            };");
+        builder.AppendLine("        }");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 
     private static void GenerateGetVectorizedDerivatives(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine($@"
-        /// <inheritdoc/>
-        global::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)
-            => (x, res) =>
-            {{
-                res[0].Load(1.0);");
+        builder.AppendLine($$"""
+
+                    /// <inheritdoc/>
+                    public void CalculateDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters, {{TVector}} x, {{TVector}}[] res)
+                    {
+                        res[0].Load(1.0);
+            """);
         for (var i = 1; i <= n; i++)
         {
             if (i == 1)
-                builder.AppendLine($"                res[{i}] = x;");
+                builder.AppendLine($"            res[{i}] = x;");
             else
-                builder.AppendLine($"                {TVector}.Multiply(res[{i - 1}], x, res[{i}]);  // x^{i} = x^{i - 1} * x");
+                builder.AppendLine($"            {TVector}.Multiply(res[{i - 1}], x, res[{i}]);  // x^{i} = x^{i - 1} * x");
         }
-        builder.AppendLine("            };");
+        builder.AppendLine("        }");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
 } // internal sealed class PolynomialGenerator : ModelGeneratorBase

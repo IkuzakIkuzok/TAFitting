@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2026 Kazuki KOHZUKI
 
 namespace TAFitting.ModelGenerator.Generators;
 
@@ -133,42 +133,48 @@ namespace {nameSpace}
 
     private static void GenerateGetVectorizedFunc(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine(@$"
-        /// <inheritdoc/>
-        global::System.Action<{TVector}, {TVector}> global::TAFitting.Model.IVectorizedModel.GetVectorizedFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters)
-            => (x, res) =>
-            {{
-                res.Load(parameters[0]);");
+        builder.AppendLine($$"""
+
+                    /// <inheritdoc/>
+                    public void CalculateFunc(global::System.Collections.Generic.IReadOnlyList<double> parameters, {{TVector}} x, {{TVector}} res)
+                    {
+                        res.Load(parameters[0]);
+            """);
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine(@$"
-                var a{i} = parameters[{2 * i - 1}];
-                var t{i} = parameters[{2 * i}];
-                {TVector}.AddExpDecay(x, a{i}, t{i}, res);  // res += a{i} * exp(-x / t{i});");
+            builder.AppendLine($$"""
+
+                            var a{{i}} = parameters[{{2 * i - 1}}];
+                            var t{{i}} = parameters[{{2 * i}}];
+                            {{TVector}}.AddExpDecay(x, a{{i}}, t{{i}}, res);  // res += a{{i}} * exp(-x / t{{i}});
+                """);
         }
-        builder.AppendLine("            };");
+        builder.AppendLine("        }");
     } // private static void GenerateGetVectorizedFunc (StringBuilder, string, int)
 
     private static void GenerateGetVectorizedDerivatives(StringBuilder builder, string TVector, int n)
     {
-        builder.AppendLine(@$"
-        /// <inheritdoc/>
-        global::System.Action<{TVector}, {TVector}[]> global::TAFitting.Model.IVectorizedModel.GetVectorizedDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters)
-            => (x, res) =>
-            {{
-                // The first parameter is a constant term and its derivative is always 1.0.
-                res[0].Load(1.0);");
+        builder.AppendLine($$"""
+
+                    /// <inheritdoc/>
+                    public void CalculateDerivatives(global::System.Collections.Generic.IReadOnlyList<double> parameters, {{TVector}} x, {{TVector}}[] res)
+                    {
+                        // The first parameter is a constant term and its derivative is always 1.0.
+                        res[0].Load(1.0);
+            """);
         for (var i = 1; i <= n; i++)
         {
-            builder.AppendLine($@"
-                var a{i} = parameters[{2 * i - 1}];
-                var t{i} = parameters[{2 * i - 0}];
-                // res[{2 * i - 1}] = exp(-x / t{i})
-                {TVector}.ExpDecay(x, 1.0, t{i}, res[{2 * i - 1}]);     // exp(-x / t{i})
-                // res[{2 * i - 0}] = a{i} * x * exp(-x / t{i}) / (t{i} * t{i})
-                {TVector}.Multiply(res[{2 * i - 1}], a{i} / (t{i} * t{i}), res[{2 * i - 0}]);  // exp(-x / t{i}) * a{i} / (t{i} * t{i})
-                res[{2 * i - 0}] *= x;                                                                // x * exp(-x / t{i}) * a{i} / (t{i} * t{i})");
+            builder.AppendLine($$"""
+
+                            var a{{i}} = parameters[{{2 * i - 1}}];
+                            var t{{i}} = parameters[{{2 * i - 0}}];
+                            // res[{{2 * i - 1}}] = exp(-x / t{{i}})
+                            {{TVector}}.ExpDecay(x, 1.0, t{{i}}, res[{{2 * i - 1}}]);     // exp(-x / t{{i}})
+                            // res[{{2 * i - 0}}] = a{{i}} * x * exp(-x / t{{i}}) / (t{{i}} * t{{i}})
+                            {{TVector}}.Multiply(res[{{2 * i - 1}}], a{{i}} / (t{{i}} * t{{i}}), res[{{2 * i - 0}}]);  // exp(-x / t{{i}}) * a{{i}} / (t{{i}} * t{{i}})
+                            res[{{2 * i - 0}}] *= x;                                                                // x * exp(-x / t{{i}}) * a{{i}} / (t{{i}} * t{{i}})
+                """);
         }
-        builder.AppendLine("            };");
+        builder.AppendLine("        }");
     } // private static void GenerateGetVectorizedDerivatives (StringBuilder, string, int)
 } // internal sealed class ExponentialGenerator : ISourceGenerator

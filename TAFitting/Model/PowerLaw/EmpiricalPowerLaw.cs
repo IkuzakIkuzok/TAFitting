@@ -1,5 +1,5 @@
 ﻿
-// (c) 2024 Kazuki KOHZUKI
+// (c) 2024-2026 Kazuki KOHZUKI
 
 using TAFitting.Data;
 
@@ -62,40 +62,36 @@ internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferenti
     } // public Action<double, double[]> GetDerivatives (IReadOnlyList<double>)
 
     /// <inheritdoc/>
-    Action<AvxVector, AvxVector> IVectorizedModel.GetVectorizedFunc(IReadOnlyList<double> parameters)
-        => (x, res) =>
-        {
-            var a0 = parameters[0];
-            var a = parameters[1];
-            var alpha = parameters[2];
-
-            AvxVector.Multiply(x, a, res);     // ax
-            AvxVector.Add(res, 1, res);  // 1 + ax
-            AvxVector.Power(res, alpha, res);  // (1 + ax)^alpha
-            AvxVector.Divide(a0, res, res);    // a0 / (1 + ax)^alpha
-        };
-
-    /// <inheritdoc/>
-    Action<AvxVector, AvxVector[]> IVectorizedModel.GetVectorizedDerivatives(IReadOnlyList<double> parameters)
+    public void CalculateFunc(IReadOnlyList<double> parameters, AvxVector x, AvxVector res)
     {
         var a0 = parameters[0];
         var a = parameters[1];
         var alpha = parameters[2];
 
-        return (x, res) =>
-        {
-            AvxVector.Multiply(x, a, res[2]);             // ax
-            res[2] += 1;                                  // 1 + ax
+        AvxVector.Multiply(x, a, res);     // ax
+        AvxVector.Add(res, 1, res);  // 1 + ax
+        AvxVector.Power(res, alpha, res);  // (1 + ax)^alpha
+        AvxVector.Divide(a0, res, res);    // a0 / (1 + ax)^alpha
+    } // public void CalculateFunc (IReadOnlyList<double>, AvxVector, AvxVector)
 
-            AvxVector.Power(res[2], -alpha, res[0]);      // (1 + ax)^-alpha
+    /// <inheritdoc/>
+    public void CalculateDerivatives(IReadOnlyList<double> parameters, AvxVector x, AvxVector[] res)
+    {
+        var a0 = parameters[0];
+        var a = parameters[1];
+        var alpha = parameters[2];
 
-            AvxVector.Power(res[2], -1 - alpha, res[1]);  // (1 + ax)^(-1 - alpha)
-            res[1] *= a0 * alpha;                         // a0 * alpha * (1 + ax)^(-1 - alpha)
-            res[1] *= x;                                  // a0 * alpha * x * (1 + ax)^(-1 - alpha)
+        AvxVector.Multiply(x, a, res[2]);             // ax
+        res[2] += 1;                                  // 1 + ax
 
-            AvxVector.Ln(res[2], res[2]);                 // ln(1 + ax)
-            res[2] *= -a0;                                // -a0 * ln(1 + ax)
-            res[2] *= res[0];                             // -a0 * ln(1 + ax) / (1 + ax)^alpha
-        };
-    } // public Action<AvxVector, AvxVector[]> GetVectorizedDerivatives (IReadOnlyList<double>)
+        AvxVector.Power(res[2], -alpha, res[0]);      // (1 + ax)^-alpha
+
+        AvxVector.Power(res[2], -1 - alpha, res[1]);  // (1 + ax)^(-1 - alpha)
+        res[1] *= a0 * alpha;                         // a0 * alpha * (1 + ax)^(-1 - alpha)
+        res[1] *= x;                                  // a0 * alpha * x * (1 + ax)^(-1 - alpha)
+
+        AvxVector.Ln(res[2], res[2]);                 // ln(1 + ax)
+        res[2] *= -a0;                                // -a0 * ln(1 + ax)
+        res[2] *= res[0];                             // -a0 * ln(1 + ax) / (1 + ax)^alpha
+    } // public void CalculateDerivatives (IReadOnlyList<double>, AvxVector, AvxVector[])
 } // internal sealed class EmpiricalPowerLaw : IFittingModel, IAnalyticallyDifferentiable
