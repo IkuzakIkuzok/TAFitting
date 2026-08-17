@@ -68,7 +68,7 @@ internal sealed class LevenbergMarquardtEstimationHelper(ParametersTable paramet
             // Any negative value will be larger than int.MaxValue when cast to uint, so the condition will be false and parallel execution will not be used.
             if ((uint)source.Length >= (uint)Program.ParallelThreshold)
             {
-                var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>();
+                var results = new ConcurrentDictionary<ParametersTableRow, IReadOnlyList<double>>(-1, source.Length);
                 await Task.Run(() => Parallel.ForEach(source, initSolver, (row, _, solver) =>
                 {
                     Estimate(solver, row);
