@@ -3,6 +3,7 @@
 
 using Dirge;
 using System.Text;
+using TAFitting.Buffers;
 
 namespace TAFitting.IO;
 
@@ -137,17 +138,20 @@ internal partial class CsvParser : IDisposable
     /// <param name="output">The buffer that receives the parsed values.</param>
     /// <param name="separator">The character used to separate cells in the CSV line. Defaults to ','. Cannot be a newline character.</param>
     /// <param name="provider">An optional format provider to use when parsing each cell. If null, the current culture is used.</param>
+    /// <param name="bufferSize">The size of the temporary buffer used for parsing each cell. Must be greater than 0. Defaults to 256.</param>
     /// <returns>The number of values successfully parsed and written to the output buffer. This will be less than or equal to the length of the output buffer.</returns>
     /// <exception cref="ArgumentException">Thrown if output is empty or if separator is a newline character.</exception>
-    internal int ParseLine<T>(Span<T> output, char separator = ',', IFormatProvider? provider = null) where T : ISpanParsable<T>
+    internal int ParseLine<T>(Span<T> output, char separator = ',', IFormatProvider? provider = null, int bufferSize = 256) where T : ISpanParsable<T>
     {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(bufferSize, 0, nameof(bufferSize));
+
         if (output.IsEmpty)
             throw new ArgumentException("Output buffer cannot be empty.", nameof(output));
         if (separator is '\r' or '\n')
             throw new ArgumentException("Separator cannot be a newline character.", nameof(separator));
 
-        // Temporary buffer for reading each cell. Adjust size as needed, but keep in mind that it should be large enough to hold the longest expected cell value.
-        var cellBuffer = (stackalloc char[256]);
+        using var pooled = new PooledBuffer<char>(bufferSize);
+        var cellBuffer = bufferSize <= 0x400 ? stackalloc char[bufferSize] : pooled.GetSpan();
         var cellLen = 0;
         var parsed = 0;
         int c;
@@ -185,7 +189,7 @@ internal partial class CsvParser : IDisposable
         }
 
         return parsed;
-    } // internal int ParseLine<T> (Span<T>, [char], [IFormatProvider]) where T : ISpanParsable<T>
+    } // internal int ParseLine<T> (Span<T>, [char], [IFormatProvider], [int]) where T : ISpanParsable<T>
 
     private void SkipToEndOfLine()
     {
